@@ -201,11 +201,11 @@ const MotionGraphicsLookbook = () => {
             <img 
               src={soleiaLogo} 
               alt="Soleia" 
-              className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-5 px-4 md:px-0"
+              className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-2 px-4 md:px-0"
             />
             
-            {/* Look Book Title - matching logo font style */}
-            <h1 className="text-2xl font-light tracking-[0.3em] uppercase text-gradient-gold mb-6">
+            {/* Look Book Title - bolder styling */}
+            <h1 className="text-3xl font-semibold tracking-[0.25em] uppercase text-gradient-gold mb-3">
               Look Book
             </h1>
             
