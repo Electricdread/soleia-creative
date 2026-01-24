@@ -260,7 +260,12 @@ const MotionGraphicsLookbook = () => {
                   : 'glass hover:bg-primary/10 hover:border-primary/30 text-foreground hover-lift'
               }`}
             >
-              <span className="text-lg">{cat.icon}</span>
+              <img 
+                src={sunIcon} 
+                alt="" 
+                className="w-5 h-5 object-contain" 
+                style={{ filter: selectedCategory === cat.key ? 'none' : `drop-shadow(0 0 3px ${cat.color})` }}
+              />
               <span className="tracking-wide">{cat.label}</span>
             </button>
           ))}

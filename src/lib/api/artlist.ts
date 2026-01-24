@@ -97,13 +97,13 @@ export const artlistApi = {
 
 // Category definitions for Artlist motion graphics
 export const artlistCategories = [
-  { key: 'motion-backgrounds', label: 'Motion Backgrounds', icon: '🌊' },
-  { key: 'abstract', label: 'Abstract', icon: '🔮' },
-  { key: 'particles', label: 'Particles', icon: '✨' },
-  { key: 'nature', label: 'Nature', icon: '🌿' },
-  { key: 'technology', label: 'Technology', icon: '💻' },
-  { key: 'corporate', label: 'Corporate', icon: '🏢' },
-  { key: 'events', label: 'Events', icon: '🎉' },
+  { key: 'motion-backgrounds', label: 'Motion Backgrounds', color: 'hsl(38, 92%, 50%)' },
+  { key: 'abstract', label: 'Abstract', color: 'hsl(280, 70%, 55%)' },
+  { key: 'particles', label: 'Particles', color: 'hsl(45, 90%, 55%)' },
+  { key: 'nature', label: 'Nature', color: 'hsl(120, 50%, 45%)' },
+  { key: 'technology', label: 'Technology', color: 'hsl(200, 80%, 50%)' },
+  { key: 'corporate', label: 'Corporate', color: 'hsl(220, 60%, 55%)' },
+  { key: 'events', label: 'Events', color: 'hsl(350, 75%, 55%)' },
 ] as const;
 
 export type ArtlistCategoryKey = typeof artlistCategories[number]['key'];
