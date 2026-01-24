@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause } from 'lucide-react';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -218,7 +218,7 @@ const MotionGraphicsLookbook = () => {
             
             {/* Search Bar - Centered below title with entrance animation */}
             <div 
-              className="flex items-center gap-3 opacity-0 animate-fade-in-up"
+              className="opacity-0 animate-fade-in-up"
               style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}
             >
               <div className="relative">
@@ -231,15 +231,10 @@ const MotionGraphicsLookbook = () => {
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   className="pl-11 w-80 bg-background/40 border-border/50 focus:border-primary/50 transition-elegant rounded-xl h-11"
                 />
+                {isSearching && (
+                  <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                )}
               </div>
-              <Button 
-                onClick={handleSearch} 
-                disabled={isSearching}
-                variant="secondary"
-                className="h-11 px-5 rounded-xl transition-elegant hover:bg-primary/10 hover:text-primary"
-              >
-                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-              </Button>
             </div>
           </div>
         </div>
@@ -492,34 +487,48 @@ const MotionGraphicsLookbook = () => {
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                   />
-                  <div className="absolute bottom-4 left-4 flex gap-2">
+                  <div className="absolute bottom-4 left-4 right-4 flex justify-between">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          if (videoRef.current) {
+                            if (isPlaying) {
+                              videoRef.current.pause();
+                            } else {
+                              videoRef.current.play();
+                            }
+                          }
+                        }}
+                        className="w-10 h-10 bg-background/80 rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                      >
+                        {isPlaying ? (
+                          <Pause className="w-5 h-5 text-foreground" />
+                        ) : (
+                          <Play className="w-5 h-5 text-foreground ml-0.5" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => setIsMuted(!isMuted)}
+                        className="w-10 h-10 bg-background/80 rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                      >
+                        {isMuted ? (
+                          <VolumeX className="w-5 h-5 text-foreground" />
+                        ) : (
+                          <Volume2 className="w-5 h-5 text-foreground" />
+                        )}
+                      </button>
+                    </div>
                     <button
                       onClick={() => {
                         if (videoRef.current) {
-                          if (isPlaying) {
-                            videoRef.current.pause();
-                          } else {
-                            videoRef.current.play();
+                          if (videoRef.current.requestFullscreen) {
+                            videoRef.current.requestFullscreen();
                           }
                         }
                       }}
                       className="w-10 h-10 bg-background/80 rounded-full flex items-center justify-center hover:bg-background transition-colors"
                     >
-                      {isPlaying ? (
-                        <Pause className="w-5 h-5 text-foreground" />
-                      ) : (
-                        <Play className="w-5 h-5 text-foreground ml-0.5" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => setIsMuted(!isMuted)}
-                      className="w-10 h-10 bg-background/80 rounded-full flex items-center justify-center hover:bg-background transition-colors"
-                    >
-                      {isMuted ? (
-                        <VolumeX className="w-5 h-5 text-foreground" />
-                      ) : (
-                        <Volume2 className="w-5 h-5 text-foreground" />
-                      )}
+                      <Maximize className="w-5 h-5 text-foreground" />
                     </button>
                   </div>
                 </>
