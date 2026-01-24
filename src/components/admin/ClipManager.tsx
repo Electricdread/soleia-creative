@@ -16,10 +16,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { artlistCategories } from '@/lib/api/artlist';
-import { Trash2, Loader2, Search } from 'lucide-react';
+import { Trash2, Loader2, Search, Pencil } from 'lucide-react';
 
 interface Clip {
   id: string;
@@ -28,6 +36,9 @@ interface Clip {
   resolution: string;
   duration: string;
   created_at: string;
+  video_url: string | null;
+  source_url: string | null;
+  thumbnail: string | null;
 }
 
 export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
@@ -37,13 +48,25 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  
+  // Edit modal state
+  const [editingClip, setEditingClip] = useState<Clip | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    video_url: '',
+    source_url: '',
+    resolution: '',
+    duration: '',
+    category: '',
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
   const fetchClips = async () => {
     setIsLoading(true);
     try {
       let query = supabase
         .from('cached_clips')
-        .select('id, title, category, resolution, duration, created_at')
+        .select('id, title, category, resolution, duration, created_at, video_url, source_url, thumbnail')
         .order('created_at', { ascending: false });
 
       if (selectedCategory && selectedCategory !== 'all') {
@@ -99,6 +122,59 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
     }
   };
 
+  const openEditModal = (clip: Clip) => {
+    setEditingClip(clip);
+    setEditForm({
+      title: clip.title,
+      video_url: clip.video_url || '',
+      source_url: clip.source_url || '',
+      resolution: clip.resolution || '',
+      duration: clip.duration || '',
+      category: clip.category,
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingClip) return;
+    
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('cached_clips')
+        .update({
+          title: editForm.title,
+          video_url: editForm.video_url || null,
+          source_url: editForm.source_url || null,
+          resolution: editForm.resolution,
+          duration: editForm.duration,
+          category: editForm.category,
+        })
+        .eq('id', editingClip.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setClips(prev => prev.map(c => 
+        c.id === editingClip.id 
+          ? { ...c, ...editForm, video_url: editForm.video_url || null, source_url: editForm.source_url || null }
+          : c
+      ));
+      
+      toast({ title: 'Clip updated' });
+      setEditingClip(null);
+      onClipsUpdated?.();
+    } catch (error) {
+      console.error('Error updating clip:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update clip',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getCategoryLabel = (key: string) => {
     return artlistCategories.find(c => c.key === key)?.label || key;
   };
@@ -147,7 +223,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
                 <TableHead>Category</TableHead>
                 <TableHead>Resolution</TableHead>
                 <TableHead>Duration</TableHead>
-                <TableHead className="w-[60px]"></TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -160,19 +236,29 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
                   <TableCell>{clip.resolution}</TableCell>
                   <TableCell>{clip.duration}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(clip.id)}
-                      disabled={deletingId === clip.id}
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                    >
-                      {deletingId === clip.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEditModal(clip)}
+                        className="h-8 w-8"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(clip.id)}
+                        disabled={deletingId === clip.id}
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                      >
+                        {deletingId === clip.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -184,6 +270,95 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
       <p className="text-xs text-muted-foreground text-center">
         Showing {clips.length} clips
       </p>
+
+      {/* Edit Modal */}
+      <Dialog open={!!editingClip} onOpenChange={(open) => !open && setEditingClip(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Clip</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Title</Label>
+              <Input
+                id="edit-title"
+                value={editForm.title}
+                onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-video-url">Video URL</Label>
+              <Input
+                id="edit-video-url"
+                value={editForm.video_url}
+                onChange={(e) => setEditForm(prev => ({ ...prev, video_url: e.target.value }))}
+                placeholder="https://..."
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-source-url">Source URL</Label>
+              <Input
+                id="edit-source-url"
+                value={editForm.source_url}
+                onChange={(e) => setEditForm(prev => ({ ...prev, source_url: e.target.value }))}
+                placeholder="https://..."
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-resolution">Resolution</Label>
+                <Input
+                  id="edit-resolution"
+                  value={editForm.resolution}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, resolution: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-duration">Duration</Label>
+                <Input
+                  id="edit-duration"
+                  value={editForm.duration}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, duration: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-category">Category</Label>
+              <Select 
+                value={editForm.category} 
+                onValueChange={(value) => setEditForm(prev => ({ ...prev, category: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {artlistCategories.map((cat) => (
+                    <SelectItem key={cat.key} value={cat.key}>
+                      {cat.icon} {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingClip(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

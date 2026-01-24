@@ -9,12 +9,6 @@ import { Settings, Plus, List, Lock } from 'lucide-react';
 
 export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
   const [open, setOpen] = useState(false);
-  const { isAdmin, user } = useAuth();
-
-  // Only show admin button to admins
-  if (!isAdmin) {
-    return null;
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
