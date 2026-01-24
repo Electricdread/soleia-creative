@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddClipForm } from './AddClipForm';
 import { ClipManager } from './ClipManager';
-import { Settings, Plus, List } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Settings, Plus, List, Lock } from 'lucide-react';
 
 export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
   const [open, setOpen] = useState(false);
+  const { isAdmin, user } = useAuth();
+
+  // Only show admin button to admins
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -20,6 +27,7 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Clip Management</DialogTitle>
+          <DialogDescription>Add and manage video clips in your collection.</DialogDescription>
         </DialogHeader>
         
         <Tabs defaultValue="add" className="mt-4">
