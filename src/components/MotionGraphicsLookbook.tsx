@@ -197,11 +197,11 @@ const MotionGraphicsLookbook = () => {
           
           {/* Centered Hero Logo Layout */}
           <div className="flex flex-col items-center text-center">
-            {/* Large Soleia Logo */}
+            {/* Large Soleia Logo - Full width on mobile */}
             <img 
               src={soleiaLogo} 
               alt="Soleia" 
-              className="h-64 w-auto max-w-full object-contain transition-elegant hover:scale-105 mb-5"
+              className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-5 px-4 md:px-0"
             />
             
             {/* Look Book Title - matching logo font style */}
