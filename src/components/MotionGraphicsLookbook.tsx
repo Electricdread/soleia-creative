@@ -213,7 +213,7 @@ const MotionGraphicsLookbook = () => {
                 animationFillMode: 'forwards'
               }}
             >
-              Looks Collection
+              Featured Collection
             </h1>
             
             {/* Search Bar - Centered below title with entrance animation */}
