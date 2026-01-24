@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
 import { UserMenu } from '@/components/auth/UserMenu';
 import AnimatedRays from '@/components/AnimatedRays';
-import soleiaLogo from '@/assets/soleia-logo-new.jpeg';
+import soleiaLogo from '@/assets/soleia-logo-new.png';
 
 interface SelectedClip extends ArtlistClip {
   note: string;
