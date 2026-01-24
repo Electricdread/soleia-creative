@@ -9,6 +9,7 @@ import { artlistApi, artlistCategories, type ArtlistClip, type ArtlistCategoryKe
 import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
 import { UserMenu } from '@/components/auth/UserMenu';
+import SoleiaLogo from '@/components/SoleiaLogo';
 
 interface SelectedClip extends ArtlistClip {
   note: string;
@@ -190,9 +191,9 @@ const MotionGraphicsLookbook = () => {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-5">
-              {/* Sun Goddess Icon */}
-              <div className="relative p-4 rounded-2xl bg-gradient-to-br from-primary/20 via-accent/15 to-primary/10 glow-gold transition-elegant">
-                <Sparkles className="w-9 h-9 text-primary" />
+              {/* Soleia Sun Logo */}
+              <div className="relative p-3 rounded-2xl bg-gradient-to-br from-primary/20 via-accent/15 to-primary/10 glow-gold transition-elegant">
+                <SoleiaLogo size={44} className="text-primary" />
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent opacity-50" />
               </div>
               <div>
