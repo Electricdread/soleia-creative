@@ -187,11 +187,8 @@ const MotionGraphicsLookbook = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Luxury Header with Animated Rays */}
-      <header className="glass-strong sticky top-0 z-30 border-b border-primary/10 overflow-hidden">
-        {/* Animated Background Rays & Solar Flares */}
-        <AnimatedRays />
-        
+      {/* Luxury Header */}
+      <header className="glass-strong sticky top-0 z-30 border-b border-primary/10">
         <div className="relative max-w-7xl mx-auto px-6 py-8">
           {/* User Menu - Top Right */}
           <div className="absolute top-6 right-6">
@@ -201,39 +198,36 @@ const MotionGraphicsLookbook = () => {
           {/* Centered Hero Logo Layout */}
           <div className="flex flex-col items-center text-center">
             {/* Large Soleia Logo with rotating glow */}
-            <div className="relative mb-4">
+            <div className="relative mb-5">
               {/* Rotating glow effect behind logo */}
-              <div className="absolute inset-0 -m-6 animate-rotate-glow">
+              <div className="absolute inset-0 -m-8 animate-rotate-glow">
                 <div 
                   className="w-full h-full rounded-full"
                   style={{
                     background: 'conic-gradient(from 0deg, hsl(38 92% 50% / 0.4), hsl(45 90% 55% / 0.1), hsl(32 85% 45% / 0.4), hsl(38 92% 50% / 0.1), hsl(38 92% 50% / 0.4))',
-                    filter: 'blur(16px)',
+                    filter: 'blur(20px)',
                   }}
                 />
               </div>
               {/* Pulsing glow layer */}
               <div 
-                className="absolute inset-0 -m-4 animate-glow-pulse-slow rounded-full"
+                className="absolute inset-0 -m-6 animate-glow-pulse-slow rounded-full"
                 style={{
-                  background: 'radial-gradient(circle, hsl(38 92% 50% / 0.3) 0%, hsl(38 92% 50% / 0) 70%)',
+                  background: 'radial-gradient(circle, hsl(38 92% 50% / 0.35) 0%, hsl(38 92% 50% / 0) 70%)',
                 }}
               />
               {/* Large Logo Image */}
               <img 
                 src={soleiaLogo} 
                 alt="Soleia" 
-                className="relative h-24 w-auto object-contain transition-elegant hover:scale-105"
+                className="relative h-36 w-auto object-contain transition-elegant hover:scale-105"
               />
             </div>
             
             {/* Look Book Title - matching logo font style */}
-            <h1 className="text-2xl font-light tracking-[0.3em] uppercase text-gradient-gold mb-1">
+            <h1 className="text-2xl font-light tracking-[0.3em] uppercase text-gradient-gold mb-6">
               Look Book
             </h1>
-            <p className="text-muted-foreground text-xs tracking-widest uppercase mb-6">
-              Premium Motion Graphics
-            </p>
             
             {/* Search Bar - Centered below title */}
             <div className="flex items-center gap-3">
