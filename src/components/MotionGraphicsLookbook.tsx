@@ -22,14 +22,14 @@ interface SelectedClip extends Clip {
 
 type CategoryKey = 'particles' | 'events' | 'abstract' | 'nature';
 
-// Sample video URLs from public stock sources
+// Direct sample video URLs - no ads, direct MP4 files
 const sampleVideos = [
-  'https://www.w3schools.com/html/mov_bbb.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+  'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
+  'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4',
+  'https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4',
+  'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
+  'https://samplelib.com/lib/preview/mp4/sample-10s.mp4',
+  'https://samplelib.com/lib/preview/mp4/sample-15s.mp4',
 ];
 
 const getVideoUrl = (index: number) => sampleVideos[index % sampleVideos.length];
