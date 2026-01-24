@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
 import { UserMenu } from '@/components/auth/UserMenu';
 import AnimatedRays from '@/components/AnimatedRays';
+import SoleiaLogo from '@/components/SoleiaLogo';
 import soleiaLogo from '@/assets/soleia-logo.png';
 
 interface SelectedClip extends ArtlistClip {
@@ -189,21 +190,46 @@ const MotionGraphicsLookbook = () => {
     <div className="min-h-screen">
       {/* Luxury Header with Animated Rays */}
       <header className="glass-strong sticky top-0 z-30 border-b border-primary/10 overflow-hidden">
-        {/* Animated Background Rays */}
+        {/* Animated Background Rays & Solar Flares */}
         <AnimatedRays />
         
-        <div className="relative max-w-7xl mx-auto px-6 py-5">
+        <div className="relative max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {/* Soleia Logo Image */}
+            {/* Hero Logo Section - Large with rotating glow */}
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                {/* Rotating glow effect behind logo */}
+                <div className="absolute inset-0 -m-4 animate-rotate-glow">
+                  <div 
+                    className="w-full h-full rounded-full"
+                    style={{
+                      background: 'conic-gradient(from 0deg, hsl(38 92% 50% / 0.4), hsl(45 90% 55% / 0.1), hsl(32 85% 45% / 0.4), hsl(38 92% 50% / 0.1), hsl(38 92% 50% / 0.4))',
+                      filter: 'blur(12px)',
+                    }}
+                  />
+                </div>
+                {/* Pulsing glow layer */}
+                <div 
+                  className="absolute inset-0 -m-3 animate-glow-pulse-slow rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, hsl(38 92% 50% / 0.3) 0%, hsl(38 92% 50% / 0) 70%)',
+                  }}
+                />
+                {/* Sun Icon Logo */}
+                <SoleiaLogo size={56} className="relative text-primary drop-shadow-lg" />
+              </div>
+              
+              {/* Logo Image */}
               <img 
                 src={soleiaLogo} 
                 alt="Soleia" 
-                className="h-12 w-auto object-contain transition-elegant hover:scale-105"
+                className="h-14 w-auto object-contain transition-elegant hover:scale-105"
               />
-              <div className="h-8 w-px bg-primary/20" />
+              
+              <div className="h-10 w-px bg-primary/20" />
+              
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
+                <h1 className="text-3xl font-bold tracking-tight text-gradient-gold">
                   Look Book
                 </h1>
                 <p className="text-muted-foreground text-xs tracking-widest uppercase">

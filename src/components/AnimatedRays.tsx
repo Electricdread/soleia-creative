@@ -56,20 +56,65 @@ const AnimatedRays: React.FC = () => {
         />
       </svg>
       
-      {/* Floating particles */}
+      {/* Solar Flares - replacing particles */}
       <div className="absolute inset-0">
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 rounded-full bg-primary/40 animate-float-particle"
-            style={{
-              left: `${10 + i * 12}%`,
-              top: `${20 + (i % 3) * 25}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + (i % 3)}s`,
-            }}
-          />
-        ))}
+        {/* Left flare */}
+        <div
+          className="absolute w-48 h-32 rounded-full animate-solar-flare"
+          style={{
+            left: '5%',
+            top: '10%',
+            background: 'radial-gradient(ellipse at center, hsl(38 92% 50% / 0.3) 0%, hsl(38 92% 50% / 0) 70%)',
+            filter: 'blur(8px)',
+          }}
+        />
+        
+        {/* Center-left flare */}
+        <div
+          className="absolute w-64 h-40 rounded-full animate-solar-flare-alt"
+          style={{
+            left: '25%',
+            top: '20%',
+            background: 'radial-gradient(ellipse at center, hsl(45 90% 55% / 0.25) 0%, hsl(45 90% 55% / 0) 70%)',
+            filter: 'blur(12px)',
+          }}
+        />
+        
+        {/* Center flare */}
+        <div
+          className="absolute w-80 h-48 rounded-full animate-solar-flare"
+          style={{
+            left: '40%',
+            top: '5%',
+            background: 'radial-gradient(ellipse at center, hsl(32 85% 45% / 0.2) 0%, hsl(32 85% 45% / 0) 70%)',
+            filter: 'blur(15px)',
+            animationDelay: '3s',
+          }}
+        />
+        
+        {/* Right flare */}
+        <div
+          className="absolute w-56 h-36 rounded-full animate-solar-flare-alt"
+          style={{
+            right: '15%',
+            top: '15%',
+            background: 'radial-gradient(ellipse at center, hsl(38 92% 50% / 0.25) 0%, hsl(38 92% 50% / 0) 70%)',
+            filter: 'blur(10px)',
+            animationDelay: '1s',
+          }}
+        />
+        
+        {/* Far right subtle flare */}
+        <div
+          className="absolute w-40 h-28 rounded-full animate-solar-flare"
+          style={{
+            right: '3%',
+            top: '25%',
+            background: 'radial-gradient(ellipse at center, hsl(45 90% 55% / 0.2) 0%, hsl(45 90% 55% / 0) 70%)',
+            filter: 'blur(6px)',
+            animationDelay: '5s',
+          }}
+        />
       </div>
       
       {/* Subtle shimmer overlay */}
