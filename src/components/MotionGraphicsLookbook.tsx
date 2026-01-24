@@ -59,10 +59,6 @@ const MotionGraphicsLookbook = () => {
           setClips(cachedResult.clips);
           setIsFromCache(true);
           setIsLoading(false);
-          toast({
-            title: "Loaded from cache",
-            description: `${cachedResult.clips.length} clips loaded instantly`,
-          });
           return;
         }
       }
