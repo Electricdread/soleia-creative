@@ -1,0 +1,420 @@
+import React, { useState } from 'react';
+import { Play, Check, Send, X, Sparkles, Plus, ExternalLink, Clock, Monitor } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface Clip {
+  id: number;
+  title: string;
+  envatoLink: string;
+  thumbnail: string;
+  resolution: string;
+  duration: string;
+}
+
+type CategoryKey = 'particles' | 'events' | 'abstract' | 'nature';
+
+const initialCategories: Record<CategoryKey, Clip[]> = {
+  particles: [
+    { id: 1, title: 'Golden Particles Flow', envatoLink: 'https://videohive.net/item1', thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
+    { id: 2, title: 'Digital Dust Overlay', envatoLink: 'https://videohive.net/item2', thumbnail: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+    { id: 3, title: 'Cosmic Particle Storm', envatoLink: 'https://videohive.net/item3', thumbnail: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:12' },
+    { id: 4, title: 'Bokeh Light Particles', envatoLink: 'https://videohive.net/item4', thumbnail: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
+    { id: 5, title: 'Snow Particles Winter', envatoLink: 'https://videohive.net/item5', thumbnail: 'https://images.unsplash.com/photo-1483086431886-3590a88317fe?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:25' },
+    { id: 6, title: 'Sparkle Glitter Rain', envatoLink: 'https://videohive.net/item6', thumbnail: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:10' },
+    { id: 7, title: 'Energy Trails Motion', envatoLink: 'https://videohive.net/item7', thumbnail: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
+    { id: 8, title: 'Dust Motes Sunlight', envatoLink: 'https://videohive.net/item8', thumbnail: 'https://images.unsplash.com/photo-1464802686167-b939a6910659?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:22' },
+    { id: 9, title: 'Neon Particle Stream', envatoLink: 'https://videohive.net/item9', thumbnail: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
+    { id: 10, title: 'Crystal Particle Field', envatoLink: 'https://videohive.net/item10', thumbnail: 'https://images.unsplash.com/photo-1509023464722-18d996393ca8?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:28' },
+    { id: 11, title: 'Ember Fire Particles', envatoLink: 'https://videohive.net/item11', thumbnail: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:16' },
+    { id: 12, title: 'Quantum Light Dots', envatoLink: 'https://videohive.net/item12', thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:24' },
+  ],
+  events: [
+    { id: 13, title: 'Wedding Floral Backdrop', envatoLink: 'https://videohive.net/item13', thumbnail: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+    { id: 14, title: 'Corporate Event Stage', envatoLink: 'https://videohive.net/item14', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
+    { id: 15, title: 'Gala Night Ambiance', envatoLink: 'https://videohive.net/item15', thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:25' },
+    { id: 16, title: 'Concert Light Show', envatoLink: 'https://videohive.net/item16', thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
+    { id: 17, title: 'Festival Stage Design', envatoLink: 'https://videohive.net/item17', thumbnail: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:22' },
+    { id: 18, title: 'Awards Ceremony Glow', envatoLink: 'https://videohive.net/item18', thumbnail: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
+    { id: 19, title: 'Birthday Party Lights', envatoLink: 'https://videohive.net/item19', thumbnail: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:28' },
+    { id: 20, title: 'Conference Backdrop', envatoLink: 'https://videohive.net/item20', thumbnail: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+    { id: 21, title: 'Night Club Atmosphere', envatoLink: 'https://videohive.net/item21', thumbnail: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:24' },
+    { id: 22, title: 'Red Carpet Premiere', envatoLink: 'https://videohive.net/item22', thumbnail: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:16' },
+    { id: 23, title: 'DJ Set Visuals', envatoLink: 'https://videohive.net/item23', thumbnail: 'https://images.unsplash.com/photo-1571266028243-d220c89a3955?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
+    { id: 24, title: 'Trade Show Booth', envatoLink: 'https://videohive.net/item24', thumbnail: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
+  ],
+  abstract: [
+    { id: 25, title: 'Liquid Color Waves', envatoLink: 'https://videohive.net/item25', thumbnail: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+    { id: 26, title: 'Geometric Transitions', envatoLink: 'https://videohive.net/item26', thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:12' },
+    { id: 27, title: 'Neon Grid Motion', envatoLink: 'https://videohive.net/item27', thumbnail: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:25' },
+    { id: 28, title: 'Fractal Dreams', envatoLink: 'https://videohive.net/item28', thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
+    { id: 29, title: 'Cyberpunk Cityscape', envatoLink: 'https://videohive.net/item29', thumbnail: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
+    { id: 30, title: 'Plasma Energy Flow', envatoLink: 'https://videohive.net/item30', thumbnail: 'https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:22' },
+    { id: 31, title: 'Holographic Texture', envatoLink: 'https://videohive.net/item31', thumbnail: 'https://images.unsplash.com/photo-1618556450991-2f1af64e8191?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
+    { id: 32, title: 'Digital Glitch Art', envatoLink: 'https://videohive.net/item32', thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:10' },
+    { id: 33, title: 'Smooth Gradient Flow', envatoLink: 'https://videohive.net/item33', thumbnail: 'https://images.unsplash.com/photo-1506606401543-2e73709cebb4?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:28' },
+    { id: 34, title: 'Ink Swirl Dispersion', envatoLink: 'https://videohive.net/item34', thumbnail: 'https://images.unsplash.com/photo-1557672199-6ff6c82b6c98?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:24' },
+    { id: 35, title: 'Chrome Reflection', envatoLink: 'https://videohive.net/item35', thumbnail: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:16' },
+    { id: 36, title: 'Kaleidoscope Pattern', envatoLink: 'https://videohive.net/item36', thumbnail: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+  ],
+  nature: [
+    { id: 37, title: 'Aurora Sky Motion', envatoLink: 'https://videohive.net/item37', thumbnail: 'https://images.unsplash.com/photo-1579033461380-adb47c3eb938?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
+    { id: 38, title: 'Ocean Waves Loop', envatoLink: 'https://videohive.net/item38', thumbnail: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:25' },
+    { id: 39, title: 'Fire & Smoke Effect', envatoLink: 'https://videohive.net/item39', thumbnail: 'https://images.unsplash.com/photo-1525185673812-626097f5e1ee?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
+    { id: 40, title: 'Thunderstorm Drama', envatoLink: 'https://videohive.net/item40', thumbnail: 'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:22' },
+    { id: 41, title: 'Waterfall Cascade', envatoLink: 'https://videohive.net/item41', thumbnail: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:28' },
+    { id: 42, title: 'Sunset Time Lapse', envatoLink: 'https://videohive.net/item42', thumbnail: 'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+    { id: 43, title: 'Forest Wind Motion', envatoLink: 'https://videohive.net/item43', thumbnail: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
+    { id: 44, title: 'Desert Sand Storm', envatoLink: 'https://videohive.net/item44', thumbnail: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:24' },
+    { id: 45, title: 'Cloud Formation', envatoLink: 'https://videohive.net/item45', thumbnail: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
+    { id: 46, title: 'Rain on Glass', envatoLink: 'https://videohive.net/item46', thumbnail: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:12' },
+    { id: 47, title: 'Mountain Fog Roll', envatoLink: 'https://videohive.net/item47', thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:26' },
+    { id: 48, title: 'Starry Night Sky', envatoLink: 'https://videohive.net/item48', thumbnail: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+  ],
+};
+
+const categoryGradients: Record<CategoryKey, string> = {
+  particles: 'gradient-particles',
+  events: 'gradient-events',
+  abstract: 'gradient-abstract',
+  nature: 'gradient-nature',
+};
+
+const MotionGraphicsLookbook = () => {
+  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('particles');
+  const [selectedClips, setSelectedClips] = useState<Clip[]>([]);
+  const [showNotification, setShowNotification] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [categories, setCategories] = useState(initialCategories);
+  const [newClipUrl, setNewClipUrl] = useState('');
+  const [newClipTitle, setNewClipTitle] = useState('');
+  const [newThumbnail, setNewThumbnail] = useState('');
+  const [newResolution, setNewResolution] = useState('3840x2160');
+  const [newDuration, setNewDuration] = useState('0:20');
+
+  const toggleClipSelection = (clip: Clip) => {
+    setSelectedClips(prev => {
+      const isSelected = prev.some(c => c.id === clip.id);
+      if (isSelected) {
+        return prev.filter(c => c.id !== clip.id);
+      } else {
+        return [...prev, clip];
+      }
+    });
+  };
+
+  const addNewClip = () => {
+    if (!newClipTitle || !newClipUrl) {
+      return;
+    }
+
+    const newClip: Clip = {
+      id: Date.now(),
+      title: newClipTitle,
+      envatoLink: newClipUrl,
+      thumbnail: newThumbnail,
+      resolution: newResolution,
+      duration: newDuration
+    };
+
+    setCategories(prev => ({
+      ...prev,
+      [selectedCategory]: [...prev[selectedCategory], newClip]
+    }));
+
+    setShowAddModal(false);
+    setNewClipUrl('');
+    setNewClipTitle('');
+    setNewThumbnail('');
+    setNewResolution('3840x2160');
+    setNewDuration('0:20');
+  };
+
+  const sendSelections = () => {
+    console.log('Selected clips:', selectedClips);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
+
+  return (
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="glass-strong sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-6 py-5">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-primary/20 glow-purple">
+              <Sparkles className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">Premium Motion Graphics</h1>
+              <p className="text-muted-foreground">4K Background Loops & Visual Effects</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Category Navigation */}
+        <nav className="flex gap-3 mb-8 overflow-x-auto pb-2">
+          {(Object.keys(categories) as CategoryKey[]).map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap ${
+                selectedCategory === cat
+                  ? 'bg-primary text-primary-foreground glow-purple'
+                  : 'glass hover:bg-secondary/80 text-foreground'
+              }`}
+            >
+              {cat.charAt(0).toUpperCase() + cat.slice(1)} ({categories[cat].length})
+            </button>
+          ))}
+        </nav>
+
+        {/* Add Clip Button */}
+        <div className="mb-6">
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-success hover:bg-success/90 text-success-foreground glow-green"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Clip to {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+          </Button>
+        </div>
+
+        {/* Clips Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+          {categories[selectedCategory].map((clip) => {
+            const isSelected = selectedClips.some(c => c.id === clip.id);
+            return (
+              <div
+                key={clip.id}
+                className={`group relative glass rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:border-primary/50 animate-fade-in ${
+                  isSelected ? 'ring-2 ring-success ring-offset-2 ring-offset-background' : ''
+                }`}
+                onClick={() => toggleClipSelection(clip)}
+              >
+                <div className={`relative aspect-video overflow-hidden ${!clip.thumbnail ? categoryGradients[selectedCategory] : ''}`}>
+                  {clip.thumbnail ? (
+                    <img 
+                      src={clip.thumbnail} 
+                      alt={clip.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  ) : null}
+                  
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-card/80 via-transparent to-transparent" />
+                  
+                  {/* Play icon */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="p-4 rounded-full glass animate-scale-in">
+                      <Play className="w-8 h-8 text-foreground fill-foreground" />
+                    </div>
+                  </div>
+
+                  {/* Top badges */}
+                  <div className="absolute top-3 left-3 flex gap-2">
+                    <div className="glass px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 text-foreground">
+                      <Monitor className="w-3 h-3" />
+                      4K
+                    </div>
+                    <div className="glass px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 text-foreground">
+                      <Clock className="w-3 h-3" />
+                      {clip.duration}
+                    </div>
+                  </div>
+
+                  {/* Resolution badge */}
+                  <div className="absolute bottom-3 left-3 bg-primary/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-primary-foreground">
+                    {clip.resolution}
+                  </div>
+
+                  {/* Selection check */}
+                  {isSelected && (
+                    <div className="absolute top-3 right-3 bg-success rounded-full p-2 shadow-lg animate-scale-in">
+                      <Check className="w-5 h-5 text-success-foreground" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-4">
+                  <h3 className="text-foreground font-medium mb-1 truncate">{clip.title}</h3>
+                  <p className="text-muted-foreground text-sm">Loop Ready • Premium</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Selection Bar */}
+        {selectedClips.length > 0 && (
+          <div className="fixed bottom-0 left-0 right-0 glass-strong p-6 shadow-2xl z-40 animate-slide-up">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <span className="text-foreground font-medium whitespace-nowrap">
+                  {selectedClips.length} clip{selectedClips.length !== 1 ? 's' : ''} selected
+                </span>
+                <div className="flex gap-2 overflow-x-auto">
+                  {selectedClips.map((clip) => (
+                    <div key={clip.id} className="relative group/thumb flex-shrink-0">
+                      <div className={`w-20 h-12 rounded-lg border-2 border-primary overflow-hidden ${!clip.thumbnail ? categoryGradients[selectedCategory] : ''}`}>
+                        {clip.thumbnail ? (
+                          <img src={clip.thumbnail} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Play className="w-4 h-4 text-foreground/80 fill-foreground/80" />
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleClipSelection(clip);
+                        }}
+                        className="absolute -top-2 -right-2 bg-destructive rounded-full p-1 opacity-0 group-hover/thumb:opacity-100 transition-opacity shadow-lg"
+                      >
+                        <X className="w-3 h-3 text-destructive-foreground" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Button
+                onClick={sendSelections}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground glow-purple whitespace-nowrap"
+              >
+                <Send className="w-5 h-5 mr-2" />
+                Send Selection
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Add Clip Modal */}
+        <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+          <DialogContent className="glass-strong border-border max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-foreground">
+                <ExternalLink className="w-5 h-5 text-primary" />
+                Add New Clip
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-muted-foreground">Clip Title</Label>
+                <Input
+                  id="title"
+                  value={newClipTitle}
+                  onChange={(e) => setNewClipTitle(e.target.value)}
+                  placeholder="e.g. Fire Wall Background"
+                  className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="url" className="text-muted-foreground">Envato Page URL</Label>
+                <Input
+                  id="url"
+                  value={newClipUrl}
+                  onChange={(e) => setNewClipUrl(e.target.value)}
+                  placeholder="https://videohive.net/item/..."
+                  className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="thumbnail" className="text-muted-foreground">Thumbnail URL (Optional)</Label>
+                <Input
+                  id="thumbnail"
+                  value={newThumbnail}
+                  onChange={(e) => setNewThumbnail(e.target.value)}
+                  placeholder="https://..."
+                  className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">Resolution</Label>
+                  <Select value={newResolution} onValueChange={setNewResolution}>
+                    <SelectTrigger className="bg-secondary border-border text-foreground">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      <SelectItem value="3840x2160">4K (3840x2160)</SelectItem>
+                      <SelectItem value="1920x1080">Full HD</SelectItem>
+                      <SelectItem value="2560x1440">2K</SelectItem>
+                      <SelectItem value="7680x4320">8K</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="duration" className="text-muted-foreground">Duration</Label>
+                  <Input
+                    id="duration"
+                    value={newDuration}
+                    onChange={(e) => setNewDuration(e.target.value)}
+                    placeholder="0:20"
+                    className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              {newThumbnail && (
+                <div className="mt-2">
+                  <p className="text-muted-foreground text-sm mb-2">Preview:</p>
+                  <img 
+                    src={newThumbnail} 
+                    alt="Preview" 
+                    className="w-full rounded-lg border border-border"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={addNewClip}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                  disabled={!newClipTitle || !newClipUrl}
+                >
+                  Add Clip
+                </Button>
+                <Button
+                  onClick={() => setShowAddModal(false)}
+                  variant="outline"
+                  className="flex-1 border-border text-foreground hover:bg-secondary"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Notification */}
+        {showNotification && (
+          <div className="fixed top-6 right-6 bg-success text-success-foreground px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 z-50 animate-fade-in glow-green">
+            <Check className="w-6 h-6" />
+            <span className="font-medium">Selection sent successfully!</span>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default MotionGraphicsLookbook;
