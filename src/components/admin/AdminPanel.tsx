@@ -5,7 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddClipForm } from './AddClipForm';
 import { BulkImportForm } from './BulkImportForm';
 import { ClipManager } from './ClipManager';
-import { Settings, Plus, List, Upload } from 'lucide-react';
+import { VideoUploader } from './VideoUploader';
+import { Settings, Plus, List, Upload, Video } from 'lucide-react';
 
 export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -24,21 +25,29 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
           <DialogDescription>Add and manage video clips in your collection.</DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="add" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="upload" className="mt-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="upload" className="gap-2">
+              <Video className="h-4 w-4" />
+              Upload
+            </TabsTrigger>
             <TabsTrigger value="add" className="gap-2">
               <Plus className="h-4 w-4" />
-              Add Clip
+              URL
             </TabsTrigger>
             <TabsTrigger value="bulk" className="gap-2">
               <Upload className="h-4 w-4" />
-              Bulk Import
+              Bulk
             </TabsTrigger>
             <TabsTrigger value="manage" className="gap-2">
               <List className="h-4 w-4" />
               Manage
             </TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="upload" className="mt-4">
+            <VideoUploader onClipAdded={onClipsUpdated} />
+          </TabsContent>
           
           <TabsContent value="add" className="mt-4">
             <AddClipForm onClipAdded={onClipsUpdated} />
