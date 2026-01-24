@@ -197,32 +197,12 @@ const MotionGraphicsLookbook = () => {
           
           {/* Centered Hero Logo Layout */}
           <div className="flex flex-col items-center text-center">
-            {/* Large Soleia Logo with rotating glow */}
-            <div className="relative mb-5">
-              {/* Rotating glow effect behind logo */}
-              <div className="absolute inset-0 -m-8 animate-rotate-glow">
-                <div 
-                  className="w-full h-full rounded-full"
-                  style={{
-                    background: 'conic-gradient(from 0deg, hsl(38 92% 50% / 0.4), hsl(45 90% 55% / 0.1), hsl(32 85% 45% / 0.4), hsl(38 92% 50% / 0.1), hsl(38 92% 50% / 0.4))',
-                    filter: 'blur(20px)',
-                  }}
-                />
-              </div>
-              {/* Pulsing glow layer */}
-              <div 
-                className="absolute inset-0 -m-6 animate-glow-pulse-slow rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, hsl(38 92% 50% / 0.35) 0%, hsl(38 92% 50% / 0) 70%)',
-                }}
-              />
-              {/* Large Logo Image */}
-              <img 
-                src={soleiaLogo} 
-                alt="Soleia" 
-                className="relative h-36 w-auto object-contain transition-elegant hover:scale-105"
-              />
-            </div>
+            {/* Large Soleia Logo */}
+            <img 
+              src={soleiaLogo} 
+              alt="Soleia" 
+              className="h-48 w-auto object-contain transition-elegant hover:scale-105 mb-5"
+            />
             
             {/* Look Book Title - matching logo font style */}
             <h1 className="text-2xl font-light tracking-[0.3em] uppercase text-gradient-gold mb-6">
