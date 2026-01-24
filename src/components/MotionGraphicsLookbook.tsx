@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
 import { UserMenu } from '@/components/auth/UserMenu';
 import AnimatedRays from '@/components/AnimatedRays';
-import SoleiaLogo from '@/components/SoleiaLogo';
 import soleiaLogo from '@/assets/soleia-logo.png';
 
 interface SelectedClip extends ArtlistClip {
@@ -193,53 +192,51 @@ const MotionGraphicsLookbook = () => {
         {/* Animated Background Rays & Solar Flares */}
         <AnimatedRays />
         
-        <div className="relative max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            {/* Hero Logo Section - Large with rotating glow */}
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                {/* Rotating glow effect behind logo */}
-                <div className="absolute inset-0 -m-4 animate-rotate-glow">
-                  <div 
-                    className="w-full h-full rounded-full"
-                    style={{
-                      background: 'conic-gradient(from 0deg, hsl(38 92% 50% / 0.4), hsl(45 90% 55% / 0.1), hsl(32 85% 45% / 0.4), hsl(38 92% 50% / 0.1), hsl(38 92% 50% / 0.4))',
-                      filter: 'blur(12px)',
-                    }}
-                  />
-                </div>
-                {/* Pulsing glow layer */}
+        <div className="relative max-w-7xl mx-auto px-6 py-8">
+          {/* User Menu - Top Right */}
+          <div className="absolute top-6 right-6">
+            <UserMenu />
+          </div>
+          
+          {/* Centered Hero Logo Layout */}
+          <div className="flex flex-col items-center text-center">
+            {/* Large Soleia Logo with rotating glow */}
+            <div className="relative mb-4">
+              {/* Rotating glow effect behind logo */}
+              <div className="absolute inset-0 -m-6 animate-rotate-glow">
                 <div 
-                  className="absolute inset-0 -m-3 animate-glow-pulse-slow rounded-full"
+                  className="w-full h-full rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, hsl(38 92% 50% / 0.3) 0%, hsl(38 92% 50% / 0) 70%)',
+                    background: 'conic-gradient(from 0deg, hsl(38 92% 50% / 0.4), hsl(45 90% 55% / 0.1), hsl(32 85% 45% / 0.4), hsl(38 92% 50% / 0.1), hsl(38 92% 50% / 0.4))',
+                    filter: 'blur(16px)',
                   }}
                 />
-                {/* Sun Icon Logo */}
-                <SoleiaLogo size={56} className="relative text-primary drop-shadow-lg" />
               </div>
-              
-              {/* Logo Image */}
+              {/* Pulsing glow layer */}
+              <div 
+                className="absolute inset-0 -m-4 animate-glow-pulse-slow rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, hsl(38 92% 50% / 0.3) 0%, hsl(38 92% 50% / 0) 70%)',
+                }}
+              />
+              {/* Large Logo Image */}
               <img 
                 src={soleiaLogo} 
                 alt="Soleia" 
-                className="h-14 w-auto object-contain transition-elegant hover:scale-105"
+                className="relative h-24 w-auto object-contain transition-elegant hover:scale-105"
               />
-              
-              <div className="h-10 w-px bg-primary/20" />
-              
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight text-gradient-gold">
-                  Look Book
-                </h1>
-                <p className="text-muted-foreground text-xs tracking-widest uppercase">
-                  Premium Motion Graphics
-                </p>
-              </div>
             </div>
             
-            {/* Elegant Search Bar & Auth */}
-            <div className="flex items-center gap-4">
+            {/* Look Book Title - matching logo font style */}
+            <h1 className="text-2xl font-light tracking-[0.3em] uppercase text-gradient-gold mb-1">
+              Look Book
+            </h1>
+            <p className="text-muted-foreground text-xs tracking-widest uppercase mb-6">
+              Premium Motion Graphics
+            </p>
+            
+            {/* Search Bar - Centered below title */}
+            <div className="flex items-center gap-3">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -248,7 +245,7 @@ const MotionGraphicsLookbook = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-11 w-72 bg-background/40 border-border/50 focus:border-primary/50 transition-elegant rounded-xl h-11"
+                  className="pl-11 w-80 bg-background/40 border-border/50 focus:border-primary/50 transition-elegant rounded-xl h-11"
                 />
               </div>
               <Button 
@@ -259,8 +256,6 @@ const MotionGraphicsLookbook = () => {
               >
                 {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               </Button>
-              <div className="h-8 w-px bg-border/40" />
-              <UserMenu />
             </div>
           </div>
         </div>
