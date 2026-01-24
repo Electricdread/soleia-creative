@@ -9,7 +9,8 @@ import { artlistApi, artlistCategories, type ArtlistClip, type ArtlistCategoryKe
 import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
 import { UserMenu } from '@/components/auth/UserMenu';
-import SoleiaLogo from '@/components/SoleiaLogo';
+import AnimatedRays from '@/components/AnimatedRays';
+import soleiaLogo from '@/assets/soleia-logo.png';
 
 interface SelectedClip extends ArtlistClip {
   note: string;
@@ -186,22 +187,27 @@ const MotionGraphicsLookbook = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Luxury Header */}
-      <header className="glass-strong sticky top-0 z-30 border-b border-primary/10">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+      {/* Luxury Header with Animated Rays */}
+      <header className="glass-strong sticky top-0 z-30 border-b border-primary/10 overflow-hidden">
+        {/* Animated Background Rays */}
+        <AnimatedRays />
+        
+        <div className="relative max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-5">
-              {/* Soleia Sun Logo */}
-              <div className="relative p-3 rounded-2xl bg-gradient-to-br from-primary/20 via-accent/15 to-primary/10 glow-gold transition-elegant">
-                <SoleiaLogo size={44} className="text-primary" />
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent opacity-50" />
-              </div>
+            <div className="flex items-center gap-4">
+              {/* Soleia Logo Image */}
+              <img 
+                src={soleiaLogo} 
+                alt="Soleia" 
+                className="h-12 w-auto object-contain transition-elegant hover:scale-105"
+              />
+              <div className="h-8 w-px bg-primary/20" />
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-gradient-gold">
-                  SOLEIA
+                <h1 className="text-2xl font-bold tracking-tight text-gradient-gold">
+                  Look Book
                 </h1>
-                <p className="text-muted-foreground text-sm tracking-widest uppercase mt-0.5">
-                  Premium Motion Graphics Collection
+                <p className="text-muted-foreground text-xs tracking-widest uppercase">
+                  Premium Motion Graphics
                 </p>
               </div>
             </div>

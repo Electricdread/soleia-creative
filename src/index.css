@@ -270,4 +270,54 @@
   .delay-300 { animation-delay: 300ms; }
   .delay-400 { animation-delay: 400ms; }
   .delay-500 { animation-delay: 500ms; }
+  
+  /* Animated rays for header */
+  @keyframes ray-slow {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+  
+  @keyframes ray-medium {
+    0% { transform: translateX(-80%); }
+    100% { transform: translateX(180%); }
+  }
+  
+  @keyframes ray-fast {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(220%); }
+  }
+  
+  @keyframes float-particle {
+    0%, 100% { 
+      opacity: 0.3;
+      transform: translateY(0) scale(1);
+    }
+    50% { 
+      opacity: 0.8;
+      transform: translateY(-10px) scale(1.2);
+    }
+  }
+  
+  .animate-ray-slow {
+    animation: ray-slow 12s linear infinite;
+  }
+  
+  .animate-ray-medium {
+    animation: ray-medium 8s linear infinite;
+    animation-delay: 2s;
+  }
+  
+  .animate-ray-fast {
+    animation: ray-fast 6s linear infinite;
+    animation-delay: 4s;
+  }
+  
+  .animate-float-particle {
+    animation: float-particle 3s ease-in-out infinite;
+  }
+  
+  .shimmer-slow {
+    background-size: 200% 100%;
+    animation: shimmer 8s linear infinite;
+  }
 }
