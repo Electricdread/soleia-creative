@@ -97,7 +97,7 @@ export const artlistApi = {
 
 // Category definitions for Artlist motion graphics
 export const artlistCategories = [
-  { key: 'motion-backgrounds', label: 'Motion Backgrounds', color: 'hsl(38, 92%, 50%)' },
+  { key: 'featured-collections', label: 'Featured Collections', color: 'hsl(38, 92%, 50%)' },
   { key: 'abstract', label: 'Abstract', color: 'hsl(280, 70%, 55%)' },
   { key: 'particles', label: 'Particles', color: 'hsl(45, 90%, 55%)' },
   { key: 'nature', label: 'Nature', color: 'hsl(120, 50%, 45%)' },
