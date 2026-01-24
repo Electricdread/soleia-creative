@@ -11,6 +11,7 @@ interface Clip {
   id: number;
   title: string;
   thumbnail: string;
+  videoUrl: string;
   resolution: string;
   duration: string;
 }
@@ -21,62 +22,74 @@ interface SelectedClip extends Clip {
 
 type CategoryKey = 'particles' | 'events' | 'abstract' | 'nature';
 
+// Sample video URLs from public stock sources
+const sampleVideos = [
+  'https://www.w3schools.com/html/mov_bbb.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+];
+
+const getVideoUrl = (index: number) => sampleVideos[index % sampleVideos.length];
+
 const initialCategories: Record<CategoryKey, Clip[]> = {
   particles: [
-    { id: 1, title: 'Golden Particles Flow', thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
-    { id: 2, title: 'Digital Dust Overlay', thumbnail: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
-    { id: 3, title: 'Cosmic Particle Storm', thumbnail: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:12' },
-    { id: 4, title: 'Bokeh Light Particles', thumbnail: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
-    { id: 5, title: 'Snow Particles Winter', thumbnail: 'https://images.unsplash.com/photo-1483086431886-3590a88317fe?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:25' },
-    { id: 6, title: 'Sparkle Glitter Rain', thumbnail: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:10' },
-    { id: 7, title: 'Energy Trails Motion', thumbnail: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
-    { id: 8, title: 'Dust Motes Sunlight', thumbnail: 'https://images.unsplash.com/photo-1464802686167-b939a6910659?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:22' },
-    { id: 9, title: 'Neon Particle Stream', thumbnail: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
-    { id: 10, title: 'Crystal Particle Field', thumbnail: 'https://images.unsplash.com/photo-1509023464722-18d996393ca8?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:28' },
-    { id: 11, title: 'Ember Fire Particles', thumbnail: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:16' },
-    { id: 12, title: 'Quantum Light Dots', thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:24' },
+    { id: 1, title: 'Golden Particles Flow', thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop', videoUrl: getVideoUrl(0), resolution: '3840x2160', duration: '0:15' },
+    { id: 2, title: 'Digital Dust Overlay', thumbnail: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=225&fit=crop', videoUrl: getVideoUrl(1), resolution: '3840x2160', duration: '0:20' },
+    { id: 3, title: 'Cosmic Particle Storm', thumbnail: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=225&fit=crop', videoUrl: getVideoUrl(2), resolution: '3840x2160', duration: '0:12' },
+    { id: 4, title: 'Bokeh Light Particles', thumbnail: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=225&fit=crop', videoUrl: getVideoUrl(3), resolution: '3840x2160', duration: '0:18' },
+    { id: 5, title: 'Snow Particles Winter', thumbnail: 'https://images.unsplash.com/photo-1483086431886-3590a88317fe?w=400&h=225&fit=crop', videoUrl: getVideoUrl(4), resolution: '3840x2160', duration: '0:25' },
+    { id: 6, title: 'Sparkle Glitter Rain', thumbnail: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=225&fit=crop', videoUrl: getVideoUrl(5), resolution: '3840x2160', duration: '0:10' },
+    { id: 7, title: 'Energy Trails Motion', thumbnail: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=225&fit=crop', videoUrl: getVideoUrl(0), resolution: '3840x2160', duration: '0:30' },
+    { id: 8, title: 'Dust Motes Sunlight', thumbnail: 'https://images.unsplash.com/photo-1464802686167-b939a6910659?w=400&h=225&fit=crop', videoUrl: getVideoUrl(1), resolution: '3840x2160', duration: '0:22' },
+    { id: 9, title: 'Neon Particle Stream', thumbnail: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=225&fit=crop', videoUrl: getVideoUrl(2), resolution: '3840x2160', duration: '0:15' },
+    { id: 10, title: 'Crystal Particle Field', thumbnail: 'https://images.unsplash.com/photo-1509023464722-18d996393ca8?w=400&h=225&fit=crop', videoUrl: getVideoUrl(3), resolution: '3840x2160', duration: '0:28' },
+    { id: 11, title: 'Ember Fire Particles', thumbnail: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?w=400&h=225&fit=crop', videoUrl: getVideoUrl(4), resolution: '3840x2160', duration: '0:16' },
+    { id: 12, title: 'Quantum Light Dots', thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop', videoUrl: getVideoUrl(5), resolution: '3840x2160', duration: '0:24' },
   ],
   events: [
-    { id: 13, title: 'Wedding Floral Backdrop', thumbnail: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
-    { id: 14, title: 'Corporate Event Stage', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
-    { id: 15, title: 'Gala Night Ambiance', thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:25' },
-    { id: 16, title: 'Concert Light Show', thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
-    { id: 17, title: 'Festival Stage Design', thumbnail: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:22' },
-    { id: 18, title: 'Awards Ceremony Glow', thumbnail: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
-    { id: 19, title: 'Birthday Party Lights', thumbnail: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:28' },
-    { id: 20, title: 'Conference Backdrop', thumbnail: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
-    { id: 21, title: 'Night Club Atmosphere', thumbnail: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:24' },
-    { id: 22, title: 'Red Carpet Premiere', thumbnail: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:16' },
-    { id: 23, title: 'DJ Set Visuals', thumbnail: 'https://images.unsplash.com/photo-1571266028243-d220c89a3955?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
-    { id: 24, title: 'Trade Show Booth', thumbnail: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
+    { id: 13, title: 'Wedding Floral Backdrop', thumbnail: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=225&fit=crop', videoUrl: getVideoUrl(0), resolution: '3840x2160', duration: '0:20' },
+    { id: 14, title: 'Corporate Event Stage', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=225&fit=crop', videoUrl: getVideoUrl(1), resolution: '3840x2160', duration: '0:18' },
+    { id: 15, title: 'Gala Night Ambiance', thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=225&fit=crop', videoUrl: getVideoUrl(2), resolution: '3840x2160', duration: '0:25' },
+    { id: 16, title: 'Concert Light Show', thumbnail: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=225&fit=crop', videoUrl: getVideoUrl(3), resolution: '3840x2160', duration: '0:30' },
+    { id: 17, title: 'Festival Stage Design', thumbnail: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=225&fit=crop', videoUrl: getVideoUrl(4), resolution: '3840x2160', duration: '0:22' },
+    { id: 18, title: 'Awards Ceremony Glow', thumbnail: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&h=225&fit=crop', videoUrl: getVideoUrl(5), resolution: '3840x2160', duration: '0:15' },
+    { id: 19, title: 'Birthday Party Lights', thumbnail: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=225&fit=crop', videoUrl: getVideoUrl(0), resolution: '3840x2160', duration: '0:28' },
+    { id: 20, title: 'Conference Backdrop', thumbnail: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=225&fit=crop', videoUrl: getVideoUrl(1), resolution: '3840x2160', duration: '0:20' },
+    { id: 21, title: 'Night Club Atmosphere', thumbnail: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&h=225&fit=crop', videoUrl: getVideoUrl(2), resolution: '3840x2160', duration: '0:24' },
+    { id: 22, title: 'Red Carpet Premiere', thumbnail: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=225&fit=crop', videoUrl: getVideoUrl(3), resolution: '3840x2160', duration: '0:16' },
+    { id: 23, title: 'DJ Set Visuals', thumbnail: 'https://images.unsplash.com/photo-1571266028243-d220c89a3955?w=400&h=225&fit=crop', videoUrl: getVideoUrl(4), resolution: '3840x2160', duration: '0:30' },
+    { id: 24, title: 'Trade Show Booth', thumbnail: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400&h=225&fit=crop', videoUrl: getVideoUrl(5), resolution: '3840x2160', duration: '0:18' },
   ],
   abstract: [
-    { id: 25, title: 'Liquid Color Waves', thumbnail: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
-    { id: 26, title: 'Geometric Transitions', thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:12' },
-    { id: 27, title: 'Neon Grid Motion', thumbnail: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:25' },
-    { id: 28, title: 'Fractal Dreams', thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
-    { id: 29, title: 'Cyberpunk Cityscape', thumbnail: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
-    { id: 30, title: 'Plasma Energy Flow', thumbnail: 'https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:22' },
-    { id: 31, title: 'Holographic Texture', thumbnail: 'https://images.unsplash.com/photo-1618556450991-2f1af64e8191?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
-    { id: 32, title: 'Digital Glitch Art', thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:10' },
-    { id: 33, title: 'Smooth Gradient Flow', thumbnail: 'https://images.unsplash.com/photo-1506606401543-2e73709cebb4?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:28' },
-    { id: 34, title: 'Ink Swirl Dispersion', thumbnail: 'https://images.unsplash.com/photo-1557672199-6ff6c82b6c98?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:24' },
-    { id: 35, title: 'Chrome Reflection', thumbnail: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:16' },
-    { id: 36, title: 'Kaleidoscope Pattern', thumbnail: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+    { id: 25, title: 'Liquid Color Waves', thumbnail: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=400&h=225&fit=crop', videoUrl: getVideoUrl(0), resolution: '3840x2160', duration: '0:20' },
+    { id: 26, title: 'Geometric Transitions', thumbnail: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=225&fit=crop', videoUrl: getVideoUrl(1), resolution: '3840x2160', duration: '0:12' },
+    { id: 27, title: 'Neon Grid Motion', thumbnail: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=400&h=225&fit=crop', videoUrl: getVideoUrl(2), resolution: '3840x2160', duration: '0:25' },
+    { id: 28, title: 'Fractal Dreams', thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop', videoUrl: getVideoUrl(3), resolution: '3840x2160', duration: '0:30' },
+    { id: 29, title: 'Cyberpunk Cityscape', thumbnail: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=400&h=225&fit=crop', videoUrl: getVideoUrl(4), resolution: '3840x2160', duration: '0:15' },
+    { id: 30, title: 'Plasma Energy Flow', thumbnail: 'https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400&h=225&fit=crop', videoUrl: getVideoUrl(5), resolution: '3840x2160', duration: '0:22' },
+    { id: 31, title: 'Holographic Texture', thumbnail: 'https://images.unsplash.com/photo-1618556450991-2f1af64e8191?w=400&h=225&fit=crop', videoUrl: getVideoUrl(0), resolution: '3840x2160', duration: '0:18' },
+    { id: 32, title: 'Digital Glitch Art', thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=225&fit=crop', videoUrl: getVideoUrl(1), resolution: '3840x2160', duration: '0:10' },
+    { id: 33, title: 'Smooth Gradient Flow', thumbnail: 'https://images.unsplash.com/photo-1506606401543-2e73709cebb4?w=400&h=225&fit=crop', videoUrl: getVideoUrl(2), resolution: '3840x2160', duration: '0:28' },
+    { id: 34, title: 'Ink Swirl Dispersion', thumbnail: 'https://images.unsplash.com/photo-1557672199-6ff6c82b6c98?w=400&h=225&fit=crop', videoUrl: getVideoUrl(3), resolution: '3840x2160', duration: '0:24' },
+    { id: 35, title: 'Chrome Reflection', thumbnail: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400&h=225&fit=crop', videoUrl: getVideoUrl(4), resolution: '3840x2160', duration: '0:16' },
+    { id: 36, title: 'Kaleidoscope Pattern', thumbnail: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=225&fit=crop', videoUrl: getVideoUrl(5), resolution: '3840x2160', duration: '0:20' },
   ],
   nature: [
-    { id: 37, title: 'Aurora Sky Motion', thumbnail: 'https://images.unsplash.com/photo-1579033461380-adb47c3eb938?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
-    { id: 38, title: 'Ocean Waves Loop', thumbnail: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:25' },
-    { id: 39, title: 'Fire & Smoke Effect', thumbnail: 'https://images.unsplash.com/photo-1525185673812-626097f5e1ee?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:18' },
-    { id: 40, title: 'Thunderstorm Drama', thumbnail: 'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:22' },
-    { id: 41, title: 'Waterfall Cascade', thumbnail: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:28' },
-    { id: 42, title: 'Sunset Time Lapse', thumbnail: 'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
-    { id: 43, title: 'Forest Wind Motion', thumbnail: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:15' },
-    { id: 44, title: 'Desert Sand Storm', thumbnail: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:24' },
-    { id: 45, title: 'Cloud Formation', thumbnail: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:30' },
-    { id: 46, title: 'Rain on Glass', thumbnail: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:12' },
-    { id: 47, title: 'Mountain Fog Roll', thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:26' },
-    { id: 48, title: 'Starry Night Sky', thumbnail: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=225&fit=crop', resolution: '3840x2160', duration: '0:20' },
+    { id: 37, title: 'Aurora Sky Motion', thumbnail: 'https://images.unsplash.com/photo-1579033461380-adb47c3eb938?w=400&h=225&fit=crop', videoUrl: getVideoUrl(0), resolution: '3840x2160', duration: '0:30' },
+    { id: 38, title: 'Ocean Waves Loop', thumbnail: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=400&h=225&fit=crop', videoUrl: getVideoUrl(1), resolution: '3840x2160', duration: '0:25' },
+    { id: 39, title: 'Fire & Smoke Effect', thumbnail: 'https://images.unsplash.com/photo-1525185673812-626097f5e1ee?w=400&h=225&fit=crop', videoUrl: getVideoUrl(2), resolution: '3840x2160', duration: '0:18' },
+    { id: 40, title: 'Thunderstorm Drama', thumbnail: 'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?w=400&h=225&fit=crop', videoUrl: getVideoUrl(3), resolution: '3840x2160', duration: '0:22' },
+    { id: 41, title: 'Waterfall Cascade', thumbnail: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400&h=225&fit=crop', videoUrl: getVideoUrl(4), resolution: '3840x2160', duration: '0:28' },
+    { id: 42, title: 'Sunset Time Lapse', thumbnail: 'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=400&h=225&fit=crop', videoUrl: getVideoUrl(5), resolution: '3840x2160', duration: '0:20' },
+    { id: 43, title: 'Forest Wind Motion', thumbnail: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=400&h=225&fit=crop', videoUrl: getVideoUrl(0), resolution: '3840x2160', duration: '0:15' },
+    { id: 44, title: 'Desert Sand Storm', thumbnail: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=400&h=225&fit=crop', videoUrl: getVideoUrl(1), resolution: '3840x2160', duration: '0:24' },
+    { id: 45, title: 'Cloud Formation', thumbnail: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=400&h=225&fit=crop', videoUrl: getVideoUrl(2), resolution: '3840x2160', duration: '0:30' },
+    { id: 46, title: 'Rain on Glass', thumbnail: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400&h=225&fit=crop', videoUrl: getVideoUrl(3), resolution: '3840x2160', duration: '0:12' },
+    { id: 47, title: 'Mountain Fog Roll', thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=225&fit=crop', videoUrl: getVideoUrl(4), resolution: '3840x2160', duration: '0:26' },
+    { id: 48, title: 'Starry Night Sky', thumbnail: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=225&fit=crop', videoUrl: getVideoUrl(5), resolution: '3840x2160', duration: '0:20' },
   ],
 };
 
@@ -149,6 +162,7 @@ const MotionGraphicsLookbook = () => {
       id: Date.now(),
       title: newClipTitle,
       thumbnail: newThumbnail,
+      videoUrl: getVideoUrl(Date.now()),
       resolution: newResolution,
       duration: newDuration
     };
@@ -365,24 +379,24 @@ const MotionGraphicsLookbook = () => {
             
             {previewClip && (
               <div className="space-y-4 mt-4">
-                {/* Video/Image Preview */}
-                <div className={`relative aspect-video rounded-lg overflow-hidden ${(!previewClip.thumbnail || imageErrors.has(previewClip.id)) ? categoryGradients[selectedCategory] : 'bg-card'}`}>
-                  {previewClip.thumbnail && !imageErrors.has(previewClip.id) && (
-                    <img 
-                      src={previewClip.thumbnail.replace('w=400&h=225', 'w=800&h=450')} 
-                      alt={previewClip.title}
-                      className="w-full h-full object-cover"
-                      onError={() => handleImageError(previewClip.id)}
-                    />
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="p-6 rounded-full glass animate-glow-pulse">
-                      <Play className="w-12 h-12 text-foreground fill-foreground" />
-                    </div>
-                  </div>
+                {/* Video Preview */}
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-card">
+                  <video
+                    key={previewClip.id}
+                    src={previewClip.videoUrl}
+                    controls
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                    poster={previewClip.thumbnail}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
                   
                   {/* Info overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-card to-transparent">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-card to-transparent pointer-events-none">
                     <div className="flex gap-3">
                       <span className="glass px-2 py-1 rounded text-xs font-bold flex items-center gap-1 text-foreground">
                         <Monitor className="w-3 h-3" />
