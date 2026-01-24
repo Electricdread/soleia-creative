@@ -18,6 +18,48 @@ interface ArtlistClip {
   sourceUrl: string;
 }
 
+// Fetch thumbnail and preview from a clip page
+async function fetchClipDetails(apiKey: string, clipUrl: string): Promise<{ thumbnail: string; previewUrl: string }> {
+  try {
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: clipUrl,
+        formats: ['html'],
+        waitFor: 2000,
+        onlyMainContent: false,
+      }),
+    });
+
+    if (!response.ok) return { thumbnail: '', previewUrl: '' };
+
+    const data = await response.json();
+    const html = data.data?.html || '';
+
+    // Find thumbnail - look for og:image or poster images
+    const ogImageMatch = html.match(/property="og:image"[^>]*content="([^"]+)"/);
+    const posterMatch = html.match(/poster="([^"]+)"/);
+    const imgMatch = html.match(/src="(https:\/\/[^"]+(?:thumbnail|poster|cdn)[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/i);
+    
+    const thumbnail = ogImageMatch?.[1] || posterMatch?.[1] || imgMatch?.[1] || '';
+
+    // Find video preview URL
+    const videoMatch = html.match(/src="(https:\/\/[^"]+(?:preview|video)[^"]*\.(?:mp4|webm)[^"]*)"/i);
+    const sourceMatch = html.match(/<source[^>]*src="([^"]+\.(?:mp4|webm))"/i);
+    
+    const previewUrl = videoMatch?.[1] || sourceMatch?.[1] || '';
+
+    return { thumbnail, previewUrl };
+  } catch (error) {
+    console.error('Error fetching clip details:', error);
+    return { thumbnail: '', previewUrl: '' };
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -40,11 +82,11 @@ serve(async (req) => {
         .order('created_at', { ascending: false });
 
       if (!cacheError && cachedClips && cachedClips.length > 0) {
-        // Check if cache is less than 1 hour old
+        // Check if cache is less than 24 hours old
         const cacheAge = Date.now() - new Date(cachedClips[0].created_at).getTime();
-        const oneHour = 60 * 60 * 1000;
+        const twentyFourHours = 24 * 60 * 60 * 1000;
         
-        if (cacheAge < oneHour) {
+        if (cacheAge < twentyFourHours) {
           console.log('Returning cached clips for category:', category);
           const clips = cachedClips.map(c => ({
             id: c.id,
@@ -81,162 +123,114 @@ serve(async (req) => {
       );
     }
 
-    // Map category to Artlist URL path
-    const categoryMap: Record<string, string> = {
-      'motion-backgrounds': 'motion-backgrounds',
-      'abstract': 'abstract',
-      'particles': 'particles',
-      'nature': 'nature',
-      'events': 'events',
-      'technology': 'technology',
-      'corporate': 'corporate',
-      'all': 'motion-graphics'
+    // Map category to search terms
+    const categorySearchTerms: Record<string, string> = {
+      'motion-backgrounds': 'motion graphics background loop',
+      'abstract': 'abstract visual patterns animation',
+      'particles': 'particles effects motion',
+      'nature': 'nature landscape aerial cinematic',
+      'events': 'event celebration fireworks party',
+      'technology': 'technology digital data futuristic',
+      'corporate': 'business corporate office professional',
+      'all': 'motion graphics video'
     };
 
-    const categorySlug = categoryMap[category] || 'motion-graphics';
-    const artlistUrl = `https://artlist.io/stock-footage/category/${categorySlug}`;
+    const searchTerm = categorySearchTerms[category] || 'motion graphics';
 
-    console.log('Scraping Artlist URL:', artlistUrl);
+    console.log('Searching Artlist for:', searchTerm);
 
-    // Scrape the main page for clip data with extract
-    const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+    // Search for clips using Firecrawl search
+    const searchResponse = await fetch('https://api.firecrawl.dev/v1/search', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        url: artlistUrl,
-        formats: ['extract'],
-        extract: {
-          schema: {
-            type: 'object',
-            properties: {
-              clips: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    title: { type: 'string' },
-                    thumbnailUrl: { type: 'string' },
-                    videoPreviewUrl: { type: 'string' },
-                    clipUrl: { type: 'string' },
-                    duration: { type: 'string' },
-                    resolution: { type: 'string' }
-                  }
-                }
-              }
-            }
-          },
-          prompt: 'Extract all video clips from this motion graphics category page. For each clip, get the title, thumbnail image URL, video preview URL (mp4/webm), clip page URL, duration, and resolution.'
-        },
-        waitFor: 5000,
+        query: `site:artlist.io/stock-footage/clip ${searchTerm}`,
+        limit: 24,
       }),
     });
 
-    const scrapeData = await scrapeResponse.json();
-
-    if (!scrapeResponse.ok) {
-      console.error('Firecrawl scrape error:', scrapeData);
+    const searchData = await searchResponse.json();
+    
+    if (!searchResponse.ok) {
+      console.error('Search failed:', searchData);
       return new Response(
-        JSON.stringify({ success: false, error: scrapeData.error || 'Failed to scrape page' }),
-        { status: scrapeResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: searchData.error || 'Search failed' }),
+        { status: searchResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Parse clips from extracted data
     const clips: ArtlistClip[] = [];
-    const extractedClips = scrapeData.data?.extract?.clips || [];
+    const results = searchData.data || [];
     
-    console.log('Extracted clips count:', extractedClips.length);
+    console.log('Search found:', results.length, 'results');
 
-    for (let i = 0; i < extractedClips.length; i++) {
-      const extracted = extractedClips[i];
+    // Filter for actual clip pages
+    const clipResults = results.filter((r: any) => 
+      r.url && (r.url.includes('/clip/') || r.url.includes('/footage/'))
+    );
+
+    console.log('Filtered clip results:', clipResults.length);
+
+    // Process clips - fetch thumbnails for first 12, use placeholders for rest
+    for (let i = 0; i < clipResults.length; i++) {
+      const result = clipResults[i];
+      
+      let title = (result.title || `Motion Clip ${i + 1}`)
+        .replace(' - Artlist', '')
+        .replace(' | Artlist', '')
+        .replace(' – Stock Footage', '')
+        .replace(' – Stock Video', '')
+        .trim();
+      
+      // Clean up title format
+      if (title.includes(' by ')) {
+        title = title.split(' by ')[0].trim();
+      }
+
       const clipId = `artlist-${category}-${i}-${Date.now()}`;
       
-      // Clean up the thumbnail URL
-      let thumbnail = extracted.thumbnailUrl || '';
-      if (thumbnail.startsWith('//')) thumbnail = `https:${thumbnail}`;
-      if (!thumbnail || !thumbnail.startsWith('http')) {
-        thumbnail = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop&q=80`;
+      // Fetch actual thumbnail for first 8 clips
+      let thumbnail = '';
+      let previewUrl = '';
+      
+      if (i < 8) {
+        const details = await fetchClipDetails(apiKey, result.url);
+        thumbnail = details.thumbnail;
+        previewUrl = details.previewUrl;
       }
       
-      // Clean up preview URL
-      let previewUrl = extracted.videoPreviewUrl || '';
-      if (previewUrl.startsWith('//')) previewUrl = `https:${previewUrl}`;
+      // Fallback thumbnail based on category
+      const fallbackThumbnails: Record<string, string> = {
+        'motion-backgrounds': 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=225&fit=crop&q=80',
+        'abstract': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop&q=80',
+        'particles': 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=225&fit=crop&q=80',
+        'nature': 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=225&fit=crop&q=80',
+        'events': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=225&fit=crop&q=80',
+        'technology': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=225&fit=crop&q=80',
+        'corporate': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=225&fit=crop&q=80',
+      };
       
-      // Clean up source URL
-      let sourceUrl = extracted.clipUrl || '';
-      if (sourceUrl && !sourceUrl.startsWith('http')) {
-        sourceUrl = `https://artlist.io${sourceUrl.startsWith('/') ? '' : '/'}${sourceUrl}`;
+      if (!thumbnail) {
+        thumbnail = fallbackThumbnails[category] || fallbackThumbnails['motion-backgrounds'];
       }
 
       clips.push({
         id: clipId,
-        title: extracted.title || `Motion Clip ${i + 1}`,
+        title,
         thumbnail,
-        videoUrl: sourceUrl,
+        videoUrl: result.url,
         previewUrl,
-        resolution: extracted.resolution || '4K',
-        duration: extracted.duration || '0:15-0:30',
+        resolution: '4K',
+        duration: '0:15-0:30',
         category,
-        sourceUrl,
+        sourceUrl: result.url,
       });
     }
 
-    // If no clips extracted, try fallback map method
-    if (clips.length === 0) {
-      console.log('No clips extracted, trying map fallback...');
-      
-      const mapResponse = await fetch('https://api.firecrawl.dev/v1/map', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url: artlistUrl,
-          limit: 50,
-          includeSubdomains: false,
-        }),
-      });
-
-      const mapData = await mapResponse.json();
-
-      if (mapResponse.ok) {
-        const clipLinks = (mapData.links || []).filter((link: string) => 
-          link.includes('/stock-footage/clip/') || link.includes('/stock-video/')
-        ).slice(0, 24);
-
-        for (let i = 0; i < clipLinks.length; i++) {
-          const link = clipLinks[i];
-          const titleMatch = link.match(/\/clip\/([^\/]+)/);
-          const title = titleMatch ? 
-            titleMatch[1]
-              .replace(/-/g, ' ')
-              .replace(/\d+$/, '')
-              .trim()
-              .split(' ')
-              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' ') 
-            : `Motion Clip ${i + 1}`;
-
-          clips.push({
-            id: `artlist-${category}-${i}-${Date.now()}`,
-            title,
-            thumbnail: `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop&q=80`,
-            videoUrl: link,
-            previewUrl: '',
-            resolution: '4K',
-            duration: '0:15-0:30',
-            category,
-            sourceUrl: link,
-          });
-        }
-      }
-    }
-
-    console.log('Total clips found:', clips.length);
+    console.log('Total clips processed:', clips.length);
 
     // Cache the clips in the database
     if (clips.length > 0) {
