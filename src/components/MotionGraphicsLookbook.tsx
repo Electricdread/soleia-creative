@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Play, Check, Send, X, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Play, Check, Send, X, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Link, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -111,9 +111,12 @@ const MotionGraphicsLookbook = () => {
   const [categories, setCategories] = useState(initialCategories);
   const [newClipTitle, setNewClipTitle] = useState('');
   const [newThumbnail, setNewThumbnail] = useState('');
+  const [newVideoUrl, setNewVideoUrl] = useState('');
   const [newResolution, setNewResolution] = useState('3840x2160');
   const [newDuration, setNewDuration] = useState('0:20');
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+  const metadataVideoRef = useRef<HTMLVideoElement>(null);
 
   const openPreview = (clip: Clip, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -153,8 +156,67 @@ const MotionGraphicsLookbook = () => {
     setImageErrors(prev => new Set(prev).add(clipId));
   };
 
-  const addNewClip = () => {
+  const extractTitleFromUrl = (url: string): string => {
+    try {
+      const pathname = new URL(url).pathname;
+      const filename = pathname.split('/').pop() || '';
+      // Remove extension and clean up
+      const nameWithoutExt = filename.replace(/\.[^.]+$/, '');
+      // Convert underscores/dashes to spaces and capitalize
+      return nameWithoutExt
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .trim() || 'Untitled Clip';
+    } catch {
+      return 'Untitled Clip';
+    }
+  };
+
+  const formatDuration = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleVideoUrlChange = (url: string) => {
+    setNewVideoUrl(url);
+    if (!url.trim()) return;
+    
+    // Extract title from URL immediately
+    const extractedTitle = extractTitleFromUrl(url);
     if (!newClipTitle) {
+      setNewClipTitle(extractedTitle);
+    }
+
+    // Load video to get metadata
+    setIsLoadingMetadata(true);
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.crossOrigin = 'anonymous';
+    
+    video.onloadedmetadata = () => {
+      setNewDuration(formatDuration(video.duration));
+      if (video.videoWidth && video.videoHeight) {
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+        // Match to closest standard resolution
+        if (width >= 7680) setNewResolution('7680x4320');
+        else if (width >= 3840) setNewResolution('3840x2160');
+        else if (width >= 2560) setNewResolution('2560x1440');
+        else setNewResolution('1920x1080');
+      }
+      setIsLoadingMetadata(false);
+    };
+    
+    video.onerror = () => {
+      setIsLoadingMetadata(false);
+    };
+    
+    video.src = url;
+  };
+
+  const addNewClip = () => {
+    if (!newClipTitle || !newVideoUrl) {
       return;
     }
 
@@ -162,7 +224,7 @@ const MotionGraphicsLookbook = () => {
       id: Date.now(),
       title: newClipTitle,
       thumbnail: newThumbnail,
-      videoUrl: getVideoUrl(Date.now()),
+      videoUrl: newVideoUrl,
       resolution: newResolution,
       duration: newDuration
     };
@@ -175,6 +237,7 @@ const MotionGraphicsLookbook = () => {
     setShowAddModal(false);
     setNewClipTitle('');
     setNewThumbnail('');
+    setNewVideoUrl('');
     setNewResolution('3840x2160');
     setNewDuration('0:20');
   };
@@ -461,13 +524,30 @@ const MotionGraphicsLookbook = () => {
             </DialogHeader>
             
             <div className="space-y-4 mt-4">
+              {/* Video URL - Primary Input */}
+              <div className="space-y-2">
+                <Label htmlFor="videoUrl" className="text-muted-foreground flex items-center gap-2">
+                  <Link className="w-4 h-4" />
+                  Video URL
+                  {isLoadingMetadata && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                </Label>
+                <Input
+                  id="videoUrl"
+                  value={newVideoUrl}
+                  onChange={(e) => handleVideoUrlChange(e.target.value)}
+                  placeholder="https://example.com/video.mp4"
+                  className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                />
+                <p className="text-xs text-muted-foreground">Paste a direct video URL - title and duration will be auto-filled</p>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-muted-foreground">Clip Title</Label>
                 <Input
                   id="title"
                   value={newClipTitle}
                   onChange={(e) => setNewClipTitle(e.target.value)}
-                  placeholder="e.g. Fire Wall Background"
+                  placeholder="Auto-filled from video URL"
                   className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
                 />
               </div>
@@ -505,15 +585,33 @@ const MotionGraphicsLookbook = () => {
                     id="duration"
                     value={newDuration}
                     onChange={(e) => setNewDuration(e.target.value)}
-                    placeholder="0:20"
+                    placeholder="Auto-filled"
                     className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
               </div>
 
-              {newThumbnail && (
+              {/* Video Preview */}
+              {newVideoUrl && (
                 <div className="mt-2">
-                  <p className="text-muted-foreground text-sm mb-2">Preview:</p>
+                  <p className="text-muted-foreground text-sm mb-2">Video Preview:</p>
+                  <video 
+                    src={newVideoUrl}
+                    controls
+                    muted
+                    playsInline
+                    className="w-full rounded-lg border border-border max-h-48 object-contain bg-black"
+                    onError={(e) => {
+                      const target = e.target as HTMLVideoElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+
+              {newThumbnail && !newVideoUrl && (
+                <div className="mt-2">
+                  <p className="text-muted-foreground text-sm mb-2">Thumbnail Preview:</p>
                   <img 
                     src={newThumbnail} 
                     alt="Preview" 
@@ -530,7 +628,7 @@ const MotionGraphicsLookbook = () => {
                 <Button
                   onClick={addNewClip}
                   className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-                  disabled={!newClipTitle}
+                  disabled={!newClipTitle || !newVideoUrl}
                 >
                   Add Clip
                 </Button>
