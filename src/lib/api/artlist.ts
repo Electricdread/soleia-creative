@@ -5,6 +5,7 @@ export interface ArtlistClip {
   title: string;
   thumbnail: string;
   videoUrl: string;
+  previewUrl?: string;
   resolution: string;
   duration: string;
   category: string;
@@ -17,14 +18,51 @@ type ArtlistResponse<T = any> = {
   error?: string;
   clips?: T[];
   totalFound?: number;
+  cached?: boolean;
 };
 
 export const artlistApi = {
-  // Scrape clips from a category
-  async scrapeCategory(category: string): Promise<ArtlistResponse<ArtlistClip>> {
+  // Get cached clips from database (fast)
+  async getCachedClips(category: string): Promise<ArtlistResponse<ArtlistClip>> {
+    try {
+      const { data, error } = await supabase
+        .from('cached_clips')
+        .select('*')
+        .eq('category', category)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Cache fetch error:', error);
+        return { success: false, error: error.message };
+      }
+
+      if (data && data.length > 0) {
+        const clips = data.map(c => ({
+          id: c.id,
+          title: c.title,
+          thumbnail: c.thumbnail,
+          videoUrl: c.video_url,
+          previewUrl: c.preview_url,
+          resolution: c.resolution,
+          duration: c.duration,
+          category: c.category,
+          sourceUrl: c.source_url,
+        }));
+        return { success: true, clips, totalFound: clips.length, cached: true };
+      }
+      
+      return { success: true, clips: [], totalFound: 0, cached: false };
+    } catch (err) {
+      console.error('Cache exception:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to fetch cache' };
+    }
+  },
+
+  // Scrape clips from a category (uses cache if available)
+  async scrapeCategory(category: string, forceRefresh: boolean = false): Promise<ArtlistResponse<ArtlistClip>> {
     try {
       const { data, error } = await supabase.functions.invoke('scrape-artlist', {
-        body: { category },
+        body: { category, forceRefresh },
       });
 
       if (error) {

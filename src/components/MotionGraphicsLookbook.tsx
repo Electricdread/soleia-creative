@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Play, Check, Send, X, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Play, Check, Send, X, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, ExternalLink, Volume2, VolumeX, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -34,14 +34,44 @@ const MotionGraphicsLookbook = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [isFromCache, setIsFromCache] = useState(false);
+  const [hoveredClip, setHoveredClip] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Fetch clips when category changes
-  const fetchClips = useCallback(async () => {
+  // Fetch clips - first from cache, then scrape if needed
+  const fetchClips = useCallback(async (forceRefresh: boolean = false) => {
     setIsLoading(true);
+    setImageErrors(new Set());
+    
     try {
-      const result = await artlistApi.scrapeCategory(selectedCategory);
+      // Try cache first for instant load
+      if (!forceRefresh) {
+        const cachedResult = await artlistApi.getCachedClips(selectedCategory);
+        if (cachedResult.success && cachedResult.clips && cachedResult.clips.length > 0) {
+          setClips(cachedResult.clips);
+          setIsFromCache(true);
+          setIsLoading(false);
+          toast({
+            title: "Loaded from cache",
+            description: `${cachedResult.clips.length} clips loaded instantly`,
+          });
+          return;
+        }
+      }
+      
+      // If no cache or force refresh, scrape
+      const result = await artlistApi.scrapeCategory(selectedCategory, forceRefresh);
       if (result.success && result.clips) {
         setClips(result.clips);
+        setIsFromCache(result.cached || false);
+        if (!result.cached) {
+          toast({
+            title: "Fresh clips loaded",
+            description: `Found ${result.clips.length} clips from Artlist`,
+          });
+        }
       } else {
         toast({
           title: "Error loading clips",
@@ -63,7 +93,7 @@ const MotionGraphicsLookbook = () => {
   }, [selectedCategory, toast]);
 
   useEffect(() => {
-    fetchClips();
+    fetchClips(false);
   }, [fetchClips]);
 
   // Search functionality
@@ -219,7 +249,7 @@ const MotionGraphicsLookbook = () => {
         {/* Refresh Button */}
         <div className="mb-6 flex items-center gap-4">
           <Button
-            onClick={fetchClips}
+            onClick={() => fetchClips(true)}
             disabled={isLoading}
             variant="outline"
             className="gap-2"
@@ -229,7 +259,7 @@ const MotionGraphicsLookbook = () => {
           </Button>
           {clips.length > 0 && (
             <span className="text-muted-foreground text-sm">
-              Showing {clips.length} clips
+              Showing {clips.length} clips {isFromCache && '(cached)'}
             </span>
           )}
         </div>
@@ -246,7 +276,7 @@ const MotionGraphicsLookbook = () => {
             <Sparkles className="w-16 h-16 text-muted-foreground/40 mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">No clips found</h3>
             <p className="text-muted-foreground mb-4">Try a different category or search term</p>
-            <Button onClick={fetchClips}>Try Again</Button>
+            <Button onClick={() => fetchClips(false)}>Try Again</Button>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-32">
@@ -400,7 +430,12 @@ const MotionGraphicsLookbook = () => {
       )}
 
       {/* Preview Modal */}
-      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+      <Dialog open={showPreviewModal} onOpenChange={(open) => {
+        setShowPreviewModal(open);
+        if (!open) {
+          setIsPlaying(false);
+        }
+      }}>
         <DialogContent className="max-w-4xl glass-strong">
           <DialogHeader>
             <DialogTitle className="text-2xl">{previewClip?.title}</DialogTitle>
@@ -410,19 +445,89 @@ const MotionGraphicsLookbook = () => {
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Preview Info */}
-            <div className="aspect-video bg-secondary/30 rounded-xl overflow-hidden flex items-center justify-center">
-              <div className="text-center p-8">
-                <Sparkles className="w-16 h-16 text-primary/50 mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Preview available on Artlist</p>
-                <Button
-                  onClick={() => previewClip && openArtlistLink(previewClip.sourceUrl)}
-                  className="gap-2"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  View on Artlist
-                </Button>
-              </div>
+            {/* Video Preview or Thumbnail */}
+            <div className="aspect-video bg-secondary/30 rounded-xl overflow-hidden relative">
+              {previewClip?.previewUrl ? (
+                <>
+                  <video
+                    ref={videoRef}
+                    src={previewClip.previewUrl}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted={isMuted}
+                    playsInline
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                  />
+                  <div className="absolute bottom-4 left-4 flex gap-2">
+                    <button
+                      onClick={() => {
+                        if (videoRef.current) {
+                          if (isPlaying) {
+                            videoRef.current.pause();
+                          } else {
+                            videoRef.current.play();
+                          }
+                        }
+                      }}
+                      className="w-10 h-10 bg-background/80 rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-5 h-5 text-foreground" />
+                      ) : (
+                        <Play className="w-5 h-5 text-foreground ml-0.5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setIsMuted(!isMuted)}
+                      className="w-10 h-10 bg-background/80 rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                    >
+                      {isMuted ? (
+                        <VolumeX className="w-5 h-5 text-foreground" />
+                      ) : (
+                        <Volume2 className="w-5 h-5 text-foreground" />
+                      )}
+                    </button>
+                  </div>
+                </>
+              ) : previewClip?.thumbnail && !imageErrors.has(previewClip.id) ? (
+                <div className="relative w-full h-full">
+                  <img
+                    src={previewClip.thumbnail}
+                    alt={previewClip.title}
+                    className="w-full h-full object-cover"
+                    onError={() => previewClip && handleImageError(previewClip.id)}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <div className="text-center">
+                      <p className="text-white/80 mb-4">Video preview available on Artlist</p>
+                      <Button
+                        onClick={() => previewClip && openArtlistLink(previewClip.sourceUrl)}
+                        variant="secondary"
+                        className="gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        View on Artlist
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
+                  <div className="text-center p-8">
+                    <Sparkles className="w-16 h-16 text-primary/50 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">Preview available on Artlist</p>
+                    <Button
+                      onClick={() => previewClip && openArtlistLink(previewClip.sourceUrl)}
+                      className="gap-2"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      View on Artlist
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Note Input */}

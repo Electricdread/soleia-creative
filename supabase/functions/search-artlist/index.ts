@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,44 @@ serve(async (req) => {
 
   try {
     const { query, limit = 20 } = await req.json();
+    
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // First, search cached clips
+    const { data: cachedClips } = await supabase
+      .from('cached_clips')
+      .select('*')
+      .ilike('title', `%${query}%`)
+      .limit(limit);
+
+    if (cachedClips && cachedClips.length > 0) {
+      console.log('Found cached clips for query:', query, cachedClips.length);
+      const clips = cachedClips.map(c => ({
+        id: c.id,
+        title: c.title,
+        thumbnail: c.thumbnail,
+        videoUrl: c.video_url,
+        previewUrl: c.preview_url,
+        resolution: c.resolution,
+        duration: c.duration,
+        category: c.category,
+        sourceUrl: c.source_url,
+      }));
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          clips,
+          query,
+          totalFound: clips.length,
+          cached: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!apiKey) {
@@ -54,10 +93,11 @@ serve(async (req) => {
     const clips = (searchData.data || []).map((result: any, i: number) => {
       const title = result.title || `Motion Graphics ${i + 1}`;
       return {
-        id: `search-${i}`,
+        id: `search-${i}-${Date.now()}`,
         title: title.replace(' - Artlist', '').replace(' | Artlist', '').trim(),
         thumbnail: `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop`,
         videoUrl: result.url || '',
+        previewUrl: '',
         resolution: '4K',
         duration: '0:15-0:30',
         category: 'search',
@@ -71,12 +111,36 @@ serve(async (req) => {
 
     console.log('Search found clips:', clips.length);
 
+    // Cache search results
+    if (clips.length > 0) {
+      const clipsToInsert = clips.map((clip: any) => ({
+        external_id: clip.id,
+        title: clip.title,
+        thumbnail: clip.thumbnail,
+        video_url: clip.videoUrl,
+        preview_url: clip.previewUrl || '',
+        resolution: clip.resolution,
+        duration: clip.duration,
+        category: 'search',
+        source_url: clip.sourceUrl,
+      }));
+
+      // Use upsert to avoid duplicates
+      await supabase
+        .from('cached_clips')
+        .upsert(clipsToInsert, { 
+          onConflict: 'external_id,category',
+          ignoreDuplicates: true 
+        });
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
         clips,
         query,
-        totalFound: clips.length
+        totalFound: clips.length,
+        cached: false
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
