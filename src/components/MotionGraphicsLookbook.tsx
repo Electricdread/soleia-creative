@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
 import { UserMenu } from '@/components/auth/UserMenu';
 import AnimatedRays from '@/components/AnimatedRays';
-import soleiaLogo from '@/assets/soleia-logo.png';
+import soleiaLogo from '@/assets/soleia-logo-new.jpeg';
 
 interface SelectedClip extends ArtlistClip {
   note: string;
@@ -204,8 +204,11 @@ const MotionGraphicsLookbook = () => {
               className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-2 px-4 md:px-0"
             />
             
-            {/* Look Book Title - bolder styling */}
-            <h1 className="text-3xl font-semibold tracking-[0.25em] uppercase text-gradient-gold mb-3">
+            {/* Look Book Title - bolder styling with text shadow */}
+            <h1 
+              className="text-3xl font-semibold tracking-[0.25em] uppercase text-gradient-gold mb-3"
+              style={{ textShadow: '0 2px 8px hsl(38 92% 50% / 0.3), 0 4px 16px hsl(38 92% 50% / 0.15)' }}
+            >
               Look Book
             </h1>
             
