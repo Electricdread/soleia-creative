@@ -194,27 +194,33 @@ const MotionGraphicsLookbook = () => {
           
           {/* Centered Hero Logo Layout */}
           <div className="flex flex-col items-center text-center">
-            {/* Large Soleia Logo - Full width on mobile */}
+            {/* Large Soleia Logo - Full width on mobile with entrance animation */}
             <img 
               src={soleiaLogo} 
               alt="Soleia" 
-              className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-2 px-4 md:px-0"
+              className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-2 px-4 md:px-0 opacity-0 animate-fade-in-up"
+              style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
             />
             
-            {/* Looks Collection Title - matching logo font style */}
+            {/* Looks Collection Title - matching logo font style with entrance animation */}
             <h1 
-              className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-3"
+              className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-3 opacity-0 animate-fade-in-up"
               style={{ 
                 textShadow: '0 2px 8px hsl(38 92% 50% / 0.3), 0 4px 16px hsl(38 92% 50% / 0.15)',
                 fontFamily: 'serif',
-                letterSpacing: '0.35em'
+                letterSpacing: '0.35em',
+                animationDelay: '300ms',
+                animationFillMode: 'forwards'
               }}
             >
               Looks Collection
             </h1>
             
-            {/* Search Bar - Centered below title */}
-            <div className="flex items-center gap-3">
+            {/* Search Bar - Centered below title with entrance animation */}
+            <div 
+              className="flex items-center gap-3 opacity-0 animate-fade-in-up"
+              style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}
+            >
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -240,7 +246,7 @@ const MotionGraphicsLookbook = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-10">
-        {/* Luxury Category Navigation */}
+        {/* Luxury Category Navigation with staggered entrance */}
         <nav className="flex gap-3 mb-10 overflow-x-auto pb-3 scrollbar-hide">
           {artlistCategories.map((cat, index) => (
             <button
@@ -249,18 +255,26 @@ const MotionGraphicsLookbook = () => {
                 setSelectedCategory(cat.key);
                 setSearchQuery('');
               }}
-              style={{ animationDelay: `${index * 50}ms` }}
-              className={`px-7 py-3.5 rounded-2xl font-medium whitespace-nowrap flex items-center gap-2.5 transition-elegant animate-fade-in-up ${
+              style={{ 
+                animationDelay: `${700 + index * 80}ms`,
+                animationFillMode: 'forwards',
+                boxShadow: selectedCategory === cat.key ? `0 0 25px -5px ${cat.color}, 0 0 50px -10px ${cat.color}` : undefined
+              }}
+              className={`px-7 py-3.5 rounded-2xl font-medium whitespace-nowrap flex items-center gap-2.5 transition-elegant opacity-0 animate-fade-in-up ${
                 selectedCategory === cat.key
-                  ? 'bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground glow-gold shadow-lg'
+                  ? 'text-primary-foreground shadow-lg'
                   : 'glass hover:bg-primary/10 hover:border-primary/30 text-foreground hover-lift'
               }`}
             >
               <img 
                 src={sunIcon} 
                 alt="" 
-                className="w-5 h-5 object-contain" 
-                style={{ filter: selectedCategory === cat.key ? 'none' : `drop-shadow(0 0 3px ${cat.color})` }}
+                className="w-5 h-5 object-contain transition-all duration-300" 
+                style={{ 
+                  filter: selectedCategory === cat.key 
+                    ? `drop-shadow(0 0 6px ${cat.color}) drop-shadow(0 0 12px ${cat.color})` 
+                    : `drop-shadow(0 0 3px ${cat.color})` 
+                }}
               />
               <span className="tracking-wide">{cat.label}</span>
             </button>
