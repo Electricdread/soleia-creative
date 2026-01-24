@@ -118,7 +118,7 @@ export async function compressVideo(
 
       const recorder = new MediaRecorder(stream, {
         mimeType,
-        videoBitsPerSecond: 1000000, // 1 Mbps for preview quality
+        videoBitsPerSecond: 4000000, // 4 Mbps for good preview quality
       });
 
       const chunks: Blob[] = [];

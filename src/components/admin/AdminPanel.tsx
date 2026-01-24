@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddClipForm } from './AddClipForm';
 import { BulkImportForm } from './BulkImportForm';
 import { ClipManager } from './ClipManager';
-import { VideoUploader } from './VideoUploader';
+import { BatchVideoUploader } from './BatchVideoUploader';
 import { Settings, Plus, List, Upload, Video } from 'lucide-react';
 
 export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
@@ -29,7 +29,7 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="upload" className="gap-2">
               <Video className="h-4 w-4" />
-              Upload
+              Batch Upload
             </TabsTrigger>
             <TabsTrigger value="add" className="gap-2">
               <Plus className="h-4 w-4" />
@@ -46,7 +46,7 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
           </TabsList>
           
           <TabsContent value="upload" className="mt-4">
-            <VideoUploader onClipAdded={onClipsUpdated} />
+            <BatchVideoUploader onClipAdded={onClipsUpdated} />
           </TabsContent>
           
           <TabsContent value="add" className="mt-4">
