@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cached_clips: {
+        Row: {
+          category: string
+          created_at: string
+          duration: string | null
+          external_id: string
+          id: string
+          preview_url: string | null
+          resolution: string | null
+          source_url: string | null
+          thumbnail: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          duration?: string | null
+          external_id: string
+          id?: string
+          preview_url?: string | null
+          resolution?: string | null
+          source_url?: string | null
+          thumbnail?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          duration?: string | null
+          external_id?: string
+          id?: string
+          preview_url?: string | null
+          resolution?: string | null
+          source_url?: string | null
+          thumbnail?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
