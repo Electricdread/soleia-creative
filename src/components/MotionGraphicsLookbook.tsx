@@ -11,6 +11,7 @@ import { AdminPanel } from '@/components/admin/AdminPanel';
 import { UserMenu } from '@/components/auth/UserMenu';
 import AnimatedRays from '@/components/AnimatedRays';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
+import sunIcon from '@/assets/sun-icon.jpeg';
 
 interface SelectedClip extends ArtlistClip {
   note: string;
@@ -204,12 +205,16 @@ const MotionGraphicsLookbook = () => {
               className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-2 px-4 md:px-0"
             />
             
-            {/* Look Book Title - bolder styling with text shadow */}
+            {/* Looks Collection Title - matching logo font style */}
             <h1 
-              className="text-3xl font-semibold tracking-[0.25em] uppercase text-gradient-gold mb-3"
-              style={{ textShadow: '0 2px 8px hsl(38 92% 50% / 0.3), 0 4px 16px hsl(38 92% 50% / 0.15)' }}
+              className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-3"
+              style={{ 
+                textShadow: '0 2px 8px hsl(38 92% 50% / 0.3), 0 4px 16px hsl(38 92% 50% / 0.15)',
+                fontFamily: 'serif',
+                letterSpacing: '0.35em'
+              }}
             >
-              Look Book
+              Looks Collection
             </h1>
             
             {/* Search Bar - Centered below title */}
@@ -336,10 +341,10 @@ const MotionGraphicsLookbook = () => {
                       </div>
                     )}
 
-                    {/* Premium Selection Indicator */}
+                    {/* Sun Selection Indicator */}
                     {isSelected && (
-                      <div className="absolute top-3 right-3 w-9 h-9 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center glow-gold shadow-lg transition-elegant">
-                        <Check className="w-5 h-5 text-primary-foreground" />
+                      <div className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center transition-elegant">
+                        <img src={sunIcon} alt="Selected" className="w-full h-full object-contain drop-shadow-lg" />
                       </div>
                     )}
 
@@ -360,9 +365,9 @@ const MotionGraphicsLookbook = () => {
                       </button>
                     </div>
 
-                    {/* Premium Badge */}
-                    <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-background/90 backdrop-blur-sm rounded-lg text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-elegant border border-primary/20">
-                      Premium
+                    {/* Sun Icon Badge on hover */}
+                    <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-elegant">
+                      <img src={sunIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
                     </div>
                   </div>
 
