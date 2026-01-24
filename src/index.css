@@ -2,90 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Motion Graphics Lookbook - Cinematic Design System */
+/* Soleia Lookbook - Luxury Sun Goddess Design System */
+/* Inspired by Wynn Resort & MGM Casino Premium Aesthetics */
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 270 20% 96%;
+    /* Deep luxury dark foundation */
+    --background: 30 15% 5%;
+    --foreground: 45 30% 95%;
 
-    --card: 260 30% 10%;
-    --card-foreground: 270 20% 96%;
+    /* Rich warm cards */
+    --card: 30 20% 8%;
+    --card-foreground: 45 30% 95%;
 
-    --popover: 260 30% 10%;
-    --popover-foreground: 270 20% 96%;
+    --popover: 30 20% 8%;
+    --popover-foreground: 45 30% 95%;
 
-    --primary: 270 70% 55%;
-    --primary-foreground: 270 20% 98%;
+    /* Sun goddess gold primary */
+    --primary: 38 92% 50%;
+    --primary-foreground: 30 15% 8%;
 
-    --secondary: 260 25% 18%;
-    --secondary-foreground: 270 20% 90%;
+    /* Warm bronze secondary */
+    --secondary: 30 25% 15%;
+    --secondary-foreground: 45 30% 90%;
 
-    --muted: 260 20% 15%;
-    --muted-foreground: 270 15% 65%;
+    /* Muted warm tones */
+    --muted: 30 15% 12%;
+    --muted-foreground: 35 20% 55%;
 
-    --accent: 270 60% 50%;
-    --accent-foreground: 270 20% 98%;
+    /* Amber accent */
+    --accent: 32 85% 45%;
+    --accent-foreground: 30 15% 8%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 70% 45%;
-    --success-foreground: 0 0% 100%;
+    --success: 45 90% 48%;
+    --success-foreground: 30 15% 8%;
 
-    --border: 260 20% 20%;
-    --input: 260 20% 18%;
-    --ring: 270 70% 55%;
+    /* Warm borders */
+    --border: 30 25% 18%;
+    --input: 30 20% 14%;
+    --ring: 38 92% 50%;
 
     --radius: 0.75rem;
 
-    /* Custom tokens for motion graphics theme */
-    --glass: 260 30% 12%;
-    --glass-border: 270 40% 30%;
-    --glow-purple: 270 70% 55%;
-    --glow-green: 142 70% 45%;
+    /* Custom luxury tokens */
+    --glass: 30 20% 10%;
+    --glass-border: 38 40% 25%;
+    --glow-gold: 38 92% 50%;
+    --glow-amber: 32 85% 45%;
+    --glow-warm: 25 80% 40%;
     
-    --gradient-cosmic: linear-gradient(135deg, hsl(260 50% 8%) 0%, hsl(280 60% 15%) 50%, hsl(260 50% 8%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(260 30% 12%) 0%, hsl(260 30% 8%) 100%);
+    /* Luxury gradients */
+    --gradient-luxury: linear-gradient(135deg, hsl(30 15% 4%) 0%, hsl(25 25% 10%) 50%, hsl(30 15% 4%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(45 90% 55%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
+    --gradient-sunset: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 80% 45%) 50%, hsl(15 75% 40%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(30 20% 10%) 0%, hsl(30 20% 6%) 100%);
     
-    --sidebar-background: 260 30% 8%;
-    --sidebar-foreground: 270 20% 90%;
-    --sidebar-primary: 270 70% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 25% 18%;
-    --sidebar-accent-foreground: 270 20% 90%;
-    --sidebar-border: 260 20% 20%;
-    --sidebar-ring: 270 70% 55%;
+    /* Sidebar luxury theme */
+    --sidebar-background: 30 20% 6%;
+    --sidebar-foreground: 45 30% 90%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 30 15% 8%;
+    --sidebar-accent: 30 25% 15%;
+    --sidebar-accent-foreground: 45 30% 90%;
+    --sidebar-border: 30 25% 18%;
+    --sidebar-ring: 38 92% 50%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 270 20% 96%;
-    --card: 260 30% 10%;
-    --card-foreground: 270 20% 96%;
-    --popover: 260 30% 10%;
-    --popover-foreground: 270 20% 96%;
-    --primary: 270 70% 55%;
-    --primary-foreground: 270 20% 98%;
-    --secondary: 260 25% 18%;
-    --secondary-foreground: 270 20% 90%;
-    --muted: 260 20% 15%;
-    --muted-foreground: 270 15% 65%;
-    --accent: 270 60% 50%;
-    --accent-foreground: 270 20% 98%;
+    --background: 30 15% 5%;
+    --foreground: 45 30% 95%;
+    --card: 30 20% 8%;
+    --card-foreground: 45 30% 95%;
+    --popover: 30 20% 8%;
+    --popover-foreground: 45 30% 95%;
+    --primary: 38 92% 50%;
+    --primary-foreground: 30 15% 8%;
+    --secondary: 30 25% 15%;
+    --secondary-foreground: 45 30% 90%;
+    --muted: 30 15% 12%;
+    --muted-foreground: 35 20% 55%;
+    --accent: 32 85% 45%;
+    --accent-foreground: 30 15% 8%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 260 20% 20%;
-    --input: 260 20% 18%;
-    --ring: 270 70% 55%;
-    --sidebar-background: 260 30% 8%;
-    --sidebar-foreground: 270 20% 90%;
-    --sidebar-primary: 270 70% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 260 25% 18%;
-    --sidebar-accent-foreground: 270 20% 90%;
-    --sidebar-border: 260 20% 20%;
-    --sidebar-ring: 270 70% 55%;
+    --border: 30 25% 18%;
+    --input: 30 20% 14%;
+    --ring: 38 92% 50%;
+    --sidebar-background: 30 20% 6%;
+    --sidebar-foreground: 45 30% 90%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 30 15% 8%;
+    --sidebar-accent: 30 25% 15%;
+    --sidebar-accent-foreground: 45 30% 90%;
+    --sidebar-border: 30 25% 18%;
+    --sidebar-ring: 38 92% 50%;
   }
 }
 
@@ -96,41 +109,165 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    background: var(--gradient-cosmic);
+    background: var(--gradient-luxury);
     min-height: 100vh;
   }
 }
 
 @layer utilities {
+  /* Luxury glassmorphism */
   .glass {
-    @apply bg-card/60 backdrop-blur-xl border border-border/50;
+    @apply bg-card/60 backdrop-blur-xl border border-border/40;
+    background: linear-gradient(135deg, hsl(30 20% 10% / 0.7) 0%, hsl(30 20% 8% / 0.8) 100%);
   }
   
   .glass-strong {
-    @apply bg-card/80 backdrop-blur-2xl border border-border/60;
+    @apply bg-card/85 backdrop-blur-2xl border border-border/50;
+    background: linear-gradient(180deg, hsl(30 20% 12% / 0.9) 0%, hsl(30 20% 8% / 0.95) 100%);
   }
   
+  /* Sun goddess glows */
+  .glow-gold {
+    box-shadow: 
+      0 0 40px -10px hsl(38 92% 50% / 0.5),
+      0 0 80px -20px hsl(38 92% 50% / 0.3);
+  }
+  
+  .glow-amber {
+    box-shadow: 
+      0 0 30px -8px hsl(32 85% 45% / 0.5),
+      0 0 60px -15px hsl(32 85% 45% / 0.3);
+  }
+  
+  .glow-warm {
+    box-shadow: 
+      0 0 25px -5px hsl(25 80% 40% / 0.4),
+      0 0 50px -10px hsl(25 80% 40% / 0.2);
+  }
+  
+  /* Legacy glow aliases for compatibility */
   .glow-purple {
-    box-shadow: 0 0 30px -5px hsl(var(--primary) / 0.4);
+    box-shadow: 
+      0 0 40px -10px hsl(38 92% 50% / 0.5),
+      0 0 80px -20px hsl(38 92% 50% / 0.3);
   }
   
   .glow-green {
-    box-shadow: 0 0 20px -5px hsl(var(--success) / 0.5);
+    box-shadow: 
+      0 0 25px -5px hsl(45 90% 48% / 0.5),
+      0 0 50px -10px hsl(45 90% 48% / 0.3);
   }
   
+  /* Premium category gradients */
   .gradient-particles {
-    background: linear-gradient(135deg, hsl(45 90% 50%) 0%, hsl(25 90% 55%) 50%, hsl(0 80% 50%) 100%);
+    background: linear-gradient(135deg, hsl(45 90% 55%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
   }
   
   .gradient-events {
-    background: linear-gradient(135deg, hsl(330 80% 50%) 0%, hsl(350 80% 55%) 50%, hsl(280 70% 50%) 100%);
+    background: linear-gradient(135deg, hsl(25 80% 50%) 0%, hsl(15 75% 45%) 50%, hsl(8 70% 40%) 100%);
   }
   
   .gradient-abstract {
-    background: linear-gradient(135deg, hsl(190 80% 50%) 0%, hsl(240 70% 55%) 50%, hsl(280 70% 50%) 100%);
+    background: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(30 70% 40%) 50%, hsl(25 60% 35%) 100%);
   }
   
   .gradient-nature {
-    background: linear-gradient(135deg, hsl(160 70% 45%) 0%, hsl(140 70% 50%) 50%, hsl(180 70% 45%) 100%);
+    background: linear-gradient(135deg, hsl(40 85% 50%) 0%, hsl(35 80% 45%) 50%, hsl(30 75% 40%) 100%);
   }
+  
+  /* Luxury text gradient */
+  .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(45 90% 60%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Smooth luxury transitions */
+  .transition-luxury {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transition-elegant {
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  /* Premium hover effects */
+  .hover-lift {
+    @apply transition-elegant;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+      0 20px 40px -15px hsl(30 15% 5% / 0.5),
+      0 0 30px -10px hsl(38 92% 50% / 0.2);
+  }
+  
+  /* Luxury border accents */
+  .border-gold-gradient {
+    border-image: linear-gradient(135deg, hsl(45 90% 55%), hsl(38 92% 50%), hsl(32 85% 45%)) 1;
+  }
+  
+  /* Shimmer animation for luxury elements */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  .shimmer-gold {
+    background: linear-gradient(
+      90deg,
+      hsl(38 92% 50% / 0) 0%,
+      hsl(38 92% 50% / 0.3) 50%,
+      hsl(38 92% 50% / 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+  }
+  
+  /* Elegant pulse for CTAs */
+  @keyframes luxury-pulse {
+    0%, 100% {
+      box-shadow: 
+        0 0 30px -10px hsl(38 92% 50% / 0.4),
+        0 0 60px -20px hsl(38 92% 50% / 0.2);
+    }
+    50% {
+      box-shadow: 
+        0 0 50px -10px hsl(38 92% 50% / 0.6),
+        0 0 100px -20px hsl(38 92% 50% / 0.4);
+    }
+  }
+  
+  .pulse-gold {
+    animation: luxury-pulse 3s ease-in-out infinite;
+  }
+  
+  /* Fade in up animation */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  
+  /* Staggered animation delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
 }
