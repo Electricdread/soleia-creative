@@ -202,7 +202,10 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
             <SelectItem value="all">All categories</SelectItem>
             {artlistCategories.map((cat) => (
               <SelectItem key={cat.key} value={cat.key}>
-                {cat.icon} {cat.label}
+                <span className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                  {cat.label}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>
@@ -361,7 +364,10 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
                 <SelectContent>
                   {artlistCategories.map((cat) => (
                     <SelectItem key={cat.key} value={cat.key}>
-                      {cat.icon} {cat.label}
+                      <span className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                        {cat.label}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
