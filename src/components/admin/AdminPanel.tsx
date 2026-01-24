@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddClipForm } from './AddClipForm';
+import { BulkImportForm } from './BulkImportForm';
 import { ClipManager } from './ClipManager';
-import { useAuth } from '@/hooks/useAuth';
-import { Settings, Plus, List, Lock } from 'lucide-react';
+import { Settings, Plus, List, Upload } from 'lucide-react';
 
 export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -25,19 +25,27 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
         </DialogHeader>
         
         <Tabs defaultValue="add" className="mt-4">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="add" className="gap-2">
               <Plus className="h-4 w-4" />
               Add Clip
             </TabsTrigger>
+            <TabsTrigger value="bulk" className="gap-2">
+              <Upload className="h-4 w-4" />
+              Bulk Import
+            </TabsTrigger>
             <TabsTrigger value="manage" className="gap-2">
               <List className="h-4 w-4" />
-              Manage Clips
+              Manage
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="add" className="mt-4">
             <AddClipForm onClipAdded={onClipsUpdated} />
+          </TabsContent>
+          
+          <TabsContent value="bulk" className="mt-4">
+            <BulkImportForm onClipsAdded={onClipsUpdated} />
           </TabsContent>
           
           <TabsContent value="manage" className="mt-4">

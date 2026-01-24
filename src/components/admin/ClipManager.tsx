@@ -55,6 +55,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
     title: '',
     video_url: '',
     source_url: '',
+    thumbnail: '',
     resolution: '',
     duration: '',
     category: '',
@@ -128,6 +129,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
       title: clip.title,
       video_url: clip.video_url || '',
       source_url: clip.source_url || '',
+      thumbnail: clip.thumbnail || '',
       resolution: clip.resolution || '',
       duration: clip.duration || '',
       category: clip.category,
@@ -145,6 +147,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
           title: editForm.title,
           video_url: editForm.video_url || null,
           source_url: editForm.source_url || null,
+          thumbnail: editForm.thumbnail || null,
           resolution: editForm.resolution,
           duration: editForm.duration,
           category: editForm.category,
@@ -156,7 +159,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
       // Update local state
       setClips(prev => prev.map(c => 
         c.id === editingClip.id 
-          ? { ...c, ...editForm, video_url: editForm.video_url || null, source_url: editForm.source_url || null }
+          ? { ...c, ...editForm, video_url: editForm.video_url || null, source_url: editForm.source_url || null, thumbnail: editForm.thumbnail || null }
           : c
       ));
       
@@ -306,6 +309,24 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
                 onChange={(e) => setEditForm(prev => ({ ...prev, source_url: e.target.value }))}
                 placeholder="https://..."
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-thumbnail">Thumbnail URL</Label>
+              <Input
+                id="edit-thumbnail"
+                value={editForm.thumbnail}
+                onChange={(e) => setEditForm(prev => ({ ...prev, thumbnail: e.target.value }))}
+                placeholder="https://..."
+              />
+              {editForm.thumbnail && (
+                <img 
+                  src={editForm.thumbnail} 
+                  alt="Thumbnail preview" 
+                  className="w-full max-w-[200px] rounded border border-border mt-2"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                />
+              )}
             </div>
             
             <div className="grid grid-cols-2 gap-4">
