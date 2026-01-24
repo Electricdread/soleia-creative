@@ -257,24 +257,18 @@ const MotionGraphicsLookbook = () => {
               }}
               style={{ 
                 animationDelay: `${700 + index * 80}ms`,
-                animationFillMode: 'forwards',
-                boxShadow: selectedCategory === cat.key ? `0 0 25px -5px ${cat.color}, 0 0 50px -10px ${cat.color}` : undefined
+                animationFillMode: 'forwards'
               }}
               className={`px-7 py-3.5 rounded-2xl font-medium whitespace-nowrap flex items-center gap-2.5 transition-elegant opacity-0 animate-fade-in-up ${
                 selectedCategory === cat.key
-                  ? 'text-primary-foreground shadow-lg'
+                  ? 'bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground shadow-lg'
                   : 'glass hover:bg-primary/10 hover:border-primary/30 text-foreground hover-lift'
               }`}
             >
               <img 
                 src={sunIcon} 
                 alt="" 
-                className="w-5 h-5 object-contain transition-all duration-300" 
-                style={{ 
-                  filter: selectedCategory === cat.key 
-                    ? `drop-shadow(0 0 6px ${cat.color}) drop-shadow(0 0 12px ${cat.color})` 
-                    : `drop-shadow(0 0 3px ${cat.color})` 
-                }}
+                className="w-5 h-5 object-contain" 
               />
               <span className="tracking-wide">{cat.label}</span>
             </button>
