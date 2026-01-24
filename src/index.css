@@ -287,17 +287,6 @@
     100% { transform: translateX(220%); }
   }
   
-  @keyframes float-particle {
-    0%, 100% { 
-      opacity: 0.3;
-      transform: translateY(0) scale(1);
-    }
-    50% { 
-      opacity: 0.8;
-      transform: translateY(-10px) scale(1.2);
-    }
-  }
-  
   .animate-ray-slow {
     animation: ray-slow 12s linear infinite;
   }
@@ -312,12 +301,66 @@
     animation-delay: 4s;
   }
   
-  .animate-float-particle {
-    animation: float-particle 3s ease-in-out infinite;
-  }
-  
   .shimmer-slow {
     background-size: 200% 100%;
     animation: shimmer 8s linear infinite;
+  }
+  
+  /* Solar flare animation */
+  @keyframes solar-flare {
+    0%, 100% { 
+      opacity: 0.2;
+      transform: scale(1) rotate(0deg);
+    }
+    50% { 
+      opacity: 0.6;
+      transform: scale(1.3) rotate(5deg);
+    }
+  }
+  
+  @keyframes solar-flare-alt {
+    0%, 100% { 
+      opacity: 0.15;
+      transform: scale(1.1) rotate(0deg);
+    }
+    50% { 
+      opacity: 0.4;
+      transform: scale(1.4) rotate(-3deg);
+    }
+  }
+  
+  .animate-solar-flare {
+    animation: solar-flare 8s ease-in-out infinite;
+  }
+  
+  .animate-solar-flare-alt {
+    animation: solar-flare-alt 10s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+  
+  /* Rotating glow for logo */
+  @keyframes rotate-glow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .animate-rotate-glow {
+    animation: rotate-glow 20s linear infinite;
+  }
+  
+  /* Slow pulse glow */
+  @keyframes glow-pulse-slow {
+    0%, 100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+  
+  .animate-glow-pulse-slow {
+    animation: glow-pulse-slow 4s ease-in-out infinite;
   }
 }
