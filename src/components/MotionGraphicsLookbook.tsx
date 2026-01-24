@@ -30,7 +30,7 @@ const categoryGradients: Record<string, string> = {
 
 const MotionGraphicsLookbook = () => {
   const { toast } = useToast();
-  const [selectedCategory, setSelectedCategory] = useState<ArtlistCategoryKey>('motion-backgrounds');
+  const [selectedCategory, setSelectedCategory] = useState<ArtlistCategoryKey>('featured-collections');
   const [clips, setClips] = useState<ArtlistClip[]>([]);
   const [selectedClips, setSelectedClips] = useState<SelectedClip[]>([]);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -204,7 +204,7 @@ const MotionGraphicsLookbook = () => {
             
             {/* Looks Collection Title - matching logo font style with entrance animation */}
             <h1 
-              className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-3 opacity-0 animate-fade-in-up"
+              className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-1 opacity-0 animate-fade-in-up"
               style={{ 
                 textShadow: '0 2px 8px hsl(38 92% 50% / 0.3), 0 4px 16px hsl(38 92% 50% / 0.15)',
                 fontFamily: 'serif',
@@ -213,8 +213,20 @@ const MotionGraphicsLookbook = () => {
                 animationFillMode: 'forwards'
               }}
             >
-              Featured Collection
+              Looks Collection
             </h1>
+            
+            {/* Motion Backgrounds Subtitle */}
+            <p 
+              className="text-lg font-light tracking-[0.2em] uppercase text-muted-foreground mb-4 opacity-0 animate-fade-in-up"
+              style={{ 
+                fontFamily: 'serif',
+                animationDelay: '400ms',
+                animationFillMode: 'forwards'
+              }}
+            >
+              Motion Backgrounds
+            </p>
             
             {/* Search Bar - Centered below title with entrance animation */}
             <div 
