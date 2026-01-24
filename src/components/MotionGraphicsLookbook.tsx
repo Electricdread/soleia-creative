@@ -520,9 +520,14 @@ const MotionGraphicsLookbook = () => {
                     </div>
                     <button
                       onClick={() => {
-                        if (videoRef.current) {
-                          if (videoRef.current.requestFullscreen) {
-                            videoRef.current.requestFullscreen();
+                        const video = videoRef.current;
+                        if (video) {
+                          if (video.requestFullscreen) {
+                            video.requestFullscreen().catch(console.error);
+                          } else if ((video as any).webkitRequestFullscreen) {
+                            (video as any).webkitRequestFullscreen();
+                          } else if ((video as any).webkitEnterFullscreen) {
+                            (video as any).webkitEnterFullscreen();
                           }
                         }
                       }}
