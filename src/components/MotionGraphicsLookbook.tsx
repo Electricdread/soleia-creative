@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { artlistApi, artlistCategories, type ArtlistClip, type ArtlistCategoryKey } from '@/lib/api/artlist';
 import { useToast } from '@/hooks/use-toast';
+import { AdminPanel } from '@/components/admin/AdminPanel';
 
 interface SelectedClip extends ArtlistClip {
   note: string;
@@ -243,8 +244,9 @@ const MotionGraphicsLookbook = () => {
           ))}
         </nav>
 
-        {/* Refresh Button */}
+        {/* Admin & Refresh Controls */}
         <div className="mb-6 flex items-center gap-4">
+          <AdminPanel onClipsUpdated={() => fetchClips(false)} />
           <Button
             onClick={() => fetchClips(true)}
             disabled={isLoading}
