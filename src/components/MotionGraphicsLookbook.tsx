@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Check, Send, X, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, ExternalLink, Volume2, VolumeX, Pause } from 'lucide-react';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -179,9 +179,6 @@ const MotionGraphicsLookbook = () => {
     });
   };
 
-  const openArtlistLink = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
 
   return (
     <div className="min-h-screen">
@@ -336,16 +333,10 @@ const MotionGraphicsLookbook = () => {
                       </button>
                     </div>
 
-                    {/* External Link */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openArtlistLink(clip.sourceUrl);
-                      }}
-                      className="absolute bottom-3 right-3 w-8 h-8 bg-background/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
-                    >
-                      <ExternalLink className="w-4 h-4 text-foreground" />
-                    </button>
+                    {/* Artlist Badge */}
+                    <div className="absolute bottom-3 right-3 px-2 py-1 bg-background/80 rounded text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      Artlist
+                    </div>
                   </div>
 
                   {/* Info */}
@@ -499,17 +490,12 @@ const MotionGraphicsLookbook = () => {
                     className="w-full h-full object-cover"
                     onError={() => previewClip && handleImageError(previewClip.id)}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                    <div className="text-center">
-                      <p className="text-white/80 mb-4">Video preview available on Artlist</p>
-                      <Button
-                        onClick={() => previewClip && openArtlistLink(previewClip.sourceUrl)}
-                        variant="secondary"
-                        className="gap-2"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        View on Artlist
-                      </Button>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <div className="text-center p-4">
+                      <Play className="w-16 h-16 text-white/60 mx-auto mb-4" />
+                      <p className="text-white/80 text-lg font-medium mb-2">Premium Clip Preview</p>
+                      <p className="text-white/60 text-sm">Video playback requires Artlist subscription</p>
+                      <p className="text-white/40 text-xs mt-4">Source: Artlist.io</p>
                     </div>
                   </div>
                 </div>
@@ -517,14 +503,9 @@ const MotionGraphicsLookbook = () => {
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
                   <div className="text-center p-8">
                     <Sparkles className="w-16 h-16 text-primary/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground mb-4">Preview available on Artlist</p>
-                    <Button
-                      onClick={() => previewClip && openArtlistLink(previewClip.sourceUrl)}
-                      className="gap-2"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      View on Artlist
-                    </Button>
+                    <p className="text-muted-foreground mb-2">Premium Clip Preview</p>
+                    <p className="text-muted-foreground/60 text-sm">Video playback requires Artlist subscription</p>
+                    <p className="text-muted-foreground/40 text-xs mt-4">Source: Artlist.io</p>
                   </div>
                 </div>
               )}

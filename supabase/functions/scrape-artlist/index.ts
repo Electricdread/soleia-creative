@@ -19,7 +19,7 @@ interface ArtlistClip {
 }
 
 // Fetch thumbnail and preview from a clip page
-async function fetchClipDetails(apiKey: string, clipUrl: string): Promise<{ thumbnail: string; previewUrl: string }> {
+async function fetchClipDetails(apiKey: string, clipUrl: string): Promise<{ thumbnail: string; previewUrl: string; duration: string }> {
   try {
     const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
@@ -30,33 +30,81 @@ async function fetchClipDetails(apiKey: string, clipUrl: string): Promise<{ thum
       body: JSON.stringify({
         url: clipUrl,
         formats: ['html'],
-        waitFor: 2000,
+        waitFor: 3000,
         onlyMainContent: false,
       }),
     });
 
-    if (!response.ok) return { thumbnail: '', previewUrl: '' };
+    if (!response.ok) return { thumbnail: '', previewUrl: '', duration: '' };
 
     const data = await response.json();
     const html = data.data?.html || '';
 
-    // Find thumbnail - look for og:image or poster images
+    // Find thumbnail - prioritize Artlist CDN images
+    let thumbnail = '';
+    
+    // Look for og:image first (usually high quality)
     const ogImageMatch = html.match(/property="og:image"[^>]*content="([^"]+)"/);
-    const posterMatch = html.match(/poster="([^"]+)"/);
-    const imgMatch = html.match(/src="(https:\/\/[^"]+(?:thumbnail|poster|cdn)[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/i);
+    if (ogImageMatch) {
+      thumbnail = ogImageMatch[1];
+    }
     
-    const thumbnail = ogImageMatch?.[1] || posterMatch?.[1] || imgMatch?.[1] || '';
-
-    // Find video preview URL
-    const videoMatch = html.match(/src="(https:\/\/[^"]+(?:preview|video)[^"]*\.(?:mp4|webm)[^"]*)"/i);
-    const sourceMatch = html.match(/<source[^>]*src="([^"]+\.(?:mp4|webm))"/i);
+    // Look for video poster
+    if (!thumbnail) {
+      const posterMatch = html.match(/poster="(https:\/\/[^"]+)"/);
+      if (posterMatch) thumbnail = posterMatch[1];
+    }
     
-    const previewUrl = videoMatch?.[1] || sourceMatch?.[1] || '';
+    // Look for Artlist CDN images
+    if (!thumbnail) {
+      const cdnMatch = html.match(/src="(https:\/\/(?:cdn|d\d+)[^"]*artlist[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/i);
+      if (cdnMatch) thumbnail = cdnMatch[1];
+    }
+    
+    // Look for any thumbnail/poster class images
+    if (!thumbnail) {
+      const thumbMatch = html.match(/class="[^"]*(?:thumbnail|poster|preview)[^"]*"[^>]*src="([^"]+)"/i);
+      if (thumbMatch) thumbnail = thumbMatch[1];
+    }
 
-    return { thumbnail, previewUrl };
+    // Find video preview URL - look for mp4/webm sources
+    let previewUrl = '';
+    
+    // Look for video source elements
+    const sourceMatch = html.match(/<source[^>]*src="(https:\/\/[^"]+\.(?:mp4|webm))"/i);
+    if (sourceMatch) {
+      previewUrl = sourceMatch[1];
+    }
+    
+    // Look for video src attribute
+    if (!previewUrl) {
+      const videoSrcMatch = html.match(/<video[^>]*src="(https:\/\/[^"]+\.(?:mp4|webm))"/i);
+      if (videoSrcMatch) previewUrl = videoSrcMatch[1];
+    }
+    
+    // Look for preview URLs in data attributes or JSON
+    if (!previewUrl) {
+      const previewDataMatch = html.match(/preview[_-]?(?:url|src|video)["']?\s*[:=]\s*["'](https:\/\/[^"']+\.(?:mp4|webm))/i);
+      if (previewDataMatch) previewUrl = previewDataMatch[1];
+    }
+    
+    // Look for Artlist CDN video URLs
+    if (!previewUrl) {
+      const cdnVideoMatch = html.match(/(https:\/\/(?:cdn|d\d+|stream)[^"'\s]*artlist[^"'\s]*\.(?:mp4|webm))/i);
+      if (cdnVideoMatch) previewUrl = cdnVideoMatch[1];
+    }
+
+    // Try to extract duration
+    let duration = '';
+    const durationMatch = html.match(/duration['":\s]+(\d+:\d+)/i) || html.match(/(\d{1,2}:\d{2})/);
+    if (durationMatch) {
+      duration = durationMatch[1];
+    }
+
+    return { thumbnail, previewUrl, duration };
   } catch (error) {
     console.error('Error fetching clip details:', error);
-    return { thumbnail: '', previewUrl: '' };
+    return { thumbnail: '', previewUrl: '', duration: '' };
   }
 }
 
@@ -125,14 +173,14 @@ serve(async (req) => {
 
     // Map category to search terms
     const categorySearchTerms: Record<string, string> = {
-      'motion-backgrounds': 'motion graphics background loop',
-      'abstract': 'abstract visual patterns animation',
-      'particles': 'particles effects motion',
-      'nature': 'nature landscape aerial cinematic',
-      'events': 'event celebration fireworks party',
-      'technology': 'technology digital data futuristic',
-      'corporate': 'business corporate office professional',
-      'all': 'motion graphics video'
+      'motion-backgrounds': 'motion graphics background loop animation',
+      'abstract': 'abstract visual patterns geometric animation',
+      'particles': 'particles dust floating glitter effects',
+      'nature': 'nature landscape drone aerial cinematic',
+      'events': 'celebration fireworks confetti party',
+      'technology': 'technology digital data hologram futuristic',
+      'corporate': 'business office professional meeting',
+      'all': 'motion graphics video loop'
     };
 
     const searchTerm = categorySearchTerms[category] || 'motion graphics';
@@ -148,7 +196,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         query: `site:artlist.io/stock-footage/clip ${searchTerm}`,
-        limit: 24,
+        limit: 20,
       }),
     });
 
@@ -169,68 +217,55 @@ serve(async (req) => {
 
     // Filter for actual clip pages
     const clipResults = results.filter((r: any) => 
-      r.url && (r.url.includes('/clip/') || r.url.includes('/footage/'))
-    );
+      r.url && r.url.includes('/clip/')
+    ).slice(0, 16);
 
     console.log('Filtered clip results:', clipResults.length);
 
-    // Process clips - fetch thumbnails for first 12, use placeholders for rest
-    for (let i = 0; i < clipResults.length; i++) {
-      const result = clipResults[i];
+    // Process all clips in parallel batches to fetch real thumbnails
+    const batchSize = 4;
+    for (let batchStart = 0; batchStart < clipResults.length; batchStart += batchSize) {
+      const batch = clipResults.slice(batchStart, batchStart + batchSize);
       
-      let title = (result.title || `Motion Clip ${i + 1}`)
-        .replace(' - Artlist', '')
-        .replace(' | Artlist', '')
-        .replace(' – Stock Footage', '')
-        .replace(' – Stock Video', '')
-        .trim();
-      
-      // Clean up title format
-      if (title.includes(' by ')) {
-        title = title.split(' by ')[0].trim();
-      }
+      const batchResults = await Promise.all(batch.map(async (result: any, batchIndex: number) => {
+        const i = batchStart + batchIndex;
+        
+        let title = (result.title || `Motion Clip ${i + 1}`)
+          .replace(' - Artlist', '')
+          .replace(' | Artlist', '')
+          .replace(' – Stock Footage', '')
+          .replace(' – Stock Video', '')
+          .trim();
+        
+        // Clean up title format
+        if (title.includes(' by ')) {
+          title = title.split(' by ')[0].trim();
+        }
 
-      const clipId = `artlist-${category}-${i}-${Date.now()}`;
-      
-      // Fetch actual thumbnail for first 8 clips
-      let thumbnail = '';
-      let previewUrl = '';
-      
-      if (i < 8) {
+        const clipId = `artlist-${category}-${i}-${Date.now()}`;
+        
+        // Fetch actual thumbnail and preview
         const details = await fetchClipDetails(apiKey, result.url);
-        thumbnail = details.thumbnail;
-        previewUrl = details.previewUrl;
-      }
+        
+        return {
+          id: clipId,
+          title,
+          thumbnail: details.thumbnail,
+          videoUrl: result.url,
+          previewUrl: details.previewUrl,
+          resolution: '4K',
+          duration: details.duration || '0:15',
+          category,
+          sourceUrl: result.url,
+        };
+      }));
       
-      // Fallback thumbnail based on category
-      const fallbackThumbnails: Record<string, string> = {
-        'motion-backgrounds': 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=225&fit=crop&q=80',
-        'abstract': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=225&fit=crop&q=80',
-        'particles': 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=225&fit=crop&q=80',
-        'nature': 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=225&fit=crop&q=80',
-        'events': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=225&fit=crop&q=80',
-        'technology': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=225&fit=crop&q=80',
-        'corporate': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=225&fit=crop&q=80',
-      };
-      
-      if (!thumbnail) {
-        thumbnail = fallbackThumbnails[category] || fallbackThumbnails['motion-backgrounds'];
-      }
-
-      clips.push({
-        id: clipId,
-        title,
-        thumbnail,
-        videoUrl: result.url,
-        previewUrl,
-        resolution: '4K',
-        duration: '0:15-0:30',
-        category,
-        sourceUrl: result.url,
-      });
+      clips.push(...batchResults);
     }
 
     console.log('Total clips processed:', clips.length);
+    console.log('Clips with thumbnails:', clips.filter(c => c.thumbnail).length);
+    console.log('Clips with previews:', clips.filter(c => c.previewUrl).length);
 
     // Cache the clips in the database
     if (clips.length > 0) {
