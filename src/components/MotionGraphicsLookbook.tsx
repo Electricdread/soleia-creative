@@ -17,6 +17,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface SelectedClip extends ArtlistClip {
   note: string;
+  eventName: string;
+  eventDate: string;
 }
 
 // Luxury warm sun goddess gradient palette
@@ -38,6 +40,8 @@ const MotionGraphicsLookbook = () => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewClip, setPreviewClip] = useState<ArtlistClip | null>(null);
   const [previewNote, setPreviewNote] = useState('');
+  const [previewEventName, setPreviewEventName] = useState('');
+  const [previewEventDate, setPreviewEventDate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -138,6 +142,8 @@ const MotionGraphicsLookbook = () => {
     setPreviewClip(clip);
     const existingSelection = selectedClips.find(c => c.id === clip.id);
     setPreviewNote(existingSelection?.note || '');
+    setPreviewEventName(existingSelection?.eventName || '');
+    setPreviewEventDate(existingSelection?.eventDate || '');
     setShowPreviewModal(true);
   };
 
@@ -147,13 +153,15 @@ const MotionGraphicsLookbook = () => {
     setSelectedClips(prev => {
       const existing = prev.find(c => c.id === previewClip.id);
       if (existing) {
-        return prev.map(c => c.id === previewClip.id ? { ...c, note: previewNote } : c);
+        return prev.map(c => c.id === previewClip.id ? { ...c, note: previewNote, eventName: previewEventName, eventDate: previewEventDate } : c);
       }
-      return [...prev, { ...previewClip, note: previewNote }];
+      return [...prev, { ...previewClip, note: previewNote, eventName: previewEventName, eventDate: previewEventDate }];
     });
     setShowPreviewModal(false);
     setPreviewClip(null);
     setPreviewNote('');
+    setPreviewEventName('');
+    setPreviewEventDate('');
     
     toast({
       title: "Added to selection",
@@ -167,7 +175,7 @@ const MotionGraphicsLookbook = () => {
       if (isSelected) {
         return prev.filter(c => c.id !== clip.id);
       } else {
-        return [...prev, { ...clip, note: '' }];
+        return [...prev, { ...clip, note: '', eventName: '', eventDate: '' }];
       }
     });
   };
@@ -190,6 +198,8 @@ const MotionGraphicsLookbook = () => {
           title: clip.title,
           thumbnail: clip.thumbnail,
           note: clip.note,
+          eventName: clip.eventName,
+          eventDate: clip.eventDate,
           category: selectedCategory,
           resolution: clip.resolution,
           duration: clip.duration
@@ -204,6 +214,8 @@ const MotionGraphicsLookbook = () => {
             title: clip.title,
             thumbnail: clip.thumbnail,
             note: clip.note,
+            eventName: clip.eventName,
+            eventDate: clip.eventDate,
             category: selectedCategory
           })),
           pdfBase64,
@@ -642,6 +654,34 @@ const MotionGraphicsLookbook = () => {
               )}
             </div>
 
+            {/* Event Details */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="preview-event-name" className="text-foreground">
+                  Event Name
+                </Label>
+                <Input
+                  id="preview-event-name"
+                  value={previewEventName}
+                  onChange={(e) => setPreviewEventName(e.target.value)}
+                  placeholder="e.g., Summer Gala 2025"
+                  className="bg-background/50"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="preview-event-date" className="text-foreground">
+                  Event Date
+                </Label>
+                <Input
+                  id="preview-event-date"
+                  type="date"
+                  value={previewEventDate}
+                  onChange={(e) => setPreviewEventDate(e.target.value)}
+                  className="bg-background/50"
+                />
+              </div>
+            </div>
+
             {/* Note Input */}
             <div className="space-y-3">
               <Label htmlFor="preview-note" className="flex items-center gap-2 text-foreground">
@@ -653,7 +693,7 @@ const MotionGraphicsLookbook = () => {
                 value={previewNote}
                 onChange={(e) => setPreviewNote(e.target.value)}
                 placeholder="Add notes about how you want to use this clip, timing preferences, etc..."
-                className="min-h-[100px] bg-background/50"
+                className="min-h-[80px] bg-background/50"
               />
             </div>
 
