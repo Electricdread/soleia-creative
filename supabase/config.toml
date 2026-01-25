@@ -1,1 +1,4 @@
 project_id = "rszawchsbpsmtrtvljta"
+
+[functions.send-selections-pdf]
+verify_jwt = false
