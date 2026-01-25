@@ -18,7 +18,7 @@ import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
-import LandingHero from '@/components/LandingHero';
+
 
 const INTERIOR_PLACEMENTS = [
   'Curves SR',
@@ -60,7 +60,7 @@ const categoryGradients: Record<string, string> = {
 
 const MotionGraphicsLookbook = () => {
   const { toast } = useToast();
-  const [showLanding, setShowLanding] = useState(true);
+  
   const [selectedCategory, setSelectedCategory] = useState<ArtlistCategoryKey>('featured-collections');
   const [clips, setClips] = useState<ArtlistClip[]>([]);
   const [selectedClips, setSelectedClips] = useState<SelectedClip[]>([]);
@@ -84,7 +84,6 @@ const MotionGraphicsLookbook = () => {
 
   // Fetch clips - first from cache, then scrape if needed
   const fetchClips = useCallback(async (forceRefresh: boolean = false) => {
-    if (showLanding) return; // Don't fetch if on landing page
     setIsLoading(true);
     setImageErrors(new Set());
     
@@ -129,18 +128,11 @@ const MotionGraphicsLookbook = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory, toast, showLanding]);
+  }, [selectedCategory, toast]);
 
   useEffect(() => {
-    if (!showLanding) {
-      fetchClips(false);
-    }
-  }, [fetchClips, showLanding]);
-
-  // Show landing page - AFTER all hooks
-  if (showLanding) {
-    return <LandingHero onEnterGallery={() => setShowLanding(false)} />;
-  }
+    fetchClips(false);
+  }, [fetchClips]);
 
   // Search functionality
   const handleSearch = async () => {
