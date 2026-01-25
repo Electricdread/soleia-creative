@@ -70,13 +70,9 @@ const MotionGraphicsLookbook = () => {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Show landing page
-  if (showLanding) {
-    return <LandingHero onEnterGallery={() => setShowLanding(false)} />;
-  }
-
   // Fetch clips - first from cache, then scrape if needed
   const fetchClips = useCallback(async (forceRefresh: boolean = false) => {
+    if (showLanding) return; // Don't fetch if on landing page
     setIsLoading(true);
     setImageErrors(new Set());
     
@@ -121,11 +117,18 @@ const MotionGraphicsLookbook = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory, toast]);
+  }, [selectedCategory, toast, showLanding]);
 
   useEffect(() => {
-    fetchClips(false);
-  }, [fetchClips]);
+    if (!showLanding) {
+      fetchClips(false);
+    }
+  }, [fetchClips, showLanding]);
+
+  // Show landing page - AFTER all hooks
+  if (showLanding) {
+    return <LandingHero onEnterGallery={() => setShowLanding(false)} />;
+  }
 
   // Search functionality
   const handleSearch = async () => {
