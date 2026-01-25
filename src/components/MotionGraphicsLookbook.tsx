@@ -367,27 +367,37 @@ const MotionGraphicsLookbook = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Luxury Header */}
-      <header className="glass-strong sticky top-0 z-30 border-b border-primary/10">
+      {/* Dynamic Luxury Header with Animated Background */}
+      <header className="glass-strong sticky top-0 z-30 border-b border-primary/10 overflow-hidden">
+        {/* Animated Background Rays */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-20 left-1/4 w-96 h-96 bg-gradient-radial from-primary/20 via-primary/5 to-transparent rounded-full blur-3xl animate-glow-pulse-slow" />
+          <div className="absolute -top-10 right-1/4 w-80 h-80 bg-gradient-radial from-accent/15 via-accent/5 to-transparent rounded-full blur-3xl animate-glow-pulse-slow" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent shimmer-slow" />
+        </div>
+        
         <div className="relative max-w-7xl mx-auto px-6 py-8">
           {/* User Menu - Top Right */}
-          <div className="absolute top-6 right-6">
+          <div className="absolute top-6 right-6 z-20">
             <UserMenu />
           </div>
           
           {/* Centered Hero Logo Layout */}
-          <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col items-center text-center relative">
+            {/* Animated Glow Ring Behind Logo */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] rounded-full border border-primary/20 animate-rotate-glow opacity-30 pointer-events-none" />
+            
             {/* Large Soleia Logo - Full width on mobile with entrance animation */}
             <img 
               src={soleiaLogo} 
               alt="Soleia" 
-              className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-2 px-4 md:px-0 opacity-0 animate-fade-in-up"
+              className="w-full max-w-3xl h-auto md:h-80 object-contain transition-elegant hover:scale-105 mb-2 px-4 md:px-0 opacity-0 animate-fade-in-up relative z-10"
               style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
             />
             
             {/* Looks Collection Title - matching logo font style with entrance animation */}
             <h1 
-              className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-1 opacity-0 animate-fade-in-up"
+              className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-1 opacity-0 animate-fade-in-up relative z-10"
               style={{ 
                 textShadow: '0 2px 8px hsl(38 92% 50% / 0.3), 0 4px 16px hsl(38 92% 50% / 0.15)',
                 fontFamily: 'serif',
@@ -399,9 +409,9 @@ const MotionGraphicsLookbook = () => {
               Looks Collection
             </h1>
             
-            {/* Motion Backgrounds Subtitle */}
+            {/* Motion Backgrounds Subtitle with shimmer effect */}
             <p 
-              className="text-lg font-light tracking-[0.2em] uppercase text-muted-foreground mb-4 opacity-0 animate-fade-in-up"
+              className="text-lg font-light tracking-[0.2em] uppercase text-muted-foreground mb-4 opacity-0 animate-fade-in-up relative z-10"
               style={{ 
                 fontFamily: 'serif',
                 animationDelay: '400ms',
@@ -413,7 +423,7 @@ const MotionGraphicsLookbook = () => {
             
             {/* Search Bar - Centered below title with entrance animation */}
             <div 
-              className="opacity-0 animate-fade-in-up"
+              className="opacity-0 animate-fade-in-up relative z-10"
               style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}
             >
               <div className="relative">
@@ -424,7 +434,7 @@ const MotionGraphicsLookbook = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-11 w-80 bg-background/40 border-border/50 focus:border-primary/50 transition-elegant rounded-xl h-11"
+                  className="pl-11 w-80 bg-background/40 border-border/50 focus:border-primary/50 transition-elegant rounded-xl h-11 backdrop-blur-sm"
                 />
                 {isSearching && (
                   <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
