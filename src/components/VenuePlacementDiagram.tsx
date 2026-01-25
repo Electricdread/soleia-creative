@@ -2,8 +2,8 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface VenuePlacementDiagramProps {
-  selectedPlacement: string;
-  onSelect?: (placement: string) => void;
+  selectedPlacements: string[];
+  onToggle?: (placement: string) => void;
   interactive?: boolean;
 }
 
@@ -17,8 +17,8 @@ const PLACEMENTS = [
 ] as const;
 
 const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
-  selectedPlacement,
-  onSelect,
+  selectedPlacements,
+  onToggle,
   interactive = true
 }) => {
   return (
@@ -77,8 +77,8 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
 
         {/* Placement zones */}
         {PLACEMENTS.map((placement) => {
-          const isSelected = selectedPlacement === placement.id;
-          const isInteractive = interactive && onSelect;
+          const isSelected = selectedPlacements.includes(placement.id);
+          const isInteractive = interactive && onToggle;
 
           return (
             <g key={placement.id}>
@@ -97,7 +97,7 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
                     : 'fill-muted/20 stroke-muted-foreground/30 hover:fill-primary/10 hover:stroke-primary/50'
                 )}
                 strokeWidth={isSelected ? 1.5 : 0.5}
-                onClick={() => isInteractive && onSelect(placement.id)}
+                onClick={() => isInteractive && onToggle(placement.id)}
               />
 
               {/* Glow effect for selected */}
@@ -114,6 +114,17 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
                   opacity="0.5"
                   className="animate-pulse"
                 />
+              )}
+
+              {/* Checkmark for selected */}
+              {isSelected && (
+                <text
+                  x={placement.x + placement.width / 2 - 3}
+                  y={placement.y - placement.height / 2 + 4}
+                  className="text-[4px] fill-primary font-bold"
+                >
+                  ✓
+                </text>
               )}
 
               {/* Label */}
@@ -150,13 +161,25 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
 
       {/* Title overlay */}
       <div className="absolute bottom-2 left-2 text-[10px] text-muted-foreground/60 font-light tracking-wider uppercase">
-        Venue Layout
+        Venue Layout • Click to select
       </div>
 
-      {/* Selected indicator */}
-      {selectedPlacement && (
-        <div className="absolute top-2 right-2 px-2 py-1 bg-primary/20 rounded-full">
-          <span className="text-[10px] text-primary font-medium">{selectedPlacement}</span>
+      {/* Selected indicators */}
+      {selectedPlacements.length > 0 && (
+        <div className="absolute top-2 right-2 flex flex-wrap gap-1 max-w-[60%] justify-end">
+          {selectedPlacements.slice(0, 3).map((placement) => (
+            <span 
+              key={placement} 
+              className="px-1.5 py-0.5 bg-primary/20 rounded-full text-[9px] text-primary font-medium"
+            >
+              {placement}
+            </span>
+          ))}
+          {selectedPlacements.length > 3 && (
+            <span className="px-1.5 py-0.5 bg-primary/20 rounded-full text-[9px] text-primary font-medium">
+              +{selectedPlacements.length - 3}
+            </span>
+          )}
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin } from 'lucide-react';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,7 @@ interface SelectedClip extends ArtlistClip {
   note: string;
   eventName: string;
   eventDate: string;
-  placement: string;
+  placements: string[];
 }
 
 // Luxury warm sun goddess gradient palette
@@ -56,8 +56,9 @@ const MotionGraphicsLookbook = () => {
   const [previewNote, setPreviewNote] = useState('');
   const [previewEventName, setPreviewEventName] = useState('');
   const [previewEventDate, setPreviewEventDate] = useState('');
-  const [previewPlacement, setPreviewPlacement] = useState('');
+  const [previewPlacements, setPreviewPlacements] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
@@ -159,7 +160,7 @@ const MotionGraphicsLookbook = () => {
     setPreviewNote(existingSelection?.note || '');
     setPreviewEventName(existingSelection?.eventName || '');
     setPreviewEventDate(existingSelection?.eventDate || '');
-    setPreviewPlacement(existingSelection?.placement || '');
+    setPreviewPlacements(existingSelection?.placements || []);
     setShowPreviewModal(true);
   };
 
@@ -169,21 +170,29 @@ const MotionGraphicsLookbook = () => {
     setSelectedClips(prev => {
       const existing = prev.find(c => c.id === previewClip.id);
       if (existing) {
-        return prev.map(c => c.id === previewClip.id ? { ...c, note: previewNote, eventName: previewEventName, eventDate: previewEventDate, placement: previewPlacement } : c);
+        return prev.map(c => c.id === previewClip.id ? { ...c, note: previewNote, eventName: previewEventName, eventDate: previewEventDate, placements: previewPlacements } : c);
       }
-      return [...prev, { ...previewClip, note: previewNote, eventName: previewEventName, eventDate: previewEventDate, placement: previewPlacement }];
+      return [...prev, { ...previewClip, note: previewNote, eventName: previewEventName, eventDate: previewEventDate, placements: previewPlacements }];
     });
     setShowPreviewModal(false);
     setPreviewClip(null);
     setPreviewNote('');
     setPreviewEventName('');
     setPreviewEventDate('');
-    setPreviewPlacement('');
+    setPreviewPlacements([]);
     
     toast({
       title: "Added to selection",
       description: `"${previewClip.title}" has been added to your selection`,
     });
+  };
+
+  const togglePreviewPlacement = (placement: string) => {
+    setPreviewPlacements(prev => 
+      prev.includes(placement) 
+        ? prev.filter(p => p !== placement)
+        : [...prev, placement]
+    );
   };
 
   const toggleClipSelection = (clip: ArtlistClip) => {
@@ -192,9 +201,59 @@ const MotionGraphicsLookbook = () => {
       if (isSelected) {
         return prev.filter(c => c.id !== clip.id);
       } else {
-        return [...prev, { ...clip, note: '', eventName: '', eventDate: '', placement: '' }];
+        return [...prev, { ...clip, note: '', eventName: '', eventDate: '', placements: [] }];
       }
     });
+  };
+
+  const generatePdfData = async () => {
+    return await generateSelectionsPdf(
+      selectedClips.map(clip => ({
+        id: clip.id,
+        external_id: clip.id,
+        title: clip.title,
+        thumbnail: clip.thumbnail,
+        note: clip.note,
+        eventName: clip.eventName,
+        eventDate: clip.eventDate,
+        placements: clip.placements,
+        category: selectedCategory,
+        resolution: clip.resolution,
+        duration: clip.duration
+      }))
+    );
+  };
+
+  const downloadPdf = async () => {
+    if (selectedClips.length === 0) return;
+    
+    setIsDownloading(true);
+    
+    try {
+      const pdfBase64 = await generatePdfData();
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = `data:application/pdf;base64,${pdfBase64}`;
+      link.download = `soleia-selections-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "PDF Downloaded",
+        description: `Your ${selectedClips.length} selections have been saved`,
+      });
+    } catch (error: any) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download failed",
+        description: error.message || "Could not generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleImageError = (clipId: string) => {
@@ -208,21 +267,7 @@ const MotionGraphicsLookbook = () => {
     
     try {
       // Generate PDF with thumbnails
-      const pdfBase64 = await generateSelectionsPdf(
-        selectedClips.map(clip => ({
-          id: clip.id,
-          external_id: clip.id,
-          title: clip.title,
-          thumbnail: clip.thumbnail,
-          note: clip.note,
-          eventName: clip.eventName,
-          eventDate: clip.eventDate,
-          placement: clip.placement,
-          category: selectedCategory,
-          resolution: clip.resolution,
-          duration: clip.duration
-        }))
-      );
+      const pdfBase64 = await generatePdfData();
       
       // Send to edge function
       const { data, error } = await supabase.functions.invoke('send-selections-pdf', {
@@ -234,7 +279,7 @@ const MotionGraphicsLookbook = () => {
             note: clip.note,
             eventName: clip.eventName,
             eventDate: clip.eventDate,
-            placement: clip.placement,
+            placements: clip.placements,
             category: selectedCategory
           })),
           pdfBase64,
@@ -532,13 +577,31 @@ const MotionGraphicsLookbook = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
                   onClick={() => setSelectedClips([])}
                   className="text-muted-foreground hover:text-foreground transition-elegant rounded-xl"
                 >
                   Clear All
+                </Button>
+                <Button 
+                  onClick={downloadPdf} 
+                  disabled={isDownloading}
+                  variant="outline"
+                  className="gap-2 rounded-xl px-5 py-5 text-base font-semibold border-primary/30 hover:bg-primary/10 transition-elegant"
+                >
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      Download PDF
+                    </>
+                  )}
                 </Button>
                 <Button 
                   onClick={sendSelections} 
@@ -700,22 +763,32 @@ const MotionGraphicsLookbook = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="preview-placement" className="flex items-center gap-2 text-foreground">
+                <Label className="flex items-center gap-2 text-foreground">
                   <MapPin className="w-4 h-4" />
-                  Placement
+                  Placements
+                  {previewPlacements.length > 0 && (
+                    <span className="text-xs text-primary">({previewPlacements.length} selected)</span>
+                  )}
                 </Label>
-                <Select value={previewPlacement} onValueChange={setPreviewPlacement}>
-                  <SelectTrigger id="preview-placement" className="bg-background/50">
-                    <SelectValue placeholder="Select placement..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border border-border z-50">
-                    {PLACEMENT_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
+                <div className="flex flex-wrap gap-2">
+                  {PLACEMENT_OPTIONS.map((option) => {
+                    const isSelected = previewPlacements.includes(option);
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => togglePreviewPlacement(option)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                          isSelected
+                            ? 'bg-primary text-primary-foreground shadow-md'
+                            : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
+                        }`}
+                      >
                         {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -726,8 +799,8 @@ const MotionGraphicsLookbook = () => {
                 Venue Location Preview
               </Label>
               <VenuePlacementDiagram 
-                selectedPlacement={previewPlacement} 
-                onSelect={setPreviewPlacement}
+                selectedPlacements={previewPlacements} 
+                onToggle={togglePreviewPlacement}
               />
             </div>
 
