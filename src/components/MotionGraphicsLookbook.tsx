@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail } from 'lucide-react';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { artlistApi, artlistCategories, type ArtlistClip, type ArtlistCategoryKey } from '@/lib/api/artlist';
 import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
@@ -15,10 +16,22 @@ import sunIcon from '@/assets/sun-icon.jpeg';
 import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 
+const PLACEMENT_OPTIONS = [
+  'Full Room',
+  'Main Wall',
+  'Curve Wall',
+  'Sky Blades',
+  'Outdoor Beach Club',
+  'Outdoor Arch'
+] as const;
+
+type PlacementOption = typeof PLACEMENT_OPTIONS[number];
+
 interface SelectedClip extends ArtlistClip {
   note: string;
   eventName: string;
   eventDate: string;
+  placement: string;
 }
 
 // Luxury warm sun goddess gradient palette
@@ -42,6 +55,7 @@ const MotionGraphicsLookbook = () => {
   const [previewNote, setPreviewNote] = useState('');
   const [previewEventName, setPreviewEventName] = useState('');
   const [previewEventDate, setPreviewEventDate] = useState('');
+  const [previewPlacement, setPreviewPlacement] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -144,6 +158,7 @@ const MotionGraphicsLookbook = () => {
     setPreviewNote(existingSelection?.note || '');
     setPreviewEventName(existingSelection?.eventName || '');
     setPreviewEventDate(existingSelection?.eventDate || '');
+    setPreviewPlacement(existingSelection?.placement || '');
     setShowPreviewModal(true);
   };
 
@@ -153,15 +168,16 @@ const MotionGraphicsLookbook = () => {
     setSelectedClips(prev => {
       const existing = prev.find(c => c.id === previewClip.id);
       if (existing) {
-        return prev.map(c => c.id === previewClip.id ? { ...c, note: previewNote, eventName: previewEventName, eventDate: previewEventDate } : c);
+        return prev.map(c => c.id === previewClip.id ? { ...c, note: previewNote, eventName: previewEventName, eventDate: previewEventDate, placement: previewPlacement } : c);
       }
-      return [...prev, { ...previewClip, note: previewNote, eventName: previewEventName, eventDate: previewEventDate }];
+      return [...prev, { ...previewClip, note: previewNote, eventName: previewEventName, eventDate: previewEventDate, placement: previewPlacement }];
     });
     setShowPreviewModal(false);
     setPreviewClip(null);
     setPreviewNote('');
     setPreviewEventName('');
     setPreviewEventDate('');
+    setPreviewPlacement('');
     
     toast({
       title: "Added to selection",
@@ -175,7 +191,7 @@ const MotionGraphicsLookbook = () => {
       if (isSelected) {
         return prev.filter(c => c.id !== clip.id);
       } else {
-        return [...prev, { ...clip, note: '', eventName: '', eventDate: '' }];
+        return [...prev, { ...clip, note: '', eventName: '', eventDate: '', placement: '' }];
       }
     });
   };
@@ -200,6 +216,7 @@ const MotionGraphicsLookbook = () => {
           note: clip.note,
           eventName: clip.eventName,
           eventDate: clip.eventDate,
+          placement: clip.placement,
           category: selectedCategory,
           resolution: clip.resolution,
           duration: clip.duration
@@ -216,6 +233,7 @@ const MotionGraphicsLookbook = () => {
             note: clip.note,
             eventName: clip.eventName,
             eventDate: clip.eventDate,
+            placement: clip.placement,
             category: selectedCategory
           })),
           pdfBase64,
@@ -655,7 +673,7 @@ const MotionGraphicsLookbook = () => {
             </div>
 
             {/* Event Details */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="preview-event-name" className="text-foreground">
                   Event Name
@@ -679,6 +697,24 @@ const MotionGraphicsLookbook = () => {
                   onChange={(e) => setPreviewEventDate(e.target.value)}
                   className="bg-background/50"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="preview-placement" className="flex items-center gap-2 text-foreground">
+                  <MapPin className="w-4 h-4" />
+                  Placement
+                </Label>
+                <Select value={previewPlacement} onValueChange={setPreviewPlacement}>
+                  <SelectTrigger id="preview-placement" className="bg-background/50">
+                    <SelectValue placeholder="Select placement..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {PLACEMENT_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

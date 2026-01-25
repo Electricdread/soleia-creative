@@ -9,6 +9,7 @@ interface SelectionForPdf {
   note: string;
   eventName: string;
   eventDate: string;
+  placement: string;
   category: string;
   resolution: string;
   duration: string;
@@ -224,15 +225,23 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
     const metaText = `${selection.resolution} • ${selection.duration} • ${selection.category}`;
     pdf.text(metaText, textX + 10, yPosition + 13);
 
-    // Event details
+    // Event details and placement
     let detailY = yPosition + 20;
-    if (selection.eventName || selection.eventDate) {
+    if (selection.eventName || selection.eventDate || selection.placement) {
       pdf.setTextColor(245, 158, 11); // Gold color for event
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'bold');
-      const eventText = [selection.eventName, selection.eventDate].filter(Boolean).join(' • ');
-      pdf.text(`✦ ${eventText}`, textX + 10, detailY);
-      detailY += 6;
+      const eventParts = [selection.eventName, selection.eventDate].filter(Boolean);
+      if (eventParts.length > 0) {
+        pdf.text(`✦ ${eventParts.join(' • ')}`, textX + 10, detailY);
+        detailY += 6;
+      }
+      if (selection.placement) {
+        pdf.setTextColor(100, 80, 60); // Darker color for placement
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`📍 Placement: ${selection.placement}`, textX + 10, detailY);
+        detailY += 6;
+      }
     }
 
     // Note with styled background
