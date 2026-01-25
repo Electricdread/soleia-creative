@@ -18,12 +18,12 @@ import { supabase } from '@/integrations/supabase/client';
 import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
 import LandingHero from '@/components/LandingHero';
 const PLACEMENT_OPTIONS = [
-  'Full Room',
-  'Main Wall',
-  'Curve Wall',
-  'Sky Blades',
-  'Outdoor Beach Club',
-  'Outdoor Arch'
+  'Curves SR',
+  'IMAG SR',
+  'Center',
+  'IMAG SL',
+  'SL Curves',
+  'DJ Booth'
 ] as const;
 
 type PlacementOption = typeof PLACEMENT_OPTIONS[number];
