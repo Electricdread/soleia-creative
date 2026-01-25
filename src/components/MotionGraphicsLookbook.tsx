@@ -16,7 +16,7 @@ import sunIcon from '@/assets/sun-icon.jpeg';
 import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
-
+import LandingHero from '@/components/LandingHero';
 const PLACEMENT_OPTIONS = [
   'Full Room',
   'Main Wall',
@@ -48,6 +48,7 @@ const categoryGradients: Record<string, string> = {
 
 const MotionGraphicsLookbook = () => {
   const { toast } = useToast();
+  const [showLanding, setShowLanding] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<ArtlistCategoryKey>('featured-collections');
   const [clips, setClips] = useState<ArtlistClip[]>([]);
   const [selectedClips, setSelectedClips] = useState<SelectedClip[]>([]);
@@ -68,6 +69,11 @@ const MotionGraphicsLookbook = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Show landing page
+  if (showLanding) {
+    return <LandingHero onEnterGallery={() => setShowLanding(false)} />;
+  }
 
   // Fetch clips - first from cache, then scrape if needed
   const fetchClips = useCallback(async (forceRefresh: boolean = false) => {
