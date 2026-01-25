@@ -7,6 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Hardcoded recipient for testing (Resend requires domain verification for other recipients)
+const RECIPIENT_EMAIL = "ninemilelion@gmail.com";
+
 interface Selection {
   external_id: string;
   title: string;
@@ -18,7 +21,7 @@ interface Selection {
 interface SendSelectionsRequest {
   selections: Selection[];
   pdfBase64: string;
-  recipientEmail: string;
+  recipientEmail?: string; // Ignored - using hardcoded email
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -27,10 +30,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { selections, pdfBase64, recipientEmail }: SendSelectionsRequest = await req.json();
+    const { selections, pdfBase64 }: SendSelectionsRequest = await req.json();
 
-    if (!selections || !pdfBase64 || !recipientEmail) {
-      throw new Error("Missing required fields: selections, pdfBase64, or recipientEmail");
+    if (!selections || !pdfBase64) {
+      throw new Error("Missing required fields: selections or pdfBase64");
     }
 
     // Create HTML summary of selections
@@ -47,9 +50,11 @@ const handler = async (req: Request): Promise<Response> => {
       </tr>
     `).join('');
 
+    console.log(`Sending selections email to: ${RECIPIENT_EMAIL}`);
+
     const emailResponse = await resend.emails.send({
       from: "Looks Collection <onboarding@resend.dev>",
-      to: [recipientEmail],
+      to: [RECIPIENT_EMAIL],
       subject: `Your Looks Collection Selections (${selections.length} clips)`,
       html: `
         <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto;">
