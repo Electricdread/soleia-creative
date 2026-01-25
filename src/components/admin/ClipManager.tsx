@@ -11,6 +11,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -20,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { artlistCategories } from '@/lib/api/artlist';
 import { Trash2, Loader2, Search, Pencil, GripVertical } from 'lucide-react';
+import { FramePicker } from './FramePicker';
 import {
   DndContext,
   closestCenter,
@@ -146,6 +148,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
     category: '',
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isCapturingFrame, setIsCapturingFrame] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -317,6 +320,45 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
     return artlistCategories.find(c => c.key === key)?.label || key;
   };
 
+  const handleFrameCaptured = async (blob: Blob) => {
+    if (!editingClip) return;
+    
+    setIsCapturingFrame(true);
+    try {
+      // Upload thumbnail to storage
+      const timestamp = Date.now();
+      const thumbPath = `${timestamp}-thumb-${editingClip.id}.jpg`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('clip-previews')
+        .upload(thumbPath, blob, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('clip-previews')
+        .getPublicUrl(thumbPath);
+
+      // Update form with new thumbnail URL
+      setEditForm(prev => ({ ...prev, thumbnail: publicUrl }));
+      
+      toast({ title: 'Frame captured', description: 'Click Save to apply the new thumbnail' });
+    } catch (error) {
+      console.error('Error capturing frame:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to capture frame',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCapturingFrame(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex gap-3">
@@ -401,9 +443,12 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
 
       {/* Edit Modal */}
       <Dialog open={!!editingClip} onOpenChange={(open) => !open && setEditingClip(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Clip</DialogTitle>
+            <DialogDescription>
+              Update clip details or pick a new thumbnail frame from the video.
+            </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
@@ -453,6 +498,18 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
                 />
               )}
             </div>
+
+            {/* Frame Picker */}
+            {(editForm.video_url || editingClip?.video_url) && (
+              <div className="pt-4 border-t border-border">
+                <FramePicker
+                  videoUrl={editForm.video_url || editingClip?.video_url || ''}
+                  currentThumbnail={editForm.thumbnail}
+                  onFrameCaptured={handleFrameCaptured}
+                  isCapturing={isCapturingFrame}
+                />
+              </div>
+            )}
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
