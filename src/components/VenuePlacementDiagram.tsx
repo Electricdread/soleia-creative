@@ -8,12 +8,12 @@ interface VenuePlacementDiagramProps {
 }
 
 const PLACEMENTS = [
-  { id: 'Curves SR', label: 'CURVES', sublabel: 'SR', x: 8, y: 50, width: 10, height: 60, type: 'curves', color: 'hsl(65, 100%, 50%)' },
-  { id: 'IMAG SR', label: 'IMAG', sublabel: 'SR', x: 28, y: 50, width: 22, height: 55, type: 'imag', color: 'hsl(280, 60%, 55%)' },
-  { id: 'Center', label: 'CENTER', sublabel: '', x: 50, y: 20, width: 14, height: 20, type: 'center', color: 'hsl(20, 100%, 55%)' },
-  { id: 'IMAG SL', label: 'IMAG', sublabel: 'SL', x: 72, y: 50, width: 22, height: 55, type: 'imag', color: 'hsl(280, 60%, 55%)' },
-  { id: 'SL Curves', label: 'CURVES', sublabel: 'SL', x: 92, y: 50, width: 10, height: 60, type: 'curves', color: 'hsl(65, 100%, 50%)' },
-  { id: 'DJ Booth', label: 'DJ', sublabel: 'BOOTH', x: 50, y: 88, width: 28, height: 12, type: 'booth', color: 'hsl(120, 80%, 55%)' },
+  { id: 'Curves SR', label: 'CURVES', sublabel: 'SR', x: 10, y: 50, width: 14, height: 35, type: 'curves', color: 'hsl(65, 100%, 50%)' },
+  { id: 'IMAG SR', label: 'IMAG', sublabel: 'SR', x: 32, y: 50, width: 28, height: 40, type: 'imag', color: 'hsl(280, 60%, 55%)' },
+  { id: 'Center', label: 'CENTER', sublabel: '', x: 50, y: 15, width: 20, height: 14, type: 'center', color: 'hsl(20, 100%, 55%)' },
+  { id: 'IMAG SL', label: 'IMAG', sublabel: 'SL', x: 68, y: 50, width: 28, height: 40, type: 'imag', color: 'hsl(280, 60%, 55%)' },
+  { id: 'SL Curves', label: 'CURVES', sublabel: 'SL', x: 90, y: 50, width: 14, height: 35, type: 'curves', color: 'hsl(65, 100%, 50%)' },
+  { id: 'DJ Booth', label: 'DJ', sublabel: 'BOOTH', x: 50, y: 85, width: 30, height: 14, type: 'booth', color: 'hsl(120, 80%, 55%)' },
 ] as const;
 
 const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
