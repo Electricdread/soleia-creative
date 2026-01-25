@@ -9,14 +9,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -27,7 +19,24 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { artlistCategories } from '@/lib/api/artlist';
-import { Trash2, Loader2, Search, Pencil } from 'lucide-react';
+import { Trash2, Loader2, Search, Pencil, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Clip {
   id: string;
@@ -39,6 +48,82 @@ interface Clip {
   video_url: string | null;
   source_url: string | null;
   thumbnail: string | null;
+  sort_order?: number;
+}
+
+interface SortableRowProps {
+  clip: Clip;
+  getCategoryLabel: (key: string) => string;
+  onEdit: (clip: Clip) => void;
+  onDelete: (id: string) => void;
+  deletingId: string | null;
+}
+
+function SortableRow({ clip, getCategoryLabel, onEdit, onDelete, deletingId }: SortableRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: clip.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : undefined,
+  };
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={`border-b border-border transition-colors hover:bg-muted/50 ${isDragging ? 'bg-muted' : ''}`}
+    >
+      <td className="p-3 w-10">
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      </td>
+      <td className="p-3 font-medium max-w-[200px] truncate">
+        {clip.title}
+      </td>
+      <td className="p-3">{getCategoryLabel(clip.category)}</td>
+      <td className="p-3">{clip.resolution}</td>
+      <td className="p-3">{clip.duration}</td>
+      <td className="p-3">
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(clip)}
+            className="h-8 w-8"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(clip.id)}
+            disabled={deletingId === clip.id}
+            className="h-8 w-8 text-destructive hover:text-destructive"
+          >
+            {deletingId === clip.id ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </td>
+    </tr>
+  );
 }
 
 export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
@@ -62,12 +147,24 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
   });
   const [isSaving, setIsSaving] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const fetchClips = async () => {
     setIsLoading(true);
     try {
       let query = supabase
         .from('cached_clips')
-        .select('id, title, category, resolution, duration, created_at, video_url, source_url, thumbnail')
+        .select('id, title, category, resolution, duration, created_at, video_url, source_url, thumbnail, sort_order')
+        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (selectedCategory && selectedCategory !== 'all') {
@@ -97,6 +194,44 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
   useEffect(() => {
     fetchClips();
   }, [selectedCategory, searchQuery]);
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = clips.findIndex(c => c.id === active.id);
+    const newIndex = clips.findIndex(c => c.id === over.id);
+
+    const reorderedClips = arrayMove(clips, oldIndex, newIndex);
+    setClips(reorderedClips);
+
+    // Update sort_order in database
+    try {
+      const updates = reorderedClips.map((clip, index) => ({
+        id: clip.id,
+        sort_order: index,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from('cached_clips')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id);
+      }
+
+      toast({ title: 'Order saved' });
+      onClipsUpdated?.();
+    } catch (error) {
+      console.error('Error saving order:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save order',
+        variant: 'destructive',
+      });
+      fetchClips(); // Revert to original order
+    }
+  };
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -222,59 +357,46 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
         </div>
       ) : (
         <div className="border rounded-lg overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Resolution</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {clips.map((clip) => (
-                <TableRow key={clip.id}>
-                  <TableCell className="font-medium max-w-[200px] truncate">
-                    {clip.title}
-                  </TableCell>
-                  <TableCell>{getCategoryLabel(clip.category)}</TableCell>
-                  <TableCell>{clip.resolution}</TableCell>
-                  <TableCell>{clip.duration}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditModal(clip)}
-                        className="h-8 w-8"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(clip.id)}
-                        disabled={deletingId === clip.id}
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                      >
-                        {deletingId === clip.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <table className="w-full">
+              <thead className="bg-muted/50">
+                <tr className="border-b border-border">
+                  <th className="p-3 text-left text-sm font-medium w-10"></th>
+                  <th className="p-3 text-left text-sm font-medium">Title</th>
+                  <th className="p-3 text-left text-sm font-medium">Category</th>
+                  <th className="p-3 text-left text-sm font-medium">Resolution</th>
+                  <th className="p-3 text-left text-sm font-medium">Duration</th>
+                  <th className="p-3 text-left text-sm font-medium w-[100px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <SortableContext
+                  items={clips.map(c => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {clips.map((clip) => (
+                    <SortableRow
+                      key={clip.id}
+                      clip={clip}
+                      getCategoryLabel={getCategoryLabel}
+                      onEdit={openEditModal}
+                      onDelete={handleDelete}
+                      deletingId={deletingId}
+                    />
+                  ))}
+                </SortableContext>
+              </tbody>
+            </table>
+          </DndContext>
         </div>
       )}
 
       <p className="text-xs text-muted-foreground text-center">
-        Showing {clips.length} clips
+        Showing {clips.length} clips • Drag to reorder
       </p>
 
       {/* Edit Modal */}
