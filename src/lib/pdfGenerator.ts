@@ -106,12 +106,12 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   const logoBase64 = await assetToBase64(soleiaLogo);
   
   // ========== ELEGANT HEADER ==========
-  // Luxury gold gradient header background
-  pdf.setFillColor(245, 158, 11); // Amber/gold base
+  // Dark luxury header background for better logo visibility
+  pdf.setFillColor(20, 15, 10); // Dark warm brown/black
   pdf.rect(0, 0, pageWidth, 50, 'F');
   
-  // Add subtle darker accent stripe
-  pdf.setFillColor(217, 119, 6); // Darker amber
+  // Add subtle gold accent stripe at bottom
+  pdf.setFillColor(245, 158, 11); // Gold accent
   pdf.rect(0, 48, pageWidth, 2, 'F');
   
   // Add Soleia logo if available
@@ -157,9 +157,12 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
       pdf.addPage();
       yPosition = 20;
       
-      // Mini header on subsequent pages
-      pdf.setFillColor(245, 158, 11);
+      // Mini header on subsequent pages - dark background
+      pdf.setFillColor(20, 15, 10);
       pdf.rect(0, 0, pageWidth, 15, 'F');
+      // Gold accent stripe
+      pdf.setFillColor(245, 158, 11);
+      pdf.rect(0, 14, pageWidth, 1, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'bold');
