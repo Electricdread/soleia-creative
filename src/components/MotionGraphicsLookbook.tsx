@@ -368,7 +368,7 @@ const MotionGraphicsLookbook = () => {
   return (
     <div className="min-h-screen">
       {/* Dynamic Luxury Header with Animated Background */}
-      <header className="glass-strong sticky top-0 z-30 border-b border-primary/10 overflow-hidden">
+      <header className="glass-strong relative z-30 border-b border-primary/10 overflow-hidden">
         {/* Animated Background Rays */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-20 left-1/4 w-96 h-96 bg-gradient-radial from-primary/20 via-primary/5 to-transparent rounded-full blur-3xl animate-glow-pulse-slow" />

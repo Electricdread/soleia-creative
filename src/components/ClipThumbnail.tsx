@@ -53,14 +53,14 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
       {/* Luxury Gradient Background */}
       <div className={`absolute inset-0 bg-gradient-to-br ${categoryGradient} opacity-70`} />
 
-      {/* Static Thumbnail - always shown as base layer */}
+      {/* Static Thumbnail - always shown as base layer, greyed when selected */}
       {!hasImageError ? (
         <img
           src={clip.thumbnail}
           alt={clip.title}
           className={`absolute inset-0 w-full h-full object-cover transition-elegant group-hover:scale-105 ${
             isHovering && videoLoaded && hasVideoPreview ? 'opacity-0' : 'opacity-100'
-          }`}
+          } ${isSelected ? 'grayscale opacity-50' : ''}`}
           onError={() => onImageError(clip.id)}
           loading="lazy"
         />
@@ -70,7 +70,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
         </div>
       )}
 
-      {/* Video Preview - shown on hover if available, loops continuously */}
+      {/* Video Preview - shown on hover if available, loops continuously, greyed when selected */}
       {hasVideoPreview && (
         <video
           ref={videoRef}
@@ -83,14 +83,16 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
           onError={() => setVideoError(true)}
           className={`absolute inset-0 w-full h-full object-cover transition-elegant ${
             isHovering && videoLoaded ? 'opacity-100 scale-105' : 'opacity-0'
-          }`}
+          } ${isSelected ? 'grayscale opacity-50' : ''}`}
         />
       )}
 
-      {/* Sun Selection Indicator */}
+      {/* Sun Selection Indicator - Centered */}
       {isSelected && (
-        <div className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center transition-elegant z-10">
-          <img src={sunIcon} alt="Selected" className="w-full h-full object-contain drop-shadow-lg" />
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <div className="w-16 h-16 flex items-center justify-center">
+            <img src={sunIcon} alt="Selected" className="w-full h-full object-contain drop-shadow-2xl" />
+          </div>
         </div>
       )}
 
@@ -102,7 +104,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
       )}
 
       {/* Luxury Play Button Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-elegant z-10">
+      <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-t from-background/60 via-transparent to-transparent transition-elegant z-10 ${isSelected ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
         <button
           onClick={onPlayClick}
           className="w-16 h-16 bg-background/95 rounded-full flex items-center justify-center hover:bg-background transition-elegant shadow-2xl glow-gold hover:scale-110"
@@ -111,10 +113,12 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
         </button>
       </div>
 
-      {/* Sun Icon Badge on hover */}
-      <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-elegant z-10">
-        <img src={sunIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
-      </div>
+      {/* Sun Icon Badge on hover - only show when not selected */}
+      {!isSelected && (
+        <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-elegant z-10">
+          <img src={sunIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
+        </div>
+      )}
     </div>
   );
 };
