@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download } from 'lucide-react';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList } from 'lucide-react';
+import SelectionsSummary from '@/components/SelectionsSummary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -80,6 +81,7 @@ const MotionGraphicsLookbook = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Fetch clips - first from cache, then scrape if needed
@@ -339,6 +341,18 @@ const MotionGraphicsLookbook = () => {
     }
   };
 
+
+  // Show summary page if toggled
+  if (showSummary && selectedClips.length > 0) {
+    return (
+      <SelectionsSummary
+        selectedClips={selectedClips}
+        onBack={() => setShowSummary(false)}
+        onClearSelections={() => setSelectedClips([])}
+        selectedCategory={selectedCategory}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -607,39 +621,11 @@ const MotionGraphicsLookbook = () => {
                   Clear All
                 </Button>
                 <Button 
-                  onClick={downloadPdf} 
-                  disabled={isDownloading}
-                  variant="outline"
-                  className="gap-2 rounded-xl px-5 py-5 text-base font-semibold border-primary/30 hover:bg-primary/10 transition-elegant"
-                >
-                  {isDownloading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-5 h-5" />
-                      Download PDF
-                    </>
-                  )}
-                </Button>
-                <Button 
-                  onClick={sendSelections} 
-                  disabled={isSendingEmail}
+                  onClick={() => setShowSummary(true)} 
                   className="glow-gold gap-2 rounded-xl px-6 py-5 text-base font-semibold bg-gradient-to-r from-primary via-accent to-primary hover:opacity-90 transition-elegant pulse-gold"
                 >
-                  {isSendingEmail ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-5 h-5" />
-                      Email Selections
-                    </>
-                  )}
+                  <ClipboardList className="w-5 h-5" />
+                  Review & Send
                 </Button>
               </div>
             </div>
