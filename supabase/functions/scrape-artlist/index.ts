@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
@@ -18,7 +17,7 @@ interface ArtlistClip {
   sourceUrl: string;
 }
 
-// Fetch thumbnail and preview from a clip page
+// Fetch thumbnail and preview from a clip page with improved video extraction
 async function fetchClipDetails(apiKey: string, clipUrl: string): Promise<{ thumbnail: string; previewUrl: string; duration: string }> {
   try {
     const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
@@ -29,8 +28,8 @@ async function fetchClipDetails(apiKey: string, clipUrl: string): Promise<{ thum
       },
       body: JSON.stringify({
         url: clipUrl,
-        formats: ['html'],
-        waitFor: 3000,
+        formats: ['html', 'rawHtml'],
+        waitFor: 5000, // Increased wait time for video elements to load
         onlyMainContent: false,
       }),
     });
@@ -38,15 +37,31 @@ async function fetchClipDetails(apiKey: string, clipUrl: string): Promise<{ thum
     if (!response.ok) return { thumbnail: '', previewUrl: '', duration: '' };
 
     const data = await response.json();
-    const html = data.data?.html || '';
+    const html = data.data?.html || data.data?.rawHtml || '';
 
     // Find thumbnail - prioritize Artlist CDN images
     let thumbnail = '';
     
-    // Look for og:image first (usually high quality)
-    const ogImageMatch = html.match(/property="og:image"[^>]*content="([^"]+)"/);
-    if (ogImageMatch) {
-      thumbnail = ogImageMatch[1];
+    // Look for artgrid.imgix.net thumbnails (most reliable)
+    const artgridMatch = html.match(/https:\/\/artgrid\.imgix\.net\/[^"'\s]+/);
+    if (artgridMatch) {
+      thumbnail = artgridMatch[0].replace(/&amp;/g, '&');
+    }
+    
+    // Look for artlist-content-images.imgix.net
+    if (!thumbnail) {
+      const artlistImgMatch = html.match(/https:\/\/artlist-content-images\.imgix\.net\/[^"'\s]+/);
+      if (artlistImgMatch) {
+        thumbnail = artlistImgMatch[0].replace(/&amp;/g, '&');
+      }
+    }
+    
+    // Look for og:image (usually high quality)
+    if (!thumbnail) {
+      const ogImageMatch = html.match(/property="og:image"[^>]*content="([^"]+)"/);
+      if (ogImageMatch) {
+        thumbnail = ogImageMatch[1];
+      }
     }
     
     // Look for video poster
@@ -54,61 +69,82 @@ async function fetchClipDetails(apiKey: string, clipUrl: string): Promise<{ thum
       const posterMatch = html.match(/poster="(https:\/\/[^"]+)"/);
       if (posterMatch) thumbnail = posterMatch[1];
     }
-    
-    // Look for Artlist CDN images
-    if (!thumbnail) {
-      const cdnMatch = html.match(/src="(https:\/\/(?:cdn|d\d+)[^"]*artlist[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/i);
-      if (cdnMatch) thumbnail = cdnMatch[1];
-    }
-    
-    // Look for any thumbnail/poster class images
-    if (!thumbnail) {
-      const thumbMatch = html.match(/class="[^"]*(?:thumbnail|poster|preview)[^"]*"[^>]*src="([^"]+)"/i);
-      if (thumbMatch) thumbnail = thumbMatch[1];
-    }
 
-    // Find video preview URL - look for mp4/webm sources
+    // Find video preview URL - look for static-videos.artlist.io (main CDN)
     let previewUrl = '';
     
+    // Primary: Look for static-videos.artlist.io URLs (most reliable)
+    const staticVideoMatch = html.match(/https:\/\/static-videos\.artlist\.io\/[^"'\s]+\.mp4/i);
+    if (staticVideoMatch) {
+      previewUrl = staticVideoMatch[0];
+    }
+    
+    // Look for artlist video CDN patterns
+    if (!previewUrl) {
+      const artlistVideoMatch = html.match(/https:\/\/[^"'\s]*artlist[^"'\s]*\/[^"'\s]+\.mp4/i);
+      if (artlistVideoMatch) {
+        previewUrl = artlistVideoMatch[0];
+      }
+    }
+    
     // Look for video source elements
-    const sourceMatch = html.match(/<source[^>]*src="(https:\/\/[^"]+\.(?:mp4|webm))"/i);
-    if (sourceMatch) {
-      previewUrl = sourceMatch[1];
+    if (!previewUrl) {
+      const sourceMatch = html.match(/<source[^>]*src="(https:\/\/[^"]+\.mp4)"/i);
+      if (sourceMatch) {
+        previewUrl = sourceMatch[1];
+      }
     }
     
     // Look for video src attribute
     if (!previewUrl) {
-      const videoSrcMatch = html.match(/<video[^>]*src="(https:\/\/[^"]+\.(?:mp4|webm))"/i);
+      const videoSrcMatch = html.match(/<video[^>]*src="(https:\/\/[^"]+\.mp4)"/i);
       if (videoSrcMatch) previewUrl = videoSrcMatch[1];
     }
     
-    // Look for preview URLs in data attributes or JSON
+    // Look for preview URLs in JSON data or scripts
     if (!previewUrl) {
-      const previewDataMatch = html.match(/preview[_-]?(?:url|src|video)["']?\s*[:=]\s*["'](https:\/\/[^"']+\.(?:mp4|webm))/i);
-      if (previewDataMatch) previewUrl = previewDataMatch[1];
+      const jsonPreviewMatch = html.match(/"(?:preview|video|mp4)[Uu]rl?":\s*"(https:\/\/[^"]+\.mp4)"/i);
+      if (jsonPreviewMatch) previewUrl = jsonPreviewMatch[1];
     }
     
-    // Look for Artlist CDN video URLs
+    // Look for cloudfront or CDN video URLs
     if (!previewUrl) {
-      const cdnVideoMatch = html.match(/(https:\/\/(?:cdn|d\d+|stream)[^"'\s]*artlist[^"'\s]*\.(?:mp4|webm))/i);
-      if (cdnVideoMatch) previewUrl = cdnVideoMatch[1];
+      const cloudfrontMatch = html.match(/https:\/\/[^"'\s]*cloudfront[^"'\s]*\.mp4/i);
+      if (cloudfrontMatch) previewUrl = cloudfrontMatch[0];
     }
 
     // Try to extract duration
     let duration = '';
-    const durationMatch = html.match(/duration['":\s]+(\d+:\d+)/i) || html.match(/(\d{1,2}:\d{2})/);
-    if (durationMatch) {
-      duration = durationMatch[1];
+    const durationPatterns = [
+      /duration['":\s]+['"]?(\d+:\d+)/i,
+      /"duration":\s*"?(\d+:\d+)"?/i,
+      /class="[^"]*duration[^"]*"[^>]*>(\d+:\d+)/i,
+      />(\d{1,2}:\d{2})</,
+    ];
+    
+    for (const pattern of durationPatterns) {
+      const match = html.match(pattern);
+      if (match) {
+        duration = match[1];
+        break;
+      }
     }
+    
+    // Default duration if not found
+    if (!duration) {
+      duration = '00:15';
+    }
+
+    console.log(`Clip details for ${clipUrl}: thumbnail=${thumbnail ? 'found' : 'missing'}, preview=${previewUrl ? 'found' : 'missing'}`);
 
     return { thumbnail, previewUrl, duration };
   } catch (error) {
     console.error('Error fetching clip details:', error);
-    return { thumbnail: '', previewUrl: '', duration: '' };
+    return { thumbnail: '', previewUrl: '', duration: '00:15' };
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -171,19 +207,20 @@ serve(async (req) => {
       );
     }
 
-    // Map category to search terms
+    // Map category to more specific search terms for better video results
     const categorySearchTerms: Record<string, string> = {
+      'featured-collections': 'motion graphics background loop 4K animation video',
       'motion-backgrounds': 'motion graphics background loop animation',
-      'abstract': 'abstract visual patterns geometric animation',
-      'particles': 'particles dust floating glitter effects',
-      'nature': 'nature landscape drone aerial cinematic',
-      'events': 'celebration fireworks confetti party',
+      'abstract': 'abstract visual patterns geometric animation loop',
+      'particles': 'particles dust floating glitter effects overlay',
+      'nature': 'nature landscape drone aerial cinematic video',
+      'events': 'celebration fireworks confetti party overlay',
       'technology': 'technology digital data hologram futuristic',
-      'corporate': 'business office professional meeting',
-      'all': 'motion graphics video loop'
+      'corporate': 'business office professional meeting corporate',
+      'all': 'motion graphics video loop 4K'
     };
 
-    const searchTerm = categorySearchTerms[category] || 'motion graphics';
+    const searchTerm = categorySearchTerms[category] || categorySearchTerms['featured-collections'];
 
     console.log('Searching Artlist for:', searchTerm);
 
@@ -196,7 +233,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         query: `site:artlist.io/stock-footage/clip ${searchTerm}`,
-        limit: 20,
+        limit: 24,
       }),
     });
 
@@ -215,15 +252,19 @@ serve(async (req) => {
     
     console.log('Search found:', results.length, 'results');
 
-    // Filter for actual clip pages
-    const clipResults = results.filter((r: any) => 
-      r.url && r.url.includes('/clip/')
-    ).slice(0, 16);
+    // Filter for actual clip pages and remove duplicates
+    const seenUrls = new Set<string>();
+    const clipResults = results.filter((r: any) => {
+      if (!r.url || !r.url.includes('/clip/')) return false;
+      if (seenUrls.has(r.url)) return false;
+      seenUrls.add(r.url);
+      return true;
+    }).slice(0, 18);
 
-    console.log('Filtered clip results:', clipResults.length);
+    console.log('Filtered unique clip results:', clipResults.length);
 
-    // Process all clips in parallel batches to fetch real thumbnails
-    const batchSize = 4;
+    // Process all clips in parallel batches to fetch real thumbnails and previews
+    const batchSize = 3; // Smaller batch for more reliable results
     for (let batchStart = 0; batchStart < clipResults.length; batchStart += batchSize) {
       const batch = clipResults.slice(batchStart, batchStart + batchSize);
       
@@ -231,15 +272,21 @@ serve(async (req) => {
         const i = batchStart + batchIndex;
         
         let title = (result.title || `Motion Clip ${i + 1}`)
-          .replace(' - Artlist', '')
-          .replace(' | Artlist', '')
-          .replace(' – Stock Footage', '')
-          .replace(' – Stock Video', '')
+          .replace(/ - Artlist$/i, '')
+          .replace(/ \| Artlist$/i, '')
+          .replace(/ – Stock Footage$/i, '')
+          .replace(/ – Stock Video$/i, '')
+          .replace(/ - Stock Footage$/i, '')
           .trim();
         
         // Clean up title format
         if (title.includes(' by ')) {
           title = title.split(' by ')[0].trim();
+        }
+        
+        // Truncate very long titles
+        if (title.length > 60) {
+          title = title.substring(0, 57) + '...';
         }
 
         const clipId = `artlist-${category}-${i}-${Date.now()}`;
@@ -254,13 +301,18 @@ serve(async (req) => {
           videoUrl: result.url,
           previewUrl: details.previewUrl,
           resolution: '4K',
-          duration: details.duration || '0:15',
+          duration: details.duration,
           category,
           sourceUrl: result.url,
         };
       }));
       
       clips.push(...batchResults);
+      
+      // Small delay between batches to avoid rate limiting
+      if (batchStart + batchSize < clipResults.length) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
 
     console.log('Total clips processed:', clips.length);
