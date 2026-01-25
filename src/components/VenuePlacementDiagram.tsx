@@ -8,12 +8,12 @@ interface VenuePlacementDiagramProps {
 }
 
 const PLACEMENTS = [
-  { id: 'Curves SR', label: 'CURVES SR', x: 12, y: 50, width: 18, height: 60, type: 'curves', color: 'hsl(65, 100%, 50%)' },
-  { id: 'IMAG SR', label: 'IMAG SR', x: 35, y: 50, width: 24, height: 50, type: 'imag', color: 'hsl(280, 60%, 55%)' },
-  { id: 'Center', label: 'CENTER', x: 50, y: 25, width: 12, height: 20, type: 'center', color: 'hsl(20, 100%, 55%)' },
-  { id: 'IMAG SL', label: 'IMAG SL', x: 65, y: 50, width: 24, height: 50, type: 'imag', color: 'hsl(280, 60%, 55%)' },
-  { id: 'SL Curves', label: 'SL CURVES', x: 88, y: 50, width: 18, height: 60, type: 'curves', color: 'hsl(65, 100%, 50%)' },
-  { id: 'DJ Booth', label: 'DJ BOOTH', x: 50, y: 80, width: 20, height: 12, type: 'booth', color: 'hsl(120, 80%, 55%)' },
+  { id: 'Curves SR', label: 'CURVES SR', x: 8, y: 50, width: 12, height: 70, type: 'curves', color: 'hsl(65, 100%, 50%)' },
+  { id: 'IMAG SR', label: 'IMAG SR', x: 32, y: 50, width: 30, height: 60, type: 'imag', color: 'hsl(280, 60%, 55%)' },
+  { id: 'Center', label: 'CENTER', x: 50, y: 18, width: 10, height: 16, type: 'center', color: 'hsl(20, 100%, 55%)' },
+  { id: 'IMAG SL', label: 'IMAG SL', x: 68, y: 50, width: 30, height: 60, type: 'imag', color: 'hsl(280, 60%, 55%)' },
+  { id: 'SL Curves', label: 'SL CURVES', x: 92, y: 50, width: 12, height: 70, type: 'curves', color: 'hsl(65, 100%, 50%)' },
+  { id: 'DJ Booth', label: 'DJ BOOTH', x: 50, y: 88, width: 24, height: 10, type: 'booth', color: 'hsl(120, 80%, 55%)' },
 ] as const;
 
 const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
@@ -22,7 +22,7 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
   interactive = true
 }) => {
   return (
-    <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-background via-secondary/20 to-background rounded-xl border border-border/50 overflow-hidden">
+    <div className="relative w-full max-w-md aspect-[3/1] bg-gradient-to-br from-background via-secondary/20 to-background rounded-lg border border-border/50 overflow-hidden">
       {/* Background grid pattern */}
       <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -105,24 +105,11 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
           );
         })}
 
-        {/* Compass indicator */}
-        <g transform="translate(92, 10)">
-          <circle r="4" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="0.3" />
-          <text y="1" textAnchor="middle" dominantBaseline="middle" className="text-[3px] fill-muted-foreground font-medium">
-            N
-          </text>
-        </g>
-
-        {/* Legend markers */}
-        <g transform="translate(8, 8)">
-          <rect width="3" height="3" rx="0.5" className="fill-primary/30 stroke-primary" strokeWidth="0.3" />
-          <text x="5" y="2.5" className="text-[2.5px] fill-muted-foreground">Selected</text>
-        </g>
       </svg>
 
       {/* Title overlay */}
-      <div className="absolute bottom-2 left-2 text-[10px] text-muted-foreground/60 font-light tracking-wider uppercase">
-        Venue Layout • Click to select
+      <div className="absolute bottom-1 left-1 text-[8px] text-muted-foreground/60 font-light tracking-wider uppercase">
+        Interior Screens • Click to select
       </div>
 
       {/* Selected indicators */}
