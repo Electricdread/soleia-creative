@@ -6,6 +6,8 @@ interface SelectionForPdf {
   title: string;
   thumbnail: string;
   note: string;
+  eventName: string;
+  eventDate: string;
   category: string;
   resolution: string;
   duration: string;
@@ -110,6 +112,17 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
     pdf.setFont('helvetica', 'normal');
     pdf.text(`${selection.resolution} • ${selection.duration} • ${selection.category}`, textX, yPosition + 13);
 
+    // Event details
+    let detailY = yPosition + 20;
+    if (selection.eventName || selection.eventDate) {
+      pdf.setTextColor(60, 60, 60);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'bold');
+      const eventText = [selection.eventName, selection.eventDate].filter(Boolean).join(' • ');
+      pdf.text(`Event: ${eventText}`, textX, detailY);
+      detailY += 5;
+    }
+
     // Note
     if (selection.note) {
       pdf.setTextColor(80, 80, 80);
@@ -118,7 +131,7 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
       
       // Wrap note text
       const noteLines = pdf.splitTextToSize(`Note: ${selection.note}`, maxTitleWidth);
-      pdf.text(noteLines.slice(0, 2), textX, yPosition + 20);
+      pdf.text(noteLines.slice(0, 2), textX, detailY);
     }
 
     yPosition += rowHeight;
