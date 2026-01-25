@@ -15,6 +15,7 @@ import soleiaLogo from '@/assets/soleia-logo-new.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
 import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
+import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
 
 const PLACEMENT_OPTIONS = [
   'Full Room',
@@ -716,6 +717,18 @@ const MotionGraphicsLookbook = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Venue Placement Diagram */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-foreground">
+                <MapPin className="w-4 h-4" />
+                Venue Location Preview
+              </Label>
+              <VenuePlacementDiagram 
+                selectedPlacement={previewPlacement} 
+                onSelect={setPreviewPlacement}
+              />
             </div>
 
             {/* Note Input */}
