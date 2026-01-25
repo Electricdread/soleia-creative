@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList } from 'lucide-react';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList, ChevronDown, ChevronUp } from 'lucide-react';
 import SelectionsSummary from '@/components/SelectionsSummary';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { artlistApi, artlistCategories, type ArtlistClip, type ArtlistCategoryKey } from '@/lib/api/artlist';
 import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
@@ -82,6 +83,7 @@ const MotionGraphicsLookbook = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [isPlacementOpen, setIsPlacementOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Fetch clips - first from cache, then scrape if needed
@@ -342,6 +344,13 @@ const MotionGraphicsLookbook = () => {
   };
 
 
+  // Handle note updates from summary page
+  const handleUpdateClipNote = (clipId: string, note: string) => {
+    setSelectedClips(prev => 
+      prev.map(clip => clip.id === clipId ? { ...clip, note } : clip)
+    );
+  };
+
   // Show summary page if toggled
   if (showSummary && selectedClips.length > 0) {
     return (
@@ -350,6 +359,7 @@ const MotionGraphicsLookbook = () => {
         onBack={() => setShowSummary(false)}
         onClearSelections={() => setSelectedClips([])}
         selectedCategory={selectedCategory}
+        onUpdateClipNote={handleUpdateClipNote}
       />
     );
   }
@@ -771,103 +781,110 @@ const MotionGraphicsLookbook = () => {
               </div>
             </div>
 
-            {/* Placements Section with Tabs */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-foreground">
-                <MapPin className="w-4 h-4" />
-                Screen Placements
-                {previewPlacements.length > 0 && (
-                  <span className="text-xs text-primary">({previewPlacements.length} selected)</span>
-                )}
-              </Label>
+            {/* Collapsible Placements Section */}
+            <Collapsible open={isPlacementOpen} onOpenChange={setIsPlacementOpen}>
+              <CollapsibleTrigger asChild>
+                <button className="w-full flex items-center justify-between p-3 rounded-xl bg-background/50 border border-border/50 hover:border-primary/30 transition-all">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span className="font-medium text-foreground">Screen Placements</span>
+                    {previewPlacements.length > 0 && (
+                      <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                        {previewPlacements.length} selected
+                      </span>
+                    )}
+                  </div>
+                  {isPlacementOpen ? (
+                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </button>
+              </CollapsibleTrigger>
               
-              <Tabs defaultValue="interior" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-background/50">
-                  <TabsTrigger value="interior" className="data-[state=active]:bg-primary/20">
-                    Interior Screens
-                  </TabsTrigger>
-                  <TabsTrigger value="outdoor" className="data-[state=active]:bg-primary/20">
-                    Outdoor Screens
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="interior" className="space-y-3 mt-3">
-                  <div className="flex flex-wrap gap-2">
-                    {/* Full Interior toggle */}
-                    <button
-                      type="button"
-                      onClick={() => togglePreviewPlacement('Full Interior')}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        ALL_INTERIOR_SCREENS.every(s => previewPlacements.includes(s))
-                          ? 'bg-primary text-primary-foreground shadow-md'
-                          : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
-                      }`}
-                    >
-                      Full Interior
-                    </button>
-                    {INTERIOR_PLACEMENTS.map((option) => {
-                      const isSelected = previewPlacements.includes(option);
-                      return (
+              <CollapsibleContent className="pt-3">
+                <div className="rounded-xl border border-border/30 bg-background/30 p-3 space-y-3">
+                  <Tabs defaultValue="interior" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-background/50 h-9">
+                      <TabsTrigger value="interior" className="text-xs data-[state=active]:bg-primary/20">
+                        Interior
+                      </TabsTrigger>
+                      <TabsTrigger value="outdoor" className="text-xs data-[state=active]:bg-primary/20">
+                        Outdoor
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="interior" className="space-y-3 mt-3">
+                      <div className="flex flex-wrap gap-1.5">
                         <button
-                          key={option}
                           type="button"
-                          onClick={() => togglePreviewPlacement(option)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                            isSelected
+                          onClick={() => togglePreviewPlacement('Full Interior')}
+                          className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${
+                            ALL_INTERIOR_SCREENS.every(s => previewPlacements.includes(s))
                               ? 'bg-primary text-primary-foreground shadow-md'
-                              : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
+                              : 'bg-background/50 text-muted-foreground hover:bg-primary/10 border border-border/50'
                           }`}
                         >
-                          {option}
+                          All Interior
                         </button>
-                      );
-                    })}
-                  </div>
-                  <VenuePlacementDiagram 
-                    selectedPlacements={previewPlacements} 
-                    onToggle={togglePreviewPlacement}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="outdoor" className="space-y-3 mt-3">
-                  <div className="flex flex-wrap gap-2">
-                    {/* Full Outdoor toggle */}
-                    <button
-                      type="button"
-                      onClick={() => togglePreviewPlacement('Full Outdoor')}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        ALL_OUTDOOR_SCREENS.every(s => previewPlacements.includes(s))
-                          ? 'bg-primary text-primary-foreground shadow-md'
-                          : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
-                      }`}
-                    >
-                      Full Outdoor
-                    </button>
-                    {OUTDOOR_PLACEMENTS.map((option) => {
-                      const isSelected = previewPlacements.includes(option);
-                      return (
+                        {INTERIOR_PLACEMENTS.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => togglePreviewPlacement(option)}
+                            className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${
+                              previewPlacements.includes(option)
+                                ? 'bg-primary text-primary-foreground shadow-md'
+                                : 'bg-background/50 text-muted-foreground hover:bg-primary/10 border border-border/50'
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                      <VenuePlacementDiagram 
+                        selectedPlacements={previewPlacements} 
+                        onToggle={togglePreviewPlacement}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="outdoor" className="space-y-3 mt-3">
+                      <div className="flex flex-wrap gap-1.5">
                         <button
-                          key={option}
                           type="button"
-                          onClick={() => togglePreviewPlacement(option)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                            isSelected
+                          onClick={() => togglePreviewPlacement('Full Outdoor')}
+                          className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${
+                            ALL_OUTDOOR_SCREENS.every(s => previewPlacements.includes(s))
                               ? 'bg-primary text-primary-foreground shadow-md'
-                              : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
+                              : 'bg-background/50 text-muted-foreground hover:bg-primary/10 border border-border/50'
                           }`}
                         >
-                          {option}
+                          All Outdoor
                         </button>
-                      );
-                    })}
-                  </div>
-                  <OutdoorPlacementDiagram 
-                    selectedPlacements={previewPlacements} 
-                    onToggle={togglePreviewPlacement}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
+                        {OUTDOOR_PLACEMENTS.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => togglePreviewPlacement(option)}
+                            className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${
+                              previewPlacements.includes(option)
+                                ? 'bg-primary text-primary-foreground shadow-md'
+                                : 'bg-background/50 text-muted-foreground hover:bg-primary/10 border border-border/50'
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                      <OutdoorPlacementDiagram 
+                        selectedPlacements={previewPlacements} 
+                        onToggle={togglePreviewPlacement}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* Note Input */}
             <div className="space-y-2">
