@@ -672,7 +672,7 @@ const MotionGraphicsLookbook = () => {
           setIsPlaying(false);
         }
       }}>
-        <DialogContent className="max-w-4xl glass-strong border-primary/20 rounded-3xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-strong border-primary/20 rounded-3xl">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-2xl font-bold tracking-tight text-gradient-gold">{previewClip?.title}</DialogTitle>
             <DialogDescription className="text-muted-foreground tracking-wide">
@@ -680,7 +680,7 @@ const MotionGraphicsLookbook = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Luxury Video Preview */}
             <div className="aspect-video bg-secondary/20 rounded-2xl overflow-hidden relative ring-1 ring-primary/20">
               {previewClip?.previewUrl ? (
