@@ -75,6 +75,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
         <video
           ref={videoRef}
           src={clip.preview_url!}
+          poster={clip.thumbnail || undefined}
           muted
           loop
           playsInline
