@@ -70,7 +70,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
         </div>
       )}
 
-      {/* Video Preview - shown on hover if available */}
+      {/* Video Preview - shown on hover if available, loops continuously */}
       {hasVideoPreview && (
         <video
           ref={videoRef}
@@ -78,11 +78,11 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
           muted
           loop
           playsInline
-          preload="metadata"
-          onLoadedData={() => setVideoLoaded(true)}
+          preload="auto"
+          onCanPlayThrough={() => setVideoLoaded(true)}
           onError={() => setVideoError(true)}
           className={`absolute inset-0 w-full h-full object-cover transition-elegant ${
-            isHovering && videoLoaded ? 'opacity-100' : 'opacity-0'
+            isHovering && videoLoaded ? 'opacity-100 scale-105' : 'opacity-0'
           }`}
         />
       )}
