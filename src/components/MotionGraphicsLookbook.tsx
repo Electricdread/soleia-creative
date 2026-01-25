@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize } from 'lucide-react';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,8 @@ import { UserMenu } from '@/components/auth/UserMenu';
 import AnimatedRays from '@/components/AnimatedRays';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
+import { generateSelectionsPdf } from '@/lib/pdfGenerator';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SelectedClip extends ArtlistClip {
   note: string;
@@ -44,6 +46,7 @@ const MotionGraphicsLookbook = () => {
   const [hoveredClip, setHoveredClip] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Fetch clips - first from cache, then scrape if needed
@@ -173,12 +176,60 @@ const MotionGraphicsLookbook = () => {
     setImageErrors(prev => new Set(prev).add(clipId));
   };
 
-  const sendSelections = () => {
-    console.log('Selected clips:', selectedClips);
-    toast({
-      title: "Selections sent!",
-      description: `${selectedClips.length} clips have been submitted`,
-    });
+  const sendSelections = async () => {
+    if (selectedClips.length === 0) return;
+    
+    setIsSendingEmail(true);
+    
+    try {
+      // Generate PDF with thumbnails
+      const pdfBase64 = await generateSelectionsPdf(
+        selectedClips.map(clip => ({
+          id: clip.id,
+          external_id: clip.id,
+          title: clip.title,
+          thumbnail: clip.thumbnail,
+          note: clip.note,
+          category: selectedCategory,
+          resolution: clip.resolution,
+          duration: clip.duration
+        }))
+      );
+      
+      // Send to edge function
+      const { data, error } = await supabase.functions.invoke('send-selections-pdf', {
+        body: {
+          selections: selectedClips.map(clip => ({
+            external_id: clip.id,
+            title: clip.title,
+            thumbnail: clip.thumbnail,
+            note: clip.note,
+            category: selectedCategory
+          })),
+          pdfBase64,
+          recipientEmail: 'ninemilelion@gmail.com'
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Email sent!",
+        description: `Your ${selectedClips.length} selections have been sent to ninemilelion@gmail.com`,
+      });
+      
+      // Clear selections after successful send
+      setSelectedClips([]);
+    } catch (error: any) {
+      console.error('Send error:', error);
+      toast({
+        title: "Failed to send",
+        description: error.message || "Could not send email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
 
@@ -458,9 +509,22 @@ const MotionGraphicsLookbook = () => {
                 >
                   Clear All
                 </Button>
-                <Button onClick={sendSelections} className="glow-gold gap-2 rounded-xl px-6 py-5 text-base font-semibold bg-gradient-to-r from-primary via-accent to-primary hover:opacity-90 transition-elegant pulse-gold">
-                  <Send className="w-5 h-5" />
-                  Send Selections
+                <Button 
+                  onClick={sendSelections} 
+                  disabled={isSendingEmail}
+                  className="glow-gold gap-2 rounded-xl px-6 py-5 text-base font-semibold bg-gradient-to-r from-primary via-accent to-primary hover:opacity-90 transition-elegant pulse-gold"
+                >
+                  {isSendingEmail ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-5 h-5" />
+                      Email Selections
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
