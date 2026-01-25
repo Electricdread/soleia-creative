@@ -343,15 +343,29 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
         .from('clip-previews')
         .getPublicUrl(thumbPath);
 
-      // Update form with new thumbnail URL
+      // Update the database directly with the new thumbnail
+      const { error: updateError } = await supabase
+        .from('cached_clips')
+        .update({ thumbnail: publicUrl })
+        .eq('id', editingClip.id);
+
+      if (updateError) throw updateError;
+
+      // Update local form state
       setEditForm(prev => ({ ...prev, thumbnail: publicUrl }));
       
-      toast({ title: 'Frame captured', description: 'Click Save to apply the new thumbnail' });
+      // Update clips list
+      setClips(prev => prev.map(c => 
+        c.id === editingClip.id ? { ...c, thumbnail: publicUrl } : c
+      ));
+      
+      toast({ title: 'Thumbnail saved' });
+      onClipsUpdated?.();
     } catch (error) {
       console.error('Error capturing frame:', error);
       toast({
         title: 'Error',
-        description: 'Failed to capture frame',
+        description: 'Failed to save thumbnail',
         variant: 'destructive',
       });
     } finally {
