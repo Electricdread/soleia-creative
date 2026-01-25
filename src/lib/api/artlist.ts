@@ -29,6 +29,7 @@ export const artlistApi = {
         .from('cached_clips')
         .select('*')
         .eq('category', category)
+        .order('sort_order', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false });
 
       if (error) {
