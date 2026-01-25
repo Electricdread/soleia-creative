@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Mail, Check, FileText, MapPin, MessageSquare, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Download, Mail, Check, FileText, MapPin, MessageSquare, Loader2, CheckCircle2, Pencil, X, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,13 +23,15 @@ interface SelectionsSummaryProps {
   onBack: () => void;
   onClearSelections: () => void;
   selectedCategory: string;
+  onUpdateClipNote?: (clipId: string, note: string) => void;
 }
 
 const SelectionsSummary: React.FC<SelectionsSummaryProps> = ({
   selectedClips,
   onBack,
   onClearSelections,
-  selectedCategory
+  selectedCategory,
+  onUpdateClipNote
 }) => {
   const { toast } = useToast();
   const [clientName, setClientName] = useState('');
@@ -38,6 +41,8 @@ const SelectionsSummary: React.FC<SelectionsSummaryProps> = ({
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [pdfDownloaded, setPdfDownloaded] = useState(false);
+  const [editingClipId, setEditingClipId] = useState<string | null>(null);
+  const [editingNote, setEditingNote] = useState('');
 
   const generatePdfData = async () => {
     return await generateSelectionsPdf(
@@ -217,13 +222,75 @@ const SelectionsSummary: React.FC<SelectionsSummaryProps> = ({
                     </p>
                   )}
                   
-                  {/* Note */}
-                  {clip.note && (
-                    <div className="flex items-start gap-1.5 mt-2 text-xs text-muted-foreground bg-secondary/30 rounded px-2 py-1">
-                      <MessageSquare className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                      <span className="line-clamp-2">{clip.note}</span>
-                    </div>
-                  )}
+                  {/* Editable Note Section */}
+                  <div className="mt-2">
+                    {editingClipId === clip.id ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          value={editingNote}
+                          onChange={(e) => setEditingNote(e.target.value)}
+                          placeholder="Add notes about this clip..."
+                          className="min-h-[60px] text-xs bg-background/50 resize-none"
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-7 text-xs gap-1 rounded-lg"
+                            onClick={() => {
+                              if (onUpdateClipNote) {
+                                onUpdateClipNote(clip.id, editingNote);
+                              }
+                              setEditingClipId(null);
+                              setEditingNote('');
+                              toast({
+                                title: "Note updated",
+                                description: "Your changes have been saved",
+                              });
+                            }}
+                          >
+                            <Save className="w-3 h-3" />
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs gap-1 rounded-lg"
+                            onClick={() => {
+                              setEditingClipId(null);
+                              setEditingNote('');
+                            }}
+                          >
+                            <X className="w-3 h-3" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-2">
+                        {clip.note ? (
+                          <div className="flex-1 flex items-start gap-1.5 text-xs text-muted-foreground bg-secondary/30 rounded px-2 py-1">
+                            <MessageSquare className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                            <span className="line-clamp-2">{clip.note}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/60 italic">No notes</span>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 p-0 rounded-full hover:bg-primary/10"
+                          onClick={() => {
+                            setEditingClipId(clip.id);
+                            setEditingNote(clip.note || '');
+                          }}
+                        >
+                          <Pencil className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
