@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { artlistApi, artlistCategories, type ArtlistClip, type ArtlistCategoryKey } from '@/lib/api/artlist';
 import { useToast } from '@/hooks/use-toast';
 import { AdminPanel } from '@/components/admin/AdminPanel';
@@ -16,8 +17,10 @@ import sunIcon from '@/assets/sun-icon.jpeg';
 import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
+import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import LandingHero from '@/components/LandingHero';
-const PLACEMENT_OPTIONS = [
+
+const INTERIOR_PLACEMENTS = [
   'Curves SR',
   'IMAG SR',
   'Center',
@@ -26,9 +29,16 @@ const PLACEMENT_OPTIONS = [
   'DJ Booth'
 ] as const;
 
-const ALL_SCREENS = [...PLACEMENT_OPTIONS];
+const OUTDOOR_PLACEMENTS = [
+  'Outdoor SR',
+  'Outdoor Arch',
+  'Outdoor SL'
+] as const;
 
-type PlacementOption = typeof PLACEMENT_OPTIONS[number];
+const ALL_INTERIOR_SCREENS = [...INTERIOR_PLACEMENTS];
+const ALL_OUTDOOR_SCREENS = [...OUTDOOR_PLACEMENTS];
+
+type PlacementOption = typeof INTERIOR_PLACEMENTS[number] | typeof OUTDOOR_PLACEMENTS[number];
 
 interface SelectedClip extends ArtlistClip {
   note: string;
@@ -199,10 +209,22 @@ const MotionGraphicsLookbook = () => {
   };
 
   const togglePreviewPlacement = (placement: string) => {
-    if (placement === 'Full Room') {
-      // Toggle all screens on/off
-      const allSelected = ALL_SCREENS.every(s => previewPlacements.includes(s));
-      setPreviewPlacements(allSelected ? [] : [...ALL_SCREENS]);
+    if (placement === 'Full Interior') {
+      // Toggle all interior screens on/off
+      const allInteriorSelected = ALL_INTERIOR_SCREENS.every(s => previewPlacements.includes(s));
+      if (allInteriorSelected) {
+        setPreviewPlacements(prev => prev.filter(p => !ALL_INTERIOR_SCREENS.includes(p as any)));
+      } else {
+        setPreviewPlacements(prev => [...new Set([...prev, ...ALL_INTERIOR_SCREENS])]);
+      }
+    } else if (placement === 'Full Outdoor') {
+      // Toggle all outdoor screens on/off
+      const allOutdoorSelected = ALL_OUTDOOR_SCREENS.every(s => previewPlacements.includes(s));
+      if (allOutdoorSelected) {
+        setPreviewPlacements(prev => prev.filter(p => !ALL_OUTDOOR_SCREENS.includes(p as any)));
+      } else {
+        setPreviewPlacements(prev => [...new Set([...prev, ...ALL_OUTDOOR_SCREENS])]);
+      }
     } else {
       setPreviewPlacements(prev => 
         prev.includes(placement) 
@@ -781,7 +803,7 @@ const MotionGraphicsLookbook = () => {
               </div>
             </div>
 
-            {/* Placements Section */}
+            {/* Placements Section with Tabs */}
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-foreground">
                 <MapPin className="w-4 h-4" />
@@ -791,43 +813,92 @@ const MotionGraphicsLookbook = () => {
                 )}
               </Label>
               
-              <div className="flex flex-wrap gap-2">
-                {/* Full Room toggle */}
-                <button
-                  type="button"
-                  onClick={() => togglePreviewPlacement('Full Room')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    ALL_SCREENS.every(s => previewPlacements.includes(s))
-                      ? 'bg-primary text-primary-foreground shadow-md'
-                      : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
-                  }`}
-                >
-                  Full Room
-                </button>
-                {PLACEMENT_OPTIONS.map((option) => {
-                  const isSelected = previewPlacements.includes(option);
-                  return (
+              <Tabs defaultValue="interior" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-background/50">
+                  <TabsTrigger value="interior" className="data-[state=active]:bg-primary/20">
+                    Interior Screens
+                  </TabsTrigger>
+                  <TabsTrigger value="outdoor" className="data-[state=active]:bg-primary/20">
+                    Outdoor Screens
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="interior" className="space-y-3 mt-3">
+                  <div className="flex flex-wrap gap-2">
+                    {/* Full Interior toggle */}
                     <button
-                      key={option}
                       type="button"
-                      onClick={() => togglePreviewPlacement(option)}
+                      onClick={() => togglePreviewPlacement('Full Interior')}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                        isSelected
+                        ALL_INTERIOR_SCREENS.every(s => previewPlacements.includes(s))
                           ? 'bg-primary text-primary-foreground shadow-md'
                           : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
                       }`}
                     >
-                      {option}
+                      Full Interior
                     </button>
-                  );
-                })}
-              </div>
-
-              {/* Venue Placement Diagram */}
-              <VenuePlacementDiagram 
-                selectedPlacements={previewPlacements} 
-                onToggle={togglePreviewPlacement}
-              />
+                    {INTERIOR_PLACEMENTS.map((option) => {
+                      const isSelected = previewPlacements.includes(option);
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => togglePreviewPlacement(option)}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground shadow-md'
+                              : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <VenuePlacementDiagram 
+                    selectedPlacements={previewPlacements} 
+                    onToggle={togglePreviewPlacement}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="outdoor" className="space-y-3 mt-3">
+                  <div className="flex flex-wrap gap-2">
+                    {/* Full Outdoor toggle */}
+                    <button
+                      type="button"
+                      onClick={() => togglePreviewPlacement('Full Outdoor')}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                        ALL_OUTDOOR_SCREENS.every(s => previewPlacements.includes(s))
+                          ? 'bg-primary text-primary-foreground shadow-md'
+                          : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
+                      }`}
+                    >
+                      Full Outdoor
+                    </button>
+                    {OUTDOOR_PLACEMENTS.map((option) => {
+                      const isSelected = previewPlacements.includes(option);
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => togglePreviewPlacement(option)}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground shadow-md'
+                              : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <OutdoorPlacementDiagram 
+                    selectedPlacements={previewPlacements} 
+                    onToggle={togglePreviewPlacement}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
 
             {/* Note Input */}
