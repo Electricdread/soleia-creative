@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowRight, Sparkles, Target, Trophy, Grid3X3, Search, MapPin, Layers, FileText, Download, Mail, CheckCircle } from 'lucide-react';
+import { ArrowRight, Target, Grid3X3, Search, MapPin, Layers, FileText, Download, Mail, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 
@@ -15,21 +15,21 @@ const LandingHero = ({ onEnterGallery }: LandingHeroProps) => {
   }, []);
 
   const features = [
-    { icon: Grid3X3, title: 'Visual Gallery', description: 'Browse curated motion backgrounds organized by categories with silky-smooth animations and fullscreen previews' },
-    { icon: Search, title: 'Smart Search', description: 'Instantly filter clips with real-time search functionality' },
-    { icon: MapPin, title: 'Interactive Venue Mapping', description: 'Click-to-select SVG venue diagram lets clients visually choose placement zones (Main Wall, Sky Blades, Beach Club, etc.)' },
-    { icon: Layers, title: 'Multi-Placement Selection', description: 'Assign a single clip to multiple venue locations simultaneously' },
-    { icon: FileText, title: 'Custom Notes & Event Details', description: 'Add event name, date, and personalized notes per clip' },
-    { icon: Download, title: 'Branded PDF Export', description: 'Generate elegant A4 documents featuring the Soleia logo, gold accents, thumbnails, and full selection details' },
-    { icon: CheckCircle, title: 'One-Click Download', description: 'Save PDFs directly to device—no email required' },
-    { icon: Mail, title: 'Backend Email Delivery', description: 'Seamlessly send branded PDF selections to clients via secure cloud infrastructure' },
+    { icon: Grid3X3, title: 'Category-Based Gallery', description: 'Motion backgrounds organized by category with lazy-loaded video previews and native fullscreen playback' },
+    { icon: Search, title: 'Real-Time Filtering', description: 'Client-side search with debounced input across titles and categories' },
+    { icon: MapPin, title: 'SVG Venue Diagram', description: 'Interactive click-to-select venue zones rendered as SVG paths with visual state feedback' },
+    { icon: Layers, title: 'Multi-Zone Assignment', description: 'Single clip can be assigned to multiple venue placements in one selection' },
+    { icon: FileText, title: 'Metadata Fields', description: 'Event name, date, and per-clip notes stored with each selection' },
+    { icon: Download, title: 'PDF Generation', description: 'Client-side A4 PDF export using jsPDF with embedded thumbnails and structured layout' },
+    { icon: CheckCircle, title: 'Direct Download', description: 'PDF saved to device without server roundtrip' },
+    { icon: Mail, title: 'Email Delivery', description: 'Supabase Edge Function with Resend API for PDF attachment delivery' },
   ];
 
   const highlights = [
-    { title: 'Luxury Aesthetic', description: 'Gold gradients, glassmorphism, and sun goddess branding create a premium feel' },
-    { title: 'No Technical Friction', description: 'Clients click, select, and receive—zero learning curve' },
-    { title: 'Professional Output', description: 'PDFs look like they came from a design agency, not a web app' },
-    { title: 'Reliable Backend', description: 'Cloud-powered email ensures deliverability with Resend integration' },
+    { title: 'Consistent Theming', description: 'CSS variables and Tailwind tokens for colors, spacing, and typography' },
+    { title: 'Zero Configuration', description: 'No login required for clients to browse, select, and export' },
+    { title: 'Structured Output', description: 'PDF includes thumbnails, venue placements, notes, and event details in formatted layout' },
+    { title: 'Cloud Infrastructure', description: 'Edge functions handle email delivery with proper CORS and error handling' },
   ];
 
   return (
@@ -78,15 +78,11 @@ const LandingHero = ({ onEnterGallery }: LandingHeroProps) => {
           </Button>
         </div>
 
-        {/* Main Tagline */}
+        {/* Main Description */}
         <div className={`max-w-4xl mx-auto text-center mb-12 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <h2 className="text-xl md:text-2xl font-light text-foreground">The Ultimate Motion Graphics Curation Platform</h2>
-            <Sparkles className="h-6 w-6 text-primary" />
-          </div>
+          <h2 className="text-xl md:text-2xl font-light text-foreground mb-4">Motion Graphics Curation Tool</h2>
           <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-            <span className="text-foreground font-medium">Soleia Looks Collection</span> is a luxury, white-glove digital experience designed for high-end venues to curate and communicate their visual atmosphere selections with elegance and precision.
+            A web application for venues to browse, select, and export motion background choices. Clients select clips, assign venue placements via an interactive diagram, add metadata, and generate branded PDFs for download or email delivery.
           </p>
         </div>
 
@@ -116,11 +112,11 @@ const LandingHero = ({ onEnterGallery }: LandingHeroProps) => {
           </div>
         </div>
 
-        {/* Why It Stands Out Section */}
+        {/* Technical Highlights Section */}
         <div className={`max-w-4xl mx-auto transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="flex items-center justify-center gap-2 mb-8">
-            <Trophy className="h-6 w-6 text-primary" />
-            <h3 className="text-xl md:text-2xl font-light text-foreground tracking-wide">Why It Stands Out</h3>
+            <Layers className="h-6 w-6 text-primary" />
+            <h3 className="text-xl md:text-2xl font-light text-foreground tracking-wide">Technical Highlights</h3>
           </div>
           
           <div className="grid md:grid-cols-2 gap-4">
