@@ -8,12 +8,12 @@ interface VenuePlacementDiagramProps {
 }
 
 const PLACEMENTS = [
-  { id: 'Full Room', label: 'Full Room', x: 50, y: 50, width: 60, height: 40, type: 'main' },
-  { id: 'Main Wall', label: 'Main Wall', x: 35, y: 30, width: 35, height: 8, type: 'wall' },
-  { id: 'Curve Wall', label: 'Curve Wall', x: 85, y: 45, width: 8, height: 30, type: 'curve' },
-  { id: 'Sky Blades', label: 'Sky Blades', x: 50, y: 15, width: 40, height: 6, type: 'ceiling' },
-  { id: 'Outdoor Beach Club', label: 'Beach Club', x: 20, y: 80, width: 25, height: 15, type: 'outdoor' },
-  { id: 'Outdoor Arch', label: 'Arch', x: 80, y: 80, width: 15, height: 15, type: 'outdoor' },
+  { id: 'Curves SR', label: 'CURVES SR', x: 12, y: 50, width: 18, height: 60, type: 'curves', color: 'hsl(65, 100%, 50%)' },
+  { id: 'IMAG SR', label: 'IMAG SR', x: 35, y: 50, width: 24, height: 50, type: 'imag', color: 'hsl(280, 60%, 55%)' },
+  { id: 'Center', label: 'CENTER', x: 50, y: 25, width: 12, height: 20, type: 'center', color: 'hsl(20, 100%, 55%)' },
+  { id: 'IMAG SL', label: 'IMAG SL', x: 65, y: 50, width: 24, height: 50, type: 'imag', color: 'hsl(280, 60%, 55%)' },
+  { id: 'SL Curves', label: 'SL CURVES', x: 88, y: 50, width: 18, height: 60, type: 'curves', color: 'hsl(65, 100%, 50%)' },
+  { id: 'DJ Booth', label: 'DJ BOOTH', x: 50, y: 80, width: 20, height: 12, type: 'booth', color: 'hsl(120, 80%, 55%)' },
 ] as const;
 
 const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
@@ -33,47 +33,8 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
         <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
 
-      {/* Venue outline */}
+      {/* Venue outline - stage area */}
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-        {/* Main venue building outline */}
-        <rect
-          x="20"
-          y="20"
-          width="60"
-          height="50"
-          rx="2"
-          fill="none"
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="0.5"
-          strokeDasharray="2,2"
-          opacity="0.4"
-        />
-
-        {/* Outdoor areas */}
-        <rect
-          x="10"
-          y="70"
-          width="30"
-          height="20"
-          rx="2"
-          fill="none"
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="0.5"
-          strokeDasharray="2,2"
-          opacity="0.4"
-        />
-        <rect
-          x="70"
-          y="70"
-          width="20"
-          height="20"
-          rx="2"
-          fill="none"
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="0.5"
-          strokeDasharray="2,2"
-          opacity="0.4"
-        />
 
         {/* Placement zones */}
         {PLACEMENTS.map((placement) => {
@@ -82,36 +43,36 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
 
           return (
             <g key={placement.id}>
-              {/* Zone rectangle */}
+              {/* Zone rectangle with color from placement */}
               <rect
                 x={placement.x - placement.width / 2}
                 y={placement.y - placement.height / 2}
                 width={placement.width}
                 height={placement.height}
-                rx={placement.type === 'curve' ? 4 : 1}
+                rx={1}
+                fill={isSelected ? placement.color : `${placement.color}40`}
+                stroke={isSelected ? 'hsl(var(--primary))' : placement.color}
+                strokeWidth={isSelected ? 2 : 0.5}
+                opacity={isSelected ? 1 : 0.7}
                 className={cn(
                   'transition-all duration-300',
-                  isInteractive && 'cursor-pointer',
-                  isSelected
-                    ? 'fill-primary/30 stroke-primary'
-                    : 'fill-muted/20 stroke-muted-foreground/30 hover:fill-primary/10 hover:stroke-primary/50'
+                  isInteractive && 'cursor-pointer hover:opacity-100'
                 )}
-                strokeWidth={isSelected ? 1.5 : 0.5}
                 onClick={() => isInteractive && onToggle(placement.id)}
               />
 
               {/* Glow effect for selected */}
               {isSelected && (
                 <rect
-                  x={placement.x - placement.width / 2 - 2}
-                  y={placement.y - placement.height / 2 - 2}
-                  width={placement.width + 4}
-                  height={placement.height + 4}
-                  rx={placement.type === 'curve' ? 5 : 2}
+                  x={placement.x - placement.width / 2 - 1}
+                  y={placement.y - placement.height / 2 - 1}
+                  width={placement.width + 2}
+                  height={placement.height + 2}
+                  rx={2}
                   fill="none"
                   stroke="hsl(var(--primary))"
-                  strokeWidth="0.3"
-                  opacity="0.5"
+                  strokeWidth="0.5"
+                  opacity="0.6"
                   className="animate-pulse"
                 />
               )}
@@ -121,7 +82,7 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
                 <text
                   x={placement.x + placement.width / 2 - 3}
                   y={placement.y - placement.height / 2 + 4}
-                  className="text-[4px] fill-primary font-bold"
+                  className="text-[4px] fill-background font-bold"
                 >
                   ✓
                 </text>
@@ -130,12 +91,12 @@ const VenuePlacementDiagram: React.FC<VenuePlacementDiagramProps> = ({
               {/* Label */}
               <text
                 x={placement.x}
-                y={placement.y + (placement.type === 'ceiling' ? 0.5 : 1)}
+                y={placement.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className={cn(
-                  'text-[3px] font-medium pointer-events-none transition-colors duration-300',
-                  isSelected ? 'fill-primary' : 'fill-muted-foreground'
+                  'text-[4px] font-bold pointer-events-none transition-colors duration-300 uppercase',
+                  isSelected ? 'fill-background' : 'fill-foreground'
                 )}
               >
                 {placement.label}
