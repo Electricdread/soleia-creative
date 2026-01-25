@@ -479,7 +479,7 @@ const MotionGraphicsLookbook = () => {
             <Button onClick={() => fetchClips(false)} className="rounded-xl glow-gold transition-elegant">Refresh Collection</Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7 pb-36">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-36">
             {clips.map((clip, index) => {
               const isSelected = selectedClips.some(c => c.id === clip.id);
               const hasNote = selectedClips.find(c => c.id === clip.id)?.note;
@@ -499,8 +499,8 @@ const MotionGraphicsLookbook = () => {
                   {/* Luxury Gradient Background */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${categoryGradients[selectedCategory] || categoryGradients['abstract']} opacity-70`} />
                   
-                  {/* Thumbnail */}
-                  <div className="relative aspect-video bg-secondary/20">
+                  {/* Thumbnail - Larger aspect ratio */}
+                  <div className="relative aspect-[4/3] bg-secondary/20">
                     {!hasImageError ? (
                       <img
                         src={clip.thumbnail}
@@ -546,18 +546,8 @@ const MotionGraphicsLookbook = () => {
                   </div>
 
                   {/* Elegant Info Panel */}
-                  <div className="relative p-4 glass border-t border-primary/10">
-                    <h3 className="font-semibold text-foreground truncate mb-2 tracking-tight">{clip.title}</h3>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <Monitor className="w-4 h-4 text-primary/60" />
-                        {clip.resolution}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="w-4 h-4 text-primary/60" />
-                        {clip.duration}
-                      </span>
-                    </div>
+                  <div className="relative p-3 glass border-t border-primary/10">
+                    <h3 className="font-semibold text-foreground truncate tracking-tight text-sm">{clip.title}</h3>
                   </div>
                 </div>
               );
@@ -668,7 +658,7 @@ const MotionGraphicsLookbook = () => {
           <DialogHeader className="pb-2">
             <DialogTitle className="text-2xl font-bold tracking-tight text-gradient-gold">{previewClip?.title}</DialogTitle>
             <DialogDescription className="text-muted-foreground tracking-wide">
-              {previewClip?.resolution} • {previewClip?.duration} • Premium Quality
+              Premium Motion Graphics
             </DialogDescription>
           </DialogHeader>
 
