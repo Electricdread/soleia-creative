@@ -26,6 +26,8 @@ const PLACEMENT_OPTIONS = [
   'DJ Booth'
 ] as const;
 
+const ALL_SCREENS = [...PLACEMENT_OPTIONS];
+
 type PlacementOption = typeof PLACEMENT_OPTIONS[number];
 
 interface SelectedClip extends ArtlistClip {
@@ -197,11 +199,17 @@ const MotionGraphicsLookbook = () => {
   };
 
   const togglePreviewPlacement = (placement: string) => {
-    setPreviewPlacements(prev => 
-      prev.includes(placement) 
-        ? prev.filter(p => p !== placement)
-        : [...prev, placement]
-    );
+    if (placement === 'Full Room') {
+      // Toggle all screens on/off
+      const allSelected = ALL_SCREENS.every(s => previewPlacements.includes(s));
+      setPreviewPlacements(allSelected ? [] : [...ALL_SCREENS]);
+    } else {
+      setPreviewPlacements(prev => 
+        prev.includes(placement) 
+          ? prev.filter(p => p !== placement)
+          : [...prev, placement]
+      );
+    }
   };
 
   const toggleClipSelection = (clip: ArtlistClip) => {
@@ -746,7 +754,7 @@ const MotionGraphicsLookbook = () => {
             </div>
 
             {/* Event Details */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="preview-event-name" className="text-foreground">
                   Event Name
@@ -771,42 +779,51 @@ const MotionGraphicsLookbook = () => {
                   className="bg-background/50"
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-foreground">
-                  <MapPin className="w-4 h-4" />
-                  Placements
-                  {previewPlacements.length > 0 && (
-                    <span className="text-xs text-primary">({previewPlacements.length} selected)</span>
-                  )}
-                </Label>
-                <div className="flex flex-wrap gap-2">
-                  {PLACEMENT_OPTIONS.map((option) => {
-                    const isSelected = previewPlacements.includes(option);
-                    return (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => togglePreviewPlacement(option)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                          isSelected
-                            ? 'bg-primary text-primary-foreground shadow-md'
-                            : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
 
-            {/* Venue Placement Diagram */}
-            <div className="space-y-2">
+            {/* Placements Section */}
+            <div className="space-y-3">
               <Label className="flex items-center gap-2 text-foreground">
                 <MapPin className="w-4 h-4" />
-                Venue Location Preview
+                Screen Placements
+                {previewPlacements.length > 0 && (
+                  <span className="text-xs text-primary">({previewPlacements.length} selected)</span>
+                )}
               </Label>
+              
+              <div className="flex flex-wrap gap-2">
+                {/* Full Room toggle */}
+                <button
+                  type="button"
+                  onClick={() => togglePreviewPlacement('Full Room')}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    ALL_SCREENS.every(s => previewPlacements.includes(s))
+                      ? 'bg-primary text-primary-foreground shadow-md'
+                      : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
+                  }`}
+                >
+                  Full Room
+                </button>
+                {PLACEMENT_OPTIONS.map((option) => {
+                  const isSelected = previewPlacements.includes(option);
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => togglePreviewPlacement(option)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                        isSelected
+                          ? 'bg-primary text-primary-foreground shadow-md'
+                          : 'bg-background/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground border border-border/50'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Venue Placement Diagram */}
               <VenuePlacementDiagram 
                 selectedPlacements={previewPlacements} 
                 onToggle={togglePreviewPlacement}
@@ -814,17 +831,17 @@ const MotionGraphicsLookbook = () => {
             </div>
 
             {/* Note Input */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label htmlFor="preview-note" className="flex items-center gap-2 text-foreground">
                 <MessageSquare className="w-4 h-4" />
-                Add a note for this clip
+                Notes
               </Label>
               <Textarea
                 id="preview-note"
                 value={previewNote}
                 onChange={(e) => setPreviewNote(e.target.value)}
-                placeholder="Add notes about how you want to use this clip, timing preferences, etc..."
-                className="min-h-[80px] bg-background/50"
+                placeholder="Add notes about timing, transitions, etc..."
+                className="min-h-[60px] bg-background/50 resize-none"
               />
             </div>
 
