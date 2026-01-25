@@ -63,8 +63,8 @@ const LandingHero = ({ onEnterGallery }: LandingHeroProps) => {
           <h1 className="text-3xl md:text-4xl lg:text-6xl font-light tracking-[0.2em] uppercase mb-3 text-gradient-gold">
             Looks Collection
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground tracking-widest uppercase mb-6">
-            Sales Pitch
+          <p className="text-xs md:text-sm text-muted-foreground/70 tracking-widest uppercase font-mono mb-6">
+            v2.0 • Motion Graphics Curation System
           </p>
 
           {/* CTA Button */}
@@ -78,12 +78,28 @@ const LandingHero = ({ onEnterGallery }: LandingHeroProps) => {
           </Button>
         </div>
 
-        {/* Main Description */}
-        <div className={`max-w-4xl mx-auto text-center mb-12 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h2 className="text-xl md:text-2xl font-light text-foreground mb-4">Motion Graphics Curation Tool</h2>
-          <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-            A web application for venues to browse, select, and export motion background choices. Clients select clips, assign venue placements via an interactive diagram, add metadata, and generate branded PDFs for download or email delivery.
-          </p>
+        {/* Technical Stack Summary */}
+        <div className={`max-w-4xl mx-auto mb-12 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className="glass rounded-xl p-4 md:p-6 border border-border/30">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-center">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground/70 uppercase tracking-wider font-mono">Frontend</p>
+                <p className="text-sm font-medium text-foreground">React + Vite</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground/70 uppercase tracking-wider font-mono">Styling</p>
+                <p className="text-sm font-medium text-foreground">Tailwind CSS</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground/70 uppercase tracking-wider font-mono">Backend</p>
+                <p className="text-sm font-medium text-foreground">Edge Functions</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground/70 uppercase tracking-wider font-mono">Export</p>
+                <p className="text-sm font-medium text-foreground">jsPDF</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Features Section */}
@@ -137,10 +153,10 @@ const LandingHero = ({ onEnterGallery }: LandingHeroProps) => {
           </div>
         </div>
 
-        {/* Footer Quote */}
+        {/* Footer - Technical */}
         <div className={`text-center mt-16 transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <p className="text-lg md:text-xl italic text-muted-foreground">
-            "From browse to boardroom-ready in under a minute."
+          <p className="text-xs text-muted-foreground/50 font-mono tracking-wider">
+            Built with TypeScript • Zero-config deployment • Mobile-first responsive
           </p>
         </div>
       </div>

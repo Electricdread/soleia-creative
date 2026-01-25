@@ -680,9 +680,9 @@ const MotionGraphicsLookbook = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Luxury Video Preview */}
-            <div className="aspect-video bg-secondary/20 rounded-2xl overflow-hidden relative ring-1 ring-primary/20">
+          <div className="space-y-3 md:space-y-4">
+            {/* Luxury Video Preview - Smaller on mobile */}
+            <div className="aspect-video md:aspect-video max-h-[30vh] md:max-h-none bg-secondary/20 rounded-xl md:rounded-2xl overflow-hidden relative ring-1 ring-primary/20">
               {previewClip?.previewUrl ? (
                 <>
                   <video
