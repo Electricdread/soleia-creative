@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList, ChevronDown, ChevronUp } from 'lucide-react';
 import SelectionsSummary from '@/components/SelectionsSummary';
+import ClipThumbnail from '@/components/ClipThumbnail';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -506,7 +507,7 @@ const MotionGraphicsLookbook = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-36">
             {clips.map((clip, index) => {
               const isSelected = selectedClips.some(c => c.id === clip.id);
-              const hasNote = selectedClips.find(c => c.id === clip.id)?.note;
+              const hasNote = !!selectedClips.find(c => c.id === clip.id)?.note;
               const hasImageError = imageErrors.has(clip.id);
 
               return (
@@ -520,54 +521,15 @@ const MotionGraphicsLookbook = () => {
                   }`}
                   onClick={() => toggleClipSelection(clip)}
                 >
-                  {/* Luxury Gradient Background */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${categoryGradients[selectedCategory] || categoryGradients['abstract']} opacity-70`} />
-                  
-                  {/* Thumbnail - Larger aspect ratio */}
-                  <div className="relative aspect-[4/3] bg-secondary/20">
-                    {!hasImageError ? (
-                      <img
-                        src={clip.thumbnail}
-                        alt={clip.title}
-                        className="w-full h-full object-cover transition-elegant group-hover:scale-105"
-                        onError={() => handleImageError(clip.id)}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/15 to-accent/10">
-                        <Sparkles className="w-12 h-12 text-primary/60" />
-                      </div>
-                    )}
-
-                    {/* Sun Selection Indicator */}
-                    {isSelected && (
-                      <div className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center transition-elegant">
-                        <img src={sunIcon} alt="Selected" className="w-full h-full object-contain drop-shadow-lg" />
-                      </div>
-                    )}
-
-                    {/* Elegant Note Indicator */}
-                    {hasNote && (
-                      <div className="absolute top-3 left-3 w-9 h-9 bg-gradient-to-br from-success to-primary rounded-full flex items-center justify-center glow-amber shadow-lg">
-                        <FileText className="w-4 h-4 text-success-foreground" />
-                      </div>
-                    )}
-
-                    {/* Luxury Play Button Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-elegant">
-                      <button
-                        onClick={(e) => openPreview(clip, e)}
-                        className="w-16 h-16 bg-background/95 rounded-full flex items-center justify-center hover:bg-background transition-elegant shadow-2xl glow-gold hover:scale-110"
-                      >
-                        <Play className="w-8 h-8 text-primary ml-1" />
-                      </button>
-                    </div>
-
-                    {/* Sun Icon Badge on hover */}
-                    <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-elegant">
-                      <img src={sunIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
-                    </div>
-                  </div>
+                  <ClipThumbnail
+                    clip={clip}
+                    isSelected={isSelected}
+                    hasNote={hasNote}
+                    hasImageError={hasImageError}
+                    onImageError={handleImageError}
+                    onPlayClick={(e) => openPreview(clip, e)}
+                    categoryGradient={categoryGradients[selectedCategory] || categoryGradients['abstract']}
+                  />
 
                   {/* Elegant Info Panel */}
                   <div className="relative p-3 glass border-t border-primary/10">

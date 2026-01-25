@@ -23,6 +23,7 @@ export type Database = {
           id: string
           preview_url: string | null
           resolution: string | null
+          sort_order: number | null
           source_url: string | null
           thumbnail: string | null
           title: string
@@ -37,6 +38,7 @@ export type Database = {
           id?: string
           preview_url?: string | null
           resolution?: string | null
+          sort_order?: number | null
           source_url?: string | null
           thumbnail?: string | null
           title: string
@@ -51,6 +53,7 @@ export type Database = {
           id?: string
           preview_url?: string | null
           resolution?: string | null
+          sort_order?: number | null
           source_url?: string | null
           thumbnail?: string | null
           title?: string
