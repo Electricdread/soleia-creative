@@ -16,7 +16,7 @@ import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import PlacementBadges from '@/components/PlacementBadges';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import soleiaLogo from '@/assets/soleia-logo-new.png';
+import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
 import { format } from 'date-fns';
 const INTERIOR_PLACEMENTS = [
