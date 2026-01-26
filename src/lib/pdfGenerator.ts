@@ -203,46 +203,87 @@ export async function generateSelectionsPdf(
   pdf.setLineWidth(0.5);
   pdf.line(pageWidth / 2 - 20, 45, pageWidth / 2 + 20, 45);
   
-  // Client Name with "Hosted By" label and Event Date
-  pdf.setFontSize(9);
-  const infoY = 53;
+  // Client Name and Event Date - Elegant centered layout
+  const infoY = 54;
   
   if (clientName && eventDate) {
+    // Calculate total width for centered layout
+    pdf.setFontSize(9);
+    const hostedLabel = 'Hosted By:  ';
+    const dateLabel = 'Event Date:  ';
+    const divider = '     |     ';
+    
+    pdf.setFont('helvetica', 'normal');
+    const hostedLabelWidth = pdf.getTextWidth(hostedLabel);
+    const dateLabelWidth = pdf.getTextWidth(dateLabel);
+    const dividerWidth = pdf.getTextWidth(divider);
+    
+    pdf.setFont('helvetica', 'bold');
+    const clientNameWidth = pdf.getTextWidth(clientName);
+    const eventDateWidth = pdf.getTextWidth(eventDate);
+    
+    const totalWidth = hostedLabelWidth + clientNameWidth + dividerWidth + dateLabelWidth + eventDateWidth;
+    let xPos = (pageWidth - totalWidth) / 2;
+    
     // Hosted By label
     pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Hosted By:', pageWidth / 2 - 45, infoY, { align: 'right' });
+    pdf.text(hostedLabel, xPos, infoY);
+    xPos += hostedLabelWidth;
+    
     // Client name
     pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(clientName, pageWidth / 2 - 43, infoY, { align: 'left' });
+    pdf.text(clientName, xPos, infoY);
+    xPos += clientNameWidth;
     
     // Divider
     pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-    pdf.text('|', pageWidth / 2, infoY, { align: 'center' });
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(divider, xPos, infoY);
+    xPos += dividerWidth;
     
     // Event Date label
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('Event Date:', pageWidth / 2 + 5, infoY, { align: 'left' });
+    pdf.text(dateLabel, xPos, infoY);
+    xPos += dateLabelWidth;
+    
     // Date value
     pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(eventDate, pageWidth / 2 + 30, infoY, { align: 'left' });
+    pdf.text(eventDate, xPos, infoY);
   } else if (clientName) {
+    pdf.setFontSize(9);
+    const label = 'Hosted By:  ';
+    pdf.setFont('helvetica', 'normal');
+    const labelWidth = pdf.getTextWidth(label);
+    pdf.setFont('helvetica', 'bold');
+    const valueWidth = pdf.getTextWidth(clientName);
+    const totalWidth = labelWidth + valueWidth;
+    let xPos = (pageWidth - totalWidth) / 2;
+    
     pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Hosted By:', pageWidth / 2 - 5, infoY, { align: 'right' });
+    pdf.text(label, xPos, infoY);
     pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(clientName, pageWidth / 2, infoY, { align: 'left' });
+    pdf.text(clientName, xPos + labelWidth, infoY);
   } else if (eventDate) {
+    pdf.setFontSize(9);
+    const label = 'Event Date:  ';
+    pdf.setFont('helvetica', 'normal');
+    const labelWidth = pdf.getTextWidth(label);
+    pdf.setFont('helvetica', 'bold');
+    const valueWidth = pdf.getTextWidth(eventDate);
+    const totalWidth = labelWidth + valueWidth;
+    let xPos = (pageWidth - totalWidth) / 2;
+    
     pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Event Date:', pageWidth / 2 - 5, infoY, { align: 'right' });
+    pdf.text(label, xPos, infoY);
     pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(eventDate, pageWidth / 2, infoY, { align: 'left' });
+    pdf.text(eventDate, xPos + labelWidth, infoY);
   }
   
   // Selection count
@@ -443,38 +484,80 @@ export async function generateSelectionsPdfDataUri(
   pdf.setLineWidth(0.5);
   pdf.line(pageWidth / 2 - 20, 45, pageWidth / 2 + 20, 45);
   
-  pdf.setFontSize(9);
-  const infoY = 53;
+  const infoY = 54;
   
   if (clientName && eventDate) {
+    pdf.setFontSize(9);
+    const hostedLabel = 'Hosted By:  ';
+    const dateLabel = 'Event Date:  ';
+    const divider = '     |     ';
+    
+    pdf.setFont('helvetica', 'normal');
+    const hostedLabelWidth = pdf.getTextWidth(hostedLabel);
+    const dateLabelWidth = pdf.getTextWidth(dateLabel);
+    const dividerWidth = pdf.getTextWidth(divider);
+    
+    pdf.setFont('helvetica', 'bold');
+    const clientNameWidth = pdf.getTextWidth(clientName);
+    const eventDateWidth = pdf.getTextWidth(eventDate);
+    
+    const totalWidth = hostedLabelWidth + clientNameWidth + dividerWidth + dateLabelWidth + eventDateWidth;
+    let xPos = (pageWidth - totalWidth) / 2;
+    
     pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Hosted By:', pageWidth / 2 - 45, infoY, { align: 'right' });
+    pdf.text(hostedLabel, xPos, infoY);
+    xPos += hostedLabelWidth;
+    
     pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(clientName, pageWidth / 2 - 43, infoY, { align: 'left' });
+    pdf.text(clientName, xPos, infoY);
+    xPos += clientNameWidth;
+    
     pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-    pdf.text('|', pageWidth / 2, infoY, { align: 'center' });
-    pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Event Date:', pageWidth / 2 + 5, infoY, { align: 'left' });
+    pdf.text(divider, xPos, infoY);
+    xPos += dividerWidth;
+    
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.text(dateLabel, xPos, infoY);
+    xPos += dateLabelWidth;
+    
     pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(eventDate, pageWidth / 2 + 30, infoY, { align: 'left' });
+    pdf.text(eventDate, xPos, infoY);
   } else if (clientName) {
+    pdf.setFontSize(9);
+    const label = 'Hosted By:  ';
+    pdf.setFont('helvetica', 'normal');
+    const labelWidth = pdf.getTextWidth(label);
+    pdf.setFont('helvetica', 'bold');
+    const valueWidth = pdf.getTextWidth(clientName);
+    const totalWidth = labelWidth + valueWidth;
+    let xPos = (pageWidth - totalWidth) / 2;
+    
     pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Hosted By:', pageWidth / 2 - 5, infoY, { align: 'right' });
+    pdf.text(label, xPos, infoY);
     pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(clientName, pageWidth / 2, infoY, { align: 'left' });
+    pdf.text(clientName, xPos + labelWidth, infoY);
   } else if (eventDate) {
+    pdf.setFontSize(9);
+    const label = 'Event Date:  ';
+    pdf.setFont('helvetica', 'normal');
+    const labelWidth = pdf.getTextWidth(label);
+    pdf.setFont('helvetica', 'bold');
+    const valueWidth = pdf.getTextWidth(eventDate);
+    const totalWidth = labelWidth + valueWidth;
+    let xPos = (pageWidth - totalWidth) / 2;
+    
     pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Event Date:', pageWidth / 2 - 5, infoY, { align: 'right' });
+    pdf.text(label, xPos, infoY);
     pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(eventDate, pageWidth / 2, infoY, { align: 'left' });
+    pdf.text(eventDate, xPos + labelWidth, infoY);
   }
   
   pdf.setTextColor(...colors.labelText as [number, number, number]);
