@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Mail, FileText, MapPin, MessageSquare, Loader2, CheckCircle2, Pencil, X, Save, Calendar, Users, LayoutGrid, Monitor } from 'lucide-react';
+import { ArrowLeft, Download, Mail, FileText, MessageSquare, Loader2, CheckCircle2, Pencil, X, Save, Calendar, Users, LayoutGrid, Monitor, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import PlacementBadges from '@/components/PlacementBadges';
 import PlacementSummaryByScreen from '@/components/PlacementSummaryByScreen';
+import PdfPreviewDialog from '@/components/PdfPreviewDialog';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { format } from 'date-fns';
 
@@ -61,23 +62,27 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
   const [pdfDownloaded, setPdfDownloaded] = useState(false);
   const [editingClipId, setEditingClipId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState('');
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+
+  const getPdfSelections = () => {
+    return selections.map(selection => ({
+      id: selection.clip_id,
+      external_id: selection.clip_id,
+      title: selection.clip_title,
+      thumbnail: selection.clip_thumbnail || '',
+      note: selection.note,
+      eventName: clientLink.event_name,
+      eventDate: clientLink.event_date || '',
+      placements: selection.placements,
+      category: selection.clip_category || '',
+      resolution: '',
+      duration: '',
+      clientName: clientLink.client_name,
+    }));
+  };
 
   const generatePdfData = async () => {
-    return await generateSelectionsPdf(
-      selections.map(selection => ({
-        id: selection.clip_id,
-        external_id: selection.clip_id,
-        title: selection.clip_title,
-        thumbnail: selection.clip_thumbnail || '',
-        note: selection.note,
-        eventName: clientLink.event_name,
-        eventDate: clientLink.event_date || '',
-        placements: selection.placements,
-        category: selection.clip_category || '',
-        resolution: '',
-        duration: '',
-      }))
-    );
+    return await generateSelectionsPdf(getPdfSelections());
   };
 
   const downloadPdf = async () => {
@@ -419,6 +424,16 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
           
           <div className="flex flex-col sm:flex-row gap-4">
             <Button
+              onClick={() => setShowPdfPreview(true)}
+              disabled={selections.length === 0}
+              variant="outline"
+              className="flex-1 gap-2 rounded-xl h-12"
+            >
+              <Eye className="w-4 h-4" />
+              Preview PDF
+            </Button>
+            
+            <Button
               onClick={downloadPdf}
               disabled={isDownloading || selections.length === 0}
               className="flex-1 gap-2 rounded-xl h-12"
@@ -465,6 +480,14 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
           )}
         </div>
       </main>
+      
+      {/* PDF Preview Dialog */}
+      <PdfPreviewDialog
+        open={showPdfPreview}
+        onOpenChange={setShowPdfPreview}
+        selections={getPdfSelections()}
+        clientName={clientLink.client_name}
+      />
     </div>
   );
 };

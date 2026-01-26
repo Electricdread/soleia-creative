@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { format, parseISO } from 'date-fns';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 interface SelectionForPdf {
@@ -16,10 +17,24 @@ interface SelectionForPdf {
   clientName?: string;
 }
 
+export interface PdfOptions {
+  darkMode?: boolean;
+}
+
+// Format date as "Month Day, Year" (e.g., "January 26, 2026")
+function formatEventDate(dateString: string): string {
+  if (!dateString) return '';
+  try {
+    const date = parseISO(dateString);
+    return format(date, 'MMMM d, yyyy');
+  } catch {
+    return dateString;
+  }
+}
+
 // Convert image URL to base64 with better error handling
 async function imageToBase64(url: string): Promise<string | null> {
   try {
-    // Create an image element and load via canvas to avoid CORS issues
     return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -43,7 +58,6 @@ async function imageToBase64(url: string): Promise<string | null> {
       };
       
       img.onerror = () => {
-        // Try fetch as fallback
         fetch(url, { mode: 'cors' })
           .then(response => response.blob())
           .then(blob => {
@@ -55,10 +69,7 @@ async function imageToBase64(url: string): Promise<string | null> {
           .catch(() => resolve(null));
       };
       
-      // Add cache-busting and try loading
       img.src = url.includes('?') ? `${url}&_t=${Date.now()}` : `${url}?_t=${Date.now()}`;
-      
-      // Timeout fallback
       setTimeout(() => resolve(null), 5000);
     });
   } catch {
@@ -91,7 +102,47 @@ async function assetToBase64(assetPath: string): Promise<string | null> {
   }
 }
 
-export async function generateSelectionsPdf(selections: SelectionForPdf[]): Promise<string> {
+// Color schemes for light and dark modes
+const colorSchemes = {
+  light: {
+    headerBg: [255, 255, 255],
+    headerAccent: [245, 158, 11],
+    eventTitle: [180, 120, 50],
+    labelText: [120, 110, 100],
+    valueText: [40, 35, 30],
+    cardBg: [252, 252, 252],
+    cardBorder: [230, 230, 230],
+    titleText: [30, 30, 30],
+    metaText: [120, 120, 120],
+    noteBg: [255, 251, 235],
+    noteText: [100, 80, 60],
+    footerText: [150, 150, 150],
+    pageBg: [255, 255, 255],
+  },
+  dark: {
+    headerBg: [20, 15, 10],
+    headerAccent: [245, 158, 11],
+    eventTitle: [245, 200, 100],
+    labelText: [180, 170, 150],
+    valueText: [255, 255, 255],
+    cardBg: [35, 30, 25],
+    cardBorder: [60, 55, 50],
+    titleText: [255, 255, 255],
+    metaText: [180, 175, 170],
+    noteBg: [50, 45, 35],
+    noteText: [220, 200, 170],
+    footerText: [150, 140, 130],
+    pageBg: [25, 20, 15],
+  }
+};
+
+export async function generateSelectionsPdf(
+  selections: SelectionForPdf[], 
+  options: PdfOptions = {}
+): Promise<string> {
+  const { darkMode = false } = options;
+  const colors = darkMode ? colorSchemes.dark : colorSchemes.light;
+  
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -108,23 +159,28 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   
   // Extract event info from first selection
   const eventName = selections[0]?.eventName || 'Looks Collection';
-  const eventDate = selections[0]?.eventDate || '';
+  const eventDate = formatEventDate(selections[0]?.eventDate || '');
   const clientName = selections[0]?.clientName || '';
   
+  // ========== PAGE BACKGROUND (for dark mode) ==========
+  if (darkMode) {
+    pdf.setFillColor(...colors.pageBg as [number, number, number]);
+    pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+  }
+  
   // ========== ELEGANT HEADER ==========
-  // Dark luxury header background 
-  pdf.setFillColor(20, 15, 10); // Dark warm brown/black
+  pdf.setFillColor(...colors.headerBg as [number, number, number]);
   pdf.rect(0, 0, pageWidth, 70, 'F');
   
-  // Add subtle gold accent stripe at bottom
-  pdf.setFillColor(245, 158, 11); // Gold accent
+  // Gold accent stripe at bottom
+  pdf.setFillColor(...colors.headerAccent as [number, number, number]);
   pdf.rect(0, 68, pageWidth, 2, 'F');
   
-  // Add Soleia logo centered at top - wider logo with proper aspect ratio
+  // Soleia logo centered at top
   if (logoBase64) {
     try {
       const logoWidth = 60;
-      const logoHeight = 18; // Adjusted for wider aspect ratio
+      const logoHeight = 18;
       pdf.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 8, logoWidth, logoHeight);
     } catch (e) {
       console.error('Failed to add logo:', e);
@@ -132,18 +188,18 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   }
   
   // Decorative line under logo
-  pdf.setDrawColor(245, 158, 11);
+  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
   pdf.setLineWidth(0.3);
   pdf.line(pageWidth / 2 - 30, 32, pageWidth / 2 + 30, 32);
   
-  // Event Name - Hero Typography (centered)
-  pdf.setTextColor(245, 200, 100); // Gold text
+  // Event Name - Hero Typography
+  pdf.setTextColor(...colors.eventTitle as [number, number, number]);
   pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
   pdf.text(eventName.toUpperCase(), pageWidth / 2, 41, { align: 'center' });
   
   // Decorative divider
-  pdf.setDrawColor(245, 158, 11);
+  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
   pdf.setLineWidth(0.5);
   pdf.line(pageWidth / 2 - 20, 45, pageWidth / 2 + 20, 45);
   
@@ -152,43 +208,45 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   const infoY = 53;
   
   if (clientName && eventDate) {
-    // Hosted By label and client name
-    pdf.setTextColor(180, 170, 150);
+    // Hosted By label
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
     pdf.text('Hosted By:', pageWidth / 2 - 45, infoY, { align: 'right' });
-    pdf.setTextColor(255, 255, 255);
+    // Client name
+    pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
     pdf.text(clientName, pageWidth / 2 - 43, infoY, { align: 'left' });
     
     // Divider
-    pdf.setTextColor(245, 158, 11);
+    pdf.setTextColor(...colors.headerAccent as [number, number, number]);
     pdf.text('|', pageWidth / 2, infoY, { align: 'center' });
     
-    // Event Date label and date
-    pdf.setTextColor(180, 170, 150);
+    // Event Date label
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
     pdf.text('Event Date:', pageWidth / 2 + 5, infoY, { align: 'left' });
-    pdf.setTextColor(255, 255, 255);
+    // Date value
+    pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
     pdf.text(eventDate, pageWidth / 2 + 30, infoY, { align: 'left' });
   } else if (clientName) {
-    pdf.setTextColor(180, 170, 150);
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
     pdf.text('Hosted By:', pageWidth / 2 - 5, infoY, { align: 'right' });
-    pdf.setTextColor(255, 255, 255);
+    pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
     pdf.text(clientName, pageWidth / 2, infoY, { align: 'left' });
   } else if (eventDate) {
-    pdf.setTextColor(180, 170, 150);
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
     pdf.setFont('helvetica', 'normal');
     pdf.text('Event Date:', pageWidth / 2 - 5, infoY, { align: 'right' });
-    pdf.setTextColor(255, 255, 255);
+    pdf.setTextColor(...colors.valueText as [number, number, number]);
     pdf.setFont('helvetica', 'bold');
     pdf.text(eventDate, pageWidth / 2, infoY, { align: 'left' });
   }
   
   // Selection count
-  pdf.setTextColor(200, 180, 150);
+  pdf.setTextColor(...colors.labelText as [number, number, number]);
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'normal');
   pdf.text(`${selections.length} clips selected`, pageWidth / 2, 62, { align: 'center' });
@@ -207,43 +265,45 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
       pdf.addPage();
       yPosition = 20;
       
-      // Mini header on subsequent pages - dark background
-      pdf.setFillColor(20, 15, 10);
+      // Page background for dark mode
+      if (darkMode) {
+        pdf.setFillColor(...colors.pageBg as [number, number, number]);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      }
+      
+      // Mini header on subsequent pages
+      pdf.setFillColor(...colors.headerBg as [number, number, number]);
       pdf.rect(0, 0, pageWidth, 15, 'F');
-      // Gold accent stripe
-      pdf.setFillColor(245, 158, 11);
+      pdf.setFillColor(...colors.headerAccent as [number, number, number]);
       pdf.rect(0, 14, pageWidth, 1, 'F');
-      pdf.setTextColor(245, 200, 100);
+      pdf.setTextColor(...colors.eventTitle as [number, number, number]);
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'bold');
       pdf.text(eventName.toUpperCase(), margin, 10);
-      pdf.setTextColor(255, 255, 255);
+      pdf.setTextColor(...colors.valueText as [number, number, number]);
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
       pdf.text(`Page ${pdf.internal.pages.length - 1}`, pageWidth - margin, 10, { align: 'right' });
       yPosition = 25;
     }
 
-    // Card background with subtle border
-    pdf.setFillColor(252, 252, 252);
-    pdf.setDrawColor(230, 230, 230);
+    // Card background
+    pdf.setFillColor(...colors.cardBg as [number, number, number]);
+    pdf.setDrawColor(...colors.cardBorder as [number, number, number]);
     pdf.roundedRect(margin, yPosition - 2, contentWidth, rowHeight - 4, 3, 3, 'FD');
 
-    // Try to load and add thumbnail
+    // Thumbnail
     const base64Image = await imageToBase64(selection.thumbnail);
     if (base64Image) {
       try {
-        // Add rounded thumbnail placeholder first
-        pdf.setFillColor(240, 240, 240);
+        pdf.setFillColor(darkMode ? 50 : 240, darkMode ? 45 : 240, darkMode ? 40 : 240);
         pdf.roundedRect(margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight, 2, 2, 'F');
         pdf.addImage(base64Image, 'JPEG', margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight);
       } catch {
-        // Draw elegant placeholder if image fails
-        drawThumbnailPlaceholder(pdf, margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight);
+        drawThumbnailPlaceholder(pdf, margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight, darkMode);
       }
     } else {
-      // Draw elegant placeholder
-      drawThumbnailPlaceholder(pdf, margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight);
+      drawThumbnailPlaceholder(pdf, margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight, darkMode);
     }
 
     // Title and details
@@ -251,7 +311,7 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
     const textMaxWidth = contentWidth - thumbnailWidth - 15;
     
     // Clip number badge
-    pdf.setFillColor(245, 158, 11);
+    pdf.setFillColor(...colors.headerAccent as [number, number, number]);
     pdf.circle(textX + 3, yPosition + 5, 3, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(6);
@@ -259,11 +319,10 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
     pdf.text(`${i + 1}`, textX + 3, yPosition + 6.5, { align: 'center' });
     
     // Title
-    pdf.setTextColor(30, 30, 30);
+    pdf.setTextColor(...colors.titleText as [number, number, number]);
     pdf.setFontSize(11);
     pdf.setFont('helvetica', 'bold');
     
-    // Truncate title if too long
     let title = selection.title;
     while (pdf.getTextWidth(title) > textMaxWidth - 15 && title.length > 0) {
       title = title.slice(0, -1);
@@ -273,7 +332,7 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
     pdf.text(title, textX + 10, yPosition + 6);
 
     // Metadata
-    pdf.setTextColor(120, 120, 120);
+    pdf.setTextColor(...colors.metaText as [number, number, number]);
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
     const metaParts = [selection.resolution, selection.duration, selection.category].filter(Boolean);
@@ -283,26 +342,25 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
     // Placements
     let detailY = yPosition + 20;
     if (selection.placements && selection.placements.length > 0) {
-      pdf.setTextColor(245, 158, 11); // Gold color
+      pdf.setTextColor(...colors.headerAccent as [number, number, number]);
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'bold');
       pdf.text('Placements:', textX + 10, detailY);
-      pdf.setTextColor(100, 80, 60);
+      pdf.setTextColor(...colors.noteText as [number, number, number]);
       pdf.setFont('helvetica', 'normal');
       pdf.text(selection.placements.join(', '), textX + 35, detailY);
       detailY += 6;
     }
 
-    // Note with styled background
+    // Note
     if (selection.note) {
-      pdf.setFillColor(255, 251, 235); // Light amber background
+      pdf.setFillColor(...colors.noteBg as [number, number, number]);
       pdf.roundedRect(textX + 8, detailY - 3, textMaxWidth - 10, 12, 1, 1, 'F');
       
-      pdf.setTextColor(100, 80, 60);
+      pdf.setTextColor(...colors.noteText as [number, number, number]);
       pdf.setFontSize(7);
       pdf.setFont('helvetica', 'italic');
       
-      // Wrap note text - use simple quotes instead of smart quotes
       const noteText = '"' + selection.note + '"';
       const noteLines = pdf.splitTextToSize(noteText, textMaxWidth - 15);
       pdf.text(noteLines.slice(0, 2), textX + 10, detailY + 2);
@@ -314,38 +372,248 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   // ========== FOOTER ==========
   const footerY = pageHeight - 12;
   
-  // Footer line
-  pdf.setDrawColor(245, 158, 11);
+  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
   pdf.setLineWidth(0.5);
   pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
   
-  pdf.setTextColor(150, 150, 150);
+  pdf.setTextColor(...colors.footerText as [number, number, number]);
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
   pdf.text('Generated by Soleia Looks Collection', margin, footerY);
   pdf.text(`Page ${pdf.internal.pages.length - 1} of ${pdf.internal.pages.length - 1}`, pageWidth - margin, footerY, { align: 'right' });
 
-  // Return base64 without the data URI prefix
   const pdfBase64 = pdf.output('datauristring');
   return pdfBase64.split(',')[1];
 }
 
-// Helper function to draw an elegant thumbnail placeholder
-function drawThumbnailPlaceholder(pdf: jsPDF, x: number, y: number, width: number, height: number) {
-  // Gradient-like background
-  pdf.setFillColor(245, 240, 230);
+// Generate full data URI for preview
+export async function generateSelectionsPdfDataUri(
+  selections: SelectionForPdf[], 
+  options: PdfOptions = {}
+): Promise<string> {
+  const { darkMode = false } = options;
+  const colors = darkMode ? colorSchemes.dark : colorSchemes.light;
+  
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 15;
+  const contentWidth = pageWidth - (margin * 2);
+  
+  const logoBase64 = await assetToBase64(soleiaLogo);
+  
+  const eventName = selections[0]?.eventName || 'Looks Collection';
+  const eventDate = formatEventDate(selections[0]?.eventDate || '');
+  const clientName = selections[0]?.clientName || '';
+  
+  if (darkMode) {
+    pdf.setFillColor(...colors.pageBg as [number, number, number]);
+    pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+  }
+  
+  pdf.setFillColor(...colors.headerBg as [number, number, number]);
+  pdf.rect(0, 0, pageWidth, 70, 'F');
+  
+  pdf.setFillColor(...colors.headerAccent as [number, number, number]);
+  pdf.rect(0, 68, pageWidth, 2, 'F');
+  
+  if (logoBase64) {
+    try {
+      pdf.addImage(logoBase64, 'PNG', (pageWidth - 60) / 2, 8, 60, 18);
+    } catch (e) {
+      console.error('Failed to add logo:', e);
+    }
+  }
+  
+  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
+  pdf.setLineWidth(0.3);
+  pdf.line(pageWidth / 2 - 30, 32, pageWidth / 2 + 30, 32);
+  
+  pdf.setTextColor(...colors.eventTitle as [number, number, number]);
+  pdf.setFontSize(18);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(eventName.toUpperCase(), pageWidth / 2, 41, { align: 'center' });
+  
+  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
+  pdf.setLineWidth(0.5);
+  pdf.line(pageWidth / 2 - 20, 45, pageWidth / 2 + 20, 45);
+  
+  pdf.setFontSize(9);
+  const infoY = 53;
+  
+  if (clientName && eventDate) {
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Hosted By:', pageWidth / 2 - 45, infoY, { align: 'right' });
+    pdf.setTextColor(...colors.valueText as [number, number, number]);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(clientName, pageWidth / 2 - 43, infoY, { align: 'left' });
+    pdf.setTextColor(...colors.headerAccent as [number, number, number]);
+    pdf.text('|', pageWidth / 2, infoY, { align: 'center' });
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Event Date:', pageWidth / 2 + 5, infoY, { align: 'left' });
+    pdf.setTextColor(...colors.valueText as [number, number, number]);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(eventDate, pageWidth / 2 + 30, infoY, { align: 'left' });
+  } else if (clientName) {
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Hosted By:', pageWidth / 2 - 5, infoY, { align: 'right' });
+    pdf.setTextColor(...colors.valueText as [number, number, number]);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(clientName, pageWidth / 2, infoY, { align: 'left' });
+  } else if (eventDate) {
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Event Date:', pageWidth / 2 - 5, infoY, { align: 'right' });
+    pdf.setTextColor(...colors.valueText as [number, number, number]);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(eventDate, pageWidth / 2, infoY, { align: 'left' });
+  }
+  
+  pdf.setTextColor(...colors.labelText as [number, number, number]);
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`${selections.length} clips selected`, pageWidth / 2, 62, { align: 'center' });
+  
+  let yPosition = 82;
+  const thumbnailWidth = 50;
+  const thumbnailHeight = 28;
+  const rowHeight = 48;
+
+  for (let i = 0; i < selections.length; i++) {
+    const selection = selections[i];
+    
+    if (yPosition + rowHeight > pageHeight - 25) {
+      pdf.addPage();
+      yPosition = 20;
+      
+      if (darkMode) {
+        pdf.setFillColor(...colors.pageBg as [number, number, number]);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      }
+      
+      pdf.setFillColor(...colors.headerBg as [number, number, number]);
+      pdf.rect(0, 0, pageWidth, 15, 'F');
+      pdf.setFillColor(...colors.headerAccent as [number, number, number]);
+      pdf.rect(0, 14, pageWidth, 1, 'F');
+      pdf.setTextColor(...colors.eventTitle as [number, number, number]);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(eventName.toUpperCase(), margin, 10);
+      pdf.setTextColor(...colors.valueText as [number, number, number]);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      pdf.text(`Page ${pdf.internal.pages.length - 1}`, pageWidth - margin, 10, { align: 'right' });
+      yPosition = 25;
+    }
+
+    pdf.setFillColor(...colors.cardBg as [number, number, number]);
+    pdf.setDrawColor(...colors.cardBorder as [number, number, number]);
+    pdf.roundedRect(margin, yPosition - 2, contentWidth, rowHeight - 4, 3, 3, 'FD');
+
+    const base64Image = await imageToBase64(selection.thumbnail);
+    if (base64Image) {
+      try {
+        pdf.setFillColor(darkMode ? 50 : 240, darkMode ? 45 : 240, darkMode ? 40 : 240);
+        pdf.roundedRect(margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight, 2, 2, 'F');
+        pdf.addImage(base64Image, 'JPEG', margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight);
+      } catch {
+        drawThumbnailPlaceholder(pdf, margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight, darkMode);
+      }
+    } else {
+      drawThumbnailPlaceholder(pdf, margin + 3, yPosition + 1, thumbnailWidth, thumbnailHeight, darkMode);
+    }
+
+    const textX = margin + thumbnailWidth + 10;
+    const textMaxWidth = contentWidth - thumbnailWidth - 15;
+    
+    pdf.setFillColor(...colors.headerAccent as [number, number, number]);
+    pdf.circle(textX + 3, yPosition + 5, 3, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(6);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`${i + 1}`, textX + 3, yPosition + 6.5, { align: 'center' });
+    
+    pdf.setTextColor(...colors.titleText as [number, number, number]);
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    
+    let title = selection.title;
+    while (pdf.getTextWidth(title) > textMaxWidth - 15 && title.length > 0) {
+      title = title.slice(0, -1);
+    }
+    if (title !== selection.title) title += '...';
+    
+    pdf.text(title, textX + 10, yPosition + 6);
+
+    pdf.setTextColor(...colors.metaText as [number, number, number]);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    const metaParts = [selection.resolution, selection.duration, selection.category].filter(Boolean);
+    const metaText = metaParts.join(' - ');
+    pdf.text(metaText, textX + 10, yPosition + 13);
+
+    let detailY = yPosition + 20;
+    if (selection.placements && selection.placements.length > 0) {
+      pdf.setTextColor(...colors.headerAccent as [number, number, number]);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Placements:', textX + 10, detailY);
+      pdf.setTextColor(...colors.noteText as [number, number, number]);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(selection.placements.join(', '), textX + 35, detailY);
+      detailY += 6;
+    }
+
+    if (selection.note) {
+      pdf.setFillColor(...colors.noteBg as [number, number, number]);
+      pdf.roundedRect(textX + 8, detailY - 3, textMaxWidth - 10, 12, 1, 1, 'F');
+      
+      pdf.setTextColor(...colors.noteText as [number, number, number]);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'italic');
+      
+      const noteText = '"' + selection.note + '"';
+      const noteLines = pdf.splitTextToSize(noteText, textMaxWidth - 15);
+      pdf.text(noteLines.slice(0, 2), textX + 10, detailY + 2);
+    }
+
+    yPosition += rowHeight;
+  }
+
+  const footerY = pageHeight - 12;
+  
+  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
+  pdf.setLineWidth(0.5);
+  pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+  
+  pdf.setTextColor(...colors.footerText as [number, number, number]);
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Generated by Soleia Looks Collection', margin, footerY);
+  pdf.text(`Page ${pdf.internal.pages.length - 1} of ${pdf.internal.pages.length - 1}`, pageWidth - margin, footerY, { align: 'right' });
+
+  return pdf.output('datauristring');
+}
+
+function drawThumbnailPlaceholder(pdf: jsPDF, x: number, y: number, width: number, height: number, darkMode: boolean = false) {
+  pdf.setFillColor(darkMode ? 50 : 245, darkMode ? 45 : 240, darkMode ? 40 : 230);
   pdf.roundedRect(x, y, width, height, 2, 2, 'F');
   
-  // Inner border
-  pdf.setDrawColor(220, 210, 195);
+  pdf.setDrawColor(darkMode ? 80 : 220, darkMode ? 75 : 210, darkMode ? 70 : 195);
   pdf.setLineWidth(0.3);
   pdf.roundedRect(x + 1, y + 1, width - 2, height - 2, 1, 1, 'S');
   
-  // Sun icon placeholder
   pdf.setFillColor(245, 158, 11);
   pdf.circle(x + width/2, y + height/2 - 2, 5, 'F');
   
-  // Rays
   pdf.setDrawColor(245, 158, 11);
   pdf.setLineWidth(0.5);
   for (let angle = 0; angle < 360; angle += 45) {
@@ -360,8 +628,7 @@ function drawThumbnailPlaceholder(pdf: jsPDF, x: number, y: number, width: numbe
     );
   }
   
-  // Text
-  pdf.setTextColor(180, 170, 155);
+  pdf.setTextColor(darkMode ? 150 : 180, darkMode ? 140 : 170, darkMode ? 130 : 155);
   pdf.setFontSize(6);
   pdf.setFont('helvetica', 'normal');
   pdf.text('Preview', x + width/2, y + height - 3, { align: 'center' });
