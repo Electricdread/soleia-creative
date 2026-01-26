@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserMenu } from '@/components/auth/UserMenu';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { artlistCategories, type ArtlistCategoryKey } from '@/lib/api/artlist';
 import sunIcon from '@/assets/sun-icon.jpeg';
 
@@ -89,6 +90,17 @@ export function MobileMenu({
                   <span className="font-medium text-base">{cat.label}</span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Theme Toggle */}
+          <div className="pt-6 border-t border-border/50">
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-2 mb-3">
+              Appearance
+            </p>
+            <div className="px-2 flex items-center gap-3">
+              <ThemeToggle />
+              <span className="text-sm text-muted-foreground">Toggle theme</span>
             </div>
           </div>
 
