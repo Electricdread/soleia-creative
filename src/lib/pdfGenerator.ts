@@ -13,6 +13,7 @@ interface SelectionForPdf {
   category: string;
   resolution: string;
   duration: string;
+  clientName?: string;
 }
 
 // Convert image URL to base64 with better error handling
@@ -105,46 +106,70 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   // Load Soleia logo
   const logoBase64 = await assetToBase64(soleiaLogo);
   
+  // Extract event info from first selection
+  const eventName = selections[0]?.eventName || 'Looks Collection';
+  const eventDate = selections[0]?.eventDate || '';
+  const clientName = selections[0]?.clientName || '';
+  
   // ========== ELEGANT HEADER ==========
-  // Dark luxury header background for better logo visibility
+  // Dark luxury header background 
   pdf.setFillColor(20, 15, 10); // Dark warm brown/black
-  pdf.rect(0, 0, pageWidth, 50, 'F');
+  pdf.rect(0, 0, pageWidth, 70, 'F');
   
   // Add subtle gold accent stripe at bottom
   pdf.setFillColor(245, 158, 11); // Gold accent
-  pdf.rect(0, 48, pageWidth, 2, 'F');
+  pdf.rect(0, 68, pageWidth, 2, 'F');
   
-  // Add Soleia logo if available
+  // Add Soleia logo centered at top
   if (logoBase64) {
     try {
-      // Logo positioned on the left, large and prominent
-      pdf.addImage(logoBase64, 'PNG', margin, 8, 60, 34);
+      const logoWidth = 50;
+      const logoHeight = 28;
+      pdf.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 5, logoWidth, logoHeight);
     } catch (e) {
       console.error('Failed to add logo:', e);
     }
   }
   
-  // Title text on the right side
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(22);
+  // Decorative line under logo
+  pdf.setDrawColor(245, 158, 11);
+  pdf.setLineWidth(0.3);
+  pdf.line(pageWidth / 2 - 30, 35, pageWidth / 2 + 30, 35);
+  
+  // Event Name - Hero Typography (centered)
+  pdf.setTextColor(245, 200, 100); // Gold text
+  pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
-  pdf.text('Looks Collection', pageWidth - margin, 22, { align: 'right' });
+  pdf.text(eventName.toUpperCase(), pageWidth / 2, 44, { align: 'center' });
   
-  pdf.setFontSize(11);
+  // Decorative divider
+  pdf.setDrawColor(245, 158, 11);
+  pdf.setLineWidth(0.5);
+  pdf.line(pageWidth / 2 - 20, 48, pageWidth / 2 + 20, 48);
+  
+  // Client Name and Event Date
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
-  pdf.text('Motion Backgrounds', pageWidth - margin, 30, { align: 'right' });
   
+  const infoY = 55;
+  if (clientName && eventDate) {
+    pdf.text(`Hosted By: ${clientName}`, pageWidth / 2 - 35, infoY, { align: 'right' });
+    pdf.text('|', pageWidth / 2, infoY, { align: 'center' });
+    pdf.text(`Event Date: ${eventDate}`, pageWidth / 2 + 35, infoY, { align: 'left' });
+  } else if (clientName) {
+    pdf.text(`Hosted By: ${clientName}`, pageWidth / 2, infoY, { align: 'center' });
+  } else if (eventDate) {
+    pdf.text(`Event Date: ${eventDate}`, pageWidth / 2, infoY, { align: 'center' });
+  }
+  
+  // Selection count
+  pdf.setTextColor(200, 180, 150);
   pdf.setFontSize(9);
-  pdf.setTextColor(255, 255, 255, 0.8);
-  pdf.text(`${selections.length} clips selected • ${new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  })}`, pageWidth - margin, 40, { align: 'right' });
+  pdf.text(`${selections.length} clips selected`, pageWidth / 2, 63, { align: 'center' });
   
   // ========== CONTENT SECTION ==========
-  let yPosition = 62;
+  let yPosition = 82;
   const thumbnailWidth = 50;
   const thumbnailHeight = 28;
   const rowHeight = 48;
@@ -163,10 +188,11 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
       // Gold accent stripe
       pdf.setFillColor(245, 158, 11);
       pdf.rect(0, 14, pageWidth, 1, 'F');
-      pdf.setTextColor(255, 255, 255);
+      pdf.setTextColor(245, 200, 100);
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Looks Collection', margin, 10);
+      pdf.text(eventName.toUpperCase(), margin, 10);
+      pdf.setTextColor(255, 255, 255);
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
       pdf.text(`Page ${pdf.internal.pages.length - 1}`, pageWidth - margin, 10, { align: 'right' });
@@ -221,30 +247,25 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
     
     pdf.text(title, textX + 10, yPosition + 6);
 
-    // Metadata with icons
+    // Metadata
     pdf.setTextColor(120, 120, 120);
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
-    const metaText = `${selection.resolution} • ${selection.duration} • ${selection.category}`;
+    const metaParts = [selection.resolution, selection.duration, selection.category].filter(Boolean);
+    const metaText = metaParts.join(' - ');
     pdf.text(metaText, textX + 10, yPosition + 13);
 
-    // Event details and placements
+    // Placements
     let detailY = yPosition + 20;
-    if (selection.eventName || selection.eventDate || (selection.placements && selection.placements.length > 0)) {
-      pdf.setTextColor(245, 158, 11); // Gold color for event
+    if (selection.placements && selection.placements.length > 0) {
+      pdf.setTextColor(245, 158, 11); // Gold color
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'bold');
-      const eventParts = [selection.eventName, selection.eventDate].filter(Boolean);
-      if (eventParts.length > 0) {
-        pdf.text(`✦ ${eventParts.join(' • ')}`, textX + 10, detailY);
-        detailY += 6;
-      }
-      if (selection.placements && selection.placements.length > 0) {
-        pdf.setTextColor(100, 80, 60); // Darker color for placements
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(`📍 Placements: ${selection.placements.join(', ')}`, textX + 10, detailY);
-        detailY += 6;
-      }
+      pdf.text('Placements:', textX + 10, detailY);
+      pdf.setTextColor(100, 80, 60);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(selection.placements.join(', '), textX + 35, detailY);
+      detailY += 6;
     }
 
     // Note with styled background
@@ -256,8 +277,9 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
       pdf.setFontSize(7);
       pdf.setFont('helvetica', 'italic');
       
-      // Wrap note text
-      const noteLines = pdf.splitTextToSize(`"${selection.note}"`, textMaxWidth - 15);
+      // Wrap note text - use simple quotes instead of smart quotes
+      const noteText = '"' + selection.note + '"';
+      const noteLines = pdf.splitTextToSize(noteText, textMaxWidth - 15);
       pdf.text(noteLines.slice(0, 2), textX + 10, detailY + 2);
     }
 
