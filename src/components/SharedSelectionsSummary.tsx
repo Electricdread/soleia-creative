@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Mail, FileText, MessageSquare, Loader2, CheckCircle2, Pencil, X, Save, Calendar, Users, LayoutGrid, Monitor, Eye } from 'lucide-react';
+import { ArrowLeft, Download, Mail, FileText, MessageSquare, Loader2, CheckCircle2, Pencil, X, Save, Calendar, Users, LayoutGrid, Monitor, Eye, MapPin, Home, TreePine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import PlacementBadges from '@/components/PlacementBadges';
 import PlacementSummaryByScreen from '@/components/PlacementSummaryByScreen';
 import PdfPreviewDialog from '@/components/PdfPreviewDialog';
+import PlacementEditDialog from '@/components/PlacementEditDialog';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { format } from 'date-fns';
 
@@ -63,6 +64,7 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
   const [editingClipId, setEditingClipId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState('');
   const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [editingPlacementClip, setEditingPlacementClip] = useState<SharedSelection | null>(null);
 
   const getPdfSelections = () => {
     return selections.map(selection => ({
@@ -176,46 +178,56 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
     });
   };
 
+  const handleSavePlacements = async (placements: string[]) => {
+    if (editingPlacementClip) {
+      await updatePlacements(editingPlacementClip.clip_id, placements);
+      toast({
+        title: "Screens updated",
+        description: "Screen assignments have been saved and synced",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <header className="glass-strong sticky top-0 z-30 border-b border-primary/10">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex items-center justify-between gap-2">
             <Button 
               variant="ghost" 
               onClick={onBack}
-              className="gap-2 hover:bg-primary/10"
+              className="gap-1.5 sm:gap-2 hover:bg-primary/10 px-2 sm:px-4"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Gallery
+              <span className="text-sm sm:text-base">Gallery</span>
             </Button>
             <img 
               src={soleiaLogo} 
               alt="Soleia" 
-              className="h-12 object-contain"
+              className="h-8 sm:h-12 object-contain"
             />
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-10">
-        {/* Event Info Card */}
-        <div className="glass rounded-2xl p-6 border border-primary/20 mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        {/* Event Info Card - Mobile Optimized */}
+        <div className="glass rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-primary/20 mb-6 sm:mb-8">
+          <div className="flex flex-col gap-3 sm:gap-4">
             <div>
-              <h1 className="text-2xl font-light tracking-wide text-gradient-gold mb-1">
+              <h1 className="text-xl sm:text-2xl font-light tracking-wide text-gradient-gold mb-1">
                 {clientLink.event_name}
               </h1>
-              <p className="text-lg text-muted-foreground flex items-center gap-2">
+              <p className="text-base sm:text-lg text-muted-foreground flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 {clientLink.client_name}
               </p>
             </div>
             {clientLink.event_date && (
-              <div className="flex items-center gap-2 text-primary bg-primary/10 px-4 py-2 rounded-xl border border-primary/20">
-                <Calendar className="w-5 h-5" />
-                <span className="font-medium">
+              <div className="flex items-center gap-2 text-primary bg-primary/10 px-3 sm:px-4 py-2 rounded-xl border border-primary/20 self-start">
+                <Calendar className="w-4 sm:w-5 h-4 sm:h-5" />
+                <span className="font-medium text-sm sm:text-base">
                   {format(new Date(clientLink.event_date), 'MMMM d, yyyy')}
                 </span>
               </div>
@@ -223,40 +235,40 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
           </div>
         </div>
 
-        {/* Tabs for different views */}
-        <Tabs defaultValue="clips" className="mb-10">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-            <TabsTrigger value="clips" className="gap-2">
-              <LayoutGrid className="w-4 h-4" />
+        {/* Tabs for different views - Mobile Optimized */}
+        <Tabs defaultValue="clips" className="mb-6 sm:mb-10">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6 sm:mb-8 h-10 sm:h-11">
+            <TabsTrigger value="clips" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
+              <LayoutGrid className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               By Clip
             </TabsTrigger>
-            <TabsTrigger value="screens" className="gap-2">
-              <Monitor className="w-4 h-4" />
+            <TabsTrigger value="screens" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
+              <Monitor className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               By Screen
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="clips">
             {/* Title Section */}
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-light tracking-[0.2em] uppercase text-gradient-gold mb-2">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-lg sm:text-2xl font-light tracking-[0.15em] sm:tracking-[0.2em] uppercase text-gradient-gold mb-2">
                 Clip Selection Summary
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 {selections.length} clip{selections.length !== 1 ? 's' : ''} selected
               </p>
             </div>
 
             {/* Clips Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               {selections.map((selection, index) => (
                 <div 
                   key={selection.id}
                   className="glass rounded-xl overflow-hidden border border-primary/10"
                 >
-                  <div className="flex gap-4 p-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4">
                     {/* Thumbnail */}
-                    <div className="w-32 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-secondary/20">
+                    <div className="w-full sm:w-32 h-24 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden bg-secondary/20">
                       {selection.clip_thumbnail && (
                         <img 
                           src={selection.clip_thumbnail} 
@@ -268,21 +280,32 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
                     
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-2 mb-1">
+                      <div className="flex items-start gap-2 mb-2">
                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                           {index + 1}
                         </span>
-                        <h3 className="font-medium text-foreground truncate">
+                        <h3 className="font-medium text-foreground text-sm sm:text-base line-clamp-2 sm:truncate">
                           {selection.clip_title}
                         </h3>
                       </div>
                       
-                      {/* Placements */}
-                      {selection.placements.length > 0 && (
-                        <div className="mb-2">
+                      {/* Placements with Edit Button */}
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {selection.placements.length > 0 ? (
                           <PlacementBadges placements={selection.placements} compact />
-                        </div>
-                      )}
+                        ) : (
+                          <span className="text-xs text-muted-foreground/60 italic">No screens assigned</span>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 px-2 text-xs gap-1 rounded-lg border-primary/30 hover:bg-primary/10"
+                          onClick={() => setEditingPlacementClip(selection)}
+                        >
+                          <MapPin className="w-3 h-3" />
+                          Edit Screens
+                        </Button>
+                      </div>
                       
                       {/* Editable Note Section */}
                       <div className="mt-2">
@@ -487,6 +510,16 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
         onOpenChange={setShowPdfPreview}
         selections={getPdfSelections()}
         clientName={clientLink.client_name}
+      />
+      
+      {/* Placement Edit Dialog */}
+      <PlacementEditDialog
+        open={!!editingPlacementClip}
+        onOpenChange={(open) => !open && setEditingPlacementClip(null)}
+        clipTitle={editingPlacementClip?.clip_title || ''}
+        clipThumbnail={editingPlacementClip?.clip_thumbnail || null}
+        currentPlacements={editingPlacementClip?.placements || []}
+        onSave={handleSavePlacements}
       />
     </div>
   );
