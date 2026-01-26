@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import SelectionsSummary from '@/components/SelectionsSummary';
 import ClipThumbnail from '@/components/ClipThumbnail';
+import FloatingActionButton from '@/components/FloatingActionButton';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -93,6 +94,9 @@ const MotionGraphicsLookbook = () => {
 
   // Get current category index for swipe navigation
   const currentCategoryIndex = artlistCategories.findIndex(c => c.key === selectedCategory);
+  
+  // Track swipe direction for animations
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
 
   // Swipe to navigate categories
   const navigateCategory = useCallback((direction: 'prev' | 'next') => {
@@ -101,6 +105,7 @@ const MotionGraphicsLookbook = () => {
       : Math.min(artlistCategories.length - 1, currentCategoryIndex + 1);
     
     if (newIndex !== currentCategoryIndex) {
+      setSwipeDirection(direction === 'prev' ? 'right' : 'left');
       setSelectedCategory(artlistCategories[newIndex].key);
       setSearchQuery('');
     }
@@ -625,16 +630,33 @@ const MotionGraphicsLookbook = () => {
               <Button onClick={() => fetchClips(false)} className="rounded-xl glow-gold transition-elegant">Refresh Collection</Button>
             </div>
           ) : (
-            <motion.div 
-              key={selectedCategory}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-36"
-            >
-              <AnimatePresence mode="popLayout">
-                {clips.map((clip) => {
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div 
+                key={selectedCategory}
+                initial={{ 
+                  opacity: 0, 
+                  x: swipeDirection === 'left' ? 100 : -100,
+                  scale: 0.95
+                }}
+                animate={{ 
+                  opacity: 1, 
+                  x: 0,
+                  scale: 1
+                }}
+                exit={{ 
+                  opacity: 0, 
+                  x: swipeDirection === 'left' ? -100 : 100,
+                  scale: 0.95
+                }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  opacity: { duration: 0.2 }
+                }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-36"
+              >
+                {clips.map((clip, index) => {
                   const isSelected = selectedClips.some(c => c.id === clip.id);
                   const hasNote = !!selectedClips.find(c => c.id === clip.id)?.note;
                   const hasImageError = imageErrors.has(clip.id);
@@ -642,10 +664,13 @@ const MotionGraphicsLookbook = () => {
                   return (
                     <motion.div
                       key={clip.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ 
+                        delay: index * 0.03,
+                        duration: 0.3,
+                        ease: "easeOut"
+                      }}
                       whileTap={{ scale: 0.98 }}
                       className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-elegant touch-manipulation ${
                         isSelected 
@@ -671,20 +696,40 @@ const MotionGraphicsLookbook = () => {
                     </motion.div>
                   );
                 })}
-              </AnimatePresence>
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
           )}
         </motion.div>
 
         {/* Swipe hint for mobile */}
         <div className="flex justify-center mt-4 lg:hidden">
-          <p className="text-xs text-muted-foreground flex items-center gap-2">
-            <ChevronLeft className="w-3 h-3" />
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-xs text-muted-foreground flex items-center gap-2"
+          >
+            <motion.span
+              animate={{ x: [-2, 2, -2] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <ChevronLeft className="w-3 h-3" />
+            </motion.span>
             Swipe to change category
-            <ChevronRight className="w-3 h-3" />
-          </p>
+            <motion.span
+              animate={{ x: [2, -2, 2] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <ChevronRight className="w-3 h-3" />
+            </motion.span>
+          </motion.p>
         </div>
       </main>
+
+      {/* Floating Action Button for selections */}
+      <FloatingActionButton 
+        count={selectedClips.length} 
+        onClick={() => setShowSummary(true)} 
+      />
 
       {/* Luxury Selection Bar - Touch optimized */}
       {selectedClips.length > 0 && (
