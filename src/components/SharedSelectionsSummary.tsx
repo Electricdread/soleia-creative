@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Mail, FileText, MapPin, MessageSquare, Loader2, CheckCircle2, Pencil, X, Save, Calendar, Users } from 'lucide-react';
+import { ArrowLeft, Download, Mail, FileText, MapPin, MessageSquare, Loader2, CheckCircle2, Pencil, X, Save, Calendar, Users, LayoutGrid, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
+import PlacementBadges from '@/components/PlacementBadges';
+import PlacementSummaryByScreen from '@/components/PlacementSummaryByScreen';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { format } from 'date-fns';
 
@@ -215,118 +218,148 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
           </div>
         </div>
 
-        {/* Title Section */}
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-light tracking-[0.2em] uppercase text-gradient-gold mb-2">
-            Selection Summary
-          </h2>
-          <p className="text-muted-foreground">
-            {selections.length} clip{selections.length !== 1 ? 's' : ''} selected
-          </p>
-        </div>
+        {/* Tabs for different views */}
+        <Tabs defaultValue="clips" className="mb-10">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsTrigger value="clips" className="gap-2">
+              <LayoutGrid className="w-4 h-4" />
+              By Clip
+            </TabsTrigger>
+            <TabsTrigger value="screens" className="gap-2">
+              <Monitor className="w-4 h-4" />
+              By Screen
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="clips">
+            {/* Title Section */}
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-light tracking-[0.2em] uppercase text-gradient-gold mb-2">
+                Clip Selection Summary
+              </h2>
+              <p className="text-muted-foreground">
+                {selections.length} clip{selections.length !== 1 ? 's' : ''} selected
+              </p>
+            </div>
 
-        {/* Clips Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {selections.map((selection, index) => (
-            <div 
-              key={selection.id}
-              className="glass rounded-xl overflow-hidden border border-primary/10"
-            >
-              <div className="flex gap-4 p-4">
-                {/* Thumbnail */}
-                <div className="w-32 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-secondary/20">
-                  {selection.clip_thumbnail && (
-                    <img 
-                      src={selection.clip_thumbnail} 
-                      alt={selection.clip_title}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </div>
-                
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-2 mb-1">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
-                      {index + 1}
-                    </span>
-                    <h3 className="font-medium text-foreground truncate">
-                      {selection.clip_title}
-                    </h3>
-                  </div>
-                  
-                  {/* Placements */}
-                  {selection.placements.length > 0 && (
-                    <div className="flex items-center gap-1.5 text-xs text-primary mb-1">
-                      <MapPin className="w-3 h-3" />
-                      <span className="truncate">{selection.placements.join(', ')}</span>
-                    </div>
-                  )}
-                  
-                  {/* Editable Note Section */}
-                  <div className="mt-2">
-                    {editingClipId === selection.clip_id ? (
-                      <div className="space-y-2">
-                        <Textarea
-                          value={editingNote}
-                          onChange={(e) => setEditingNote(e.target.value)}
-                          placeholder="Add notes about this clip..."
-                          className="min-h-[60px] text-xs bg-background/50 resize-none"
-                          autoFocus
+            {/* Clips Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {selections.map((selection, index) => (
+                <div 
+                  key={selection.id}
+                  className="glass rounded-xl overflow-hidden border border-primary/10"
+                >
+                  <div className="flex gap-4 p-4">
+                    {/* Thumbnail */}
+                    <div className="w-32 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-secondary/20">
+                      {selection.clip_thumbnail && (
+                        <img 
+                          src={selection.clip_thumbnail} 
+                          alt={selection.clip_title}
+                          className="w-full h-full object-cover"
                         />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="h-7 text-xs gap-1 rounded-lg"
-                            onClick={() => handleSaveNote(selection.clip_id)}
-                          >
-                            <Save className="w-3 h-3" />
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 text-xs gap-1 rounded-lg"
-                            onClick={() => {
-                              setEditingClipId(null);
-                              setEditingNote('');
-                            }}
-                          >
-                            <X className="w-3 h-3" />
-                            Cancel
-                          </Button>
-                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 mb-1">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                          {index + 1}
+                        </span>
+                        <h3 className="font-medium text-foreground truncate">
+                          {selection.clip_title}
+                        </h3>
                       </div>
-                    ) : (
-                      <div className="flex items-start gap-2">
-                        {selection.note ? (
-                          <div className="flex-1 flex items-start gap-1.5 text-xs text-muted-foreground bg-secondary/30 rounded px-2 py-1">
-                            <MessageSquare className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                            <span className="line-clamp-2">{selection.note}</span>
+                      
+                      {/* Placements */}
+                      {selection.placements.length > 0 && (
+                        <div className="mb-2">
+                          <PlacementBadges placements={selection.placements} compact />
+                        </div>
+                      )}
+                      
+                      {/* Editable Note Section */}
+                      <div className="mt-2">
+                        {editingClipId === selection.clip_id ? (
+                          <div className="space-y-2">
+                            <Textarea
+                              value={editingNote}
+                              onChange={(e) => setEditingNote(e.target.value)}
+                              placeholder="Add notes about this clip..."
+                              className="min-h-[60px] text-xs bg-background/50 resize-none"
+                              autoFocus
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="h-7 text-xs gap-1 rounded-lg"
+                                onClick={() => handleSaveNote(selection.clip_id)}
+                              >
+                                <Save className="w-3 h-3" />
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-xs gap-1 rounded-lg"
+                                onClick={() => {
+                                  setEditingClipId(null);
+                                  setEditingNote('');
+                                }}
+                              >
+                                <X className="w-3 h-3" />
+                                Cancel
+                              </Button>
+                            </div>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground/60 italic">No notes</span>
+                          <div className="flex items-start gap-2">
+                            {selection.note ? (
+                              <div className="flex-1 flex items-start gap-1.5 text-xs text-muted-foreground bg-secondary/30 rounded px-2 py-1">
+                                <MessageSquare className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                                <span className="line-clamp-2">{selection.note}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground/60 italic">No notes</span>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 rounded-full hover:bg-primary/10"
+                              onClick={() => {
+                                setEditingClipId(selection.clip_id);
+                                setEditingNote(selection.note || '');
+                              }}
+                            >
+                              <Pencil className="w-3 h-3 text-muted-foreground" />
+                            </Button>
+                          </div>
                         )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 rounded-full hover:bg-primary/10"
-                          onClick={() => {
-                            setEditingClipId(selection.clip_id);
-                            setEditingNote(selection.note || '');
-                          }}
-                        >
-                          <Pencil className="w-3 h-3 text-muted-foreground" />
-                        </Button>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </TabsContent>
+          
+          <TabsContent value="screens">
+            {/* Title Section */}
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-light tracking-[0.2em] uppercase text-gradient-gold mb-2">
+                Screen Assignment Summary
+              </h2>
+              <p className="text-muted-foreground">
+                View clips grouped by venue screen location
+              </p>
+            </div>
+
+            {/* Placement Summary by Screen */}
+            <PlacementSummaryByScreen selections={selections} />
+          </TabsContent>
+        </Tabs>
 
         {/* Sign-Off Section */}
         <div className="glass rounded-2xl p-8 border border-primary/20 mb-8">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Loader2, RefreshCw, Sparkles, ChevronLeft, ChevronRight, Calendar, Users, Play, X, MessageSquare, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Loader2, RefreshCw, Sparkles, ChevronLeft, ChevronRight, Calendar, Users, Play, X, MessageSquare, MapPin, ChevronDown, ChevronUp, Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,11 +14,11 @@ import FloatingActionButton from '@/components/FloatingActionButton';
 import SharedSelectionsSummary from '@/components/SharedSelectionsSummary';
 import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
+import PlacementBadges from '@/components/PlacementBadges';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
 import { format } from 'date-fns';
-
 const INTERIOR_PLACEMENTS = [
   'Curves SR',
   'IMAG SR',
@@ -272,69 +272,87 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
   return (
     <div className="min-h-screen touch-manipulation">
       {/* Elegant Event Header */}
-      <header className="glass-strong relative z-30 border-b border-primary/10 overflow-hidden">
+      <header className="glass-strong relative z-30 border-b border-primary/20 overflow-hidden">
+        {/* Luxury Background Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-20 left-1/4 w-96 h-96 bg-gradient-radial from-primary/20 via-primary/5 to-transparent rounded-full blur-3xl animate-glow-pulse-slow" />
-          <div className="absolute -top-10 right-1/4 w-80 h-80 bg-gradient-radial from-accent/15 via-accent/5 to-transparent rounded-full blur-3xl animate-glow-pulse-slow" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent shimmer-slow" />
+          <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-gradient-radial from-primary/25 via-primary/10 to-transparent rounded-full blur-3xl animate-glow-pulse-slow" />
+          <div className="absolute -top-20 right-1/3 w-[400px] h-[400px] bg-gradient-radial from-accent/20 via-accent/5 to-transparent rounded-full blur-3xl animate-glow-pulse-slow" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent shimmer-slow" />
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-          {/* Logo and Theme Toggle */}
-          <div className="flex items-center justify-between mb-6">
-            <img 
-              src={soleiaLogo} 
-              alt="Soleia" 
-              className="h-12 md:h-16 object-contain"
-            />
+        <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
+          {/* Top Row: Logo and Theme Toggle */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-radial from-primary/30 to-transparent blur-2xl opacity-0 group-hover:opacity-100 transition-elegant" />
+              <img 
+                src={soleiaLogo} 
+                alt="Soleia" 
+                className="h-14 md:h-20 object-contain relative z-10 drop-shadow-lg"
+              />
+            </div>
             <ThemeToggle />
           </div>
 
-          {/* Event Info Card */}
-          <div className="glass rounded-2xl p-6 border border-primary/20 mb-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-light tracking-wide text-gradient-gold mb-1">
+          {/* Elegant Event Info Card */}
+          <div className="glass rounded-3xl p-6 md:p-8 border border-primary/30 mb-8 relative overflow-hidden">
+            {/* Card Glow Effect */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-radial from-primary/20 to-transparent blur-2xl" />
+            
+            <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              {/* Event Details */}
+              <div className="space-y-3">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wide text-gradient-gold">
                   {clientLink.event_name}
                 </h1>
-                <p className="text-lg text-muted-foreground flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  {clientLink.client_name}
-                </p>
-              </div>
-              {clientLink.event_date && (
-                <div className="flex items-center gap-2 text-primary bg-primary/10 px-4 py-2 rounded-xl border border-primary/20">
-                  <Calendar className="w-5 h-5" />
-                  <span className="font-medium">
-                    {format(new Date(clientLink.event_date), 'MMMM d, yyyy')}
-                  </span>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2 text-lg text-foreground">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="font-medium">{clientLink.client_name}</span>
+                  </div>
+                  {clientLink.event_date && (
+                    <div className="flex items-center gap-2 text-primary">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium">
+                        {format(new Date(clientLink.event_date), 'MMMM d, yyyy')}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            
-            {/* Live indicator */}
-            <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span>Live session • Selections sync in real-time</span>
+              </div>
+              
+              {/* Live Session Badge */}
+              <div className="flex items-center gap-3 bg-background/50 px-5 py-3 rounded-2xl border border-success/30">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-success">Live Session</p>
+                  <p className="text-xs text-muted-foreground">Selections sync in real-time</p>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Search Bar */}
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="relative max-w-lg mx-auto">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search collection..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="pl-11 bg-background/40 border-border/50 focus:border-primary/50 transition-elegant rounded-xl h-11 backdrop-blur-sm"
+              className="pl-14 bg-background/50 border-border/50 focus:border-primary/50 transition-elegant rounded-2xl h-14 backdrop-blur-sm text-base shadow-lg"
             />
             {isSearching && (
-              <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+              <Loader2 className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-muted-foreground" />
             )}
           </div>
         </div>
@@ -489,6 +507,7 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
                   const selected = isSelected(clip.id);
                   const selection = getSelection(clip.id);
                   const hasNote = !!selection?.note;
+                  const hasPlacements = selection?.placements && selection.placements.length > 0;
                   const hasImageError = imageErrors.has(clip.id);
 
                   return (
@@ -514,17 +533,56 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
                         onPlayClick={(e) => openClipDetail(clip, e)}
                         categoryGradient={categoryGradients[selectedCategory] || categoryGradients['abstract']}
                       />
-                      <div className="relative p-3 md:p-3 glass border-t border-primary/10 flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-foreground truncate tracking-tight text-sm md:text-sm flex-1">{clip.title}</h3>
+                      
+                      {/* Selection Success Badge - Shows when clip is selected */}
+                      {selected && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="absolute top-3 right-3 z-20"
+                        >
+                          <div className="flex items-center gap-1.5 bg-success text-success-foreground px-2.5 py-1 rounded-full text-xs font-semibold shadow-lg">
+                            <Check className="w-3 h-3" />
+                            <span>Added</span>
+                          </div>
+                        </motion.div>
+                      )}
+                      
+                      {/* Card Footer with Info and Actions */}
+                      <div className="relative p-3 md:p-4 glass border-t border-primary/10">
+                        {/* Title Row */}
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <h3 className="font-semibold text-foreground truncate tracking-tight text-sm flex-1">
+                            {clip.title}
+                          </h3>
+                          {!selected && (
+                            <div className="flex items-center gap-1 text-xs text-primary/70 group-hover:text-primary transition-colors">
+                              <Star className="w-3 h-3" />
+                              <span className="hidden sm:inline">Click to add</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Placement Badges Row - Only show for selected clips with placements */}
+                        {selected && hasPlacements && (
+                          <div className="mb-2">
+                            <PlacementBadges 
+                              placements={selection?.placements || []} 
+                              compact 
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Configure Button for Selected Clips */}
                         {selected && (
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 text-xs gap-1 flex-shrink-0"
+                            className="w-full h-8 text-xs gap-1.5 border-primary/30 hover:bg-primary/10 hover:border-primary/50"
                             onClick={(e) => openClipDetail(clip, e)}
                           >
                             <MapPin className="w-3 h-3" />
-                            Configure
+                            {hasPlacements ? 'Edit Placements' : 'Configure Screens'}
                           </Button>
                         )}
                       </div>
