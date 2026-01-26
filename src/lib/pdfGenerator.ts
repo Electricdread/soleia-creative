@@ -21,6 +21,32 @@ export interface PdfOptions {
   darkMode?: boolean;
 }
 
+// Font configuration for premium typography
+// Using Times-Roman (serif) for headers and Helvetica for body as jsPDF built-in fonts
+// These are enhanced with proper weights and styling for a luxury feel
+const FONTS = {
+  header: {
+    family: 'times',
+    style: 'bolditalic',
+  },
+  title: {
+    family: 'times',
+    style: 'bold',
+  },
+  body: {
+    family: 'helvetica',
+    style: 'normal',
+  },
+  bodyBold: {
+    family: 'helvetica',
+    style: 'bold',
+  },
+  accent: {
+    family: 'times',
+    style: 'italic',
+  }
+};
+
 // Format date as "Month Day, Year" (e.g., "January 26, 2026")
 function formatEventDate(dateString: string): string {
   if (!dateString) return '';
@@ -192,10 +218,10 @@ export async function generateSelectionsPdf(
   pdf.setLineWidth(0.3);
   pdf.line(pageWidth / 2 - 30, 32, pageWidth / 2 + 30, 32);
   
-  // Event Name - Hero Typography
+  // Event Name - Hero Typography with premium serif font
   pdf.setTextColor(...colors.eventTitle as [number, number, number]);
-  pdf.setFontSize(18);
-  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(20);
+  pdf.setFont(FONTS.title.family, FONTS.title.style);
   pdf.text(eventName.toUpperCase(), pageWidth / 2, 41, { align: 'center' });
   
   // Decorative divider
@@ -207,89 +233,90 @@ export async function generateSelectionsPdf(
   const infoY = 54;
   
   if (clientName && eventDate) {
-    // Calculate total width for centered layout
+    // Calculate total width for centered layout with premium fonts
     pdf.setFontSize(9);
     const hostedLabel = 'Hosted By:  ';
     const dateLabel = 'Event Date:  ';
     const divider = '     |     ';
     
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     const hostedLabelWidth = pdf.getTextWidth(hostedLabel);
     const dateLabelWidth = pdf.getTextWidth(dateLabel);
     const dividerWidth = pdf.getTextWidth(divider);
     
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     const clientNameWidth = pdf.getTextWidth(clientName);
     const eventDateWidth = pdf.getTextWidth(eventDate);
     
     const totalWidth = hostedLabelWidth + clientNameWidth + dividerWidth + dateLabelWidth + eventDateWidth;
     let xPos = (pageWidth - totalWidth) / 2;
     
-    // Hosted By label
+    // Hosted By label - italic serif for elegance
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     pdf.text(hostedLabel, xPos, infoY);
     xPos += hostedLabelWidth;
     
-    // Client name
+    // Client name - bold sans-serif for clarity
     pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(clientName, xPos, infoY);
     xPos += clientNameWidth;
     
     // Divider
     pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.body.family, FONTS.body.style);
     pdf.text(divider, xPos, infoY);
     xPos += dividerWidth;
     
-    // Event Date label
+    // Event Date label - italic serif for elegance
     pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     pdf.text(dateLabel, xPos, infoY);
     xPos += dateLabelWidth;
     
-    // Date value
+    // Date value - bold sans-serif for clarity
     pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(eventDate, xPos, infoY);
   } else if (clientName) {
     pdf.setFontSize(9);
     const label = 'Hosted By:  ';
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     const labelWidth = pdf.getTextWidth(label);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     const valueWidth = pdf.getTextWidth(clientName);
     const totalWidth = labelWidth + valueWidth;
     let xPos = (pageWidth - totalWidth) / 2;
     
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     pdf.text(label, xPos, infoY);
     pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(clientName, xPos + labelWidth, infoY);
   } else if (eventDate) {
     pdf.setFontSize(9);
     const label = 'Event Date:  ';
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     const labelWidth = pdf.getTextWidth(label);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     const valueWidth = pdf.getTextWidth(eventDate);
     const totalWidth = labelWidth + valueWidth;
     let xPos = (pageWidth - totalWidth) / 2;
     
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     pdf.text(label, xPos, infoY);
     pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(eventDate, xPos + labelWidth, infoY);
   }
   
-  // Selection count
+  // Selection count - elegant serif italic
   pdf.setTextColor(...colors.labelText as [number, number, number]);
   pdf.setFontSize(9);
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text(`${selections.length} clips selected`, pageWidth / 2, 62, { align: 'center' });
   
   // ========== CONTENT SECTION ==========
@@ -319,10 +346,10 @@ export async function generateSelectionsPdf(
       pdf.rect(0, 14, pageWidth, 1, 'F');
       pdf.setTextColor(...colors.eventTitle as [number, number, number]);
       pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFont(FONTS.title.family, FONTS.title.style);
       pdf.text(eventName.toUpperCase(), margin, 10);
       pdf.setTextColor(...colors.valueText as [number, number, number]);
-      pdf.setFont('helvetica', 'normal');
+      pdf.setFont(FONTS.body.family, FONTS.body.style);
       pdf.setFontSize(8);
       pdf.text(`Page ${pdf.internal.pages.length - 1}`, pageWidth - margin, 10, { align: 'right' });
       yPosition = 25;
@@ -356,13 +383,13 @@ export async function generateSelectionsPdf(
     pdf.circle(textX + 3, yPosition + 5, 3, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(6);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(`${i + 1}`, textX + 3, yPosition + 6.5, { align: 'center' });
     
-    // Title
+    // Title - Premium serif font for elegance
     pdf.setTextColor(...colors.titleText as [number, number, number]);
     pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.title.family, FONTS.title.style);
     
     let title = selection.title;
     while (pdf.getTextWidth(title) > textMaxWidth - 15 && title.length > 0) {
@@ -375,7 +402,7 @@ export async function generateSelectionsPdf(
     // Metadata
     pdf.setTextColor(...colors.metaText as [number, number, number]);
     pdf.setFontSize(8);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.body.family, FONTS.body.style);
     const metaParts = [selection.resolution, selection.duration, selection.category].filter(Boolean);
     const metaText = metaParts.join(' - ');
     pdf.text(metaText, textX + 10, yPosition + 13);
@@ -385,10 +412,10 @@ export async function generateSelectionsPdf(
     if (selection.placements && selection.placements.length > 0) {
       pdf.setTextColor(...colors.headerAccent as [number, number, number]);
       pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
       pdf.text('Placements:', textX + 10, detailY);
       pdf.setTextColor(...colors.noteText as [number, number, number]);
-      pdf.setFont('helvetica', 'normal');
+      pdf.setFont(FONTS.body.family, FONTS.body.style);
       pdf.text(selection.placements.join(', '), textX + 35, detailY);
       detailY += 6;
     }
@@ -400,7 +427,7 @@ export async function generateSelectionsPdf(
       
       pdf.setTextColor(...colors.noteText as [number, number, number]);
       pdf.setFontSize(7);
-      pdf.setFont('helvetica', 'italic');
+      pdf.setFont(FONTS.accent.family, FONTS.accent.style);
       
       const noteText = '"' + selection.note + '"';
       const noteLines = pdf.splitTextToSize(noteText, textMaxWidth - 15);
@@ -419,7 +446,7 @@ export async function generateSelectionsPdf(
   
   pdf.setTextColor(...colors.footerText as [number, number, number]);
   pdf.setFontSize(8);
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text('Generated by Soleia Looks Collection', margin, footerY);
   pdf.text(`Page ${pdf.internal.pages.length - 1} of ${pdf.internal.pages.length - 1}`, pageWidth - margin, footerY, { align: 'right' });
 
@@ -476,8 +503,8 @@ export async function generateSelectionsPdfDataUri(
   pdf.line(pageWidth / 2 - 30, 32, pageWidth / 2 + 30, 32);
   
   pdf.setTextColor(...colors.eventTitle as [number, number, number]);
-  pdf.setFontSize(18);
-  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(20);
+  pdf.setFont(FONTS.title.family, FONTS.title.style);
   pdf.text(eventName.toUpperCase(), pageWidth / 2, 41, { align: 'center' });
   
   pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
@@ -492,12 +519,12 @@ export async function generateSelectionsPdfDataUri(
     const dateLabel = 'Event Date:  ';
     const divider = '     |     ';
     
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     const hostedLabelWidth = pdf.getTextWidth(hostedLabel);
     const dateLabelWidth = pdf.getTextWidth(dateLabel);
     const dividerWidth = pdf.getTextWidth(divider);
     
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     const clientNameWidth = pdf.getTextWidth(clientName);
     const eventDateWidth = pdf.getTextWidth(eventDate);
     
@@ -505,64 +532,65 @@ export async function generateSelectionsPdfDataUri(
     let xPos = (pageWidth - totalWidth) / 2;
     
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     pdf.text(hostedLabel, xPos, infoY);
     xPos += hostedLabelWidth;
     
     pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(clientName, xPos, infoY);
     xPos += clientNameWidth;
     
     pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.body.family, FONTS.body.style);
     pdf.text(divider, xPos, infoY);
     xPos += dividerWidth;
     
     pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     pdf.text(dateLabel, xPos, infoY);
     xPos += dateLabelWidth;
     
     pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(eventDate, xPos, infoY);
   } else if (clientName) {
     pdf.setFontSize(9);
     const label = 'Hosted By:  ';
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     const labelWidth = pdf.getTextWidth(label);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     const valueWidth = pdf.getTextWidth(clientName);
     const totalWidth = labelWidth + valueWidth;
     let xPos = (pageWidth - totalWidth) / 2;
     
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     pdf.text(label, xPos, infoY);
     pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(clientName, xPos + labelWidth, infoY);
   } else if (eventDate) {
     pdf.setFontSize(9);
     const label = 'Event Date:  ';
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     const labelWidth = pdf.getTextWidth(label);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     const valueWidth = pdf.getTextWidth(eventDate);
     const totalWidth = labelWidth + valueWidth;
     let xPos = (pageWidth - totalWidth) / 2;
     
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.accent.family, FONTS.accent.style);
     pdf.text(label, xPos, infoY);
     pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(eventDate, xPos + labelWidth, infoY);
   }
   
   pdf.setTextColor(...colors.labelText as [number, number, number]);
   pdf.setFontSize(9);
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text(`${selections.length} clips selected`, pageWidth / 2, 62, { align: 'center' });
   
   let yPosition = 82;
@@ -588,10 +616,10 @@ export async function generateSelectionsPdfDataUri(
       pdf.rect(0, 14, pageWidth, 1, 'F');
       pdf.setTextColor(...colors.eventTitle as [number, number, number]);
       pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFont(FONTS.title.family, FONTS.title.style);
       pdf.text(eventName.toUpperCase(), margin, 10);
       pdf.setTextColor(...colors.valueText as [number, number, number]);
-      pdf.setFont('helvetica', 'normal');
+      pdf.setFont(FONTS.body.family, FONTS.body.style);
       pdf.setFontSize(8);
       pdf.text(`Page ${pdf.internal.pages.length - 1}`, pageWidth - margin, 10, { align: 'right' });
       yPosition = 25;
@@ -621,12 +649,12 @@ export async function generateSelectionsPdfDataUri(
     pdf.circle(textX + 3, yPosition + 5, 3, 'F');
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(6);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
     pdf.text(`${i + 1}`, textX + 3, yPosition + 6.5, { align: 'center' });
     
     pdf.setTextColor(...colors.titleText as [number, number, number]);
     pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont(FONTS.title.family, FONTS.title.style);
     
     let title = selection.title;
     while (pdf.getTextWidth(title) > textMaxWidth - 15 && title.length > 0) {
@@ -638,7 +666,7 @@ export async function generateSelectionsPdfDataUri(
 
     pdf.setTextColor(...colors.metaText as [number, number, number]);
     pdf.setFontSize(8);
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont(FONTS.body.family, FONTS.body.style);
     const metaParts = [selection.resolution, selection.duration, selection.category].filter(Boolean);
     const metaText = metaParts.join(' - ');
     pdf.text(metaText, textX + 10, yPosition + 13);
@@ -647,10 +675,10 @@ export async function generateSelectionsPdfDataUri(
     if (selection.placements && selection.placements.length > 0) {
       pdf.setTextColor(...colors.headerAccent as [number, number, number]);
       pdf.setFontSize(8);
-      pdf.setFont('helvetica', 'bold');
+      pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
       pdf.text('Placements:', textX + 10, detailY);
       pdf.setTextColor(...colors.noteText as [number, number, number]);
-      pdf.setFont('helvetica', 'normal');
+      pdf.setFont(FONTS.body.family, FONTS.body.style);
       pdf.text(selection.placements.join(', '), textX + 35, detailY);
       detailY += 6;
     }
@@ -661,7 +689,7 @@ export async function generateSelectionsPdfDataUri(
       
       pdf.setTextColor(...colors.noteText as [number, number, number]);
       pdf.setFontSize(7);
-      pdf.setFont('helvetica', 'italic');
+      pdf.setFont(FONTS.accent.family, FONTS.accent.style);
       
       const noteText = '"' + selection.note + '"';
       const noteLines = pdf.splitTextToSize(noteText, textMaxWidth - 15);
@@ -679,7 +707,7 @@ export async function generateSelectionsPdfDataUri(
   
   pdf.setTextColor(...colors.footerText as [number, number, number]);
   pdf.setFontSize(8);
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text('Generated by Soleia Looks Collection', margin, footerY);
   pdf.text(`Page ${pdf.internal.pages.length - 1} of ${pdf.internal.pages.length - 1}`, pageWidth - margin, footerY, { align: 'right' });
 
@@ -713,6 +741,6 @@ function drawThumbnailPlaceholder(pdf: jsPDF, x: number, y: number, width: numbe
   
   pdf.setTextColor(darkMode ? 150 : 180, darkMode ? 140 : 170, darkMode ? 130 : 155);
   pdf.setFontSize(6);
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont(FONTS.body.family, FONTS.body.style);
   pdf.text('Preview', x + width/2, y + height - 3, { align: 'center' });
 }
