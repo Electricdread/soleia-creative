@@ -402,29 +402,25 @@ const MotionGraphicsLookbook = () => {
         
         <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
           {/* Mobile Header Bar */}
-          <div className="flex items-center justify-between lg:hidden mb-4">
-            <MobileMenu
-              selectedCategory={selectedCategory}
-              onCategoryChange={(cat) => {
-                setSelectedCategory(cat);
-                setSearchQuery('');
-              }}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onSearch={handleSearch}
-              isSearching={isSearching}
-            />
+          <div className="flex items-center justify-center lg:hidden mb-4">
+            <div className="absolute left-4">
+              <MobileMenu
+                selectedCategory={selectedCategory}
+                onCategoryChange={(cat) => {
+                  setSelectedCategory(cat);
+                  setSearchQuery('');
+                }}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onSearch={handleSearch}
+                isSearching={isSearching}
+              />
+            </div>
             <img 
               src={soleiaLogo} 
               alt="Soleia" 
               className="h-12 object-contain"
             />
-            <UserMenu />
-          </div>
-
-          {/* Desktop User Menu - Top Right */}
-          <div className="hidden lg:block absolute top-6 right-6 z-20">
-            <UserMenu />
           </div>
           
           {/* Centered Hero Logo Layout - Desktop */}

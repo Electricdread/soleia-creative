@@ -92,10 +92,12 @@ export function MobileMenu({
             </div>
           </div>
 
-          {/* User Menu */}
-          <div className="pt-4 border-t border-border/50">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-sm text-muted-foreground">Account</span>
+          {/* User Menu / Sign In */}
+          <div className="pt-6 border-t border-border/50">
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-2 mb-3">
+              Account
+            </p>
+            <div className="px-2">
               <UserMenu />
             </div>
           </div>
