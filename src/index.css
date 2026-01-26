@@ -71,43 +71,43 @@
     --sidebar-ring: 38 92% 50%;
   }
 
-  /* Light mode - warm cream and gold aesthetic */
+  /* Light mode - warm cream and gold aesthetic with strong contrast */
   .light {
-    --background: 40 30% 96%;
-    --foreground: 30 20% 15%;
-    --card: 40 25% 98%;
-    --card-foreground: 30 20% 15%;
-    --popover: 40 25% 98%;
-    --popover-foreground: 30 20% 15%;
-    --primary: 38 85% 45%;
+    --background: 40 25% 95%;
+    --foreground: 25 30% 12%;
+    --card: 40 20% 98%;
+    --card-foreground: 25 30% 12%;
+    --popover: 40 20% 98%;
+    --popover-foreground: 25 30% 12%;
+    --primary: 32 85% 35%;
     --primary-foreground: 40 30% 98%;
-    --secondary: 35 20% 90%;
-    --secondary-foreground: 30 20% 20%;
-    --muted: 35 15% 92%;
-    --muted-foreground: 30 15% 45%;
-    --accent: 32 80% 40%;
+    --secondary: 35 15% 88%;
+    --secondary-foreground: 25 30% 15%;
+    --muted: 35 12% 90%;
+    --muted-foreground: 25 20% 35%;
+    --accent: 28 80% 32%;
     --accent-foreground: 40 30% 98%;
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
-    --success: 45 90% 40%;
+    --success: 45 85% 32%;
     --success-foreground: 40 30% 98%;
-    --border: 35 20% 85%;
-    --input: 35 15% 90%;
-    --ring: 38 85% 45%;
-    --glass: 40 20% 95%;
-    --glass-border: 38 30% 75%;
-    --glow-gold: 38 85% 45%;
-    --glow-amber: 32 80% 40%;
-    --glow-warm: 25 75% 35%;
-    --gradient-luxury: linear-gradient(135deg, hsl(40 30% 98%) 0%, hsl(35 25% 94%) 50%, hsl(40 30% 98%) 100%);
-    --sidebar-background: 40 25% 97%;
-    --sidebar-foreground: 30 20% 20%;
-    --sidebar-primary: 38 85% 45%;
+    --border: 30 20% 75%;
+    --input: 35 15% 88%;
+    --ring: 32 85% 35%;
+    --glass: 40 15% 92%;
+    --glass-border: 32 25% 65%;
+    --glow-gold: 32 85% 35%;
+    --glow-amber: 28 80% 32%;
+    --glow-warm: 22 75% 28%;
+    --gradient-luxury: linear-gradient(135deg, hsl(40 25% 96%) 0%, hsl(35 20% 92%) 50%, hsl(40 25% 96%) 100%);
+    --sidebar-background: 40 20% 96%;
+    --sidebar-foreground: 25 30% 15%;
+    --sidebar-primary: 32 85% 35%;
     --sidebar-primary-foreground: 40 30% 98%;
-    --sidebar-accent: 35 20% 92%;
-    --sidebar-accent-foreground: 30 20% 20%;
-    --sidebar-border: 35 20% 85%;
-    --sidebar-ring: 38 85% 45%;
+    --sidebar-accent: 35 15% 90%;
+    --sidebar-accent-foreground: 25 30% 15%;
+    --sidebar-border: 30 20% 78%;
+    --sidebar-ring: 32 85% 35%;
   }
 
   .dark {
@@ -154,15 +154,29 @@
 }
 
 @layer utilities {
-  /* Luxury glassmorphism */
+  /* Luxury glassmorphism - theme aware */
   .glass {
     @apply bg-card/60 backdrop-blur-xl border border-border/40;
+  }
+  
+  .dark .glass {
     background: linear-gradient(135deg, hsl(30 20% 10% / 0.7) 0%, hsl(30 20% 8% / 0.8) 100%);
+  }
+  
+  .light .glass {
+    background: linear-gradient(135deg, hsl(40 20% 98% / 0.8) 0%, hsl(40 15% 95% / 0.9) 100%);
   }
   
   .glass-strong {
     @apply bg-card/85 backdrop-blur-2xl border border-border/50;
+  }
+  
+  .dark .glass-strong {
     background: linear-gradient(180deg, hsl(30 20% 12% / 0.9) 0%, hsl(30 20% 8% / 0.95) 100%);
+  }
+  
+  .light .glass-strong {
+    background: linear-gradient(180deg, hsl(40 20% 99% / 0.95) 0%, hsl(40 15% 96% / 0.98) 100%);
   }
   
   /* Sun goddess glows */
@@ -214,12 +228,19 @@
     background: linear-gradient(135deg, hsl(40 85% 50%) 0%, hsl(35 80% 45%) 50%, hsl(30 75% 40%) 100%);
   }
   
-  /* Luxury text gradient */
+  /* Luxury text gradient - theme aware */
   .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(45 90% 60%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  
+  .dark .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(45 90% 60%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
+  }
+  
+  .light .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(32 90% 35%) 0%, hsl(28 85% 30%) 50%, hsl(22 80% 25%) 100%);
   }
   
   /* Smooth luxury transitions */
