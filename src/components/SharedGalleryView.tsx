@@ -296,47 +296,88 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
           </div>
 
           {/* Elegant Event Info Card */}
-          <div className="glass rounded-3xl p-6 md:p-8 border border-primary/30 mb-8 relative overflow-hidden">
-            {/* Card Glow Effect */}
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-radial from-primary/20 to-transparent blur-2xl" />
+          <div className="relative mb-8">
+            {/* Decorative Lines */}
+            <div className="absolute left-0 right-0 top-0 flex items-center justify-center">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/40 to-primary/60" />
+              <div className="px-6">
+                <img src={sunIcon} alt="" className="w-6 h-6 object-contain opacity-60" />
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-l from-transparent via-primary/40 to-primary/60" />
+            </div>
             
-            <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              {/* Event Details */}
-              <div className="space-y-3">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wide text-gradient-gold">
-                  {clientLink.event_name}
-                </h1>
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2 text-lg text-foreground">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Users className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="font-medium">{clientLink.client_name}</span>
-                  </div>
-                  {clientLink.event_date && (
-                    <div className="flex items-center gap-2 text-primary">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Calendar className="w-4 h-4" />
-                      </div>
-                      <span className="font-medium">
-                        {format(new Date(clientLink.event_date), 'MMMM d, yyyy')}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div className="pt-10 text-center">
+              {/* Event Name - Hero Typography */}
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="text-4xl md:text-5xl lg:text-6xl font-extralight tracking-[0.15em] uppercase mb-6"
+              >
+                <span className="text-gradient-gold">{clientLink.event_name}</span>
+              </motion.h1>
               
-              {/* Live Session Badge */}
-              <div className="flex items-center gap-3 bg-background/50 px-5 py-3 rounded-2xl border border-success/30">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-success">Live Session</p>
-                  <p className="text-xs text-muted-foreground">Selections sync in real-time</p>
+              {/* Elegant Divider */}
+              <motion.div 
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="w-32 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mb-6"
+              />
+              
+              {/* Client Name & Date - Refined Layout */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8"
+              >
+                {/* Client Name */}
+                <div className="flex items-center gap-3 group">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center border border-primary/40 group-hover:border-primary/60 transition-elegant">
+                    <Users className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-medium">Hosted By</p>
+                    <p className="text-xl md:text-2xl font-light text-foreground tracking-wide">{clientLink.client_name}</p>
+                  </div>
                 </div>
-              </div>
+                
+                {/* Vertical Divider */}
+                {clientLink.event_date && (
+                  <div className="hidden sm:block w-px h-12 bg-gradient-to-b from-transparent via-primary/40 to-transparent" />
+                )}
+                
+                {/* Event Date */}
+                {clientLink.event_date && (
+                  <div className="flex items-center gap-3 group">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center border border-primary/40 group-hover:border-primary/60 transition-elegant">
+                      <Calendar className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-medium">Event Date</p>
+                      <p className="text-xl md:text-2xl font-light text-foreground tracking-wide">
+                        {format(new Date(clientLink.event_date), 'MMMM d, yyyy')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+              
+              {/* Live Session Badge - Centered */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.5 }}
+                className="inline-flex items-center gap-3 glass px-6 py-3 rounded-full border border-success/30"
+              >
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
+                </span>
+                <span className="text-sm font-medium text-success tracking-wide">Live Session</span>
+                <span className="text-xs text-muted-foreground">• Syncing in real-time</span>
+              </motion.div>
             </div>
           </div>
 
