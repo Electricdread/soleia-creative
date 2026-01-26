@@ -282,8 +282,14 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
-          {/* Top Row: Logo and Theme Toggle */}
-          <div className="flex items-center justify-between mb-8">
+          {/* Top Row: Logo Centered with Theme Toggle */}
+          <div className="relative flex items-center justify-center mb-8">
+            {/* Theme toggle - absolute positioned right */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+              <ThemeToggle />
+            </div>
+            
+            {/* Centered Logo */}
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-radial from-primary/30 to-transparent blur-2xl opacity-0 group-hover:opacity-100 transition-elegant" />
               <img 
@@ -292,7 +298,6 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
                 className="h-14 md:h-20 object-contain relative z-10 drop-shadow-lg"
               />
             </div>
-            <ThemeToggle />
           </div>
 
           {/* Elegant Event Info Card */}
