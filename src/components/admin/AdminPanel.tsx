@@ -6,7 +6,8 @@ import { AddClipForm } from './AddClipForm';
 import { BulkImportForm } from './BulkImportForm';
 import { ClipManager } from './ClipManager';
 import { BatchVideoUploader } from './BatchVideoUploader';
-import { Settings, Plus, List, Upload, Video } from 'lucide-react';
+import { ClientLinkManager } from './ClientLinkManager';
+import { Settings, Plus, List, Upload, Video, Link2 } from 'lucide-react';
 
 export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -19,17 +20,21 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
           Admin
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Clip Management</DialogTitle>
-          <DialogDescription>Add and manage video clips in your collection.</DialogDescription>
+          <DialogTitle>Admin Panel</DialogTitle>
+          <DialogDescription>Manage clips and create client session links.</DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="upload" className="mt-4">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="sessions" className="mt-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="sessions" className="gap-2">
+              <Link2 className="h-4 w-4" />
+              Sessions
+            </TabsTrigger>
             <TabsTrigger value="upload" className="gap-2">
               <Video className="h-4 w-4" />
-              Batch Upload
+              Upload
             </TabsTrigger>
             <TabsTrigger value="add" className="gap-2">
               <Plus className="h-4 w-4" />
@@ -44,6 +49,10 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
               Manage
             </TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="sessions" className="mt-4">
+            <ClientLinkManager />
+          </TabsContent>
           
           <TabsContent value="upload" className="mt-4">
             <BatchVideoUploader onClipAdded={onClipsUpdated} />
