@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import SelectionsSummary from '@/components/SelectionsSummary';
 import ClipThumbnail from '@/components/ClipThumbnail';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,8 @@ import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
-
+import { MobileMenu } from '@/components/MobileMenu';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const INTERIOR_PLACEMENTS = [
   'Curves SR',
@@ -63,6 +65,8 @@ const categoryGradients: Record<string, string> = {
 
 const MotionGraphicsLookbook = () => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const [selectedCategory, setSelectedCategory] = useState<ArtlistCategoryKey>('featured-collections');
   const [clips, setClips] = useState<ArtlistClip[]>([]);
@@ -86,6 +90,21 @@ const MotionGraphicsLookbook = () => {
   const [showSummary, setShowSummary] = useState(false);
   const [isPlacementOpen, setIsPlacementOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Get current category index for swipe navigation
+  const currentCategoryIndex = artlistCategories.findIndex(c => c.key === selectedCategory);
+
+  // Swipe to navigate categories
+  const navigateCategory = useCallback((direction: 'prev' | 'next') => {
+    const newIndex = direction === 'prev'
+      ? Math.max(0, currentCategoryIndex - 1)
+      : Math.min(artlistCategories.length - 1, currentCategoryIndex + 1);
+    
+    if (newIndex !== currentCategoryIndex) {
+      setSelectedCategory(artlistCategories[newIndex].key);
+      setSearchQuery('');
+    }
+  }, [currentCategoryIndex]);
 
   // Fetch clips - first from cache, then scrape if needed
   const fetchClips = useCallback(async (forceRefresh: boolean = false) => {
@@ -366,7 +385,7 @@ const MotionGraphicsLookbook = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen touch-manipulation">
       {/* Dynamic Luxury Header with Animated Background */}
       <header className="glass-strong relative z-30 border-b border-primary/10 overflow-hidden">
         {/* Animated Background Rays */}
@@ -376,18 +395,39 @@ const MotionGraphicsLookbook = () => {
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent shimmer-slow" />
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-6 py-8">
-          {/* User Menu - Top Right */}
-          <div className="absolute top-6 right-6 z-20">
+        <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+          {/* Mobile Header Bar */}
+          <div className="flex items-center justify-between lg:hidden mb-4">
+            <MobileMenu
+              selectedCategory={selectedCategory}
+              onCategoryChange={(cat) => {
+                setSelectedCategory(cat);
+                setSearchQuery('');
+              }}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSearch={handleSearch}
+              isSearching={isSearching}
+            />
+            <img 
+              src={soleiaLogo} 
+              alt="Soleia" 
+              className="h-12 object-contain"
+            />
+            <UserMenu />
+          </div>
+
+          {/* Desktop User Menu - Top Right */}
+          <div className="hidden lg:block absolute top-6 right-6 z-20">
             <UserMenu />
           </div>
           
-          {/* Centered Hero Logo Layout */}
-          <div className="flex flex-col items-center text-center relative">
+          {/* Centered Hero Logo Layout - Desktop */}
+          <div className="hidden lg:flex flex-col items-center text-center relative">
             {/* Animated Glow Ring Behind Logo */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] rounded-full border border-primary/20 animate-rotate-glow opacity-30 pointer-events-none" />
             
-            {/* Large Soleia Logo - Full width on mobile with entrance animation */}
+            {/* Large Soleia Logo */}
             <img 
               src={soleiaLogo} 
               alt="Soleia" 
@@ -395,7 +435,7 @@ const MotionGraphicsLookbook = () => {
               style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
             />
             
-            {/* Looks Collection Title - matching logo font style with entrance animation */}
+            {/* Looks Collection Title */}
             <h1 
               className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-1 opacity-0 animate-fade-in-up relative z-10"
               style={{ 
@@ -409,7 +449,7 @@ const MotionGraphicsLookbook = () => {
               Looks Collection
             </h1>
             
-            {/* Motion Backgrounds Subtitle with shimmer effect */}
+            {/* Motion Backgrounds Subtitle */}
             <p 
               className="text-lg font-light tracking-[0.2em] uppercase text-muted-foreground mb-4 opacity-0 animate-fade-in-up relative z-10"
               style={{ 
@@ -421,7 +461,7 @@ const MotionGraphicsLookbook = () => {
               Motion Backgrounds
             </p>
             
-            {/* Search Bar - Centered below title with entrance animation */}
+            {/* Search Bar - Desktop */}
             <div 
               className="opacity-0 animate-fade-in-up relative z-10"
               style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}
@@ -445,47 +485,104 @@ const MotionGraphicsLookbook = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        {/* Luxury Category Navigation with staggered entrance */}
-        <nav className="flex gap-3 mb-10 overflow-x-auto pb-3 scrollbar-hide">
-          {artlistCategories.map((cat, index) => (
-            <button
-              key={cat.key}
-              onClick={() => {
-                setSelectedCategory(cat.key);
-                setSearchQuery('');
-              }}
-              style={{ 
-                animationDelay: `${700 + index * 80}ms`,
-                animationFillMode: 'forwards'
-              }}
-              className={`px-7 py-3.5 rounded-2xl font-medium whitespace-nowrap flex items-center gap-2.5 transition-elegant opacity-0 animate-fade-in-up ${
-                selectedCategory === cat.key
-                  ? 'bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground shadow-lg'
-                  : 'glass hover:bg-primary/10 hover:border-primary/30 text-foreground hover-lift'
-              }`}
-            >
-              <img 
-                src={sunIcon} 
-                alt="" 
-                className="w-5 h-5 object-contain" 
-              />
-              <span className="tracking-wide">{cat.label}</span>
-            </button>
-          ))}
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
+        {/* Swipeable Category Navigation with arrows */}
+        <nav className="relative mb-8 md:mb-10 hidden lg:block">
+          {/* Previous arrow */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigateCategory('prev')}
+            disabled={currentCategoryIndex === 0}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg hover:bg-primary/10"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+
+          <div 
+            ref={scrollContainerRef}
+            className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide px-12 touch-pan-x"
+          >
+            {artlistCategories.map((cat, index) => (
+              <motion.button
+                key={cat.key}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setSelectedCategory(cat.key);
+                  setSearchQuery('');
+                }}
+                className={`px-5 py-3 md:px-7 md:py-3.5 rounded-2xl font-medium whitespace-nowrap flex items-center gap-2 md:gap-2.5 transition-all touch-manipulation select-none ${
+                  selectedCategory === cat.key
+                    ? 'bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground shadow-lg'
+                    : 'glass hover:bg-primary/10 hover:border-primary/30 text-foreground active:scale-95'
+                }`}
+              >
+                <img 
+                  src={sunIcon} 
+                  alt="" 
+                  className="w-5 h-5 object-contain" 
+                />
+                <span className="tracking-wide text-sm md:text-base">{cat.label}</span>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Next arrow */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigateCategory('next')}
+            disabled={currentCategoryIndex === artlistCategories.length - 1}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg hover:bg-primary/10"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
         </nav>
 
+        {/* Mobile Category Indicator */}
+        <div className="flex items-center justify-center gap-2 mb-6 lg:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigateCategory('prev')}
+            disabled={currentCategoryIndex === 0}
+            className="w-12 h-12 rounded-full touch-manipulation active:scale-90"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </Button>
+          <div className="flex-1 text-center">
+            <p className="text-lg font-medium text-foreground">
+              {artlistCategories[currentCategoryIndex]?.label}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {currentCategoryIndex + 1} of {artlistCategories.length}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigateCategory('next')}
+            disabled={currentCategoryIndex === artlistCategories.length - 1}
+            className="w-12 h-12 rounded-full touch-manipulation active:scale-90"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </Button>
+        </div>
+
         {/* Elegant Admin & Refresh Controls */}
-        <div className="mb-8 flex items-center gap-4">
+        <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3 md:gap-4">
           <AdminPanel onClipsUpdated={() => fetchClips(false)} />
           <Button
             onClick={() => fetchClips(true)}
             disabled={isLoading}
             variant="outline"
-            className="gap-2 rounded-xl border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-elegant"
+            className="gap-2 rounded-xl border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-elegant h-12 px-4 touch-manipulation active:scale-95"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           {clips.length > 0 && (
             <span className="text-muted-foreground text-sm tracking-wide">
@@ -514,54 +611,72 @@ const MotionGraphicsLookbook = () => {
             <Button onClick={() => fetchClips(false)} className="rounded-xl glow-gold transition-elegant">Refresh Collection</Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-36">
-            {clips.map((clip, index) => {
-              const isSelected = selectedClips.some(c => c.id === clip.id);
-              const hasNote = !!selectedClips.find(c => c.id === clip.id)?.note;
-              const hasImageError = imageErrors.has(clip.id);
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-36"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: { transition: { staggerChildren: 0.03 } }
+            }}
+          >
+            <AnimatePresence mode="popLayout">
+              {clips.map((clip) => {
+                const isSelected = selectedClips.some(c => c.id === clip.id);
+                const hasNote = !!selectedClips.find(c => c.id === clip.id)?.note;
+                const hasImageError = imageErrors.has(clip.id);
 
-              return (
-                <div
-                  key={clip.id}
-                  style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}
-                  className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-elegant animate-fade-in-up ${
-                    isSelected 
-                      ? 'ring-2 ring-primary ring-offset-4 ring-offset-background scale-[1.02] glow-gold' 
-                      : 'hover-lift hover:ring-1 hover:ring-primary/30'
-                  }`}
-                  onClick={() => toggleClipSelection(clip)}
-                >
-                  <ClipThumbnail
-                    clip={clip}
-                    isSelected={isSelected}
-                    hasNote={hasNote}
-                    hasImageError={hasImageError}
-                    onImageError={handleImageError}
-                    onPlayClick={(e) => openPreview(clip, e)}
-                    categoryGradient={categoryGradients[selectedCategory] || categoryGradients['abstract']}
-                  />
+                return (
+                  <motion.div
+                    key={clip.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-elegant touch-manipulation ${
+                      isSelected 
+                        ? 'ring-2 ring-primary ring-offset-4 ring-offset-background scale-[1.02] glow-gold' 
+                        : 'hover-lift hover:ring-1 hover:ring-primary/30 active:scale-[0.98]'
+                    }`}
+                    onClick={() => toggleClipSelection(clip)}
+                  >
+                    <ClipThumbnail
+                      clip={clip}
+                      isSelected={isSelected}
+                      hasNote={hasNote}
+                      hasImageError={hasImageError}
+                      onImageError={handleImageError}
+                      onPlayClick={(e) => openPreview(clip, e)}
+                      categoryGradient={categoryGradients[selectedCategory] || categoryGradients['abstract']}
+                    />
 
-                  {/* Elegant Info Panel */}
-                  <div className="relative p-3 glass border-t border-primary/10">
-                    <h3 className="font-semibold text-foreground truncate tracking-tight text-sm">{clip.title}</h3>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                    {/* Elegant Info Panel */}
+                    <div className="relative p-3 md:p-3 glass border-t border-primary/10">
+                      <h3 className="font-semibold text-foreground truncate tracking-tight text-sm md:text-sm">{clip.title}</h3>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
         )}
       </main>
 
-      {/* Luxury Selection Bar */}
+      {/* Luxury Selection Bar - Touch optimized */}
       {selectedClips.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 glass-strong border-t border-primary/20 z-40 animate-slide-up">
-          <div className="max-w-7xl mx-auto px-6 py-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/25 to-accent/20 flex items-center justify-center glow-gold border border-primary/30">
-                  <span className="text-2xl font-bold text-gradient-gold">{selectedClips.length}</span>
+        <motion.div 
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          className="fixed bottom-0 left-0 right-0 glass-strong border-t border-primary/20 z-40 safe-area-bottom"
+        >
+          <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 md:gap-5">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-primary/25 to-accent/20 flex items-center justify-center glow-gold border border-primary/30">
+                  <span className="text-xl md:text-2xl font-bold text-gradient-gold">{selectedClips.length}</span>
                 </div>
-                <div>
+                <div className="hidden sm:block">
                   <p className="font-semibold text-foreground tracking-tight">Clips Selected</p>
                   <p className="text-sm text-muted-foreground">
                     {selectedClips.filter(c => c.note).length} with notes
@@ -569,8 +684,8 @@ const MotionGraphicsLookbook = () => {
                 </div>
               </div>
 
-              {/* Premium Selected Thumbnails */}
-              <div className="hidden md:flex items-center gap-3 overflow-x-auto max-w-lg">
+              {/* Premium Selected Thumbnails - Hidden on small screens */}
+              <div className="hidden lg:flex items-center gap-3 overflow-x-auto max-w-lg">
                 {selectedClips.slice(0, 6).map(clip => (
                   <div key={clip.id} className="relative flex-shrink-0 transition-elegant hover:scale-105">
                     <div className="w-18 h-11 rounded-xl overflow-hidden ring-2 ring-primary/60 shadow-lg">
@@ -594,25 +709,27 @@ const MotionGraphicsLookbook = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 <Button
                   variant="ghost"
                   onClick={() => setSelectedClips([])}
-                  className="text-muted-foreground hover:text-foreground transition-elegant rounded-xl"
+                  className="text-muted-foreground hover:text-foreground transition-elegant rounded-xl h-12 px-3 md:px-4 touch-manipulation active:scale-95"
                 >
-                  Clear All
+                  <span className="hidden sm:inline">Clear All</span>
+                  <span className="sm:hidden">Clear</span>
                 </Button>
                 <Button 
                   onClick={() => setShowSummary(true)} 
-                  className="glow-gold gap-2 rounded-xl px-6 py-5 text-base font-semibold bg-gradient-to-r from-primary via-accent to-primary hover:opacity-90 transition-elegant pulse-gold"
+                  className="glow-gold gap-2 rounded-xl px-4 md:px-6 h-12 md:py-5 text-sm md:text-base font-semibold bg-gradient-to-r from-primary via-accent to-primary hover:opacity-90 transition-elegant pulse-gold touch-manipulation active:scale-95"
                 >
                   <ClipboardList className="w-5 h-5" />
-                  Review & Send
+                  <span className="hidden sm:inline">Review & Send</span>
+                  <span className="sm:hidden">Review</span>
                 </Button>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Luxury Preview Modal */}

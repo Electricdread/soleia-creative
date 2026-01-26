@@ -1,0 +1,106 @@
+import React from 'react';
+import { Menu, X, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { UserMenu } from '@/components/auth/UserMenu';
+import { artlistCategories, type ArtlistCategoryKey } from '@/lib/api/artlist';
+import sunIcon from '@/assets/sun-icon.jpeg';
+
+interface MobileMenuProps {
+  selectedCategory: ArtlistCategoryKey;
+  onCategoryChange: (category: ArtlistCategoryKey) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  onSearch: () => void;
+  isSearching: boolean;
+}
+
+export function MobileMenu({
+  selectedCategory,
+  onCategoryChange,
+  searchQuery,
+  onSearchChange,
+  onSearch,
+  isSearching,
+}: MobileMenuProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const handleCategorySelect = (category: ArtlistCategoryKey) => {
+    onCategoryChange(category);
+    setIsOpen(false);
+  };
+
+  return (
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden w-12 h-12 rounded-xl touch-manipulation"
+          aria-label="Open menu"
+        >
+          <Menu className="w-6 h-6" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[85vw] max-w-sm glass-strong border-primary/20">
+        <SheetHeader className="pb-6">
+          <SheetTitle className="text-gradient-gold text-xl tracking-wide">
+            Looks Collection
+          </SheetTitle>
+        </SheetHeader>
+
+        <div className="space-y-6">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search collection..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onSearch();
+                  setIsOpen(false);
+                }
+              }}
+              className="pl-12 h-14 text-base bg-background/40 border-border/50 focus:border-primary/50 rounded-xl touch-manipulation"
+            />
+          </div>
+
+          {/* Categories */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-2">
+              Categories
+            </p>
+            <div className="space-y-1 max-h-[50vh] overflow-y-auto">
+              {artlistCategories.map((cat) => (
+                <button
+                  key={cat.key}
+                  onClick={() => handleCategorySelect(cat.key)}
+                  className={`w-full flex items-center gap-3 px-4 py-4 rounded-xl text-left transition-all touch-manipulation active:scale-[0.98] ${
+                    selectedCategory === cat.key
+                      ? 'bg-gradient-to-r from-primary/20 to-accent/10 text-primary border border-primary/30'
+                      : 'hover:bg-primary/5 text-foreground'
+                  }`}
+                >
+                  <img src={sunIcon} alt="" className="w-6 h-6 object-contain" />
+                  <span className="font-medium text-base">{cat.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* User Menu */}
+          <div className="pt-4 border-t border-border/50">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-sm text-muted-foreground">Account</span>
+              <UserMenu />
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}

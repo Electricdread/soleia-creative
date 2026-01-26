@@ -363,4 +363,72 @@
   .animate-glow-pulse-slow {
     animation: glow-pulse-slow 4s ease-in-out infinite;
   }
+
+  /* Touch-friendly utilities for iPad/mobile */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .touch-pan-x {
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .touch-pan-y {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Safe area for notched devices */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  /* Improved scrollbar hide for touch devices */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Active state feedback for touch */
+  .active\:scale-90:active {
+    transform: scale(0.9);
+  }
+
+  .active\:scale-95:active {
+    transform: scale(0.95);
+  }
+
+  .active\:scale-\[0\.98\]:active {
+    transform: scale(0.98);
+  }
+
+  /* Prevent text selection on touch */
+  .select-none {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* iPad-specific responsive tweaks */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .md\:touch-target {
+      min-height: 48px;
+      min-width: 48px;
+    }
+  }
+
+  /* Large touch target for mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
