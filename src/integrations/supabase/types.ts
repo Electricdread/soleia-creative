@@ -62,6 +62,86 @@ export type Database = {
         }
         Relationships: []
       }
+      client_links: {
+        Row: {
+          client_name: string
+          created_at: string
+          event_date: string | null
+          event_name: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          token: string
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          event_date?: string | null
+          event_name: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          token: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          event_date?: string | null
+          event_name?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          token?: string
+        }
+        Relationships: []
+      }
+      link_selections: {
+        Row: {
+          clip_category: string | null
+          clip_id: string
+          clip_thumbnail: string | null
+          clip_title: string
+          created_at: string
+          id: string
+          link_id: string
+          note: string | null
+          placements: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          clip_category?: string | null
+          clip_id: string
+          clip_thumbnail?: string | null
+          clip_title: string
+          created_at?: string
+          id?: string
+          link_id: string
+          note?: string | null
+          placements?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          clip_category?: string | null
+          clip_id?: string
+          clip_thumbnail?: string | null
+          clip_title?: string
+          created_at?: string
+          id?: string
+          link_id?: string
+          note?: string | null
+          placements?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_selections_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "client_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
