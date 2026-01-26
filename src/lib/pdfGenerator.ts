@@ -120,12 +120,12 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   pdf.setFillColor(245, 158, 11); // Gold accent
   pdf.rect(0, 68, pageWidth, 2, 'F');
   
-  // Add Soleia logo centered at top - wider logo
+  // Add Soleia logo centered at top - wider logo with proper aspect ratio
   if (logoBase64) {
     try {
-      const logoWidth = 70;
-      const logoHeight = 25;
-      pdf.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 5, logoWidth, logoHeight);
+      const logoWidth = 60;
+      const logoHeight = 18; // Adjusted for wider aspect ratio
+      pdf.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 8, logoWidth, logoHeight);
     } catch (e) {
       console.error('Failed to add logo:', e);
     }
