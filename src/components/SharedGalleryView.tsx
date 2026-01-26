@@ -1,17 +1,41 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Loader2, RefreshCw, Sparkles, ChevronLeft, ChevronRight, Calendar, Users } from 'lucide-react';
+import { Search, Loader2, RefreshCw, Sparkles, ChevronLeft, ChevronRight, Calendar, Users, Play, X, MessageSquare, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { artlistApi, artlistCategories, type ArtlistClip, type ArtlistCategoryKey } from '@/lib/api/artlist';
 import { useToast } from '@/hooks/use-toast';
 import ClipThumbnail from '@/components/ClipThumbnail';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import SharedSelectionsSummary from '@/components/SharedSelectionsSummary';
+import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
+import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
 import { format } from 'date-fns';
+
+const INTERIOR_PLACEMENTS = [
+  'Curves SR',
+  'IMAG SR',
+  'Center',
+  'IMAG SL',
+  'SL Curves',
+  'DJ Booth'
+] as const;
+
+const OUTDOOR_PLACEMENTS = [
+  'Outdoor SR',
+  'Outdoor Arch',
+  'Outdoor SL'
+] as const;
+
+const ALL_INTERIOR_SCREENS = [...INTERIOR_PLACEMENTS];
+const ALL_OUTDOOR_SCREENS = [...OUTDOOR_PLACEMENTS];
 
 interface ClientLink {
   id: string;
@@ -74,6 +98,14 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
   const [isFromCache, setIsFromCache] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
   const [showSummary, setShowSummary] = useState(false);
+  
+  // Clip detail modal state
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailClip, setDetailClip] = useState<ArtlistClip | null>(null);
+  const [detailNote, setDetailNote] = useState('');
+  const [detailPlacements, setDetailPlacements] = useState<string[]>([]);
+  const [isPlacementOpen, setIsPlacementOpen] = useState(false);
+  const [isSavingDetail, setIsSavingDetail] = useState(false);
 
   const currentCategoryIndex = artlistCategories.findIndex(c => c.key === selectedCategory);
 
@@ -149,6 +181,75 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
       title: wasSelected ? "Removed from selection" : "Added to selection",
       description: clip.title,
     });
+  };
+
+  // Open clip detail modal
+  const openClipDetail = (clip: ArtlistClip, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const selection = getSelection(clip.id);
+    setDetailClip(clip);
+    setDetailNote(selection?.note || '');
+    setDetailPlacements(selection?.placements || []);
+    setShowDetailModal(true);
+  };
+
+  // Toggle placement in detail modal
+  const toggleDetailPlacement = (placement: string) => {
+    if (placement === 'Full Interior') {
+      const allInteriorSelected = ALL_INTERIOR_SCREENS.every(s => detailPlacements.includes(s));
+      if (allInteriorSelected) {
+        setDetailPlacements(prev => prev.filter(p => !ALL_INTERIOR_SCREENS.includes(p as any)));
+      } else {
+        setDetailPlacements(prev => [...new Set([...prev, ...ALL_INTERIOR_SCREENS])]);
+      }
+    } else if (placement === 'Full Outdoor') {
+      const allOutdoorSelected = ALL_OUTDOOR_SCREENS.every(s => detailPlacements.includes(s));
+      if (allOutdoorSelected) {
+        setDetailPlacements(prev => prev.filter(p => !ALL_OUTDOOR_SCREENS.includes(p as any)));
+      } else {
+        setDetailPlacements(prev => [...new Set([...prev, ...ALL_OUTDOOR_SCREENS])]);
+      }
+    } else {
+      setDetailPlacements(prev => 
+        prev.includes(placement) 
+          ? prev.filter(p => p !== placement)
+          : [...prev, placement]
+      );
+    }
+  };
+
+  // Save clip detail changes
+  const saveClipDetail = async () => {
+    if (!detailClip) return;
+    
+    setIsSavingDetail(true);
+    try {
+      // Make sure the clip is selected first
+      if (!isSelected(detailClip.id)) {
+        await toggleSelection(detailClip);
+      }
+      
+      // Update note and placements
+      await updateNote(detailClip.id, detailNote);
+      await updatePlacements(detailClip.id, detailPlacements);
+      
+      setShowDetailModal(false);
+      setDetailClip(null);
+      
+      toast({
+        title: "Selection updated",
+        description: "Note and placements have been saved",
+      });
+    } catch (error) {
+      console.error('Error saving detail:', error);
+      toast({
+        title: "Error saving",
+        description: "Failed to save changes",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingDetail(false);
+    }
   };
 
   // Show summary page
@@ -410,11 +511,22 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
                         hasNote={hasNote}
                         hasImageError={hasImageError}
                         onImageError={handleImageError}
-                        onPlayClick={(e) => e.stopPropagation()}
+                        onPlayClick={(e) => openClipDetail(clip, e)}
                         categoryGradient={categoryGradients[selectedCategory] || categoryGradients['abstract']}
                       />
-                      <div className="relative p-3 md:p-3 glass border-t border-primary/10">
-                        <h3 className="font-semibold text-foreground truncate tracking-tight text-sm md:text-sm">{clip.title}</h3>
+                      <div className="relative p-3 md:p-3 glass border-t border-primary/10 flex items-center justify-between gap-2">
+                        <h3 className="font-semibold text-foreground truncate tracking-tight text-sm md:text-sm flex-1">{clip.title}</h3>
+                        {selected && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs gap-1 flex-shrink-0"
+                            onClick={(e) => openClipDetail(clip, e)}
+                          >
+                            <MapPin className="w-3 h-3" />
+                            Configure
+                          </Button>
+                        )}
                       </div>
                     </motion.div>
                   );
@@ -479,6 +591,133 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
           </div>
         </motion.div>
       )}
+
+      {/* Clip Detail Modal */}
+      <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Play className="w-5 h-5 text-primary" />
+              {detailClip?.title}
+            </DialogTitle>
+            <DialogDescription>
+              Configure screen placements and add notes for this clip
+            </DialogDescription>
+          </DialogHeader>
+          
+          {detailClip && (
+            <div className="space-y-6 mt-4">
+              {/* Video Preview */}
+              {detailClip.previewUrl && (
+                <div className="aspect-video rounded-xl overflow-hidden bg-secondary/20">
+                  <video
+                    src={detailClip.previewUrl}
+                    poster={detailClip.thumbnail}
+                    controls
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Screen Placements */}
+              <Collapsible open={isPlacementOpen} onOpenChange={setIsPlacementOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between gap-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-primary" />
+                      <span>Screen Placements</span>
+                      {detailPlacements.length > 0 && (
+                        <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">
+                          {detailPlacements.length} selected
+                        </span>
+                      )}
+                    </div>
+                    {isPlacementOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4 space-y-4">
+                  <Tabs defaultValue="interior" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="interior">Interior</TabsTrigger>
+                      <TabsTrigger value="outdoor">Outdoor</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="interior" className="mt-4">
+                      <VenuePlacementDiagram
+                        selectedPlacements={detailPlacements}
+                        onToggle={toggleDetailPlacement}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mt-3"
+                        onClick={() => toggleDetailPlacement('Full Interior')}
+                      >
+                        {ALL_INTERIOR_SCREENS.every(s => detailPlacements.includes(s)) 
+                          ? 'Clear All Interior' 
+                          : 'Select All Interior'}
+                      </Button>
+                    </TabsContent>
+                    <TabsContent value="outdoor" className="mt-4">
+                      <OutdoorPlacementDiagram
+                        selectedPlacements={detailPlacements}
+                        onToggle={toggleDetailPlacement}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mt-3"
+                        onClick={() => toggleDetailPlacement('Full Outdoor')}
+                      >
+                        {ALL_OUTDOOR_SCREENS.every(s => detailPlacements.includes(s)) 
+                          ? 'Clear All Outdoor' 
+                          : 'Select All Outdoor'}
+                      </Button>
+                    </TabsContent>
+                  </Tabs>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  Notes
+                </label>
+                <Textarea
+                  value={detailNote}
+                  onChange={(e) => setDetailNote(e.target.value)}
+                  placeholder="Add any notes about this clip..."
+                  className="min-h-[80px] bg-background/50"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowDetailModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 gap-2 glow-gold"
+                  onClick={saveClipDetail}
+                  disabled={isSavingDetail}
+                >
+                  {isSavingDetail ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : null}
+                  Save Selection
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
