@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import soleiaLogo from '@/assets/soleia-logo-new.png';
+import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 interface SelectionForPdf {
   id: string;
@@ -120,11 +120,11 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   pdf.setFillColor(245, 158, 11); // Gold accent
   pdf.rect(0, 68, pageWidth, 2, 'F');
   
-  // Add Soleia logo centered at top
+  // Add Soleia logo centered at top - wider logo
   if (logoBase64) {
     try {
-      const logoWidth = 50;
-      const logoHeight = 28;
+      const logoWidth = 70;
+      const logoHeight = 25;
       pdf.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 5, logoWidth, logoHeight);
     } catch (e) {
       console.error('Failed to add logo:', e);
@@ -134,39 +134,64 @@ export async function generateSelectionsPdf(selections: SelectionForPdf[]): Prom
   // Decorative line under logo
   pdf.setDrawColor(245, 158, 11);
   pdf.setLineWidth(0.3);
-  pdf.line(pageWidth / 2 - 30, 35, pageWidth / 2 + 30, 35);
+  pdf.line(pageWidth / 2 - 30, 32, pageWidth / 2 + 30, 32);
   
   // Event Name - Hero Typography (centered)
   pdf.setTextColor(245, 200, 100); // Gold text
   pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(eventName.toUpperCase(), pageWidth / 2, 44, { align: 'center' });
+  pdf.text(eventName.toUpperCase(), pageWidth / 2, 41, { align: 'center' });
   
   // Decorative divider
   pdf.setDrawColor(245, 158, 11);
   pdf.setLineWidth(0.5);
-  pdf.line(pageWidth / 2 - 20, 48, pageWidth / 2 + 20, 48);
+  pdf.line(pageWidth / 2 - 20, 45, pageWidth / 2 + 20, 45);
   
-  // Client Name and Event Date
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(10);
-  pdf.setFont('helvetica', 'normal');
+  // Client Name with "Hosted By" label and Event Date
+  pdf.setFontSize(9);
+  const infoY = 53;
   
-  const infoY = 55;
   if (clientName && eventDate) {
-    pdf.text(`Hosted By: ${clientName}`, pageWidth / 2 - 35, infoY, { align: 'right' });
+    // Hosted By label and client name
+    pdf.setTextColor(180, 170, 150);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Hosted By:', pageWidth / 2 - 45, infoY, { align: 'right' });
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(clientName, pageWidth / 2 - 43, infoY, { align: 'left' });
+    
+    // Divider
+    pdf.setTextColor(245, 158, 11);
     pdf.text('|', pageWidth / 2, infoY, { align: 'center' });
-    pdf.text(`Event Date: ${eventDate}`, pageWidth / 2 + 35, infoY, { align: 'left' });
+    
+    // Event Date label and date
+    pdf.setTextColor(180, 170, 150);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Event Date:', pageWidth / 2 + 5, infoY, { align: 'left' });
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(eventDate, pageWidth / 2 + 30, infoY, { align: 'left' });
   } else if (clientName) {
-    pdf.text(`Hosted By: ${clientName}`, pageWidth / 2, infoY, { align: 'center' });
+    pdf.setTextColor(180, 170, 150);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Hosted By:', pageWidth / 2 - 5, infoY, { align: 'right' });
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(clientName, pageWidth / 2, infoY, { align: 'left' });
   } else if (eventDate) {
-    pdf.text(`Event Date: ${eventDate}`, pageWidth / 2, infoY, { align: 'center' });
+    pdf.setTextColor(180, 170, 150);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Event Date:', pageWidth / 2 - 5, infoY, { align: 'right' });
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(eventDate, pageWidth / 2, infoY, { align: 'left' });
   }
   
   // Selection count
   pdf.setTextColor(200, 180, 150);
   pdf.setFontSize(9);
-  pdf.text(`${selections.length} clips selected`, pageWidth / 2, 63, { align: 'center' });
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`${selections.length} clips selected`, pageWidth / 2, 62, { align: 'center' });
   
   // ========== CONTENT SECTION ==========
   let yPosition = 82;
