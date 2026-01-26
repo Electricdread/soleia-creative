@@ -591,75 +591,99 @@ const MotionGraphicsLookbook = () => {
           )}
         </div>
 
-        {/* Premium Clips Grid */}
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="relative">
-              <Loader2 className="w-14 h-14 animate-spin text-primary" />
-              <div className="absolute inset-0 blur-xl bg-primary/30 animate-pulse" />
+        {/* Premium Clips Grid with Swipe Navigation */}
+        <motion.div
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(event, info) => {
+            const threshold = 100;
+            if (info.offset.x > threshold && currentCategoryIndex > 0) {
+              navigateCategory('prev');
+            } else if (info.offset.x < -threshold && currentCategoryIndex < artlistCategories.length - 1) {
+              navigateCategory('next');
+            }
+          }}
+          className="touch-pan-y"
+        >
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-24">
+              <div className="relative">
+                <Loader2 className="w-14 h-14 animate-spin text-primary" />
+                <div className="absolute inset-0 blur-xl bg-primary/30 animate-pulse" />
+              </div>
+              <p className="text-foreground font-medium mt-6 tracking-wide">Curating collection...</p>
+              <p className="text-muted-foreground text-sm mt-2">Please wait a moment</p>
             </div>
-            <p className="text-foreground font-medium mt-6 tracking-wide">Curating collection...</p>
-            <p className="text-muted-foreground text-sm mt-2">Please wait a moment</p>
-          </div>
-        ) : clips.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="p-6 rounded-3xl bg-primary/10 glow-gold mb-6">
-              <Sparkles className="w-16 h-16 text-primary" />
+          ) : clips.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <div className="p-6 rounded-3xl bg-primary/10 glow-gold mb-6">
+                <Sparkles className="w-16 h-16 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-3 tracking-tight">No clips found</h3>
+              <p className="text-muted-foreground mb-6">Try a different category or search term</p>
+              <Button onClick={() => fetchClips(false)} className="rounded-xl glow-gold transition-elegant">Refresh Collection</Button>
             </div>
-            <h3 className="text-2xl font-bold text-foreground mb-3 tracking-tight">No clips found</h3>
-            <p className="text-muted-foreground mb-6">Try a different category or search term</p>
-            <Button onClick={() => fetchClips(false)} className="rounded-xl glow-gold transition-elegant">Refresh Collection</Button>
-          </div>
-        ) : (
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-36"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: { transition: { staggerChildren: 0.03 } }
-            }}
-          >
-            <AnimatePresence mode="popLayout">
-              {clips.map((clip) => {
-                const isSelected = selectedClips.some(c => c.id === clip.id);
-                const hasNote = !!selectedClips.find(c => c.id === clip.id)?.note;
-                const hasImageError = imageErrors.has(clip.id);
+          ) : (
+            <motion.div 
+              key={selectedCategory}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-36"
+            >
+              <AnimatePresence mode="popLayout">
+                {clips.map((clip) => {
+                  const isSelected = selectedClips.some(c => c.id === clip.id);
+                  const hasNote = !!selectedClips.find(c => c.id === clip.id)?.note;
+                  const hasImageError = imageErrors.has(clip.id);
 
-                return (
-                  <motion.div
-                    key={clip.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-elegant touch-manipulation ${
-                      isSelected 
-                        ? 'ring-2 ring-primary ring-offset-4 ring-offset-background scale-[1.02] glow-gold' 
-                        : 'hover-lift hover:ring-1 hover:ring-primary/30 active:scale-[0.98]'
-                    }`}
-                    onClick={() => toggleClipSelection(clip)}
-                  >
-                    <ClipThumbnail
-                      clip={clip}
-                      isSelected={isSelected}
-                      hasNote={hasNote}
-                      hasImageError={hasImageError}
-                      onImageError={handleImageError}
-                      onPlayClick={(e) => openPreview(clip, e)}
-                      categoryGradient={categoryGradients[selectedCategory] || categoryGradients['abstract']}
-                    />
+                  return (
+                    <motion.div
+                      key={clip.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-elegant touch-manipulation ${
+                        isSelected 
+                          ? 'ring-2 ring-primary ring-offset-4 ring-offset-background scale-[1.02] glow-gold' 
+                          : 'hover-lift hover:ring-1 hover:ring-primary/30 active:scale-[0.98]'
+                      }`}
+                      onClick={() => toggleClipSelection(clip)}
+                    >
+                      <ClipThumbnail
+                        clip={clip}
+                        isSelected={isSelected}
+                        hasNote={hasNote}
+                        hasImageError={hasImageError}
+                        onImageError={handleImageError}
+                        onPlayClick={(e) => openPreview(clip, e)}
+                        categoryGradient={categoryGradients[selectedCategory] || categoryGradients['abstract']}
+                      />
 
-                    {/* Elegant Info Panel */}
-                    <div className="relative p-3 md:p-3 glass border-t border-primary/10">
-                      <h3 className="font-semibold text-foreground truncate tracking-tight text-sm md:text-sm">{clip.title}</h3>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
-        )}
+                      {/* Elegant Info Panel */}
+                      <div className="relative p-3 md:p-3 glass border-t border-primary/10">
+                        <h3 className="font-semibold text-foreground truncate tracking-tight text-sm md:text-sm">{clip.title}</h3>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Swipe hint for mobile */}
+        <div className="flex justify-center mt-4 lg:hidden">
+          <p className="text-xs text-muted-foreground flex items-center gap-2">
+            <ChevronLeft className="w-3 h-3" />
+            Swipe to change category
+            <ChevronRight className="w-3 h-3" />
+          </p>
+        </div>
       </main>
 
       {/* Luxury Selection Bar - Touch optimized */}
