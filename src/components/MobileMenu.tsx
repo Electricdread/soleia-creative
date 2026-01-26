@@ -34,13 +34,13 @@ export function MobileMenu({
   return (
     <>
       <Button
-        variant="ghost"
+        variant="outline"
         size="icon"
-        className="lg:hidden w-12 h-12 rounded-xl touch-manipulation"
+        className="lg:hidden w-12 h-12 rounded-xl touch-manipulation border-primary/30 bg-background/50 hover:bg-primary/10"
         aria-label="Open menu"
         onClick={() => setIsOpen(true)}
       >
-        <Menu className="w-6 h-6" />
+        <Menu className="w-6 h-6 text-primary" />
       </Button>
 
       <AnimatePresence>
