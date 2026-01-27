@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Tv, Monitor, Layers } from 'lucide-react';
+import { FileText, Tv, Monitor, Layers, Download, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
 
@@ -150,6 +151,62 @@ function DisplayCard({ display }: { display: DisplayType }) {
 }
 
 export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
+  const handlePrintSpecs = () => {
+    const specsContent = DISPLAY_TYPES.map(d => 
+      `${d.name}\n  Video: ${d.videoSpecs.resolution} | ${d.videoSpecs.format}${d.videoSpecs.codec ? ` | ${d.videoSpecs.codec}` : ''}${d.videoSpecs.frameRate ? ` | ${d.videoSpecs.frameRate}` : ''}\n  Graphic: ${d.graphicSpecs.resolution} | ${d.graphicSpecs.format}`
+    ).join('\n\n');
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Soleia Display Specifications</title>
+            <style>
+              body { font-family: system-ui, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+              h1 { color: #D4AF37; border-bottom: 2px solid #D4AF37; padding-bottom: 10px; }
+              h2 { color: #333; margin-top: 24px; }
+              .spec-group { background: #f5f5f5; padding: 16px; border-radius: 8px; margin: 12px 0; }
+              .spec-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ddd; }
+              .spec-row:last-child { border-bottom: none; }
+              .label { color: #666; }
+              .value { font-family: monospace; font-weight: 600; }
+              .notes { font-size: 12px; color: #888; margin-top: 8px; }
+              @media print { body { padding: 20px; } }
+            </style>
+          </head>
+          <body>
+            <h1>Soleia Display Specifications</h1>
+            <p style="color: #666;">Quick Reference Guide for Content Creation</p>
+            ${DISPLAY_TYPES.map(d => `
+              <h2>${d.name}</h2>
+              <div class="spec-group">
+                <strong>Video Specs</strong>
+                <div class="spec-row"><span class="label">Resolution</span><span class="value">${d.videoSpecs.resolution}</span></div>
+                <div class="spec-row"><span class="label">Format</span><span class="value">${d.videoSpecs.format}</span></div>
+                ${d.videoSpecs.codec ? `<div class="spec-row"><span class="label">Codec</span><span class="value">${d.videoSpecs.codec}</span></div>` : ''}
+                ${d.videoSpecs.frameRate ? `<div class="spec-row"><span class="label">Frame Rate</span><span class="value">${d.videoSpecs.frameRate}</span></div>` : ''}
+                ${d.videoSpecs.duration ? `<div class="spec-row"><span class="label">Duration</span><span class="value">${d.videoSpecs.duration}</span></div>` : ''}
+                ${d.videoSpecs.fileSize ? `<div class="spec-row"><span class="label">Max Size</span><span class="value">${d.videoSpecs.fileSize}</span></div>` : ''}
+              </div>
+              <div class="spec-group">
+                <strong>Graphic Specs</strong>
+                <div class="spec-row"><span class="label">Resolution</span><span class="value">${d.graphicSpecs.resolution}</span></div>
+                <div class="spec-row"><span class="label">Format</span><span class="value">${d.graphicSpecs.format}</span></div>
+              </div>
+              ${d.creativeNotes ? `<p class="notes"><strong>Notes:</strong> ${d.creativeNotes.join(' ')}</p>` : ''}
+            `).join('')}
+            <p style="text-align: center; margin-top: 40px; color: #999; font-size: 12px;">
+              Generated from Soleia Creative Guide
+            </p>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -158,6 +215,37 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
           Technical requirements for all display types at Soleia. Use these specifications when preparing your branded content.
         </p>
       </div>
+
+      {/* Quick Reference Download Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <Card className="glass border-primary/30 overflow-hidden group hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4)]">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 group-hover:from-primary/30 group-hover:to-accent/30 transition-colors">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Quick Reference Sheet</h3>
+                  <p className="text-sm text-muted-foreground">
+                    All technical specs in a printable format
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={handlePrintSpecs}
+                className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 shrink-0"
+              >
+                <Printer className="w-4 h-4" />
+                Print Specs
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {DISPLAY_TYPES.map((display, index) => (

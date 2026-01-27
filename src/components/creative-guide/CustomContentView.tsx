@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Palette, Calendar, Download, Clock } from 'lucide-react';
+import { Palette, Calendar, Download, Clock, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,26 +17,28 @@ export function CustomContentView() {
         </p>
       </div>
 
-      {/* Main Image */}
+      {/* ShowBlox Partnership Blurb */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Card className="glass border-border/50 overflow-hidden">
-          <div className="relative">
-            <img 
-              src={GUIDE_IMAGES.customContent} 
-              alt="Custom Content Creation"
-              className="w-full h-auto"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 right-4">
-              <Badge className="bg-primary/90 text-primary-foreground">
-                <Palette className="w-3 h-3 mr-1" />
-                Pixelmap Control
-              </Badge>
+        <Card className="glass border-primary/30 overflow-hidden group hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
+          <CardContent className="p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shrink-0">
+                <Sparkles className="w-6 h-6 text-primary" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-gradient-gold">Content Creation with ShowBlox</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  ShowBlox develops custom motion graphics and branded content strategically designed for Soleia's multi-zone LED ecosystem. Our creative team ensures visual continuity, optimal resolution matching, and maximum impact across every screen in the venue.
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  From immersive logo reveals to ambient architectural visuals, we craft content that transforms Soleia into a fully branded environment—seamlessly integrating your brand across focal displays and atmospheric zones alike.
+                </p>
+              </div>
             </div>
-          </div>
+          </CardContent>
         </Card>
       </motion.div>
 
@@ -49,11 +51,11 @@ export function CustomContentView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card className="glass border-border/50 h-full">
+            <Card className="glass border-border/50 h-full group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_30px_-10px_hsl(var(--primary)/0.3)]">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-amber-500/10">
-                    <Calendar className="w-5 h-5 text-amber-500" />
+                  <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <Calendar className="w-5 h-5 text-primary" />
                   </div>
                   <div>
                     <CardTitle className="text-base">{item.title}</CardTitle>
@@ -109,47 +111,6 @@ export function CustomContentView() {
         <p className="text-xs text-muted-foreground mt-2">
           Download the After Effects template and pixelmap specifications
         </p>
-      </motion.div>
-
-      {/* Technical Requirements Summary */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-      >
-        <Card className="glass border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">Technical Requirements</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-center">
-                <p className="text-2xl font-bold text-primary">3840×2160</p>
-                <p className="text-xs text-muted-foreground mt-1">Master Resolution</p>
-              </div>
-              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-center">
-                <p className="text-2xl font-bold text-primary">DXV3</p>
-                <p className="text-xs text-muted-foreground mt-1">Preferred Codec</p>
-              </div>
-              <div className="p-4 rounded-lg bg-muted/30 border border-border/50 text-center">
-                <p className="text-2xl font-bold text-primary">60 FPS</p>
-                <p className="text-xs text-muted-foreground mt-1">Frame Rate</p>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground text-center mt-4">
-              For optimal playback on our Resolume Media Server. Visit{' '}
-              <a 
-                href="https://resolume.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                resolume.com
-              </a>
-              {' '}for codec details.
-            </p>
-          </CardContent>
-        </Card>
       </motion.div>
     </div>
   );
