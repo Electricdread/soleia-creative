@@ -32,6 +32,7 @@ import {
   ZONE_SUBCATEGORY_LABELS,
 } from '@/lib/creativeGuide';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
+import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 
 const CreativeGuideView = () => {
   const navigate = useNavigate();
@@ -443,6 +444,9 @@ const CreativeGuideView = () => {
           />
         )}
       </AnimatePresence>
+      
+      {/* Powered by ShowBlox Footer */}
+      <PoweredByShowBlox className="border-t border-border/30 mt-8" />
     </div>
   );
 };
