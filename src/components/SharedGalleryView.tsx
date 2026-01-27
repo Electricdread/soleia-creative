@@ -124,30 +124,22 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
     }
   }, [currentCategoryIndex]);
 
-  const fetchClips = useCallback(async (forceRefresh: boolean = false) => {
+  const fetchClips = useCallback(async (_forceRefresh: boolean = false) => {
     setIsLoading(true);
     setImageErrors(new Set());
     
     try {
-      if (!forceRefresh) {
-        const cachedResult = await artlistApi.getCachedClips(selectedCategory);
-        if (cachedResult.success && cachedResult.clips && cachedResult.clips.length > 0) {
-          setClips(cachedResult.clips);
-          setIsFromCache(true);
-          setIsLoading(false);
-          return;
-        }
-      }
-      
-      const result = await artlistApi.scrapeCategory(selectedCategory, forceRefresh);
-      if (result.success && result.clips) {
-        setClips(result.clips);
-        setIsFromCache(result.cached || false);
+      // Only use cached clips - no external URL retrieval
+      const cachedResult = await artlistApi.getCachedClips(selectedCategory);
+      if (cachedResult.success && cachedResult.clips && cachedResult.clips.length > 0) {
+        setClips(cachedResult.clips);
+        setIsFromCache(true);
       } else {
         setClips([]);
       }
     } catch (error) {
       console.error('Fetch error:', error);
+      setClips([]);
     } finally {
       setIsLoading(false);
     }
@@ -158,19 +150,8 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
   }, [fetchClips]);
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    
-    setIsSearching(true);
-    try {
-      const result = await artlistApi.search(searchQuery);
-      if (result.success && result.clips) {
-        setClips(result.clips);
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setIsSearching(false);
-    }
+    // Search disabled - only using cached clips
+    setIsSearching(false);
   };
 
   const handleImageError = (clipId: string) => {

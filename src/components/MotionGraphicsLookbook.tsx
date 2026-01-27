@@ -118,52 +118,26 @@ const MotionGraphicsLookbook = () => {
   }, [currentCategoryIndex]);
 
   // Fetch clips - first from cache, then scrape if needed
-  const fetchClips = useCallback(async (forceRefresh: boolean = false) => {
+  const fetchClips = useCallback(async (_forceRefresh: boolean = false) => {
     setIsLoading(true);
     setImageErrors(new Set());
     
     try {
-      // Try cache first for instant load
-      if (!forceRefresh) {
-        const cachedResult = await artlistApi.getCachedClips(selectedCategory);
-        if (cachedResult.success && cachedResult.clips && cachedResult.clips.length > 0) {
-          setClips(cachedResult.clips);
-          setIsFromCache(true);
-          setIsLoading(false);
-          return;
-        }
-      }
-      
-      // If no cache or force refresh, scrape
-      const result = await artlistApi.scrapeCategory(selectedCategory, forceRefresh);
-      if (result.success && result.clips) {
-        setClips(result.clips);
-        setIsFromCache(result.cached || false);
-        if (!result.cached) {
-          toast({
-            title: "Fresh clips loaded",
-            description: `Found ${result.clips.length} clips from Artlist`,
-          });
-        }
+      // Only use cached clips - no external URL retrieval
+      const cachedResult = await artlistApi.getCachedClips(selectedCategory);
+      if (cachedResult.success && cachedResult.clips && cachedResult.clips.length > 0) {
+        setClips(cachedResult.clips);
+        setIsFromCache(true);
       } else {
-        toast({
-          title: "Error loading clips",
-          description: result.error || "Failed to load clips from Artlist",
-          variant: "destructive",
-        });
         setClips([]);
       }
     } catch (error) {
       console.error('Fetch error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to connect to the scraping service",
-        variant: "destructive",
-      });
+      setClips([]);
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCategory, toast]);
+  }, [selectedCategory]);
 
   useEffect(() => {
     fetchClips(false);
@@ -173,32 +147,12 @@ const MotionGraphicsLookbook = () => {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
-    setIsSearching(true);
-    try {
-      const result = await artlistApi.search(searchQuery);
-      if (result.success && result.clips) {
-        setClips(result.clips);
-        toast({
-          title: "Search complete",
-          description: `Found ${result.clips.length} clips for "${searchQuery}"`,
-        });
-      } else {
-        toast({
-          title: "Search failed",
-          description: result.error || "No results found",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      toast({
-        title: "Error",
-        description: "Search failed",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSearching(false);
-    }
+    // Search disabled - only using cached clips
+    toast({
+      title: "Search disabled",
+      description: "Browse clips by category instead",
+    });
+    setIsSearching(false);
   };
 
   const openPreview = (clip: ArtlistClip, e: React.MouseEvent) => {
