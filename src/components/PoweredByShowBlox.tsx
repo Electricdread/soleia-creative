@@ -1,4 +1,4 @@
-import showbloxLogo from '@/assets/showblox-logo.jpeg';
+import showbloxIcon from '@/assets/showblox-icon.png';
 
 interface PoweredByShowBloxProps {
   className?: string;
@@ -16,9 +16,9 @@ export function PoweredByShowBlox({ className = '', variant = 'footer' }: Powere
       >
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider hidden sm:inline">Powered by</span>
         <img 
-          src={showbloxLogo} 
+          src={showbloxIcon} 
           alt="ShowBlox" 
-          className="h-4 sm:h-5 w-auto object-contain rounded-sm dark:brightness-100 brightness-0"
+          className="h-5 sm:h-6 w-auto object-contain dark:invert"
         />
       </a>
     );
@@ -34,9 +34,9 @@ export function PoweredByShowBlox({ className = '', variant = 'footer' }: Powere
         className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity duration-300"
       >
         <img 
-          src={showbloxLogo} 
+          src={showbloxIcon} 
           alt="ShowBlox" 
-          className="h-5 w-auto object-contain rounded-sm dark:brightness-100 brightness-0"
+          className="h-6 w-auto object-contain dark:invert"
         />
       </a>
     </div>
