@@ -76,20 +76,20 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
               style.textContent = `
                 .screen-group {
                   cursor: pointer;
-                  opacity: 0.5;
+                  opacity: 0.4;
                   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                  filter: saturate(0.3) brightness(0.7);
+                  filter: grayscale(0.6) brightness(0.6);
                 }
                 .screen-group:hover {
-                  opacity: 1;
-                  filter: saturate(1) brightness(1.1) drop-shadow(0 0 16px hsl(38 92% 50% / 0.7));
+                  opacity: 0.9;
+                  filter: grayscale(0) brightness(1.1) sepia(0.3) hue-rotate(-10deg) saturate(1.5) drop-shadow(0 0 12px rgba(245, 158, 11, 0.8));
                 }
                 .screen-group.selected {
                   opacity: 1;
-                  filter: saturate(1.2) brightness(1.2) drop-shadow(0 0 20px hsl(38 92% 50% / 0.9)) drop-shadow(0 0 40px hsl(32 85% 45% / 0.5));
+                  filter: grayscale(0) brightness(1.15) sepia(0.4) hue-rotate(-10deg) saturate(1.8) drop-shadow(0 0 16px rgba(245, 158, 11, 0.9)) drop-shadow(0 0 32px rgba(217, 119, 6, 0.5));
                 }
                 .screen-group.selected:hover {
-                  filter: saturate(1.3) brightness(1.3) drop-shadow(0 0 24px hsl(38 92% 50% / 1)) drop-shadow(0 0 50px hsl(32 85% 45% / 0.6));
+                  filter: grayscale(0) brightness(1.2) sepia(0.5) hue-rotate(-10deg) saturate(2) drop-shadow(0 0 20px rgba(245, 158, 11, 1)) drop-shadow(0 0 40px rgba(217, 119, 6, 0.7));
                 }
               `;
             }
@@ -227,11 +227,11 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
             {/* Screen count indicator */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-sm bg-muted-foreground/30 border border-muted-foreground/50" />
+                <div className="w-2 h-2 rounded-sm bg-muted-foreground/40 border border-muted-foreground/60" />
                 <span className="text-[10px] text-muted-foreground">Available</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-sm bg-primary shadow-[0_0_8px_hsl(38_92%_50%_/_0.8)]" />
+                <div className="w-2 h-2 rounded-sm bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
                 <span className="text-[10px] text-muted-foreground">Selected</span>
               </div>
             </div>
