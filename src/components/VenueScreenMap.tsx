@@ -7,31 +7,37 @@ interface VenueScreenMapProps {
   interactive?: boolean;
 }
 
-// Screen segment IDs that can be selected - matches the SVG element IDs
+// Screen segment IDs that map to the SVG group IDs
+// The SVG uses these IDs for the groups containing each screen
 const SCREEN_SEGMENTS = [
-  // Radial ceiling screens
-  { id: 'Radial 01', group: 'radials' },
-  { id: 'Radial 02', group: 'radials' },
-  { id: 'Radial 03', group: 'radials' },
-  { id: 'Radial 04', group: 'radials' },
-  { id: 'Radial 05', group: 'radials' },
-  { id: 'Radial 06', group: 'radials' },
-  { id: 'Radial 07', group: 'radials' },
-  { id: 'Radial 08', group: 'radials' },
-  { id: 'Radial 09', group: 'radials' },
-  { id: 'Radial 10', group: 'radials' },
-  { id: 'Radial 11', group: 'radials' },
-  { id: 'Radial 12', group: 'radials' },
+  // DJ Booth
+  { id: 'DJ Booth', svgId: 'BOOTH', group: 'djBooth' },
   // Side curves
-  { id: 'Curves SR', group: 'curves' },
-  { id: 'Curves SL', group: 'curves' },
+  { id: 'Curves SL', svgId: 'SL_CURVE', group: 'curves' },
+  { id: 'Curves SR', svgId: 'SR_CURVE', group: 'curves' },
   // IMAG screens
-  { id: 'IMAG SR', group: 'imag' },
-  { id: 'IMAG SL', group: 'imag' },
-  // Center and DJ
-  { id: 'Center', group: 'center' },
-  { id: 'DJ Booth', group: 'djBooth' },
+  { id: 'IMAG SL', svgId: 'SL_IMAG.', group: 'imag' },
+  { id: 'IMAG SR', svgId: 'R_IMAG', group: 'imag' },
+  // Center screen
+  { id: 'Center', svgId: 'CENTER', group: 'center' },
+  // Radial ceiling screens (if present in SVG)
+  { id: 'Radial 01', svgId: 'Radial_01', group: 'radials' },
+  { id: 'Radial 02', svgId: 'Radial_02', group: 'radials' },
+  { id: 'Radial 03', svgId: 'Radial_03', group: 'radials' },
+  { id: 'Radial 04', svgId: 'Radial_04', group: 'radials' },
+  { id: 'Radial 05', svgId: 'Radial_05', group: 'radials' },
+  { id: 'Radial 06', svgId: 'Radial_06', group: 'radials' },
+  { id: 'Radial 07', svgId: 'Radial_07', group: 'radials' },
+  { id: 'Radial 08', svgId: 'Radial_08', group: 'radials' },
+  { id: 'Radial 09', svgId: 'Radial_09', group: 'radials' },
+  { id: 'Radial 10', svgId: 'Radial_10', group: 'radials' },
+  { id: 'Radial 11', svgId: 'Radial_11', group: 'radials' },
+  { id: 'Radial 12', svgId: 'Radial_12', group: 'radials' },
 ];
+
+// Create a mapping from SVG ID to our ID
+const svgIdToId = new Map(SCREEN_SEGMENTS.map(s => [s.svgId, s.id]));
+const idToSvgId = new Map(SCREEN_SEGMENTS.map(s => [s.id, s.svgId]));
 
 const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
   selectedPlacements,
@@ -50,11 +56,42 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
         const svgEl = doc.querySelector('svg');
         
         if (svgEl) {
-          // Mark selected screens
-          selectedPlacements.forEach(placement => {
-            const element = svgEl.querySelector(`#${CSS.escape(placement)}`);
-            if (element) {
-              element.classList.add('selected');
+          // Remove the defs section with clipPaths (we don't need them for display)
+          const defs = svgEl.querySelector('defs');
+          if (defs) {
+            // Keep defs but modify the style
+            const style = defs.querySelector('style');
+            if (style) {
+              style.textContent = `
+                .screen-group {
+                  cursor: pointer;
+                  opacity: 0.7;
+                  transition: opacity 0.2s ease, filter 0.2s ease;
+                }
+                .screen-group:hover {
+                  opacity: 1;
+                  filter: brightness(1.3);
+                }
+                .screen-group.selected {
+                  opacity: 1;
+                  filter: brightness(1.5) drop-shadow(0 0 8px rgba(234, 179, 8, 0.8));
+                }
+              `;
+            }
+          }
+          
+          // Find all group elements and add interactive class
+          const groups = svgEl.querySelectorAll('g[id]');
+          groups.forEach(group => {
+            const groupId = group.id;
+            // Check if this is a screen group we care about
+            if (svgIdToId.has(groupId)) {
+              group.classList.add('screen-group');
+              // Check if selected
+              const ourId = svgIdToId.get(groupId);
+              if (ourId && selectedPlacements.includes(ourId)) {
+                group.classList.add('selected');
+              }
             }
           });
           
@@ -68,23 +105,20 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
     if (!interactive || !onToggle) return;
     
     const target = e.target as SVGElement;
-    const id = target.id || target.closest('[id]')?.id;
-    
-    if (id && SCREEN_SEGMENTS.some(s => s.id === id)) {
-      onToggle(id);
+    // Find the closest group with an ID
+    const group = target.closest('g[id]');
+    if (group) {
+      const svgId = group.id;
+      const ourId = svgIdToId.get(svgId);
+      if (ourId) {
+        onToggle(ourId);
+      }
     }
   };
 
   return (
     <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden border border-border/50">
-      {/* Background venue image */}
-      <img 
-        src="/venue-screens.png" 
-        alt="Venue layout"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      
-      {/* SVG overlay - loaded from file */}
+      {/* SVG overlay with embedded images - this IS the venue photo with overlays */}
       {svgContent && (
         <div 
           className="absolute inset-0 w-full h-full venue-screen-overlay"
