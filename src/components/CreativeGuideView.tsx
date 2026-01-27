@@ -11,7 +11,8 @@ import {
   Zap,
   Building2,
   FileText,
-  Palette
+  Palette,
+  BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,7 @@ import { ZoneSelectionSummary } from '@/components/creative-guide/ZoneSelectionS
 import { DisplaySpecsView } from '@/components/creative-guide/DisplaySpecsView';
 import { VenueOverviewView } from '@/components/creative-guide/VenueOverviewView';
 import { CustomContentView } from '@/components/creative-guide/CustomContentView';
+import { IntroductionView } from '@/components/creative-guide/IntroductionView';
 import {
   creativeGuideCategories,
   type CreativeGuideCategoryKey,
@@ -39,7 +41,7 @@ const CreativeGuideView = () => {
   const isMobile = useIsMobile();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [selectedCategory, setSelectedCategory] = useState<CreativeGuideCategoryKey>('venue-overview');
+  const [selectedCategory, setSelectedCategory] = useState<CreativeGuideCategoryKey>('introduction');
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
 
@@ -112,6 +114,7 @@ const CreativeGuideView = () => {
   const indoorZoneIds = INDOOR_LED_ZONES.map(z => z.id);
 
   const categoryIcons: Record<string, React.ReactNode> = {
+    'introduction': <BookOpen className="w-5 h-5" />,
     'venue-overview': <Building2 className="w-5 h-5" />,
     'venue-screen-map': <Map className="w-5 h-5" />,
     'display-specs': <FileText className="w-5 h-5" />,
@@ -235,6 +238,18 @@ const CreativeGuideView = () => {
 
         {/* Content */}
         <AnimatePresence mode="wait">
+          {selectedCategory === 'introduction' && (
+            <motion.div
+              key="introduction"
+              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <IntroductionView />
+            </motion.div>
+          )}
+
           {selectedCategory === 'venue-overview' && (
             <motion.div
               key="venue-overview"
