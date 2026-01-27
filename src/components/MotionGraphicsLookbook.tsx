@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Check, Send, Sparkles, Plus, Clock, Monitor, MessageSquare, FileText, Search, Loader2, RefreshCw, Volume2, VolumeX, Pause, Maximize, Mail, MapPin, Download, ClipboardList, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Map } from 'lucide-react';
 import SelectionsSummary from '@/components/SelectionsSummary';
 import ClipThumbnail from '@/components/ClipThumbnail';
 import FloatingActionButton from '@/components/FloatingActionButton';
@@ -68,6 +69,7 @@ const categoryGradients: Record<string, string> = {
 };
 
 const MotionGraphicsLookbook = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -467,7 +469,7 @@ const MotionGraphicsLookbook = () => {
             
             {/* Search Bar and Actions - Desktop */}
             <div 
-              className="opacity-0 animate-fade-in-up relative z-10 flex items-center gap-4"
+              className="opacity-0 animate-fade-in-up relative z-10 flex items-center gap-3"
               style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}
             >
               <div className="relative">
@@ -484,6 +486,15 @@ const MotionGraphicsLookbook = () => {
                   <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
                 )}
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/creative-guide')}
+                className="gap-2 h-11 px-4 border-primary/30 hover:bg-primary/10 hover:border-primary/50"
+              >
+                <Map className="w-4 h-4 text-primary" />
+                <span className="text-sm">Creative Guide</span>
+              </Button>
               <ThemeToggle />
             </div>
           </div>
