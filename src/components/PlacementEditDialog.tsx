@@ -149,7 +149,7 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
                   onClick={() => handleBulkSelect(SCREEN_GROUPS.curves)}
                 >
                   <Zap className="w-3 h-3" />
-                  All Curves
+                  Curves
                 </Button>
                 <Button
                   variant="outline"
@@ -162,20 +162,33 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
                   onClick={() => handleBulkSelect(SCREEN_GROUPS.imag)}
                 >
                   <Zap className="w-3 h-3" />
-                  All IMAG
+                  IMAG
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   className={`text-xs gap-1.5 transition-all ${
-                    [...SCREEN_GROUPS.center, ...SCREEN_GROUPS.djBooth].every(p => selectedPlacements.includes(p)) 
+                    SCREEN_GROUPS.center.every(p => selectedPlacements.includes(p)) 
                       ? 'bg-amber-500/20 border-amber-500/60 text-amber-600 dark:text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
                       : 'hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400'
                   }`}
-                  onClick={() => handleBulkSelect([...SCREEN_GROUPS.center, ...SCREEN_GROUPS.djBooth])}
+                  onClick={() => handleBulkSelect(SCREEN_GROUPS.center)}
                 >
                   <Zap className="w-3 h-3" />
-                  Center + DJ
+                  Center
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`text-xs gap-1.5 transition-all ${
+                    SCREEN_GROUPS.djBooth.every(p => selectedPlacements.includes(p)) 
+                      ? 'bg-amber-500/20 border-amber-500/60 text-amber-600 dark:text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
+                      : 'hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400'
+                  }`}
+                  onClick={() => handleBulkSelect(SCREEN_GROUPS.djBooth)}
+                >
+                  <Zap className="w-3 h-3" />
+                  DJ Booth
                 </Button>
               </div>
               

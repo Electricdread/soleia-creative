@@ -70,26 +70,41 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
           // Remove the defs section with clipPaths (we don't need them for display)
           const defs = svgEl.querySelector('defs');
           if (defs) {
-            // Keep defs but modify the style with gold/amber theme colors
+            // Keep defs but modify the style - uniform amber HUD theme
             const style = defs.querySelector('style');
             if (style) {
               style.textContent = `
                 .screen-group {
                   cursor: pointer;
-                  opacity: 0.4;
+                  opacity: 0.5;
                   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                  filter: grayscale(0.6) brightness(0.6);
+                }
+                .screen-group * {
+                  fill: rgba(245, 158, 11, 0.3) !important;
+                  stroke: rgba(245, 158, 11, 0.6) !important;
+                  stroke-width: 1.5px;
                 }
                 .screen-group:hover {
-                  opacity: 0.9;
-                  filter: grayscale(0) brightness(1.1) sepia(0.3) hue-rotate(-10deg) saturate(1.5) drop-shadow(0 0 12px rgba(245, 158, 11, 0.8));
+                  opacity: 0.85;
+                }
+                .screen-group:hover * {
+                  fill: rgba(245, 158, 11, 0.5) !important;
+                  stroke: rgba(245, 158, 11, 0.9) !important;
+                  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
                 }
                 .screen-group.selected {
                   opacity: 1;
-                  filter: grayscale(0) brightness(1.15) sepia(0.4) hue-rotate(-10deg) saturate(1.8) drop-shadow(0 0 16px rgba(245, 158, 11, 0.9)) drop-shadow(0 0 32px rgba(217, 119, 6, 0.5));
                 }
-                .screen-group.selected:hover {
-                  filter: grayscale(0) brightness(1.2) sepia(0.5) hue-rotate(-10deg) saturate(2) drop-shadow(0 0 20px rgba(245, 158, 11, 1)) drop-shadow(0 0 40px rgba(217, 119, 6, 0.7));
+                .screen-group.selected * {
+                  fill: rgba(245, 158, 11, 0.7) !important;
+                  stroke: rgba(251, 191, 36, 1) !important;
+                  stroke-width: 2px;
+                  filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.9)) drop-shadow(0 0 24px rgba(217, 119, 6, 0.5));
+                }
+                .screen-group.selected:hover * {
+                  fill: rgba(251, 191, 36, 0.8) !important;
+                  stroke: rgba(252, 211, 77, 1) !important;
+                  filter: drop-shadow(0 0 16px rgba(251, 191, 36, 1)) drop-shadow(0 0 32px rgba(245, 158, 11, 0.7));
                 }
               `;
             }
@@ -181,6 +196,43 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
             dangerouslySetInnerHTML={{ __html: svgContent }}
           />
         )}
+        
+        {/* HUD Labels for screen groups */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Sol Rays label - top center */}
+          <div className="absolute top-[18%] left-1/2 -translate-x-1/2 text-[10px] font-mono text-amber-400/80 tracking-wider">
+            SOL RAYS
+          </div>
+          {/* Radials label - upper area */}
+          <div className="absolute top-[30%] left-[15%] text-[9px] font-mono text-amber-400/60 tracking-wider -rotate-45">
+            RADIALS
+          </div>
+          <div className="absolute top-[30%] right-[15%] text-[9px] font-mono text-amber-400/60 tracking-wider rotate-45">
+            RADIALS
+          </div>
+          {/* Curves labels */}
+          <div className="absolute top-[58%] left-[8%] text-[9px] font-mono text-amber-400/60 tracking-wider">
+            CURVE SL
+          </div>
+          <div className="absolute top-[58%] right-[8%] text-[9px] font-mono text-amber-400/60 tracking-wider">
+            CURVE SR
+          </div>
+          {/* IMAG labels */}
+          <div className="absolute top-[68%] left-[22%] text-[9px] font-mono text-amber-400/60 tracking-wider">
+            IMAG SL
+          </div>
+          <div className="absolute top-[68%] right-[22%] text-[9px] font-mono text-amber-400/60 tracking-wider">
+            IMAG SR
+          </div>
+          {/* Center label */}
+          <div className="absolute top-[72%] left-1/2 -translate-x-1/2 text-[9px] font-mono text-amber-400/60 tracking-wider">
+            CENTER
+          </div>
+          {/* DJ Booth label */}
+          <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2 text-[9px] font-mono text-amber-400/60 tracking-wider">
+            DJ BOOTH
+          </div>
+        </div>
         
         {/* Floating tooltip */}
         {hoveredSegment && (
