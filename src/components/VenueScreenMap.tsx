@@ -10,6 +10,8 @@ interface VenueScreenMapProps {
 // Screen segment IDs that map to the SVG group IDs
 // The SVG uses these IDs for the groups containing each screen
 const SCREEN_SEGMENTS = [
+  // Sol Rays (blue ceiling section)
+  { id: 'Sol Rays', svgId: 'SOLEIA_SCREEN_SELECT_0000_SOL_RAYS.psd', group: 'solRays' },
   // DJ Booth
   { id: 'DJ Booth', svgId: 'BOOTH', group: 'djBooth' },
   // Side curves
@@ -147,6 +149,7 @@ export const ALL_SCREEN_IDS = SCREEN_SEGMENTS.map(s => s.id);
 
 // Group screens by category for bulk selection
 export const SCREEN_GROUPS = {
+  solRays: ['Sol Rays'],
   radials: SCREEN_SEGMENTS.filter(s => s.id.startsWith('Radial')).map(s => s.id),
   curves: SCREEN_SEGMENTS.filter(s => s.id.includes('Curves')).map(s => s.id),
   imag: SCREEN_SEGMENTS.filter(s => s.id.includes('IMAG')).map(s => s.id),
