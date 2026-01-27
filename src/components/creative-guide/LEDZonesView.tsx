@@ -107,11 +107,27 @@ export function LEDZonesView() {
   return (
     <div className="space-y-6" ref={containerRef}>
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold text-gradient-gold">LED Zone Selection</h2>
-        <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-          Select zones by tapping on the cards below or directly on the interactive diagrams. Swipe to switch between outdoor and indoor zones.
+      <div className="text-center space-y-4">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gradient-gold">Brand Your Venue Experience</h2>
+        <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Transform every LED surface into a canvas for your brand. Select zones to create an immersive, cohesive visual identity across Soleia's dynamic display ecosystem.
         </p>
+        
+        {/* Key Points */}
+        <div className="flex flex-wrap justify-center gap-3 pt-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs text-primary font-medium">Pixel-Perfect Resolution</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs text-primary font-medium">Synchronized Playback</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs text-primary font-medium">Custom Content Support</span>
+          </div>
+        </div>
       </div>
 
       {/* Quick select buttons */}
