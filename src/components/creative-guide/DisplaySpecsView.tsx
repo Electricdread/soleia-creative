@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Tv, Monitor, Layers, Download, Printer, Image } from 'lucide-react';
+import { FileText, Tv, Monitor, Layers, Download, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,8 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
 import { TickerVideoCarousel } from './TickerVideoCarousel';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const TICKER_MAPPING_IMAGE_PATH = 'marquee-ticker-media/ticker-mapping.png';
+const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
 
 interface DisplaySpecsViewProps {
   onSelectDisplay?: (displayId: string) => void;
@@ -41,12 +40,10 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 function DisplayCard({ display }: { display: DisplayType }) {
   const isTicker = display.category === 'ticker';
   
-  const handleDownloadMapping = () => {
-    const url = `${SUPABASE_URL}/storage/v1/object/public/clips/${TICKER_MAPPING_IMAGE_PATH}`;
+  const handleDownloadTickerAssets = () => {
     const link = document.createElement('a');
-    link.href = url;
-    link.download = 'ticker-mapping.png';
-    link.target = '_blank';
+    link.href = TICKER_ASSETS_ZIP;
+    link.download = 'TICKER-MARQUEE.zip';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -114,17 +111,17 @@ function DisplayCard({ display }: { display: DisplayType }) {
               <SpecRow label="Resolution" value={display.graphicSpecs.resolution} />
               <SpecRow label="Format" value={display.graphicSpecs.format} />
               
-              {/* Mapping image download for Ticker display */}
+              {/* Ticker Pixelmap & Work Comp download */}
               {isTicker && (
                 <div className="pt-3 mt-2 border-t border-border/30">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleDownloadMapping}
+                    onClick={handleDownloadTickerAssets}
                     className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
                   >
-                    <Image className="w-3.5 h-3.5" />
-                    Download Mapping Image
+                    <Download className="w-3.5 h-3.5" />
+                    Download Pixelmap & Work Comp
                   </Button>
                 </div>
               )}
