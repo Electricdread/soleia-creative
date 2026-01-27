@@ -18,12 +18,12 @@ import {
 type ZoneCategory = 'outdoor' | 'indoor';
 
 const ZONE_CATEGORIES: { key: ZoneCategory; label: string; icon: React.ReactNode }[] = [
-  { key: 'outdoor', label: 'Outdoor Zones', icon: <Sun className="w-4 h-4" /> },
   { key: 'indoor', label: 'Indoor Zones', icon: <Monitor className="w-4 h-4" /> },
+  { key: 'outdoor', label: 'Outdoor Zones', icon: <Sun className="w-4 h-4" /> },
 ];
 
 export function LEDZonesView() {
-  const [activeZoneCategory, setActiveZoneCategory] = useState<ZoneCategory>('outdoor');
+  const [activeZoneCategory, setActiveZoneCategory] = useState<ZoneCategory>('indoor');
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
   const containerRef = useRef<HTMLDivElement>(null);

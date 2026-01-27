@@ -195,7 +195,7 @@ const CreativeGuideView = () => {
               exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
-              <IntroductionView />
+              <IntroductionView onNavigate={(category) => setSelectedCategory(category as CreativeGuideCategoryKey)} />
             </motion.div>
           )}
 
