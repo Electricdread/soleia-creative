@@ -110,86 +110,34 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
             </TabsList>
             
             <TabsContent value="interior" className="mt-0 space-y-4">
-              {/* Quick select buttons */}
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs gap-1.5 transition-all ${
-                    SCREEN_GROUPS.solRays.every(p => selectedPlacements.includes(p)) 
-                      ? 'bg-amber-500/20 border-amber-500/60 text-amber-600 dark:text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
-                      : 'hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400'
-                  }`}
-                  onClick={() => handleBulkSelect(SCREEN_GROUPS.solRays)}
-                >
-                  <Zap className="w-3 h-3" />
-                  Sol Rays
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs gap-1.5 transition-all ${
-                    SCREEN_GROUPS.radials.every(p => selectedPlacements.includes(p)) 
-                      ? 'bg-amber-500/20 border-amber-500/60 text-amber-600 dark:text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
-                      : 'hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400'
-                  }`}
-                  onClick={() => handleBulkSelect(SCREEN_GROUPS.radials)}
-                >
-                  <Zap className="w-3 h-3" />
-                  All Radials
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs gap-1.5 transition-all ${
-                    SCREEN_GROUPS.curves.every(p => selectedPlacements.includes(p)) 
-                      ? 'bg-amber-500/20 border-amber-500/60 text-amber-600 dark:text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
-                      : 'hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400'
-                  }`}
-                  onClick={() => handleBulkSelect(SCREEN_GROUPS.curves)}
-                >
-                  <Zap className="w-3 h-3" />
-                  Curves
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs gap-1.5 transition-all ${
-                    SCREEN_GROUPS.imag.every(p => selectedPlacements.includes(p)) 
-                      ? 'bg-amber-500/20 border-amber-500/60 text-amber-600 dark:text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
-                      : 'hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400'
-                  }`}
-                  onClick={() => handleBulkSelect(SCREEN_GROUPS.imag)}
-                >
-                  <Zap className="w-3 h-3" />
-                  IMAG
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs gap-1.5 transition-all ${
-                    SCREEN_GROUPS.center.every(p => selectedPlacements.includes(p)) 
-                      ? 'bg-amber-500/20 border-amber-500/60 text-amber-600 dark:text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
-                      : 'hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400'
-                  }`}
-                  onClick={() => handleBulkSelect(SCREEN_GROUPS.center)}
-                >
-                  <Zap className="w-3 h-3" />
-                  Center
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`text-xs gap-1.5 transition-all ${
-                    SCREEN_GROUPS.djBooth.every(p => selectedPlacements.includes(p)) 
-                      ? 'bg-amber-500/20 border-amber-500/60 text-amber-600 dark:text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
-                      : 'hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400'
-                  }`}
-                  onClick={() => handleBulkSelect(SCREEN_GROUPS.djBooth)}
-                >
-                  <Zap className="w-3 h-3" />
-                  DJ Booth
-                </Button>
+              {/* Quick select buttons - HUD style */}
+              <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg border border-border/50">
+                {[
+                  { key: 'solRays', label: 'Sol Rays', group: SCREEN_GROUPS.solRays },
+                  { key: 'radials', label: 'Radials', group: SCREEN_GROUPS.radials },
+                  { key: 'curves', label: 'Curves', group: SCREEN_GROUPS.curves },
+                  { key: 'imag', label: 'IMAG', group: SCREEN_GROUPS.imag },
+                  { key: 'center', label: 'Center', group: SCREEN_GROUPS.center },
+                  { key: 'djBooth', label: 'DJ Booth', group: SCREEN_GROUPS.djBooth },
+                ].map(({ key, label, group }) => {
+                  const isSelected = group.length > 0 && group.every(p => selectedPlacements.includes(p));
+                  return (
+                    <Button
+                      key={key}
+                      variant="outline"
+                      size="sm"
+                      className={`text-xs gap-1.5 transition-all font-mono tracking-wide ${
+                        isSelected
+                          ? 'bg-amber-500/30 border-amber-500 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]' 
+                          : 'border-amber-500/30 text-amber-500/70 hover:border-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10'
+                      }`}
+                      onClick={() => handleBulkSelect(group)}
+                    >
+                      <Zap className={`w-3 h-3 ${isSelected ? 'text-amber-400' : 'text-amber-500/50'}`} />
+                      {label}
+                    </Button>
+                  );
+                })}
               </div>
               
               <VenueScreenMap
