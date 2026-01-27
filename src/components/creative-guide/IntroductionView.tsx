@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Zap, Target, Volume2, VolumeX } from 'lucide-react';
+import { Sparkles, Zap, Target, Volume2, VolumeX, Maximize } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { VideoModal } from '@/components/creative-guide/VideoModal';
 import soleiaIntroVideo from '@/assets/soleia-intro-video.webm';
 
 interface IntroductionViewProps {
@@ -12,6 +13,7 @@ interface IntroductionViewProps {
 export function IntroductionView({ onNavigate }: IntroductionViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleWhatsInsideClick = () => {
     if (onNavigate) {
@@ -23,6 +25,22 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(videoRef.current.muted);
+    }
+  };
+
+  const openFullscreen = () => {
+    // Pause inline video when opening modal
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    // Resume inline video when closing modal
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {});
     }
   };
 
@@ -78,19 +96,29 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
               className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
             />
             
-            {/* Audio mute toggle button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMute}
-              className="absolute bottom-4 right-4 z-20 bg-background/80 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg"
-            >
-              {isMuted ? (
-                <VolumeX className="w-5 h-5 text-primary" />
-              ) : (
-                <Volume2 className="w-5 h-5 text-primary" />
-              )}
-            </Button>
+            {/* Video control buttons */}
+            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMute}
+                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg"
+              >
+                {isMuted ? (
+                  <VolumeX className="w-5 h-5 text-primary" />
+                ) : (
+                  <Volume2 className="w-5 h-5 text-primary" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={openFullscreen}
+                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg"
+              >
+                <Maximize className="w-5 h-5 text-primary" />
+              </Button>
+            </div>
             
             {/* Theme-aware gradient overlays */}
             <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none dark:from-background/70" />
@@ -178,6 +206,14 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Fullscreen Video Modal */}
+      <VideoModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        videoSrc={soleiaIntroVideo}
+        title="Soleia Experience"
+      />
     </div>
   );
 }
