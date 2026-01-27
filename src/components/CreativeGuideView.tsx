@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, 
   ChevronRight, 
-  Map, 
   Monitor, 
   Sun, 
   ArrowLeft,
@@ -32,6 +31,8 @@ import {
   OUTDOOR_LED_ZONES,
   INDOOR_LED_ZONES,
   ZONE_SUBCATEGORY_LABELS,
+  ZONE_TO_SCREEN_MAP,
+  SCREEN_TO_ZONE_MAP,
 } from '@/lib/creativeGuide';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
@@ -45,23 +46,8 @@ const CreativeGuideView = () => {
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
 
-  // Map screen IDs to zone IDs for venue map
-  const screenIdToZoneId: Record<string, string> = {
-    'Sol Rays': 'sol-rays',
-    'Center': 'center',
-    'DJ Booth': 'dj-booth',
-    'Curves SL': 'curves-sl',
-    'Curves SR': 'curves-sr',
-    'IMAG SL': 'imag-sl',
-    'IMAG SR': 'imag-sr',
-    'Outdoor SR': 'outdoor-sr',
-    'Outdoor Arch': 'outdoor-arch',
-    'Outdoor SL': 'outdoor-sl',
-  };
-
-  const zoneIdToScreenId: Record<string, string> = Object.fromEntries(
-    Object.entries(screenIdToZoneId).map(([k, v]) => [v, k])
-  );
+  // Convert selected zones to screen IDs for the venue map using the mapping
+  const selectedScreenIds = selectedZones.flatMap(zoneId => ZONE_TO_SCREEN_MAP[zoneId] || []);
 
   const currentCategoryIndex = creativeGuideCategories.findIndex(c => c.key === selectedCategory);
 
@@ -84,21 +70,17 @@ const CreativeGuideView = () => {
     );
   }, []);
 
+  // Handle screen toggle from the diagram - convert to zone selection
   const handleScreenToggle = useCallback((screenId: string) => {
-    const zoneId = screenIdToZoneId[screenId];
-    if (zoneId) {
-      toggleZone(zoneId);
+    const zoneIds = SCREEN_TO_ZONE_MAP[screenId];
+    if (zoneIds && zoneIds.length > 0) {
+      toggleZone(zoneIds[0]);
     }
   }, [toggleZone]);
 
   const clearAllSelections = useCallback(() => {
     setSelectedZones([]);
   }, []);
-
-  // Convert selected zones to screen IDs for the venue map
-  const selectedScreenIds = selectedZones
-    .map(zoneId => zoneIdToScreenId[zoneId])
-    .filter(Boolean);
 
   // Quick select handlers for bulk actions
   const handleBulkSelect = useCallback((zoneIds: string[]) => {
@@ -116,7 +98,6 @@ const CreativeGuideView = () => {
   const categoryIcons: Record<string, React.ReactNode> = {
     'introduction': <BookOpen className="w-5 h-5" />,
     'venue-overview': <Building2 className="w-5 h-5" />,
-    'venue-screen-map': <Map className="w-5 h-5" />,
     'display-specs': <FileText className="w-5 h-5" />,
     'led-zones': <Monitor className="w-5 h-5" />,
     'custom-content': <Palette className="w-5 h-5" />,
@@ -281,9 +262,21 @@ const CreativeGuideView = () => {
             </motion.div>
           )}
 
-          {selectedCategory === 'venue-screen-map' && (
+          {selectedCategory === 'display-specs' && (
             <motion.div
-              key="venue-screen-map"
+              key="display-specs"
+              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <DisplaySpecsView />
+            </motion.div>
+          )}
+
+          {selectedCategory === 'led-zones' && (
+            <motion.div
+              key="led-zones"
               initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
@@ -292,9 +285,9 @@ const CreativeGuideView = () => {
             >
               {/* Header */}
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-semibold text-gradient-gold">Interactive Screen Map</h2>
+                <h2 className="text-2xl font-semibold text-gradient-gold">LED Zone Selection</h2>
                 <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                  Tap on any screen to select it. Use quick select buttons to choose entire zones at once.
+                  Select zones by tapping on the cards below or directly on the interactive diagrams. Selected zones are highlighted on the venue map.
                 </p>
               </div>
 
@@ -334,15 +327,17 @@ const CreativeGuideView = () => {
                 </div>
               </div>
 
-              {/* Outdoor Diagram */}
-              <div className="space-y-3">
+              {/* Outdoor Zones Section */}
+              <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Sun className="w-5 h-5 text-amber-500" />
                   <h2 className="text-lg font-semibold text-foreground">Outdoor LED Zones</h2>
                   <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 text-xs">
-                    {selectedZones.filter(id => outdoorZoneIds.includes(id)).length}/{outdoorZoneIds.length}
+                    {selectedZones.filter(id => outdoorZoneIds.includes(id)).length}/{outdoorZoneIds.length} selected
                   </Badge>
                 </div>
+                
+                {/* Outdoor Interactive Diagram */}
                 <OutdoorPlacementDiagram
                   selectedPlacements={selectedScreenIds.filter(id => 
                     ['Outdoor SR', 'Outdoor Arch', 'Outdoor SL'].includes(id)
@@ -350,69 +345,8 @@ const CreativeGuideView = () => {
                   onToggle={handleScreenToggle}
                   interactive={true}
                 />
-              </div>
-
-              {/* Indoor Diagram */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Monitor className="w-5 h-5 text-primary" />
-                  <h2 className="text-lg font-semibold text-foreground">Indoor LED Zones</h2>
-                  <Badge variant="secondary" className="bg-primary/20 text-primary text-xs">
-                    {selectedZones.filter(id => indoorZoneIds.includes(id)).length}/{indoorZoneIds.length}
-                  </Badge>
-                </div>
-                <VenueScreenMap
-                  selectedPlacements={selectedScreenIds.filter(id => 
-                    !['Outdoor SR', 'Outdoor Arch', 'Outdoor SL'].includes(id)
-                  )}
-                  onToggle={handleScreenToggle}
-                  interactive={true}
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {selectedCategory === 'display-specs' && (
-            <motion.div
-              key="display-specs"
-              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            >
-              <DisplaySpecsView />
-            </motion.div>
-          )}
-
-          {selectedCategory === 'led-zones' && (
-            <motion.div
-              key="led-zones"
-              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="space-y-8"
-            >
-              {/* Header */}
-              <div className="text-center space-y-2">
-                <h2 className="text-2xl font-semibold text-gradient-gold">LED Zone Details</h2>
-                <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                  Explore each LED zone with specifications, use cases, and recommended content types.
-                </p>
-              </div>
-
-              {/* Outdoor Zones */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Sun className="w-5 h-5 text-amber-500" />
-                  <h2 className="text-lg font-semibold text-foreground">Outdoor LED Zones</h2>
-                  <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 text-xs">
-                    Arrival / Street-Facing
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  High-visibility exterior LED screens designed for long viewing distances, high brightness, and immediate legibility.
-                </p>
+                
+                {/* Outdoor Zone Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {OUTDOOR_LED_ZONES.map(zone => (
                     <LEDZoneCard
@@ -425,32 +359,49 @@ const CreativeGuideView = () => {
                 </div>
               </div>
 
-              {/* Indoor Zones by Subcategory */}
-              {['booth', 'curves', 'vertical-transitional', 'main-feature'].map(subcategory => {
-                const zones = INDOOR_LED_ZONES.filter(z => z.subcategory === subcategory);
-                if (zones.length === 0) return null;
+              {/* Indoor Zones Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Monitor className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold text-foreground">Indoor LED Zones</h2>
+                  <Badge variant="secondary" className="bg-primary/20 text-primary text-xs">
+                    {selectedZones.filter(id => indoorZoneIds.includes(id)).length}/{indoorZoneIds.length} selected
+                  </Badge>
+                </div>
                 
-                return (
-                  <div key={subcategory} className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Monitor className="w-5 h-5 text-primary" />
-                      <h2 className="text-lg font-semibold text-foreground">
+                {/* Indoor Interactive Diagram */}
+                <VenueScreenMap
+                  selectedPlacements={selectedScreenIds.filter(id => 
+                    !['Outdoor SR', 'Outdoor Arch', 'Outdoor SL'].includes(id)
+                  )}
+                  onToggle={handleScreenToggle}
+                  interactive={true}
+                />
+
+                {/* Indoor Zone Cards by Subcategory */}
+                {['booth', 'curves', 'vertical-transitional', 'main-feature'].map(subcategory => {
+                  const zones = INDOOR_LED_ZONES.filter(z => z.subcategory === subcategory);
+                  if (zones.length === 0) return null;
+                  
+                  return (
+                    <div key={subcategory} className="space-y-3 pt-4 border-t border-border/30 first:pt-0 first:border-0">
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                         {ZONE_SUBCATEGORY_LABELS[subcategory] || subcategory}
-                      </h2>
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {zones.map(zone => (
+                          <LEDZoneCard
+                            key={zone.id}
+                            zone={zone}
+                            isSelected={selectedZones.includes(zone.id)}
+                            onToggle={toggleZone}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {zones.map(zone => (
-                        <LEDZoneCard
-                          key={zone.id}
-                          zone={zone}
-                          isSelected={selectedZones.includes(zone.id)}
-                          onToggle={toggleZone}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </motion.div>
           )}
 
@@ -468,9 +419,9 @@ const CreativeGuideView = () => {
         </AnimatePresence>
       </main>
 
-      {/* Selection Summary - only show on interactive pages */}
+      {/* Selection Summary - only show on led-zones page */}
       <AnimatePresence>
-        {selectedZones.length > 0 && (selectedCategory === 'venue-screen-map' || selectedCategory === 'led-zones') && (
+        {selectedZones.length > 0 && selectedCategory === 'led-zones' && (
           <ZoneSelectionSummary
             selectedZones={selectedZones}
             onToggleZone={toggleZone}
