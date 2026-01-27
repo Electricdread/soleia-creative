@@ -210,7 +210,7 @@ export const OUTDOOR_LED_ZONES: LEDZone[] = [
   },
 ];
 
-// Indoor LED Zones
+// Indoor LED Zones (removed SR Booth and SL Booth)
 export const INDOOR_LED_ZONES: LEDZone[] = [
   {
     id: 'sol-rays',
@@ -254,38 +254,6 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
       'Themed motion backgrounds',
       'Sponsor integrations and transitions',
     ],
-  },
-  {
-    id: 'sr-booth',
-    name: 'SR Booth',
-    category: 'indoor',
-    subcategory: 'booth',
-    resolution: '640x272',
-    description: 'Stage right booth screen for supporting visuals.',
-    useCases: [
-      'Ambient brand visuals',
-      'Logo animations',
-      'Sponsor placements',
-    ],
-    specs: {
-      resolution: '640x272',
-    },
-  },
-  {
-    id: 'sl-booth',
-    name: 'SL Booth',
-    category: 'indoor',
-    subcategory: 'booth',
-    resolution: '640x272',
-    description: 'Stage left booth screen for supporting visuals.',
-    useCases: [
-      'Ambient brand visuals',
-      'Logo animations',
-      'Sponsor placements',
-    ],
-    specs: {
-      resolution: '640x272',
-    },
   },
   {
     id: 'curves-sl',
@@ -348,24 +316,23 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
 export const ALL_LED_ZONES = [...OUTDOOR_LED_ZONES, ...INDOOR_LED_ZONES];
 
 // Zone ID to Screen ID mapping for venue diagram highlighting
+// Maps each LED zone to its corresponding screen segment(s) on the diagrams
 export const ZONE_TO_SCREEN_MAP: Record<string, string[]> = {
-  // Outdoor zones
+  // Outdoor zones -> OutdoorPlacementDiagram segment IDs
   'outdoor-sr': ['Outdoor SR'],
   'outdoor-arch': ['Outdoor Arch'],
   'outdoor-sl': ['Outdoor SL'],
-  // Indoor zones - map to VenueScreenMap segment IDs
+  // Indoor zones -> VenueScreenMap segment IDs
   'sol-rays': ['Sol Rays'],
   'center': ['Center'],
   'dj-booth': ['DJ Booth'],
-  'sr-booth': ['DJ Booth'], // Part of DJ booth area
-  'sl-booth': ['DJ Booth'], // Part of DJ booth area
   'curves-sl': ['Curves SL'],
   'curves-sr': ['Curves SR'],
   'imag-sl': ['IMAG SL'],
   'imag-sr': ['IMAG SR'],
 };
 
-// Screen ID to Zone ID reverse mapping
+// Screen ID to Zone ID reverse mapping for clicking diagram to select zones
 export const SCREEN_TO_ZONE_MAP: Record<string, string[]> = Object.entries(ZONE_TO_SCREEN_MAP).reduce(
   (acc, [zoneId, screenIds]) => {
     screenIds.forEach(screenId => {
