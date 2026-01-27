@@ -16,8 +16,8 @@ interface VenueScreenMapProps {
 // Screen segment IDs that map to the SVG group IDs
 // The SVG uses these IDs for the groups containing each screen
 const SCREEN_SEGMENTS = [
-  // Sol Rays (blue ceiling section)
-  { id: 'Sol Rays', svgId: 'SOLEIA_SCREEN_SELECT_0000_SOL_RAYS.psd', group: 'solRays', label: 'Sol Rays', description: 'Main ceiling LED display' },
+  // Sol Rays (ceiling section) - updated ID for new SVG
+  { id: 'Sol Rays', svgId: 'Sol_Rays', group: 'solRays', label: 'Sol Rays', description: 'Main ceiling LED display' },
   // DJ Booth
   { id: 'DJ Booth', svgId: 'BOOTH', group: 'djBooth', label: 'DJ Booth', description: 'Behind DJ booth screen' },
   // Side curves
@@ -47,6 +47,62 @@ const SCREEN_SEGMENTS = [
 const svgIdToId = new Map(SCREEN_SEGMENTS.map(s => [s.svgId, s.id]));
 const idToSegment = new Map(SCREEN_SEGMENTS.map(s => [s.id, s]));
 
+// CSS for gold/amber screens with flicker animation
+const getScreenStyles = () => `
+  @keyframes flicker-on {
+    0% { opacity: 0.3; fill: #78350f; }
+    10% { opacity: 0.9; fill: #fbbf24; }
+    20% { opacity: 0.4; fill: #b45309; }
+    30% { opacity: 1; fill: #f59e0b; }
+    40% { opacity: 0.6; fill: #d97706; }
+    50% { opacity: 0.95; fill: #fbbf24; }
+    60% { opacity: 0.7; fill: #f59e0b; }
+    80% { opacity: 1; fill: #fbbf24; }
+    100% { opacity: 1; fill: #f59e0b; }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { 
+      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8)) drop-shadow(0 0 16px rgba(217, 119, 6, 0.5));
+    }
+    50% { 
+      filter: drop-shadow(0 0 12px rgba(251, 191, 36, 1)) drop-shadow(0 0 24px rgba(245, 158, 11, 0.7));
+    }
+  }
+  
+  .screen-group {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .screen-group * {
+    fill: #78350f;
+    opacity: 0.5;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .screen-group:hover * {
+    fill: #d97706;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 8px rgba(217, 119, 6, 0.6));
+  }
+  
+  .screen-group.selected * {
+    fill: #f59e0b;
+    opacity: 1;
+    animation: flicker-on 0.4s ease-out forwards;
+  }
+  
+  .screen-group.selected {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .screen-group.selected:hover * {
+    fill: #fbbf24;
+    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.9));
+  }
+`;
+
 const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
   selectedPlacements,
   onToggle,
@@ -67,32 +123,26 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
         const svgEl = doc.querySelector('svg');
         
         if (svgEl) {
-          // Remove the defs section with clipPaths (we don't need them for display)
+          // Modify the defs section - add our custom styles
           const defs = svgEl.querySelector('defs');
           if (defs) {
-            // Keep defs but modify the style - uniform amber HUD theme with CSS filters
+            // Replace existing style with our gold/amber HUD theme
             const style = defs.querySelector('style');
             if (style) {
-              style.textContent = `
-                .screen-group {
-                  cursor: pointer;
-                  opacity: 0.6;
-                  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                  filter: sepia(1) saturate(3) hue-rotate(15deg) brightness(0.9);
-                }
-                .screen-group:hover {
-                  opacity: 0.9;
-                  filter: sepia(1) saturate(4) hue-rotate(15deg) brightness(1.1) drop-shadow(0 0 12px rgba(245, 158, 11, 0.8));
-                }
-                .screen-group.selected {
-                  opacity: 1;
-                  filter: sepia(1) saturate(5) hue-rotate(15deg) brightness(1.2) drop-shadow(0 0 16px rgba(245, 158, 11, 1)) drop-shadow(0 0 32px rgba(217, 119, 6, 0.6));
-                }
-                .screen-group.selected:hover {
-                  filter: sepia(1) saturate(6) hue-rotate(15deg) brightness(1.3) drop-shadow(0 0 20px rgba(251, 191, 36, 1)) drop-shadow(0 0 40px rgba(245, 158, 11, 0.8));
-                }
-              `;
+              style.textContent = getScreenStyles();
+            } else {
+              // No existing style, create one
+              const newStyle = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+              newStyle.textContent = getScreenStyles();
+              defs.appendChild(newStyle);
             }
+          } else {
+            // No defs, create one with our styles
+            const newDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            const newStyle = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+            newStyle.textContent = getScreenStyles();
+            newDefs.appendChild(newStyle);
+            svgEl.insertBefore(newDefs, svgEl.firstChild);
           }
           
           // Find all group elements and add interactive class
@@ -182,43 +232,75 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
           />
         )}
         
-        {/* HUD Labels positioned OUTSIDE screens with connecting lines */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Left side labels */}
-          <div className="absolute top-[8%] left-[3%] flex items-center gap-1">
-            <span className="text-[9px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/60 px-1.5 py-0.5 rounded border border-amber-400/30">RADIALS</span>
-            <div className="w-8 h-px bg-amber-400/40"></div>
-          </div>
-          <div className="absolute top-[52%] left-[1%] flex items-center gap-1">
-            <span className="text-[9px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/60 px-1.5 py-0.5 rounded border border-amber-400/30">CURVE SL</span>
-          </div>
-          <div className="absolute top-[65%] left-[18%] flex items-center gap-1">
-            <span className="text-[9px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/60 px-1.5 py-0.5 rounded border border-amber-400/30">IMAG SL</span>
-          </div>
-          
-          {/* Right side labels */}
-          <div className="absolute top-[8%] right-[3%] flex items-center gap-1">
-            <div className="w-8 h-px bg-amber-400/40"></div>
-            <span className="text-[9px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/60 px-1.5 py-0.5 rounded border border-amber-400/30">RADIALS</span>
-          </div>
-          <div className="absolute top-[52%] right-[1%] flex items-center gap-1">
-            <span className="text-[9px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/60 px-1.5 py-0.5 rounded border border-amber-400/30">CURVE SR</span>
-          </div>
-          <div className="absolute top-[65%] right-[18%] flex items-center gap-1">
-            <span className="text-[9px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/60 px-1.5 py-0.5 rounded border border-amber-400/30">IMAG SR</span>
-          </div>
-          
+        {/* HUD Labels positioned OUTSIDE screens - callout style */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {/* Top center - Sol Rays */}
-          <div className="absolute top-[3%] left-1/2 -translate-x-1/2">
-            <span className="text-[10px] font-mono text-amber-400 tracking-widest uppercase bg-background/60 px-2 py-0.5 rounded border border-amber-400/40 font-semibold">SOL RAYS</span>
+          <div className="absolute top-[2%] left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <span className="text-[10px] font-mono text-amber-400 tracking-[0.2em] uppercase bg-background/80 px-3 py-1 rounded-full border border-amber-500/50 font-semibold shadow-lg shadow-amber-500/20">
+              SOL RAYS
+            </span>
+            <div className="w-px h-4 bg-gradient-to-b from-amber-500/60 to-transparent mt-1" />
           </div>
           
-          {/* Bottom labels */}
-          <div className="absolute bottom-[22%] left-1/2 -translate-x-1/2">
-            <span className="text-[9px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/60 px-1.5 py-0.5 rounded border border-amber-400/30">CENTER</span>
+          {/* Left side callouts */}
+          <div className="absolute top-[15%] left-[2%] flex items-center gap-2">
+            <span className="text-[8px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/70 px-2 py-0.5 rounded border border-amber-500/30">
+              RADIALS
+            </span>
+            <div className="w-6 h-px bg-amber-500/40" />
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500/60" />
           </div>
-          <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2">
-            <span className="text-[9px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/60 px-1.5 py-0.5 rounded border border-amber-400/30">DJ BOOTH</span>
+          
+          <div className="absolute top-[48%] left-[2%] flex items-center gap-2">
+            <span className="text-[8px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/70 px-2 py-0.5 rounded border border-amber-500/30">
+              CURVE SL
+            </span>
+            <div className="w-4 h-px bg-amber-500/40" />
+          </div>
+          
+          <div className="absolute top-[62%] left-[2%] flex items-center gap-2">
+            <span className="text-[8px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/70 px-2 py-0.5 rounded border border-amber-500/30">
+              IMAG SL
+            </span>
+            <div className="w-4 h-px bg-amber-500/40" />
+          </div>
+          
+          {/* Right side callouts */}
+          <div className="absolute top-[15%] right-[2%] flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500/60" />
+            <div className="w-6 h-px bg-amber-500/40" />
+            <span className="text-[8px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/70 px-2 py-0.5 rounded border border-amber-500/30">
+              RADIALS
+            </span>
+          </div>
+          
+          <div className="absolute top-[48%] right-[2%] flex items-center gap-2">
+            <div className="w-4 h-px bg-amber-500/40" />
+            <span className="text-[8px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/70 px-2 py-0.5 rounded border border-amber-500/30">
+              CURVE SR
+            </span>
+          </div>
+          
+          <div className="absolute top-[62%] right-[2%] flex items-center gap-2">
+            <div className="w-4 h-px bg-amber-500/40" />
+            <span className="text-[8px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/70 px-2 py-0.5 rounded border border-amber-500/30">
+              IMAG SR
+            </span>
+          </div>
+          
+          {/* Bottom callouts */}
+          <div className="absolute bottom-[28%] left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <div className="w-px h-3 bg-gradient-to-t from-amber-500/60 to-transparent mb-1" />
+            <span className="text-[8px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/70 px-2 py-0.5 rounded border border-amber-500/30">
+              CENTER
+            </span>
+          </div>
+          
+          <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <div className="w-px h-3 bg-gradient-to-t from-amber-500/60 to-transparent mb-1" />
+            <span className="text-[8px] font-mono text-amber-400/90 tracking-widest uppercase bg-background/70 px-2 py-0.5 rounded border border-amber-500/30">
+              DJ BOOTH
+            </span>
           </div>
         </div>
         
