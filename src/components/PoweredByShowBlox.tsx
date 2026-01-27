@@ -2,9 +2,28 @@ import showbloxLogo from '@/assets/showblox-logo.jpeg';
 
 interface PoweredByShowBloxProps {
   className?: string;
+  variant?: 'footer' | 'header';
 }
 
-export function PoweredByShowBlox({ className = '' }: PoweredByShowBloxProps) {
+export function PoweredByShowBlox({ className = '', variant = 'footer' }: PoweredByShowBloxProps) {
+  if (variant === 'header') {
+    return (
+      <a 
+        href="https://showblox.com" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className={`flex items-center gap-1.5 opacity-70 hover:opacity-100 transition-opacity duration-300 ${className}`}
+      >
+        <span className="text-[10px] text-muted-foreground uppercase tracking-wider hidden sm:inline">Powered by</span>
+        <img 
+          src={showbloxLogo} 
+          alt="ShowBlox" 
+          className="h-4 sm:h-5 w-auto object-contain rounded-sm dark:brightness-100 brightness-0"
+        />
+      </a>
+    );
+  }
+
   return (
     <div className={`flex items-center justify-center gap-2 py-4 ${className}`}>
       <span className="text-xs text-muted-foreground/60 uppercase tracking-widest">Powered by</span>

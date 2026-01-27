@@ -149,8 +149,11 @@ const CreativeGuideView = () => {
               </div>
             </div>
 
-            {/* Theme toggle */}
-            <ThemeToggle />
+            {/* Right side: ShowBlox + Theme toggle */}
+            <div className="flex items-center gap-3">
+              <PoweredByShowBlox variant="header" />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>
