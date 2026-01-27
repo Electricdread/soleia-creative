@@ -500,4 +500,83 @@
     top: 0;
     left: 0;
   }
+
+  /* Venue floor plan atmospheric animations */
+  @keyframes subtle-flare {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1) translate(-50%, -50%);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1) translate(-50%, -50%);
+    }
+  }
+
+  @keyframes palm-sway {
+    0%, 100% {
+      transform: rotate(-1deg) translateX(0);
+    }
+    25% {
+      transform: rotate(0.5deg) translateX(1px);
+    }
+    50% {
+      transform: rotate(1deg) translateX(0);
+    }
+    75% {
+      transform: rotate(-0.5deg) translateX(-1px);
+    }
+  }
+
+  @keyframes sand-drift {
+    0% {
+      transform: translateX(-100%) scaleY(0.5);
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.15;
+    }
+    80% {
+      opacity: 0.1;
+    }
+    100% {
+      transform: translateX(100%) scaleY(0.5);
+      opacity: 0;
+    }
+  }
+
+  @keyframes shimmer-gold {
+    0%, 100% {
+      background-position: -200% center;
+    }
+    50% {
+      background-position: 200% center;
+    }
+  }
+
+  .venue-flare {
+    animation: subtle-flare 4s ease-in-out infinite;
+  }
+
+  .palm-sway {
+    animation: palm-sway 6s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+
+  .sand-drift {
+    animation: sand-drift 8s linear infinite;
+  }
+
+  .shimmer-gold {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--primary) / 0.1) 25%,
+      hsl(var(--primary) / 0.3) 50%,
+      hsl(var(--primary) / 0.1) 75%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-gold 6s ease-in-out infinite;
+  }
 }
