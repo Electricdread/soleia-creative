@@ -38,9 +38,11 @@ function DisplayCard({ display }: { display: DisplayType }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="h-full"
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="h-full group cursor-pointer"
     >
-      <Card className="h-full glass border-border/50 overflow-hidden">
+      <Card className="h-full glass border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4),0_0_80px_-20px_hsl(var(--primary)/0.2)]">
         {/* Image */}
         <div className="relative aspect-video overflow-hidden">
           <img 
