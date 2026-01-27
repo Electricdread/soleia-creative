@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ThemeToggle } from '@/components/ThemeToggle';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 import VenueScreenMap from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
@@ -149,11 +149,8 @@ const CreativeGuideView = () => {
               </div>
             </div>
 
-            {/* Right side: ShowBlox + Theme toggle */}
-            <div className="flex items-center gap-3">
-              <PoweredByShowBlox variant="header" />
-              <ThemeToggle />
-            </div>
+            {/* Right side: ShowBlox (also serves as theme toggle) */}
+            <PoweredByShowBlox variant="header" />
           </div>
         </div>
       </header>
