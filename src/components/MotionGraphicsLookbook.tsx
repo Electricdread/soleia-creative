@@ -368,12 +368,7 @@ const MotionGraphicsLookbook = () => {
                 selectedCategory={selectedCategory}
                 onCategoryChange={(cat) => {
                   setSelectedCategory(cat);
-                  setSearchQuery('');
                 }}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onSearch={handleSearch}
-                isSearching={isSearching}
               />
             </div>
             <img 
@@ -422,25 +417,11 @@ const MotionGraphicsLookbook = () => {
               Motion Backgrounds
             </p>
             
-            {/* Search Bar and Actions - Desktop */}
+            {/* Actions - Desktop */}
             <div 
               className="opacity-0 animate-fade-in-up relative z-10 flex items-center gap-3"
               style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}
             >
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search collection..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-11 w-80 bg-background/40 border-border/50 focus:border-primary/50 transition-elegant rounded-xl h-11 backdrop-blur-sm"
-                />
-                {isSearching && (
-                  <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
-                )}
-              </div>
               <Button
                 variant="outline"
                 size="sm"

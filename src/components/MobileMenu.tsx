@@ -1,8 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, Search, Map, Monitor } from 'lucide-react';
+import { Menu, Map } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -12,19 +11,11 @@ import sunIcon from '@/assets/sun-icon.jpeg';
 interface MobileMenuProps {
   selectedCategory: ArtlistCategoryKey;
   onCategoryChange: (category: ArtlistCategoryKey) => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  onSearch: () => void;
-  isSearching: boolean;
 }
 
 export function MobileMenu({
   selectedCategory,
   onCategoryChange,
-  searchQuery,
-  onSearchChange,
-  onSearch,
-  isSearching,
 }: MobileMenuProps) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -59,30 +50,12 @@ export function MobileMenu({
         </SheetHeader>
 
         <div className="p-6 space-y-6 overflow-y-auto h-[calc(100%-80px)]">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search collection..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  onSearch();
-                  setIsOpen(false);
-                }
-              }}
-              className="pl-12 h-14 text-base bg-background/40 border-border/50 focus:border-primary/50 rounded-xl touch-manipulation"
-            />
-          </div>
-
           {/* Categories */}
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-2">
               Categories
             </p>
-            <div className="space-y-1 max-h-[45vh] overflow-y-auto">
+            <div className="space-y-1 max-h-[55vh] overflow-y-auto">
               {artlistCategories.map((cat) => (
                 <button
                   key={cat.key}
