@@ -1,12 +1,15 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, MapPin, Eye, Sun, Layers, Monitor, ArrowRight, CheckCircle2, Printer, Map, ChevronDown, Tv, LayoutGrid } from 'lucide-react';
+import { Building2, MapPin, Eye, Sun, Layers, Monitor, ArrowRight, CheckCircle2, Printer, Map, ChevronDown, Tv, LayoutGrid, Expand } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { GUIDE_IMAGES, VENUE_BLUEPRINT_DETAILS } from '@/lib/creativeGuide';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import showbloxIcon from '@/assets/showblox-icon.png';
+import { VideoModal } from './VideoModal';
+
+const VIDEO_URL = "https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/clips/Soleia%20Pixelmap%203D%20Preview.mp4";
 
 const OUTDOOR_ZONES = [
   {
@@ -256,6 +259,32 @@ const handlePrintBlueprint = () => {
 
 export function VenueOverviewView() {
   const [statsOpen, setStatsOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer for autoplay
+  useEffect(() => {
+    const video = videoRef.current;
+    const container = videoContainerRef.current;
+    if (!video || !container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
   
   return (
     <div className="space-y-8">
@@ -306,8 +335,22 @@ export function VenueOverviewView() {
             <img 
               src={GUIDE_IMAGES.venueLayout} 
               alt="Soleia Venue Layout"
-              className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
+              className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02] palm-sway"
             />
+
+            {/* Subtle sun flare effect */}
+            <div 
+              className="absolute top-1/4 left-1/2 w-32 h-32 rounded-full bg-gradient-radial from-primary/30 via-primary/10 to-transparent venue-flare pointer-events-none z-10"
+              style={{ filter: 'blur(20px)' }}
+            />
+
+            {/* Sand drift effect at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-8 overflow-hidden pointer-events-none z-10">
+              <div className="sand-drift w-full h-full bg-gradient-to-r from-transparent via-amber-200/20 to-transparent dark:via-amber-500/10" />
+            </div>
+
+            {/* Shimmer overlay */}
+            <div className="absolute inset-0 shimmer-gold pointer-events-none z-10 opacity-50" />
             
             {/* Corner accents */}
             <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
@@ -447,30 +490,45 @@ export function VenueOverviewView() {
         </Collapsible>
       </motion.div>
 
+      {/* 3D Visualization Video */}
       <motion.div
+        ref={videoContainerRef}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
         <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
-          <div className="relative">
+          <div className="relative cursor-pointer" onClick={() => setVideoModalOpen(true)}>
             {/* Elegant frame with gold accent borders */}
             <div className="absolute inset-0 z-10 pointer-events-none border-4 border-primary/10 dark:border-primary/20" />
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
             
             <video 
-              src="https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/clips/Soleia%20Pixelmap%203D%20Preview.mp4"
+              ref={videoRef}
+              src={VIDEO_URL}
               className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
-              controls
               loop
               muted
               playsInline
               poster={GUIDE_IMAGES.visualization3d}
             />
-            
-            {/* Theme-aware gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent pointer-events-none dark:from-background/60" />
+
+            {/* Expand button overlay */}
+            <div className="absolute top-4 right-4 z-20">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="gap-2 bg-background/80 backdrop-blur-sm hover:bg-background/90 shadow-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setVideoModalOpen(true);
+                }}
+              >
+                <Expand className="w-4 h-4" />
+                <span className="hidden sm:inline">Fullscreen</span>
+              </Button>
+            </div>
             
             {/* Corner accents */}
             <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
@@ -479,14 +537,25 @@ export function VenueOverviewView() {
             <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-sm z-10" />
           </div>
           <CardContent className="p-4 sm:p-6 bg-gradient-to-b from-transparent to-primary/5 dark:to-primary/10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-primary/20 shadow-lg shadow-primary/10">
-                <Eye className="w-5 h-5 text-amber-500" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-primary/20 shadow-lg shadow-primary/10">
+                  <Eye className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gradient-gold">3D Venue Visualization</h3>
+                  <p className="text-xs text-muted-foreground">Interactive pixelmap preview of LED screen positions</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-gradient-gold">3D Venue Visualization</h3>
-                <p className="text-xs text-muted-foreground">Interactive pixelmap preview of LED screen positions</p>
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:bg-primary/10 gap-1"
+                onClick={() => setVideoModalOpen(true)}
+              >
+                <Expand className="w-4 h-4" />
+                <span className="hidden sm:inline">View Fullscreen</span>
+              </Button>
             </div>
             <p className="text-sm text-muted-foreground">
               This 3D visualization shows the spatial relationship between all LED zones, including outdoor arrival screens, 
@@ -495,6 +564,15 @@ export function VenueOverviewView() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+        videoSrc={VIDEO_URL}
+        posterSrc={GUIDE_IMAGES.visualization3d}
+        title="Soleia 3D Venue Visualization"
+      />
 
       {/* Outdoor LED Zones Section */}
       <motion.div
