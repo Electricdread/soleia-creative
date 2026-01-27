@@ -160,7 +160,10 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
             <title>Soleia Display Specifications</title>
             <style>
               body { font-family: system-ui, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-              h1 { color: #D4AF37; border-bottom: 2px solid #D4AF37; padding-bottom: 10px; }
+              .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #D4AF37; }
+              .header img { max-width: 280px; height: auto; margin-bottom: 16px; }
+              .header h1 { color: #D4AF37; margin: 0 0 8px 0; font-size: 24px; }
+              .header p { color: #666; margin: 0; }
               h2 { color: #333; margin-top: 24px; }
               .spec-group { background: #f5f5f5; padding: 16px; border-radius: 8px; margin: 12px 0; }
               .spec-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ddd; }
@@ -175,8 +178,11 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
             </style>
           </head>
           <body>
-            <h1>Soleia Display Specifications</h1>
-            <p style="color: #666;">Quick Reference Guide for Content Creation</p>
+            <div class="header">
+              <img src="/soleia-logo-black.png" alt="Soleia Las Vegas" />
+              <h1>Display Specifications</h1>
+              <p>Quick Reference Guide for Content Creation</p>
+            </div>
             ${DISPLAY_TYPES.map(d => `
               <h2>${d.name}</h2>
               <div class="spec-group">
