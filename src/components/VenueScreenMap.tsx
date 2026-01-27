@@ -16,31 +16,18 @@ interface VenueScreenMapProps {
 // Screen segment IDs that map to the SVG group IDs
 // The SVG uses these IDs for the groups containing each screen
 const SCREEN_SEGMENTS = [
-  // Sol Rays (ceiling section) - updated ID for new SVG
+  // Sol Rays (ceiling section)
   { id: 'Sol Rays', svgId: 'Sol_Rays', group: 'solRays', label: 'Sol Rays', description: 'Main ceiling LED display' },
   // DJ Booth
-  { id: 'DJ Booth', svgId: 'BOOTH', group: 'djBooth', label: 'DJ Booth', description: 'Behind DJ booth screen' },
+  { id: 'DJ Booth', svgId: 'booth', group: 'djBooth', label: 'DJ Booth', description: 'Behind DJ booth screen' },
   // Side curves
-  { id: 'Curves SL', svgId: 'SL_CURVE', group: 'curves', label: 'Curve SL', description: 'Stage left curved screen' },
-  { id: 'Curves SR', svgId: 'SR_CURVE', group: 'curves', label: 'Curve SR', description: 'Stage right curved screen' },
+  { id: 'Curves SL', svgId: 'sl_curves', group: 'curves', label: 'Curve SL', description: 'Stage left curved screen' },
+  { id: 'Curves SR', svgId: 'sr_curves', group: 'curves', label: 'Curve SR', description: 'Stage right curved screen' },
   // IMAG screens
-  { id: 'IMAG SL', svgId: 'SL_IMAG.', group: 'imag', label: 'IMAG SL', description: 'Stage left IMAG screen' },
-  { id: 'IMAG SR', svgId: 'R_IMAG', group: 'imag', label: 'IMAG SR', description: 'Stage right IMAG screen' },
+  { id: 'IMAG SL', svgId: 'sl_imag', group: 'imag', label: 'IMAG SL', description: 'Stage left IMAG screen' },
+  { id: 'IMAG SR', svgId: 'sr_imag', group: 'imag', label: 'IMAG SR', description: 'Stage right IMAG screen' },
   // Center screen
-  { id: 'Center', svgId: 'CENTER', group: 'center', label: 'Center', description: 'Main center stage screen' },
-  // Radial ceiling screens (if present in SVG)
-  { id: 'Radial 01', svgId: 'Radial_01', group: 'radials', label: 'R01', description: 'Radial ceiling panel 1' },
-  { id: 'Radial 02', svgId: 'Radial_02', group: 'radials', label: 'R02', description: 'Radial ceiling panel 2' },
-  { id: 'Radial 03', svgId: 'Radial_03', group: 'radials', label: 'R03', description: 'Radial ceiling panel 3' },
-  { id: 'Radial 04', svgId: 'Radial_04', group: 'radials', label: 'R04', description: 'Radial ceiling panel 4' },
-  { id: 'Radial 05', svgId: 'Radial_05', group: 'radials', label: 'R05', description: 'Radial ceiling panel 5' },
-  { id: 'Radial 06', svgId: 'Radial_06', group: 'radials', label: 'R06', description: 'Radial ceiling panel 6' },
-  { id: 'Radial 07', svgId: 'Radial_07', group: 'radials', label: 'R07', description: 'Radial ceiling panel 7' },
-  { id: 'Radial 08', svgId: 'Radial_08', group: 'radials', label: 'R08', description: 'Radial ceiling panel 8' },
-  { id: 'Radial 09', svgId: 'Radial_09', group: 'radials', label: 'R09', description: 'Radial ceiling panel 9' },
-  { id: 'Radial 10', svgId: 'Radial_10', group: 'radials', label: 'R10', description: 'Radial ceiling panel 10' },
-  { id: 'Radial 11', svgId: 'Radial_11', group: 'radials', label: 'R11', description: 'Radial ceiling panel 11' },
-  { id: 'Radial 12', svgId: 'Radial_12', group: 'radials', label: 'R12', description: 'Radial ceiling panel 12' },
+  { id: 'Center', svgId: 'center', group: 'center', label: 'Center', description: 'Main center stage screen' },
 ];
 
 // Create a mapping from SVG ID to our ID
@@ -377,7 +364,7 @@ export const ALL_SCREEN_IDS = SCREEN_SEGMENTS.map(s => s.id);
 // Group screens by category for bulk selection
 export const SCREEN_GROUPS = {
   solRays: ['Sol Rays'],
-  radials: SCREEN_SEGMENTS.filter(s => s.id.startsWith('Radial')).map(s => s.id),
+  radials: [] as string[], // No radials in current SVG
   curves: SCREEN_SEGMENTS.filter(s => s.id.includes('Curves')).map(s => s.id),
   imag: SCREEN_SEGMENTS.filter(s => s.id.includes('IMAG')).map(s => s.id),
   center: ['Center'],
