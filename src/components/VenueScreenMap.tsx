@@ -18,8 +18,8 @@ interface VenueScreenMapProps {
 const SCREEN_SEGMENTS = [
   // Sol Rays (ceiling section)
   { id: 'Sol Rays', svgId: 'Sol_Rays', group: 'solRays', label: 'Sol Rays', description: 'Main ceiling LED display' },
-  // DJ Booth
-  { id: 'DJ Booth', svgId: 'booth', group: 'djBooth', label: 'DJ Booth', description: 'Behind DJ booth screen' },
+  // DJ Booth - uses long illustrator-exported ID
+  { id: 'DJ Booth', svgId: 'SOLEIA_SCREEN_white_x5F_0006_x5F_booth.psd', group: 'djBooth', label: 'DJ Booth', description: 'Behind DJ booth screen' },
   // Side curves
   { id: 'Curves SL', svgId: 'sl_curves', group: 'curves', label: 'Curve SL', description: 'Stage left curved screen' },
   { id: 'Curves SR', svgId: 'sr_curves', group: 'curves', label: 'Curve SR', description: 'Stage right curved screen' },
@@ -195,18 +195,17 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
     <TooltipProvider>
       <div 
         ref={containerRef}
-        className="relative w-full aspect-video bg-gradient-to-b from-background to-muted/30 rounded-xl overflow-hidden border-2 border-border/50 shadow-lg"
+        className="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-border/50 shadow-lg"
       >
-        {/* Diagram grid overlay for technical feel */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
-              linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px'
-          }}
+        {/* Venue background image */}
+        <img 
+          src="/venue-screens.png" 
+          alt="Soleia Venue" 
+          className="absolute inset-0 w-full h-full object-cover"
         />
+        
+        {/* Slight overlay for better screen visibility */}
+        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
         
         {/* SVG overlay with embedded images - this IS the venue photo with overlays */}
         {svgContent && (
