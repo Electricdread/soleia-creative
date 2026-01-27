@@ -45,29 +45,24 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
     fetch('/screens-overlay.svg')
       .then(res => res.text())
       .then(svg => {
-        // Parse and modify the SVG to make it interactive
         const parser = new DOMParser();
         const doc = parser.parseFromString(svg, 'image/svg+xml');
         const svgEl = doc.querySelector('svg');
         
         if (svgEl) {
-          // Remove display:none from styles
-          const style = svgEl.querySelector('style');
-          if (style) {
-            style.textContent = style.textContent?.replace('display: none;', '') || '';
-          }
-          
-          // Add class to all path/polygon/rect elements for styling
-          const shapes = svgEl.querySelectorAll('path, polygon, rect, ellipse, circle');
-          shapes.forEach(shape => {
-            shape.classList.add('screen-segment');
+          // Mark selected screens
+          selectedPlacements.forEach(placement => {
+            const element = svgEl.querySelector(`#${CSS.escape(placement)}`);
+            if (element) {
+              element.classList.add('selected');
+            }
           });
           
           setSvgContent(svgEl.outerHTML);
         }
       })
       .catch(err => console.error('Failed to load SVG overlay:', err));
-  }, []);
+  }, [selectedPlacements]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!interactive || !onToggle) return;
@@ -86,27 +81,17 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
       <img 
         src="/venue-screens.png" 
         alt="Venue layout"
-        className="absolute inset-0 w-full h-full object-cover opacity-70"
+        className="absolute inset-0 w-full h-full object-cover"
       />
       
       {/* SVG overlay - loaded from file */}
-      <div 
-        className="absolute inset-0 w-full h-full venue-screen-overlay"
-        onClick={handleClick}
-        dangerouslySetInnerHTML={svgContent ? { __html: svgContent } : undefined}
-        style={{
-          '--selected-screens': selectedPlacements.map(p => `#${p.replace(/\s/g, '_')}`).join(',')
-        } as React.CSSProperties}
-      />
-      
-      {/* Custom overlay for selection state - since we can't easily modify inline SVG */}
-      <svg 
-        className="absolute inset-0 w-full h-full pointer-events-none" 
-        viewBox="0 0 1920 1080" 
-        preserveAspectRatio="xMidYMid slice"
-      >
-        {/* Selection indicators will be rendered here based on selectedPlacements */}
-      </svg>
+      {svgContent && (
+        <div 
+          className="absolute inset-0 w-full h-full venue-screen-overlay"
+          onClick={handleClick}
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+        />
+      )}
       
       {/* Legend / Title */}
       <div className="absolute bottom-2 left-2 text-[10px] text-white/70 font-light tracking-wider uppercase bg-black/50 px-2 py-1 rounded">
