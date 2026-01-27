@@ -16,6 +16,7 @@ import VenueScreenMap, { SCREEN_GROUPS } from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import PlacementBadges from '@/components/PlacementBadges';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
 import { format } from 'date-fns';
@@ -815,6 +816,9 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Powered by ShowBlox Footer */}
+      <PoweredByShowBlox className="border-t border-border/30" />
     </div>
   );
 };

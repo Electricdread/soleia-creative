@@ -26,6 +26,7 @@ import VenueScreenMap, { SCREEN_GROUPS } from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import { MobileMenu } from '@/components/MobileMenu';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 // Must match IDs from VenueScreenMap SCREEN_SEGMENTS
@@ -1084,6 +1085,9 @@ const MotionGraphicsLookbook = () => {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Powered by ShowBlox Footer */}
+      <PoweredByShowBlox className="border-t border-border/30" />
     </div>
   );
 };
