@@ -1,11 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { cn } from '@/lib/utils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface VenueScreenMapProps {
   selectedPlacements: string[];
@@ -96,8 +89,6 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
   interactive = true
 }) => {
   const [svgContent, setSvgContent] = useState<string | null>(null);
-  const [hoveredScreen, setHoveredScreen] = useState<string | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -169,120 +160,61 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    
-    const target = e.target as SVGElement;
-    const group = target.closest('g[id]');
-    if (group) {
-      const screenId = group.getAttribute('data-screen-id');
-      setHoveredScreen(screenId);
-    } else {
-      setHoveredScreen(null);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredScreen(null);
-  };
-
-  const hoveredSegment = hoveredScreen ? idToSegment.get(hoveredScreen) : null;
-
   return (
-    <TooltipProvider>
-      <div 
-        ref={containerRef}
-        className="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-border/50 shadow-lg"
-      >
-        {/* Venue background image */}
-        <img 
-          src="/venue-screens.png" 
-          alt="Soleia Venue" 
-          className="absolute inset-0 w-full h-full object-cover"
+    <div 
+      ref={containerRef}
+      className="relative w-full aspect-video bg-gradient-to-b from-muted/50 to-background rounded-xl overflow-hidden border border-border/50 shadow-lg touch-manipulation"
+    >
+      {/* SVG overlay - interactive screens */}
+      {svgContent && (
+        <div 
+          className="absolute inset-0 w-full h-full venue-screen-overlay"
+          onClick={handleClick}
+          dangerouslySetInnerHTML={{ __html: svgContent }}
         />
-        
-        {/* Slight overlay for better screen visibility */}
-        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-        
-        {/* SVG overlay with embedded images - this IS the venue photo with overlays */}
-        {svgContent && (
-          <div 
-            className="absolute inset-0 w-full h-full venue-screen-overlay"
-            onClick={handleClick}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            dangerouslySetInnerHTML={{ __html: svgContent }}
-          />
-        )}
-        
-        
-        {/* Floating tooltip */}
-        {hoveredSegment && (
-          <div 
-            className="absolute z-50 pointer-events-none transition-opacity duration-150"
-            style={{ 
-              left: Math.min(mousePos.x + 12, (containerRef.current?.clientWidth || 300) - 160),
-              top: Math.max(mousePos.y - 50, 8)
-            }}
-          >
-            <div className="bg-popover/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-xl">
-              <p className="font-semibold text-sm text-foreground">{hoveredSegment.label}</p>
-              <p className="text-xs text-muted-foreground">{hoveredSegment.description}</p>
-              {selectedPlacements.includes(hoveredSegment.id) && (
-                <span className="inline-flex items-center gap-1 mt-1 text-xs text-primary font-medium">
-                  ✓ Selected
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-        
-        {/* Diagram header */}
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background/90 to-transparent px-3 py-2 pointer-events-none">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-[10px] font-semibold text-foreground/80 tracking-wider uppercase">
-                Interior Venue Layout
-              </span>
-            </div>
-            <span className="text-[10px] text-muted-foreground font-mono">
-              SOLEIA • LAS VEGAS
+      )}
+      
+      {/* Mobile-friendly header */}
+      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-background/80 to-transparent px-3 py-2 sm:py-3 pointer-events-none">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[9px] sm:text-[10px] font-semibold text-foreground/80 tracking-wider uppercase">
+              Interior Layout
             </span>
           </div>
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground font-mono">
+            SOLEIA
+          </span>
         </div>
-        
-        {/* Legend / Instructions */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/90 to-transparent px-3 py-2 pointer-events-none">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground">
-              {interactive ? 'Hover for details • Click to select' : 'Screen Layout Overview'}
-            </span>
-            {/* Screen count indicator */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-sm bg-muted-foreground/40 border border-muted-foreground/60" />
-                <span className="text-[10px] text-muted-foreground">Available</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-sm bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-                <span className="text-[10px] text-muted-foreground">Selected</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Selected count badge */}
-        {selectedPlacements.length > 0 && (
-          <div className="absolute top-10 right-3 px-2.5 py-1 bg-primary/90 rounded-full text-xs font-semibold text-primary-foreground shadow-lg">
-            {selectedPlacements.length} screen{selectedPlacements.length !== 1 ? 's' : ''} selected
-          </div>
-        )}
       </div>
-    </TooltipProvider>
+      
+      {/* Mobile-friendly legend */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent px-3 py-2 sm:py-3 pointer-events-none">
+        <div className="flex items-center justify-between">
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground">
+            {interactive ? 'Tap to select' : 'Screen Layout'}
+          </span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-sm bg-muted-foreground/40 border border-muted-foreground/60" />
+              <span className="text-[8px] sm:text-[10px] text-muted-foreground">Off</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-sm bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)]" />
+              <span className="text-[8px] sm:text-[10px] text-muted-foreground">On</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Selected count badge - mobile optimized */}
+      {selectedPlacements.length > 0 && (
+        <div className="absolute top-8 sm:top-10 right-2 sm:right-3 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-primary/90 rounded-full text-[10px] sm:text-xs font-semibold text-primary-foreground shadow-lg">
+          {selectedPlacements.length} screen{selectedPlacements.length !== 1 ? 's' : ''}
+        </div>
+      )}
+    </div>
   );
 };
 
