@@ -19,12 +19,14 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
 import { format } from 'date-fns';
+// Must match IDs from VenueScreenMap SCREEN_SEGMENTS
 const INTERIOR_PLACEMENTS = [
+  'Sol Rays',
   'Curves SR',
+  'Curves SL',
   'IMAG SR',
-  'Center',
   'IMAG SL',
-  'SL Curves',
+  'Center',
   'DJ Booth'
 ] as const;
 

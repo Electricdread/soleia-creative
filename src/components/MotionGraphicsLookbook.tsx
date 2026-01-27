@@ -27,12 +27,14 @@ import { MobileMenu } from '@/components/MobileMenu';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Must match IDs from VenueScreenMap SCREEN_SEGMENTS
 const INTERIOR_PLACEMENTS = [
+  'Sol Rays',
   'Curves SR',
+  'Curves SL',
   'IMAG SR',
-  'Center',
   'IMAG SL',
-  'SL Curves',
+  'Center',
   'DJ Booth'
 ] as const;
 
