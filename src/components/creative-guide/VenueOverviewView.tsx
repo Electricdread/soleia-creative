@@ -101,41 +101,55 @@ export function VenueOverviewView() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
       >
-        <Card className="glass border-border/50 overflow-hidden">
+        <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
           <div className="relative">
+            {/* Elegant frame with gold accent borders */}
+            <div className="absolute inset-0 z-10 pointer-events-none border-4 border-primary/10 dark:border-primary/20" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
+            
             <img 
               src={GUIDE_IMAGES.venueLayout} 
               alt="Soleia Venue Layout"
-              className="w-full h-auto"
+              className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
+            
+            {/* Theme-aware gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none dark:from-background/90 dark:via-background/30" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-transparent pointer-events-none dark:from-background/50" />
+            
+            {/* Corner accents */}
+            <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
+            <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 rounded-tr-sm z-10" />
+            <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 rounded-bl-sm z-10" />
+            <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-sm z-10" />
           </div>
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-primary/10">
+          <CardContent className="p-4 sm:p-6 bg-gradient-to-b from-transparent to-primary/5 dark:to-primary/10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10">
                 <MapPin className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">Floor Plan Layout</h3>
+                <h3 className="font-semibold text-gradient-gold">Floor Plan Layout</h3>
                 <p className="text-xs text-muted-foreground">Complete venue layout with all display locations</p>
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <p className="text-lg font-bold text-primary">15</p>
-                <p className="text-[10px] uppercase text-muted-foreground">Cabanas</p>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 dark:from-primary/10 dark:to-primary/20 shadow-sm">
+                <p className="text-xl font-bold text-gradient-gold">15</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Cabanas</p>
               </div>
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <p className="text-lg font-bold text-primary">9</p>
-                <p className="text-[10px] uppercase text-muted-foreground">Bungalows</p>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 dark:from-primary/10 dark:to-primary/20 shadow-sm">
+                <p className="text-xl font-bold text-gradient-gold">9</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Bungalows</p>
               </div>
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <p className="text-lg font-bold text-primary">2</p>
-                <p className="text-[10px] uppercase text-muted-foreground">Mezzanine Levels</p>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 dark:from-primary/10 dark:to-primary/20 shadow-sm">
+                <p className="text-xl font-bold text-gradient-gold">2</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Mezzanine Levels</p>
               </div>
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <p className="text-lg font-bold text-primary">30+</p>
-                <p className="text-[10px] uppercase text-muted-foreground">Display Zones</p>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 dark:from-primary/10 dark:to-primary/20 shadow-sm">
+                <p className="text-xl font-bold text-gradient-gold">30+</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Display Zones</p>
               </div>
             </div>
           </CardContent>
