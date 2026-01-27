@@ -496,6 +496,7 @@ const MotionGraphicsLookbook = () => {
                 <Map className="w-4 h-4 text-primary" />
                 <span className="text-sm">Creative Guide</span>
               </Button>
+              <PoweredByShowBlox variant="header" />
               <ThemeToggle />
             </div>
           </div>
