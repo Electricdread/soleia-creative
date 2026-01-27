@@ -152,10 +152,6 @@ function DisplayCard({ display }: { display: DisplayType }) {
 
 export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
   const handlePrintSpecs = () => {
-    const specsContent = DISPLAY_TYPES.map(d => 
-      `${d.name}\n  Video: ${d.videoSpecs.resolution} | ${d.videoSpecs.format}${d.videoSpecs.codec ? ` | ${d.videoSpecs.codec}` : ''}${d.videoSpecs.frameRate ? ` | ${d.videoSpecs.frameRate}` : ''}\n  Graphic: ${d.graphicSpecs.resolution} | ${d.graphicSpecs.format}`
-    ).join('\n\n');
-    
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(`
@@ -172,6 +168,9 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
               .label { color: #666; }
               .value { font-family: monospace; font-weight: 600; }
               .notes { font-size: 12px; color: #888; margin-top: 8px; }
+              .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; }
+              .powered-by { display: flex; align-items: center; justify-content: center; gap: 8px; color: #999; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+              .powered-by img { height: 20px; width: auto; }
               @media print { body { padding: 20px; } }
             </style>
           </head>
@@ -196,9 +195,13 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
               </div>
               ${d.creativeNotes ? `<p class="notes"><strong>Notes:</strong> ${d.creativeNotes.join(' ')}</p>` : ''}
             `).join('')}
-            <p style="text-align: center; margin-top: 40px; color: #999; font-size: 12px;">
-              Generated from Soleia Creative Guide
-            </p>
+            <div class="footer">
+              <p style="color: #999; font-size: 12px; margin-bottom: 12px;">Generated from Soleia Creative Guide</p>
+              <div class="powered-by">
+                <span>Powered by</span>
+                <img src="/soleia-icon.png" alt="ShowBlox" onerror="this.style.display='none'" />
+              </div>
+            </div>
           </body>
         </html>
       `);
