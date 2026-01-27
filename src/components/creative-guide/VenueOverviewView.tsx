@@ -349,37 +349,15 @@ export function VenueOverviewView() {
         </Card>
       </motion.div>
 
-      {/* Venue Blueprint - Printable */}
+      {/* Venue Blueprint - Download Link Only */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.075 }}
       >
-        <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
-          <div className="relative">
-            {/* Elegant frame with gold accent borders */}
-            <div className="absolute inset-0 z-10 pointer-events-none border-4 border-primary/10 dark:border-primary/20" />
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
-            
-            <img 
-              src={GUIDE_IMAGES.venueBlueprint} 
-              alt="Soleia Venue Blueprint"
-              className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02] bg-slate-100"
-            />
-            
-            {/* Theme-aware gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none dark:from-background/90 dark:via-background/30" />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-transparent pointer-events-none dark:from-background/50" />
-            
-            {/* Corner accents */}
-            <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
-            <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 rounded-tr-sm z-10" />
-            <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 rounded-bl-sm z-10" />
-            <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-sm z-10" />
-          </div>
-          <CardContent className="p-4 sm:p-6 bg-gradient-to-b from-transparent to-primary/5 dark:to-primary/10">
-            <div className="flex items-center justify-between mb-4">
+        <Card className="glass border-primary/20 hover:border-primary/40 transition-all duration-300">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10">
                   <Map className="w-5 h-5 text-primary" />
@@ -396,35 +374,9 @@ export function VenueOverviewView() {
                 className="gap-2 border-primary/30 text-primary hover:bg-primary/10"
               >
                 <Printer className="w-4 h-4" />
-                <span className="hidden sm:inline">Print Blueprint</span>
-                <span className="sm:hidden">Print</span>
+                <span className="hidden sm:inline">Download Blueprint</span>
+                <span className="sm:hidden">Download</span>
               </Button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/5 to-blue-500/10 border border-blue-500/20 shadow-sm">
-                <p className="text-lg font-bold text-blue-500">15</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Cabanas</p>
-              </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/5 to-purple-500/10 border border-purple-500/20 shadow-sm">
-                <p className="text-lg font-bold text-purple-500">9</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Bungalows</p>
-              </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/5 to-amber-500/10 border border-amber-500/20 shadow-sm">
-                <p className="text-lg font-bold text-amber-500">24+</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">TV Displays</p>
-              </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/5 to-green-500/10 border border-green-500/20 shadow-sm">
-                <p className="text-lg font-bold text-green-500">6+</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">LED Screens</p>
-              </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/5 to-cyan-500/10 border border-cyan-500/20 shadow-sm">
-                <p className="text-lg font-bold text-cyan-500">1</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Main Pool</p>
-              </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-rose-500/5 to-rose-500/10 border border-rose-500/20 shadow-sm">
-                <p className="text-lg font-bold text-rose-500">2</p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Mezzanine</p>
-              </div>
             </div>
           </CardContent>
         </Card>
