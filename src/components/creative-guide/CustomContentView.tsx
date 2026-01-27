@@ -99,9 +99,12 @@ export function CustomContentView() {
         <Button 
           size="lg" 
           className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+          asChild
         >
-          <Download className="w-5 h-5" />
-          {CUSTOM_CONTENT_INFO.downloadLabel}
+          <a href="/creative-guide/After_Effects_Template.zip" download>
+            <Download className="w-5 h-5" />
+            {CUSTOM_CONTENT_INFO.downloadLabel}
+          </a>
         </Button>
         <p className="text-xs text-muted-foreground mt-2">
           Download the After Effects template and pixelmap specifications
