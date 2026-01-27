@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Palette, Calendar, Download, Clock, Sparkles } from 'lucide-react';
+import { Palette, Calendar, Download, Clock, Sparkles, Monitor } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,53 @@ export function CustomContentView() {
           {CUSTOM_CONTENT_INFO.description}
         </p>
       </div>
+
+      {/* Venue Interior Image - Elegant Frame */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
+          <div className="relative">
+            {/* Elegant frame with gold accent borders */}
+            <div className="absolute inset-0 z-10 pointer-events-none border-4 border-primary/10 dark:border-primary/20" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
+            
+            <img 
+              src="/creative-guide/custom-content.jpg" 
+              alt="Soleia LED Display System"
+              className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
+            />
+            
+            {/* Theme-aware gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none dark:from-background/90 dark:via-background/30" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-transparent pointer-events-none dark:from-background/50" />
+            
+            {/* Corner accents */}
+            <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
+            <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 rounded-tr-sm z-10" />
+            <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 rounded-bl-sm z-10" />
+            <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-sm z-10" />
+          </div>
+          <CardContent className="p-4 sm:p-6 bg-gradient-to-b from-transparent to-primary/5 dark:to-primary/10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10">
+                <Monitor className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gradient-gold">Immersive LED Environment</h3>
+                <p className="text-xs text-muted-foreground">Multi-zone display system ready for your brand</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Soleia's state-of-the-art LED ecosystem features radial Sol Rays, curved architectural displays, 
+              and immersive screen walls—all designed to showcase your custom content with maximum visual impact.
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* ShowBlox Partnership Blurb */}
       <motion.div
