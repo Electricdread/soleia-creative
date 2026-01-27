@@ -115,7 +115,24 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs gap-1.5"
+                  className={`text-xs gap-1.5 ${
+                    SCREEN_GROUPS.solRays.every(p => selectedPlacements.includes(p)) 
+                      ? 'bg-primary/20 border-primary/50 text-primary' 
+                      : ''
+                  }`}
+                  onClick={() => handleBulkSelect(SCREEN_GROUPS.solRays)}
+                >
+                  <Zap className="w-3 h-3" />
+                  Sol Rays
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`text-xs gap-1.5 ${
+                    SCREEN_GROUPS.radials.every(p => selectedPlacements.includes(p)) 
+                      ? 'bg-primary/20 border-primary/50 text-primary' 
+                      : ''
+                  }`}
                   onClick={() => handleBulkSelect(SCREEN_GROUPS.radials)}
                 >
                   <Zap className="w-3 h-3" />
@@ -124,7 +141,11 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs gap-1.5"
+                  className={`text-xs gap-1.5 ${
+                    SCREEN_GROUPS.curves.every(p => selectedPlacements.includes(p)) 
+                      ? 'bg-primary/20 border-primary/50 text-primary' 
+                      : ''
+                  }`}
                   onClick={() => handleBulkSelect(SCREEN_GROUPS.curves)}
                 >
                   <Zap className="w-3 h-3" />
@@ -133,7 +154,11 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs gap-1.5"
+                  className={`text-xs gap-1.5 ${
+                    SCREEN_GROUPS.imag.every(p => selectedPlacements.includes(p)) 
+                      ? 'bg-primary/20 border-primary/50 text-primary' 
+                      : ''
+                  }`}
                   onClick={() => handleBulkSelect(SCREEN_GROUPS.imag)}
                 >
                   <Zap className="w-3 h-3" />
@@ -142,7 +167,11 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs gap-1.5"
+                  className={`text-xs gap-1.5 ${
+                    [...SCREEN_GROUPS.center, ...SCREEN_GROUPS.djBooth].every(p => selectedPlacements.includes(p)) 
+                      ? 'bg-primary/20 border-primary/50 text-primary' 
+                      : ''
+                  }`}
                   onClick={() => handleBulkSelect([...SCREEN_GROUPS.center, ...SCREEN_GROUPS.djBooth])}
                 >
                   <Zap className="w-3 h-3" />

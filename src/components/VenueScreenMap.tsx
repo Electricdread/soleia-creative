@@ -70,22 +70,26 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
           // Remove the defs section with clipPaths (we don't need them for display)
           const defs = svgEl.querySelector('defs');
           if (defs) {
-            // Keep defs but modify the style
+            // Keep defs but modify the style with gold/amber theme colors
             const style = defs.querySelector('style');
             if (style) {
               style.textContent = `
                 .screen-group {
                   cursor: pointer;
-                  opacity: 0.6;
-                  transition: opacity 0.2s ease, filter 0.2s ease;
+                  opacity: 0.5;
+                  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                  filter: saturate(0.3) brightness(0.7);
                 }
                 .screen-group:hover {
                   opacity: 1;
-                  filter: brightness(1.4) drop-shadow(0 0 12px rgba(234, 179, 8, 0.6));
+                  filter: saturate(1) brightness(1.1) drop-shadow(0 0 16px hsl(38 92% 50% / 0.7));
                 }
                 .screen-group.selected {
                   opacity: 1;
-                  filter: brightness(1.3) drop-shadow(0 0 10px rgba(234, 179, 8, 0.8));
+                  filter: saturate(1.2) brightness(1.2) drop-shadow(0 0 20px hsl(38 92% 50% / 0.9)) drop-shadow(0 0 40px hsl(32 85% 45% / 0.5));
+                }
+                .screen-group.selected:hover {
+                  filter: saturate(1.3) brightness(1.3) drop-shadow(0 0 24px hsl(38 92% 50% / 1)) drop-shadow(0 0 50px hsl(32 85% 45% / 0.6));
                 }
               `;
             }
@@ -223,11 +227,11 @@ const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
             {/* Screen count indicator */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-sm bg-muted-foreground/40" />
+                <div className="w-2 h-2 rounded-sm bg-muted-foreground/30 border border-muted-foreground/50" />
                 <span className="text-[10px] text-muted-foreground">Available</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-sm bg-primary shadow-[0_0_6px_rgba(234,179,8,0.6)]" />
+                <div className="w-2 h-2 rounded-sm bg-primary shadow-[0_0_8px_hsl(38_92%_50%_/_0.8)]" />
                 <span className="text-[10px] text-muted-foreground">Selected</span>
               </div>
             </div>
