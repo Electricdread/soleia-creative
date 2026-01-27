@@ -7,18 +7,23 @@ import {
   Map, 
   Monitor, 
   Sun, 
-  Layers, 
   ArrowLeft,
-  Zap
+  Zap,
+  Building2,
+  FileText,
+  Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useIsMobile } from '@/hooks/use-mobile';
-import VenueScreenMap, { ALL_SCREEN_IDS, SCREEN_GROUPS } from '@/components/VenueScreenMap';
+import VenueScreenMap from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import { LEDZoneCard } from '@/components/creative-guide/LEDZoneCard';
 import { ZoneSelectionSummary } from '@/components/creative-guide/ZoneSelectionSummary';
+import { DisplaySpecsView } from '@/components/creative-guide/DisplaySpecsView';
+import { VenueOverviewView } from '@/components/creative-guide/VenueOverviewView';
+import { CustomContentView } from '@/components/creative-guide/CustomContentView';
 import {
   creativeGuideCategories,
   type CreativeGuideCategoryKey,
@@ -27,14 +32,13 @@ import {
   ZONE_SUBCATEGORY_LABELS,
 } from '@/lib/creativeGuide';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
-import sunIcon from '@/assets/sun-icon.jpeg';
 
 const CreativeGuideView = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [selectedCategory, setSelectedCategory] = useState<CreativeGuideCategoryKey>('venue-screen-map');
+  const [selectedCategory, setSelectedCategory] = useState<CreativeGuideCategoryKey>('venue-overview');
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
 
@@ -107,8 +111,11 @@ const CreativeGuideView = () => {
   const indoorZoneIds = INDOOR_LED_ZONES.map(z => z.id);
 
   const categoryIcons: Record<string, React.ReactNode> = {
+    'venue-overview': <Building2 className="w-5 h-5" />,
     'venue-screen-map': <Map className="w-5 h-5" />,
+    'display-specs': <FileText className="w-5 h-5" />,
     'led-zones': <Monitor className="w-5 h-5" />,
+    'custom-content': <Palette className="w-5 h-5" />,
   };
 
   return (
@@ -137,7 +144,7 @@ const CreativeGuideView = () => {
               />
               <div className="hidden sm:block">
                 <h1 className="text-lg font-semibold text-gradient-gold">Creative Guide</h1>
-                <p className="text-xs text-muted-foreground">LED Zones & Screen Mapping</p>
+                <p className="text-xs text-muted-foreground">Digital Branding Specifications</p>
               </div>
             </div>
 
@@ -153,17 +160,17 @@ const CreativeGuideView = () => {
         <nav className="relative mb-8 hidden lg:block">
           <div 
             ref={scrollContainerRef}
-            className="flex gap-4 justify-center"
+            className="flex gap-3 justify-center flex-wrap"
           >
             {creativeGuideCategories.map((cat, index) => (
               <motion.button
                 key={cat.key}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(cat.key)}
-                className={`px-6 py-4 rounded-2xl font-medium whitespace-nowrap flex items-center gap-3 transition-all touch-manipulation select-none ${
+                className={`px-5 py-3 rounded-2xl font-medium whitespace-nowrap flex items-center gap-2.5 transition-all touch-manipulation select-none ${
                   selectedCategory === cat.key
                     ? 'bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground shadow-lg'
                     : 'glass hover:bg-primary/10 hover:border-primary/30 text-foreground active:scale-95'
@@ -172,7 +179,6 @@ const CreativeGuideView = () => {
                 {categoryIcons[cat.key]}
                 <div className="text-left">
                   <span className="block text-sm font-semibold">{cat.label}</span>
-                  <span className="block text-xs opacity-70">{cat.description}</span>
                 </div>
               </motion.button>
             ))}
@@ -200,6 +206,20 @@ const CreativeGuideView = () => {
             <p className="text-xs text-muted-foreground">
               {creativeGuideCategories[currentCategoryIndex]?.description}
             </p>
+            {/* Mobile dot indicators */}
+            <div className="flex justify-center gap-1.5 mt-2">
+              {creativeGuideCategories.map((cat, index) => (
+                <button
+                  key={cat.key}
+                  onClick={() => setSelectedCategory(cat.key)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    index === currentCategoryIndex
+                      ? 'w-6 bg-primary'
+                      : 'w-1.5 bg-muted-foreground/30'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
           <Button
             variant="ghost"
@@ -214,6 +234,18 @@ const CreativeGuideView = () => {
 
         {/* Content */}
         <AnimatePresence mode="wait">
+          {selectedCategory === 'venue-overview' && (
+            <motion.div
+              key="venue-overview"
+              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <VenueOverviewView />
+            </motion.div>
+          )}
+
           {selectedCategory === 'venue-screen-map' && (
             <motion.div
               key="venue-screen-map"
@@ -223,6 +255,14 @@ const CreativeGuideView = () => {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="space-y-8"
             >
+              {/* Header */}
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-semibold text-gradient-gold">Interactive Screen Map</h2>
+                <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                  Tap on any screen to select it. Use quick select buttons to choose entire zones at once.
+                </p>
+              </div>
+
               {/* Quick select buttons */}
               <div className="glass rounded-xl p-4 border border-border/50">
                 <div className="flex items-center gap-2 mb-3">
@@ -268,9 +308,6 @@ const CreativeGuideView = () => {
                     {selectedZones.filter(id => outdoorZoneIds.includes(id)).length}/{outdoorZoneIds.length}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  High-visibility exterior LED screens serve as the first brand touchpoint for guests.
-                </p>
                 <OutdoorPlacementDiagram
                   selectedPlacements={selectedScreenIds.filter(id => 
                     ['Outdoor SR', 'Outdoor Arch', 'Outdoor SL'].includes(id)
@@ -289,9 +326,6 @@ const CreativeGuideView = () => {
                     {selectedZones.filter(id => indoorZoneIds.includes(id)).length}/{indoorZoneIds.length}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Large-scale interior LED walls act as the visual anchor of the venue.
-                </p>
                 <VenueScreenMap
                   selectedPlacements={selectedScreenIds.filter(id => 
                     !['Outdoor SR', 'Outdoor Arch', 'Outdoor SL'].includes(id)
@@ -300,6 +334,18 @@ const CreativeGuideView = () => {
                   interactive={true}
                 />
               </div>
+            </motion.div>
+          )}
+
+          {selectedCategory === 'display-specs' && (
+            <motion.div
+              key="display-specs"
+              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <DisplaySpecsView />
             </motion.div>
           )}
 
@@ -312,6 +358,14 @@ const CreativeGuideView = () => {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="space-y-8"
             >
+              {/* Header */}
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-semibold text-gradient-gold">LED Zone Details</h2>
+                <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                  Explore each LED zone with specifications, use cases, and recommended content types.
+                </p>
+              </div>
+
               {/* Outdoor Zones */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -337,7 +391,7 @@ const CreativeGuideView = () => {
               </div>
 
               {/* Indoor Zones by Subcategory */}
-              {['main-feature', 'architectural', 'vertical-transitional'].map(subcategory => {
+              {['booth', 'curves', 'vertical-transitional', 'main-feature'].map(subcategory => {
                 const zones = INDOOR_LED_ZONES.filter(z => z.subcategory === subcategory);
                 if (zones.length === 0) return null;
                 
@@ -346,14 +400,9 @@ const CreativeGuideView = () => {
                     <div className="flex items-center gap-2">
                       <Monitor className="w-5 h-5 text-primary" />
                       <h2 className="text-lg font-semibold text-foreground">
-                        {ZONE_SUBCATEGORY_LABELS[subcategory]}
+                        {ZONE_SUBCATEGORY_LABELS[subcategory] || subcategory}
                       </h2>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {subcategory === 'main-feature' && 'Large-scale interior LED walls act as the visual anchor of the venue.'}
-                      {subcategory === 'architectural' && 'Secondary LED surfaces integrated into architectural elements enhance spatial immersion.'}
-                      {subcategory === 'vertical-transitional' && 'Vertical LED displays and transitional screens connect guest movement throughout the venue.'}
-                    </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {zones.map(zone => (
                         <LEDZoneCard
@@ -369,12 +418,24 @@ const CreativeGuideView = () => {
               })}
             </motion.div>
           )}
+
+          {selectedCategory === 'custom-content' && (
+            <motion.div
+              key="custom-content"
+              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <CustomContentView />
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
-      {/* Selection Summary */}
+      {/* Selection Summary - only show on interactive pages */}
       <AnimatePresence>
-        {selectedZones.length > 0 && (
+        {selectedZones.length > 0 && (selectedCategory === 'venue-screen-map' || selectedCategory === 'led-zones') && (
           <ZoneSelectionSummary
             selectedZones={selectedZones}
             onToggleZone={toggleZone}
