@@ -347,7 +347,37 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
 
 export const ALL_LED_ZONES = [...OUTDOOR_LED_ZONES, ...INDOOR_LED_ZONES];
 
-// Creative Guide categories - expanded with PDF content
+// Zone ID to Screen ID mapping for venue diagram highlighting
+export const ZONE_TO_SCREEN_MAP: Record<string, string[]> = {
+  // Outdoor zones
+  'outdoor-sr': ['Outdoor SR'],
+  'outdoor-arch': ['Outdoor Arch'],
+  'outdoor-sl': ['Outdoor SL'],
+  // Indoor zones - map to VenueScreenMap segment IDs
+  'sol-rays': ['Sol Rays'],
+  'center': ['Center'],
+  'dj-booth': ['DJ Booth'],
+  'sr-booth': ['DJ Booth'], // Part of DJ booth area
+  'sl-booth': ['DJ Booth'], // Part of DJ booth area
+  'curves-sl': ['Curves SL'],
+  'curves-sr': ['Curves SR'],
+  'imag-sl': ['IMAG SL'],
+  'imag-sr': ['IMAG SR'],
+};
+
+// Screen ID to Zone ID reverse mapping
+export const SCREEN_TO_ZONE_MAP: Record<string, string[]> = Object.entries(ZONE_TO_SCREEN_MAP).reduce(
+  (acc, [zoneId, screenIds]) => {
+    screenIds.forEach(screenId => {
+      if (!acc[screenId]) acc[screenId] = [];
+      if (!acc[screenId].includes(zoneId)) acc[screenId].push(zoneId);
+    });
+    return acc;
+  },
+  {} as Record<string, string[]>
+);
+
+// Creative Guide categories - expanded with PDF content (removed separate screen map)
 export const creativeGuideCategories = [
   { 
     key: 'introduction', 
@@ -362,12 +392,6 @@ export const creativeGuideCategories = [
     icon: 'Building2'
   },
   { 
-    key: 'venue-screen-map', 
-    label: 'Screen Map', 
-    description: 'Interactive LED zone selection',
-    icon: 'Map'
-  },
-  { 
     key: 'display-specs', 
     label: 'Display Specs', 
     description: 'Technical specifications by display type',
@@ -376,7 +400,7 @@ export const creativeGuideCategories = [
   { 
     key: 'led-zones', 
     label: 'LED Zones', 
-    description: 'Detailed zone info and use cases',
+    description: 'Interactive zone selection & specs',
     icon: 'Monitor'
   },
   { 
