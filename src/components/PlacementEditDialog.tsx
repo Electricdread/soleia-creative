@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Check, X, Sun, Monitor, Zap, Trash2 } from 'lucide-react';
 import VenueScreenMap, { SCREEN_GROUPS } from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
+import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 
 const OUTDOOR_PLACEMENTS = [
   'Outdoor SR',
@@ -31,12 +32,27 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
 }) => {
   const [selectedPlacements, setSelectedPlacements] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'outdoor' | 'indoor'>('outdoor');
 
   useEffect(() => {
     if (open) {
       setSelectedPlacements([...currentPlacements]);
     }
   }, [open, currentPlacements]);
+
+  const handleSwipeLeft = useCallback(() => {
+    setActiveTab('indoor');
+  }, []);
+
+  const handleSwipeRight = useCallback(() => {
+    setActiveTab('outdoor');
+  }, []);
+
+  const swipeHandlers = useSwipeNavigation({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: handleSwipeRight,
+    threshold: 50,
+  });
 
   const handlePlacementToggle = (placement: string) => {
     setSelectedPlacements(prev =>
@@ -142,7 +158,7 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
             </Button>
           </div>
 
-          <Tabs defaultValue="outdoor" className="w-full">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'outdoor' | 'indoor')} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-3 h-10">
               <TabsTrigger value="outdoor" className="gap-1.5 text-xs">
                 <Sun className="w-3.5 h-3.5" />
@@ -154,21 +170,31 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="outdoor" className="mt-0">
-              <OutdoorPlacementDiagram
-                selectedPlacements={selectedPlacements}
-                onToggle={handlePlacementToggle}
-                interactive
-              />
-            </TabsContent>
+            <div 
+              {...swipeHandlers}
+              className="touch-pan-y"
+            >
+              <TabsContent value="outdoor" className="mt-0">
+                <OutdoorPlacementDiagram
+                  selectedPlacements={selectedPlacements}
+                  onToggle={handlePlacementToggle}
+                  interactive
+                />
+              </TabsContent>
+              
+              <TabsContent value="indoor" className="mt-0 space-y-3">
+                <VenueScreenMap
+                  selectedPlacements={selectedPlacements}
+                  onToggle={handlePlacementToggle}
+                  interactive
+                />
+              </TabsContent>
+            </div>
             
-            <TabsContent value="indoor" className="mt-0 space-y-3">
-              <VenueScreenMap
-                selectedPlacements={selectedPlacements}
-                onToggle={handlePlacementToggle}
-                interactive
-              />
-            </TabsContent>
+            {/* Swipe hint for mobile */}
+            <p className="text-center text-[10px] text-muted-foreground mt-2 sm:hidden">
+              Swipe left/right to switch tabs
+            </p>
           </Tabs>
 
           {/* Selected Zones Summary - Compact List */}

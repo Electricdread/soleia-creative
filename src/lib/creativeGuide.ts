@@ -397,6 +397,7 @@ export const ZONE_SUBCATEGORY_LABELS: Record<string, string> = {
 export const GUIDE_IMAGES = {
   cover: '/creative-guide/cover.jpg',
   venueLayout: '/creative-guide/venue-layout.jpg',
+  venueBlueprint: '/creative-guide/venue-blueprint.png',
   visualization3d: '/creative-guide/3d-visualization.jpg',
   tvSpecs: '/creative-guide/tv-specs.jpg',
   tvDisplay: '/creative-guide/tv-display.jpg',
@@ -408,6 +409,31 @@ export const GUIDE_IMAGES = {
   tickerDisplay: '/creative-guide/ticker-display.jpg',
   customContent: '/creative-guide/custom-content.jpg',
   examples: '/creative-guide/examples.jpg',
+};
+
+// Blueprint venue details for PDF print
+export const VENUE_BLUEPRINT_DETAILS = {
+  cabanas: [
+    { label: 'Cabanas 1-10', location: 'North side', tvDisplays: true },
+    { label: 'Cabanas 11-15', location: 'South side', tvDisplays: true },
+  ],
+  bungalows: [
+    { label: 'Bungalows 1-9', location: 'West side', tvDisplays: true },
+  ],
+  ledScreens: [
+    { label: 'LED Screen', location: 'Main stage area' },
+    { label: 'LED Curves', location: 'Around venue perimeter' },
+  ],
+  tvDisplays: [
+    { label: 'TV Displays', location: 'Cabanas & Bungalows area' },
+  ],
+  pools: [
+    { label: 'Main Pool', location: 'Center of venue' },
+  ],
+  mezzanine: [
+    { label: 'Mezzanine Level 1', location: 'East side' },
+    { label: 'Mezzanine Level 2', location: 'East side upper' },
+  ],
 };
 
 // Custom content creation info
