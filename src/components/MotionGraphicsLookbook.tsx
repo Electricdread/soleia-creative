@@ -362,20 +362,35 @@ const MotionGraphicsLookbook = () => {
         
         <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
           {/* Mobile Header Bar */}
-          <div className="flex items-center justify-center lg:hidden mb-4">
-            <div className="absolute left-4">
-              <MobileMenu
-                selectedCategory={selectedCategory}
-                onCategoryChange={(cat) => {
-                  setSelectedCategory(cat);
-                }}
+          <div className="flex flex-col items-center lg:hidden">
+            <div className="flex items-center justify-center w-full mb-3 relative">
+              <div className="absolute left-0">
+                <MobileMenu
+                  selectedCategory={selectedCategory}
+                  onCategoryChange={(cat) => {
+                    setSelectedCategory(cat);
+                  }}
+                />
+              </div>
+              <img 
+                src={soleiaLogo} 
+                alt="Soleia" 
+                className="h-12 object-contain"
               />
             </div>
-            <img 
-              src={soleiaLogo} 
-              alt="Soleia" 
-              className="h-12 object-contain"
-            />
+            {/* Mobile Actions Row */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/creative-guide')}
+                className="gap-1.5 h-9 px-3 border-primary/30 hover:bg-primary/10 hover:border-primary/50"
+              >
+                <Map className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs">Creative Guide</span>
+              </Button>
+              <PoweredByShowBlox variant="header" />
+            </div>
           </div>
           
           {/* Centered Hero Logo Layout - Desktop */}
