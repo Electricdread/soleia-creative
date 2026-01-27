@@ -3,7 +3,17 @@ import { motion } from 'framer-motion';
 import { Sparkles, Zap, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
-export function IntroductionView() {
+interface IntroductionViewProps {
+  onNavigate?: (category: string) => void;
+}
+
+export function IntroductionView({ onNavigate }: IntroductionViewProps) {
+  const handleWhatsInsideClick = () => {
+    if (onNavigate) {
+      onNavigate('venue-overview');
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -98,7 +108,13 @@ export function IntroductionView() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="glass border-primary/40 bg-gradient-to-br from-primary/5 to-accent/5 overflow-hidden">
+        <Card 
+          className="glass border-primary/40 bg-gradient-to-br from-primary/5 to-accent/5 overflow-hidden cursor-pointer hover:border-primary/60 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4)] transition-all duration-300 active:scale-[0.98]"
+          onClick={handleWhatsInsideClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && handleWhatsInsideClick()}
+        >
           <CardContent className="p-6 sm:p-8 text-center space-y-4">
             <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10 w-fit mx-auto">
               <Target className="w-6 h-6 text-primary" />
@@ -107,6 +123,9 @@ export function IntroductionView() {
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
               This guide outlines the available interactive experiences, content development options, pricing guidelines, and operational terms to help you build a successful activation at Soleia.
             </p>
+            <div className="text-xs text-primary/70 font-medium">
+              Tap to explore →
+            </div>
           </CardContent>
         </Card>
       </motion.div>
