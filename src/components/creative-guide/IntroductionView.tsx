@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, FileText, CheckCircle, PhoneCall, AlertCircle, Sparkles, Download } from 'lucide-react';
+import { DollarSign, FileText, CheckCircle, PhoneCall, AlertCircle, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -190,28 +190,6 @@ export function IntroductionView() {
             </p>
           </CardContent>
         </Card>
-      </motion.div>
-
-      {/* Download CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="text-center"
-      >
-        <Button 
-          size="lg" 
-          className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
-          asChild
-        >
-          <a href="/creative-guide/After_Effects_Template.zip" download>
-            <Download className="w-5 h-5" />
-            Pixelmap Specs and After Effects Template
-          </a>
-        </Button>
-        <p className="text-xs text-muted-foreground mt-2">
-          Download the After Effects template and pixelmap specifications
-        </p>
       </motion.div>
     </div>
   );
