@@ -1,18 +1,49 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Zap, Target } from 'lucide-react';
+import { Sparkles, Zap, Target, Volume2, VolumeX } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import soleiaIntroVideo from '@/assets/soleia-intro-video.webm';
 
 interface IntroductionViewProps {
   onNavigate?: (category: string) => void;
 }
 
 export function IntroductionView({ onNavigate }: IntroductionViewProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+
   const handleWhatsInsideClick = () => {
     if (onNavigate) {
       onNavigate('venue-overview');
     }
   };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
+    }
+  };
+
+  // Auto-play with audio on mount (browsers may block unmuted autoplay)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      // Start muted to ensure autoplay works, then try to unmute
+      video.muted = true;
+      video.play().then(() => {
+        // Try to unmute after successful play
+        video.muted = false;
+        setIsMuted(false);
+      }).catch(() => {
+        // If unmuted autoplay fails, keep it muted
+        video.muted = true;
+        setIsMuted(true);
+        video.play().catch(() => {});
+      });
+    }
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -24,7 +55,7 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
         </p>
       </div>
 
-      {/* Hero Image */}
+      {/* Hero Video */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -37,15 +68,33 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
             
-            <img 
-              src="/creative-guide/intro-hero.jpg" 
-              alt="Soleia LED venue featuring Sol Rays and immersive LED displays"
+            <video 
+              ref={videoRef}
+              src={soleiaIntroVideo}
+              autoPlay
+              loop
+              playsInline
+              muted
               className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
             />
             
+            {/* Audio mute toggle button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMute}
+              className="absolute bottom-4 right-4 z-20 bg-background/80 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg"
+            >
+              {isMuted ? (
+                <VolumeX className="w-5 h-5 text-primary" />
+              ) : (
+                <Volume2 className="w-5 h-5 text-primary" />
+              )}
+            </Button>
+            
             {/* Theme-aware gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none dark:from-background/90 dark:via-background/30" />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-transparent pointer-events-none dark:from-background/50" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none dark:from-background/70" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-transparent pointer-events-none dark:from-background/40" />
             
             {/* Corner accents */}
             <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
