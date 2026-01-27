@@ -12,11 +12,11 @@ import {
   Building2,
   FileText,
   Palette,
-  BookOpen
+  BookOpen,
+  Printer
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
 import { useIsMobile } from '@/hooks/use-mobile';
 import VenueScreenMap from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
@@ -152,8 +152,27 @@ const CreativeGuideView = () => {
               </div>
             </div>
 
-            {/* Right side: ShowBlox (also serves as theme toggle) */}
-            <PoweredByShowBlox variant="header" />
+            {/* Right side: Print button and ShowBlox (theme toggle) */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/creative-guide/print')}
+                className="gap-2 hidden sm:flex"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print Guide</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/creative-guide/print')}
+                className="sm:hidden"
+              >
+                <Printer className="w-4 h-4" />
+              </Button>
+              <PoweredByShowBlox variant="header" />
+            </div>
           </div>
         </div>
       </header>

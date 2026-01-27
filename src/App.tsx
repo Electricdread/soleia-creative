@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
+import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/creative-guide" element={<CreativeGuide />} />
+              <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
               <Route path="/session/:token" element={<SharedSession />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
