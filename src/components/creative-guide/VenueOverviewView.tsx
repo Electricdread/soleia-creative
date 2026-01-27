@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, Eye, Sun, Layers, Monitor, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Building2, MapPin, Eye, Sun, Layers, Monitor, ArrowRight, CheckCircle2, Printer, Map } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { GUIDE_IMAGES } from '@/lib/creativeGuide';
+import { GUIDE_IMAGES, VENUE_BLUEPRINT_DETAILS } from '@/lib/creativeGuide';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import showbloxIcon from '@/assets/showblox-icon.png';
 
 const OUTDOOR_ZONES = [
   {
@@ -59,6 +61,197 @@ const CONTENT_STRATEGY = [
   'Strategic content pacing between focal and ambient displays',
   'Seamless transitions between branded moments and atmospheric visuals',
 ];
+
+const handlePrintBlueprint = () => {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return;
+
+  const details = VENUE_BLUEPRINT_DETAILS;
+  
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Soleia Venue Blueprint</title>
+      <style>
+        @media print {
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          background: #f8f9fa;
+          color: #1a1a1a;
+          line-height: 1.6;
+        }
+        .page {
+          max-width: 11in;
+          margin: 0 auto;
+          background: white;
+          padding: 0.5in;
+        }
+        .header {
+          text-align: center;
+          padding-bottom: 20px;
+          border-bottom: 2px solid #d4a853;
+          margin-bottom: 20px;
+        }
+        .header h1 {
+          font-size: 28px;
+          font-weight: 300;
+          color: #1a1a1a;
+          letter-spacing: 2px;
+          margin-bottom: 5px;
+        }
+        .header p {
+          font-size: 12px;
+          color: #666;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .blueprint-image {
+          width: 100%;
+          max-height: 500px;
+          object-fit: contain;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+        .details-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 15px;
+          margin-bottom: 20px;
+        }
+        .detail-card {
+          background: #fafafa;
+          border: 1px solid #e8e8e8;
+          border-radius: 8px;
+          padding: 15px;
+        }
+        .detail-card h3 {
+          font-size: 14px;
+          font-weight: 600;
+          color: #d4a853;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .detail-item {
+          font-size: 12px;
+          color: #444;
+          padding: 4px 0;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-item strong {
+          color: #1a1a1a;
+        }
+        .footer {
+          text-align: center;
+          padding-top: 20px;
+          border-top: 1px solid #e8e8e8;
+          font-size: 10px;
+          color: #888;
+        }
+        .powered-by {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          margin-top: 8px;
+        }
+        .powered-by img {
+          height: 20px;
+          width: auto;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="page">
+        <div class="header">
+          <h1>SOLEIA VENUE BLUEPRINT</h1>
+          <p>Complete Venue Layout with Display Locations</p>
+        </div>
+        
+        <img src="/creative-guide/venue-blueprint.png" alt="Venue Blueprint" class="blueprint-image" />
+        
+        <div class="details-grid">
+          <div class="detail-card">
+            <h3>Cabanas</h3>
+            ${details.cabanas.map(c => `
+              <div class="detail-item">
+                <strong>${c.label}</strong> - ${c.location}
+                ${c.tvDisplays ? '<br><span style="color: #d4a853; font-size: 11px;">• TV Displays</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="detail-card">
+            <h3>Bungalows</h3>
+            ${details.bungalows.map(b => `
+              <div class="detail-item">
+                <strong>${b.label}</strong> - ${b.location}
+                ${b.tvDisplays ? '<br><span style="color: #d4a853; font-size: 11px;">• TV Displays</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="detail-card">
+            <h3>LED Screens</h3>
+            ${details.ledScreens.map(l => `
+              <div class="detail-item">
+                <strong>${l.label}</strong> - ${l.location}
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="detail-card">
+            <h3>TV Displays</h3>
+            ${details.tvDisplays.map(t => `
+              <div class="detail-item">
+                <strong>${t.label}</strong> - ${t.location}
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="detail-card">
+            <h3>Pool Areas</h3>
+            ${details.pools.map(p => `
+              <div class="detail-item">
+                <strong>${p.label}</strong> - ${p.location}
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="detail-card">
+            <h3>Mezzanine</h3>
+            ${details.mezzanine.map(m => `
+              <div class="detail-item">
+                <strong>${m.label}</strong> - ${m.location}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="footer">
+          <p>Generated from Soleia Creative Guide - ${new Date().toLocaleDateString()}</p>
+          <div class="powered-by">
+            <span>Powered by</span>
+            <img src="/soleia-icon.png" alt="ShowBlox" onerror="this.style.display='none'" />
+          </div>
+        </div>
+      </div>
+      <script>
+        window.onload = function() {
+          setTimeout(function() { window.print(); }, 500);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+};
 
 export function VenueOverviewView() {
   return (
@@ -156,7 +349,87 @@ export function VenueOverviewView() {
         </Card>
       </motion.div>
 
-      {/* 3D Visualization */}
+      {/* Venue Blueprint - Printable */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.075 }}
+      >
+        <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
+          <div className="relative">
+            {/* Elegant frame with gold accent borders */}
+            <div className="absolute inset-0 z-10 pointer-events-none border-4 border-primary/10 dark:border-primary/20" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
+            
+            <img 
+              src={GUIDE_IMAGES.venueBlueprint} 
+              alt="Soleia Venue Blueprint"
+              className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02] bg-slate-100"
+            />
+            
+            {/* Theme-aware gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none dark:from-background/90 dark:via-background/30" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-transparent pointer-events-none dark:from-background/50" />
+            
+            {/* Corner accents */}
+            <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
+            <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 rounded-tr-sm z-10" />
+            <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 rounded-bl-sm z-10" />
+            <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-sm z-10" />
+          </div>
+          <CardContent className="p-4 sm:p-6 bg-gradient-to-b from-transparent to-primary/5 dark:to-primary/10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10">
+                  <Map className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gradient-gold">Venue Blueprint</h3>
+                  <p className="text-xs text-muted-foreground">Detailed layout with cabanas, TVs, LED screens & more</p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrintBlueprint}
+                className="gap-2 border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <Printer className="w-4 h-4" />
+                <span className="hidden sm:inline">Print Blueprint</span>
+                <span className="sm:hidden">Print</span>
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/5 to-blue-500/10 border border-blue-500/20 shadow-sm">
+                <p className="text-lg font-bold text-blue-500">15</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Cabanas</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/5 to-purple-500/10 border border-purple-500/20 shadow-sm">
+                <p className="text-lg font-bold text-purple-500">9</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Bungalows</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/5 to-amber-500/10 border border-amber-500/20 shadow-sm">
+                <p className="text-lg font-bold text-amber-500">24+</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">TV Displays</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/5 to-green-500/10 border border-green-500/20 shadow-sm">
+                <p className="text-lg font-bold text-green-500">6+</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">LED Screens</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/5 to-cyan-500/10 border border-cyan-500/20 shadow-sm">
+                <p className="text-lg font-bold text-cyan-500">1</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Main Pool</p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-rose-500/5 to-rose-500/10 border border-rose-500/20 shadow-sm">
+                <p className="text-lg font-bold text-rose-500">2</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Mezzanine</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
