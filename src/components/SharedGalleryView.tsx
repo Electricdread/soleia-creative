@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import ClipThumbnail from '@/components/ClipThumbnail';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import SharedSelectionsSummary from '@/components/SharedSelectionsSummary';
-import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
+import VenueScreenMap, { SCREEN_GROUPS } from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import PlacementBadges from '@/components/PlacementBadges';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -749,20 +749,11 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
                       <TabsTrigger value="outdoor">Outdoor</TabsTrigger>
                     </TabsList>
                     <TabsContent value="interior" className="mt-4">
-                      <VenuePlacementDiagram
+                      <VenueScreenMap
                         selectedPlacements={detailPlacements}
                         onToggle={toggleDetailPlacement}
+                        interactive
                       />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full mt-3"
-                        onClick={() => toggleDetailPlacement('Full Interior')}
-                      >
-                        {ALL_INTERIOR_SCREENS.every(s => detailPlacements.includes(s)) 
-                          ? 'Clear All Interior' 
-                          : 'Select All Interior'}
-                      </Button>
                     </TabsContent>
                     <TabsContent value="outdoor" className="mt-4">
                       <OutdoorPlacementDiagram
