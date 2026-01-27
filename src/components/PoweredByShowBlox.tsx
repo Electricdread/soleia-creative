@@ -29,20 +29,13 @@ export function PoweredByShowBlox({ className = '', variant = 'footer' }: Powere
         aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
       >
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider hidden sm:inline group-hover:text-primary transition-colors">
-          {mounted && theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          Powered by
         </span>
-        <div className="flex items-center gap-1">
-          {mounted && theme === 'light' && (
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wider opacity-60">
-              Powered by
-            </span>
-          )}
-          <img 
-            src={showbloxIcon} 
-            alt="ShowBlox - Toggle Theme" 
-            className="h-5 sm:h-6 w-auto object-contain dark:invert transition-transform group-hover:scale-110"
-          />
-        </div>
+        <img 
+          src={showbloxIcon} 
+          alt="ShowBlox - Toggle Theme" 
+          className="h-5 sm:h-6 w-auto object-contain dark:invert transition-transform group-hover:scale-110"
+        />
       </button>
     );
   }
