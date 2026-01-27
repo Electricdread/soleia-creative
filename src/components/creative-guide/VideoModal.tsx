@@ -36,9 +36,11 @@ export function VideoModal({ isOpen, onClose, videoSrc, posterSrc, title }: Vide
   }, [isPlaying]);
 
   useEffect(() => {
+    // Reset state when modal opens (no auto-play)
     if (isOpen && videoRef.current) {
-      videoRef.current.play();
-      setIsPlaying(true);
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+      setIsPlaying(false);
     }
     return () => {
       if (controlsTimeoutRef.current) {
