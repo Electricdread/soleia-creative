@@ -1,11 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Tv, Monitor, Layers, Download, Printer } from 'lucide-react';
+import { FileText, Tv, Monitor, Layers, Download, Printer, Image } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
+import { TickerVideoCarousel } from './TickerVideoCarousel';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const TICKER_MAPPING_IMAGE_PATH = 'marquee-ticker-media/ticker-mapping.png';
 
 interface DisplaySpecsViewProps {
   onSelectDisplay?: (displayId: string) => void;
@@ -35,6 +39,19 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 }
 
 function DisplayCard({ display }: { display: DisplayType }) {
+  const isTicker = display.category === 'ticker';
+  
+  const handleDownloadMapping = () => {
+    const url = `${SUPABASE_URL}/storage/v1/object/public/clips/${TICKER_MAPPING_IMAGE_PATH}`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'ticker-mapping.png';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -44,14 +61,18 @@ function DisplayCard({ display }: { display: DisplayType }) {
       className="h-full group cursor-pointer"
     >
       <Card className="h-full glass border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4),0_0_80px_-20px_hsl(var(--primary)/0.2)]">
-        {/* Image */}
+        {/* Image or Video Carousel */}
         <div className="relative aspect-video overflow-hidden">
-          <img 
-            src={display.image} 
-            alt={display.name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+          {isTicker ? (
+            <TickerVideoCarousel />
+          ) : (
+            <img 
+              src={display.image} 
+              alt={display.name}
+              className="w-full h-full object-cover"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent pointer-events-none" />
           <Badge 
             className={`absolute top-3 left-3 ${categoryColors[display.category]} text-xs`}
           >
@@ -92,6 +113,21 @@ function DisplayCard({ display }: { display: DisplayType }) {
             <TabsContent value="graphic" className="mt-3 space-y-1">
               <SpecRow label="Resolution" value={display.graphicSpecs.resolution} />
               <SpecRow label="Format" value={display.graphicSpecs.format} />
+              
+              {/* Mapping image download for Ticker display */}
+              {isTicker && (
+                <div className="pt-3 mt-2 border-t border-border/30">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadMapping}
+                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                  >
+                    <Image className="w-3.5 h-3.5" />
+                    Download Mapping Image
+                  </Button>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
