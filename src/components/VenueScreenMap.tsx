@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface VenueScreenMapProps {
@@ -7,105 +7,105 @@ interface VenueScreenMapProps {
   interactive?: boolean;
 }
 
-// Screen segments based on the venue image
-// Coordinates are percentages of viewBox (0-100)
+// Screen segment IDs that can be selected - matches the SVG element IDs
 const SCREEN_SEGMENTS = [
-  // Radial ceiling screens (blue LED strips radiating from center)
-  { id: 'Radial 01', points: '960,80 980,80 1050,400 940,400', label: 'R1', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 02', points: '1000,90 1030,100 1150,380 1070,360', label: 'R2', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 03', points: '1060,110 1100,130 1280,340 1180,310', label: 'R3', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 04', points: '1140,150 1200,180 1420,310 1320,270', label: 'R4', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 05', points: '1240,200 1320,240 1560,300 1460,260', label: 'R5', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 06', points: '1360,260 1460,310 1700,350 1600,300', label: 'R6', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 07', points: '940,80 920,80 870,400 980,400', label: 'R7', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 08', points: '900,90 870,100 750,380 830,360', label: 'R8', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 09', points: '840,110 800,130 620,340 720,310', label: 'R9', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 10', points: '760,150 700,180 480,310 580,270', label: 'R10', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 11', points: '660,200 580,240 340,300 440,260', label: 'R11', color: 'hsl(220, 100%, 55%)' },
-  { id: 'Radial 12', points: '540,260 440,310 200,350 300,300', label: 'R12', color: 'hsl(220, 100%, 55%)' },
-  
-  // Side curved screens (teal/cyan on sides)
-  { id: 'Curves SR', points: '0,340 180,340 200,580 0,580', label: 'CURVES SR', color: 'hsl(170, 80%, 50%)' },
-  { id: 'Curves SL', points: '1720,340 1920,340 1920,580 1700,580', label: 'CURVES SL', color: 'hsl(170, 80%, 50%)' },
-  
-  // IMAG screens (yellow and red large screens)
-  { id: 'IMAG SR', points: '680,530 880,530 920,720 640,720', label: 'IMAG SR', color: 'hsl(55, 100%, 55%)' },
-  { id: 'IMAG SL', points: '1040,530 1240,530 1280,720 1000,720', label: 'IMAG SL', color: 'hsl(0, 80%, 55%)' },
-  
-  // Center screen (green behind DJ)
-  { id: 'Center', points: '890,530 1030,530 1030,690 890,690', label: 'CENTER', color: 'hsl(140, 80%, 50%)' },
-  
-  // DJ Booth (magenta/pink strip)
-  { id: 'DJ Booth', points: '770,740 1150,740 1150,790 770,790', label: 'DJ BOOTH', color: 'hsl(300, 80%, 60%)' },
-] as const;
+  // Radial ceiling screens
+  { id: 'Radial 01', group: 'radials' },
+  { id: 'Radial 02', group: 'radials' },
+  { id: 'Radial 03', group: 'radials' },
+  { id: 'Radial 04', group: 'radials' },
+  { id: 'Radial 05', group: 'radials' },
+  { id: 'Radial 06', group: 'radials' },
+  { id: 'Radial 07', group: 'radials' },
+  { id: 'Radial 08', group: 'radials' },
+  { id: 'Radial 09', group: 'radials' },
+  { id: 'Radial 10', group: 'radials' },
+  { id: 'Radial 11', group: 'radials' },
+  { id: 'Radial 12', group: 'radials' },
+  // Side curves
+  { id: 'Curves SR', group: 'curves' },
+  { id: 'Curves SL', group: 'curves' },
+  // IMAG screens
+  { id: 'IMAG SR', group: 'imag' },
+  { id: 'IMAG SL', group: 'imag' },
+  // Center and DJ
+  { id: 'Center', group: 'center' },
+  { id: 'DJ Booth', group: 'djBooth' },
+];
 
 const VenueScreenMap: React.FC<VenueScreenMapProps> = ({
   selectedPlacements,
   onToggle,
   interactive = true
 }) => {
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Load the SVG overlay
+    fetch('/screens-overlay.svg')
+      .then(res => res.text())
+      .then(svg => {
+        // Parse and modify the SVG to make it interactive
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svg, 'image/svg+xml');
+        const svgEl = doc.querySelector('svg');
+        
+        if (svgEl) {
+          // Remove display:none from styles
+          const style = svgEl.querySelector('style');
+          if (style) {
+            style.textContent = style.textContent?.replace('display: none;', '') || '';
+          }
+          
+          // Add class to all path/polygon/rect elements for styling
+          const shapes = svgEl.querySelectorAll('path, polygon, rect, ellipse, circle');
+          shapes.forEach(shape => {
+            shape.classList.add('screen-segment');
+          });
+          
+          setSvgContent(svgEl.outerHTML);
+        }
+      })
+      .catch(err => console.error('Failed to load SVG overlay:', err));
+  }, []);
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!interactive || !onToggle) return;
+    
+    const target = e.target as SVGElement;
+    const id = target.id || target.closest('[id]')?.id;
+    
+    if (id && SCREEN_SEGMENTS.some(s => s.id === id)) {
+      onToggle(id);
+    }
+  };
+
   return (
     <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden border border-border/50">
       {/* Background venue image */}
       <img 
         src="/venue-screens.png" 
         alt="Venue layout"
-        className="absolute inset-0 w-full h-full object-cover opacity-60"
+        className="absolute inset-0 w-full h-full object-cover opacity-70"
       />
       
-      {/* SVG overlay for interactive screen segments */}
+      {/* SVG overlay - loaded from file */}
+      <div 
+        className="absolute inset-0 w-full h-full venue-screen-overlay"
+        onClick={handleClick}
+        dangerouslySetInnerHTML={svgContent ? { __html: svgContent } : undefined}
+        style={{
+          '--selected-screens': selectedPlacements.map(p => `#${p.replace(/\s/g, '_')}`).join(',')
+        } as React.CSSProperties}
+      />
+      
+      {/* Custom overlay for selection state - since we can't easily modify inline SVG */}
       <svg 
-        className="absolute inset-0 w-full h-full" 
+        className="absolute inset-0 w-full h-full pointer-events-none" 
         viewBox="0 0 1920 1080" 
         preserveAspectRatio="xMidYMid slice"
-        style={{ pointerEvents: 'none' }}
       >
-        {SCREEN_SEGMENTS.map((segment) => {
-          const isSelected = selectedPlacements.includes(segment.id);
-          const isInteractive = interactive && onToggle;
-
-          return (
-            <g key={segment.id}>
-              {/* Screen polygon */}
-              <polygon
-                points={segment.points}
-                fill={isSelected ? segment.color : `${segment.color}20`}
-                stroke={isSelected ? 'hsl(45, 100%, 60%)' : segment.color}
-                strokeWidth={isSelected ? 4 : 2}
-                opacity={isSelected ? 0.85 : 0.5}
-                className={cn(
-                  'transition-all duration-200',
-                  isInteractive && 'cursor-pointer hover:opacity-80'
-                )}
-                style={{ pointerEvents: isInteractive ? 'auto' : 'none' }}
-                onClick={() => isInteractive && onToggle(segment.id)}
-                onMouseEnter={(e) => {
-                  if (isInteractive && !isSelected) {
-                    e.currentTarget.style.fill = `${segment.color}50`;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (isInteractive && !isSelected) {
-                    e.currentTarget.style.fill = `${segment.color}20`;
-                  }
-                }}
-              />
-              
-              {/* Glow effect for selected */}
-              {isSelected && (
-                <polygon
-                  points={segment.points}
-                  fill="none"
-                  stroke="hsl(45, 100%, 60%)"
-                  strokeWidth="6"
-                  opacity="0.4"
-                  className="animate-pulse"
-                  style={{ pointerEvents: 'none' }}
-                />
-              )}
-            </g>
-          );
-        })}
+        {/* Selection indicators will be rendered here based on selectedPlacements */}
       </svg>
       
       {/* Legend / Title */}
