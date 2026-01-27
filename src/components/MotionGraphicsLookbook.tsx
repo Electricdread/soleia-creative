@@ -21,7 +21,7 @@ import soleiaLogo from '@/assets/soleia-logo-new.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
 import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
-import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
+import VenueScreenMap, { SCREEN_GROUPS } from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import { MobileMenu } from '@/components/MobileMenu';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -998,9 +998,10 @@ const MotionGraphicsLookbook = () => {
                           </button>
                         ))}
                       </div>
-                      <VenuePlacementDiagram 
+                      <VenueScreenMap 
                         selectedPlacements={previewPlacements} 
                         onToggle={togglePreviewPlacement}
+                        interactive
                       />
                     </TabsContent>
                     
