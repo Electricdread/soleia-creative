@@ -8,7 +8,6 @@ interface PlacementBadgesProps {
   compact?: boolean;
 }
 
-const INTERIOR_PLACEMENTS = ['Curves SR', 'IMAG SR', 'Center', 'IMAG SL', 'SL Curves', 'DJ Booth'];
 const OUTDOOR_PLACEMENTS = ['Outdoor SR', 'Outdoor Arch', 'Outdoor SL'];
 
 const PlacementBadges: React.FC<PlacementBadgesProps> = ({ 
@@ -18,8 +17,8 @@ const PlacementBadges: React.FC<PlacementBadgesProps> = ({
 }) => {
   if (!placements || placements.length === 0) return null;
 
-  const interiorCount = placements.filter(p => INTERIOR_PLACEMENTS.includes(p)).length;
   const outdoorCount = placements.filter(p => OUTDOOR_PLACEMENTS.includes(p)).length;
+  const interiorCount = placements.length - outdoorCount;
 
   if (compact) {
     // Compact mode: just show icons with counts
@@ -45,7 +44,7 @@ const PlacementBadges: React.FC<PlacementBadgesProps> = ({
   return (
     <div className={`flex flex-wrap gap-1 ${className}`}>
       {placements.map((placement) => {
-        const isInterior = INTERIOR_PLACEMENTS.includes(placement);
+        const isInterior = !OUTDOOR_PLACEMENTS.includes(placement);
         return (
           <Badge 
             key={placement}

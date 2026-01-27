@@ -2,18 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check, X, Home, TreePine } from 'lucide-react';
-import VenuePlacementDiagram from '@/components/VenuePlacementDiagram';
+import { Check, X, Home, TreePine, Zap } from 'lucide-react';
+import VenueScreenMap, { SCREEN_GROUPS } from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
-
-const INTERIOR_PLACEMENTS = [
-  'Curves SR',
-  'IMAG SR',
-  'Center',
-  'IMAG SL',
-  'SL Curves',
-  'DJ Booth'
-] as const;
 
 const OUTDOOR_PLACEMENTS = [
   'Outdoor SR',
@@ -55,6 +46,17 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
     );
   };
 
+  const handleBulkSelect = (group: string[]) => {
+    setSelectedPlacements(prev => {
+      const allSelected = group.every(p => prev.includes(p));
+      if (allSelected) {
+        return prev.filter(p => !group.includes(p));
+      } else {
+        return [...new Set([...prev, ...group])];
+      }
+    });
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -66,7 +68,7 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
   };
 
   const interiorCount = selectedPlacements.filter(p => 
-    INTERIOR_PLACEMENTS.includes(p as typeof INTERIOR_PLACEMENTS[number])
+    !OUTDOOR_PLACEMENTS.includes(p as typeof OUTDOOR_PLACEMENTS[number])
   ).length;
   
   const outdoorCount = selectedPlacements.filter(p => 
@@ -75,7 +77,7 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto p-0 gap-0">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
         <DialogHeader className="p-4 sm:p-6 pb-0">
           <DialogTitle className="text-lg font-light tracking-wide">
             Edit Screen Assignments
@@ -107,8 +109,48 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="interior" className="mt-0">
-              <VenuePlacementDiagram
+            <TabsContent value="interior" className="mt-0 space-y-4">
+              {/* Quick select buttons */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5"
+                  onClick={() => handleBulkSelect(SCREEN_GROUPS.radials)}
+                >
+                  <Zap className="w-3 h-3" />
+                  All Radials
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5"
+                  onClick={() => handleBulkSelect(SCREEN_GROUPS.curves)}
+                >
+                  <Zap className="w-3 h-3" />
+                  All Curves
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5"
+                  onClick={() => handleBulkSelect(SCREEN_GROUPS.imag)}
+                >
+                  <Zap className="w-3 h-3" />
+                  All IMAG
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5"
+                  onClick={() => handleBulkSelect([...SCREEN_GROUPS.center, ...SCREEN_GROUPS.djBooth])}
+                >
+                  <Zap className="w-3 h-3" />
+                  Center + DJ
+                </Button>
+              </div>
+              
+              <VenueScreenMap
                 selectedPlacements={selectedPlacements}
                 onToggle={handlePlacementToggle}
                 interactive
