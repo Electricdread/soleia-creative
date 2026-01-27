@@ -263,28 +263,7 @@ export function VenueOverviewView() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for autoplay
-  useEffect(() => {
-    const video = videoRef.current;
-    const container = videoContainerRef.current;
-    if (!video || !container) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            video.play().catch(() => {});
-          } else {
-            video.pause();
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
+  // Video autoplay disabled - user must click to play
   
   return (
     <div className="space-y-8">
