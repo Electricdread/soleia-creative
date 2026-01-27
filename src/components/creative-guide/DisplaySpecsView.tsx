@@ -18,10 +18,10 @@ const categoryIcons: Record<string, React.ReactNode> = {
 };
 
 const categoryColors: Record<string, string> = {
-  'tv': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  'elevator': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  'led': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  'ticker': 'bg-green-500/20 text-green-400 border-green-500/30',
+  'tv': 'bg-primary/20 text-primary border-primary/30',
+  'elevator': 'bg-accent/20 text-accent border-accent/30',
+  'led': 'bg-primary/25 text-primary border-primary/40',
+  'ticker': 'bg-success/20 text-success border-success/30',
 };
 
 function SpecRow({ label, value }: { label: string; value: string }) {
