@@ -350,6 +350,12 @@ export const ALL_LED_ZONES = [...OUTDOOR_LED_ZONES, ...INDOOR_LED_ZONES];
 // Creative Guide categories - expanded with PDF content
 export const creativeGuideCategories = [
   { 
+    key: 'introduction', 
+    label: 'Introduction', 
+    description: 'Pricing, timelines & terms',
+    icon: 'BookOpen'
+  },
+  { 
     key: 'venue-overview', 
     label: 'Venue Overview', 
     description: 'Layout and 3D visualization',
@@ -376,7 +382,7 @@ export const creativeGuideCategories = [
   { 
     key: 'custom-content', 
     label: 'Custom Content', 
-    description: 'Pixelmap specs and timelines',
+    description: 'Pixelmap specs and templates',
     icon: 'Palette'
   },
 ] as const;
