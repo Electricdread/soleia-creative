@@ -1,5 +1,6 @@
 import React from 'react';
-import { Menu, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Menu, Search, Map, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -25,11 +26,17 @@ export function MobileMenu({
   onSearch,
   isSearching,
 }: MobileMenuProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleCategorySelect = (category: ArtlistCategoryKey) => {
     onCategoryChange(category);
     setIsOpen(false);
+  };
+
+  const handleNavigateToCreativeGuide = () => {
+    setIsOpen(false);
+    navigate('/creative-guide');
   };
 
   return (
@@ -91,6 +98,25 @@ export function MobileMenu({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Creative Guide Link */}
+          <div className="pt-6 border-t border-border/50">
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-2 mb-3">
+              Resources
+            </p>
+            <button
+              onClick={handleNavigateToCreativeGuide}
+              className="w-full flex items-center gap-3 px-4 py-4 rounded-xl text-left transition-all touch-manipulation active:scale-[0.98] hover:bg-primary/5 text-foreground"
+            >
+              <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Map className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <span className="font-medium text-base block">Creative Guide</span>
+                <span className="text-xs text-muted-foreground">LED Zones & Screen Mapping</span>
+              </div>
+            </button>
           </div>
 
           {/* Theme Toggle */}
