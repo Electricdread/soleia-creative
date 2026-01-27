@@ -299,8 +299,7 @@ export function VenueOverviewView() {
       >
         <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
           <div className="relative">
-            {/* Elegant frame with gold accent borders */}
-            <div className="absolute inset-0 z-10 pointer-events-none border-4 border-primary/10 dark:border-primary/20" />
+            {/* Clean frame matching 3D visualization style */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
             
@@ -309,10 +308,6 @@ export function VenueOverviewView() {
               alt="Soleia Venue Layout"
               className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
             />
-            
-            {/* Theme-aware gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none dark:from-background/90 dark:via-background/30" />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-transparent pointer-events-none dark:from-background/50" />
             
             {/* Corner accents */}
             <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
