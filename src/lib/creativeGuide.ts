@@ -227,11 +227,11 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
   },
   {
     id: 'center',
-    name: 'Center Booth',
+    name: 'Center',
     category: 'indoor',
     subcategory: 'booth',
     resolution: '1344x272',
-    description: 'Main center stage booth screen providing the primary focal point for the audience.',
+    description: 'Main center stage screen providing the primary focal point for the audience.',
     useCases: [
       'Full-screen branded environments',
       'Animated logo reveals',
