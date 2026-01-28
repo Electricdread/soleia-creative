@@ -9,6 +9,7 @@ import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
 import { TickerVideoCarousel } from './TickerVideoCarousel';
 import { LEDPixelMapCarousel } from './LEDPixelMapCarousel';
 import { TVVideoPreview } from './TVVideoPreview';
+import { ElevatorVideoPreview } from './ElevatorVideoPreview';
 import solIcon from '@/assets/sol-icon.png';
 
 const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
@@ -46,6 +47,7 @@ function DisplayCard({ display }: { display: DisplayType }) {
   const isTicker = display.category === 'ticker';
   const isLED = display.category === 'led';
   const isTV = display.category === 'tv';
+  const isElevator = display.category === 'elevator';
   
   const handleDownloadTickerAssets = () => {
     const link = document.createElement('a');
@@ -91,6 +93,8 @@ function DisplayCard({ display }: { display: DisplayType }) {
             <LEDPixelMapCarousel />
           ) : isTV ? (
             <TVVideoPreview />
+          ) : isElevator ? (
+            <ElevatorVideoPreview />
           ) : (
             <img 
               src={display.image} 
