@@ -167,6 +167,22 @@
   filter: invert(1) sepia(80%) saturate(400%) brightness(105%) hue-rotate(-5deg);
 }
 
+/* ShowBlox icon pulse animation for selected state */
+@keyframes showblox-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px hsl(38 92% 50% / 0.6));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 16px hsl(38 92% 50% / 0.8));
+  }
+}
+
+.showblox-icon-selected {
+  animation: showblox-pulse 2s ease-in-out infinite;
+}
+
 @layer utilities {
   /* Luxury glassmorphism - theme aware */
   .glass {

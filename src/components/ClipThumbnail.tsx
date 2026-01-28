@@ -62,7 +62,9 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
             isHovering && videoLoaded && hasVideoPreview ? 'opacity-0' : 'opacity-100'
           } ${isSelected ? 'grayscale opacity-50' : ''}`}
           onError={() => onImageError(clip.id)}
-          loading="lazy"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
         />
       ) : (
         <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/15 to-accent/10">
@@ -88,11 +90,11 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
         />
       )}
 
-      {/* ShowBlox Selection Indicator - Centered */}
+      {/* ShowBlox Selection Indicator - Centered with pulse animation */}
       {isSelected && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="w-16 h-16 flex items-center justify-center">
-            <img src={showbloxIcon} alt="Selected" className="w-full h-full object-contain drop-shadow-2xl showblox-icon-gold" />
+            <img src={showbloxIcon} alt="Selected" className="w-full h-full object-contain showblox-icon-selected" />
           </div>
         </div>
       )}
@@ -117,7 +119,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
       {/* ShowBlox Icon Badge on hover - only show when not selected */}
       {!isSelected && (
         <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-elegant z-10">
-          <img src={showbloxIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg showblox-icon-gold" />
+          <img src={showbloxIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
         </div>
       )}
     </div>
