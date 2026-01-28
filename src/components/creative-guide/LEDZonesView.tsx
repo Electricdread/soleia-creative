@@ -1,13 +1,13 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Map } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import VenueScreenMap from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import { LEDZoneCard } from './LEDZoneCard';
 import { ZoneSelectionSummary } from './ZoneSelectionSummary';
-import showbloxIcon from '@/assets/showblox-icon.png';
 import solIcon from '@/assets/sol-icon.png';
 import {
   OUTDOOR_LED_ZONES,
@@ -28,6 +28,7 @@ export function LEDZonesView() {
   const [activeZoneCategory, setActiveZoneCategory] = useState<ZoneCategory>('indoor');
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
+  const [isDiagramOpen, setIsDiagramOpen] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Convert selected zones to screen IDs for the venue maps
@@ -170,6 +171,104 @@ export function LEDZonesView() {
 
       {/* Two Column Layout: Cards Left, Diagram Right */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Mobile Collapsible Diagram - Above Cards */}
+        <div className="lg:hidden order-1">
+          <Collapsible open={isDiagramOpen} onOpenChange={setIsDiagramOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full gap-2 justify-between border-primary/30 hover:bg-primary/10"
+              >
+                <div className="flex items-center gap-2">
+                  <Map className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">
+                    {activeZoneCategory === 'outdoor' ? 'Outdoor Diagram' : 'Indoor Diagram'}
+                  </span>
+                  {selectedZones.length > 0 && (
+                    <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">
+                      {selectedZones.length} selected
+                    </Badge>
+                  )}
+                </div>
+                <motion.div
+                  animate={{ rotate: isDiagramOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </motion.div>
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3"
+              >
+                <div className="glass rounded-xl p-3 border border-border/50">
+                  <motion.div
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.1}
+                    onDragEnd={handleDragEnd}
+                    className="touch-pan-x"
+                  >
+                    <AnimatePresence mode="wait">
+                      {activeZoneCategory === 'outdoor' ? (
+                        <motion.div
+                          key="outdoor-diagram-mobile"
+                          initial={{ opacity: 0, x: swipeDirection === 'left' ? 100 : -100 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: swipeDirection === 'left' ? -100 : 100 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        >
+                          <OutdoorPlacementDiagram
+                            selectedPlacements={currentSelectedScreens}
+                            onToggle={handleScreenToggle}
+                            interactive={true}
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="indoor-diagram-mobile"
+                          initial={{ opacity: 0, x: swipeDirection === 'left' ? 100 : -100 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: swipeDirection === 'left' ? -100 : 100 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        >
+                          <VenueScreenMap
+                            selectedPlacements={currentSelectedScreens}
+                            onToggle={handleScreenToggle}
+                            interactive={true}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+
+                  {/* Dot indicators */}
+                  <div className="flex justify-center gap-1.5 mt-2">
+                    {ZONE_CATEGORIES.map((cat, index) => (
+                      <button
+                        key={cat.key}
+                        onClick={() => {
+                          setSwipeDirection(index > currentCategoryIndex ? 'left' : 'right');
+                          setActiveZoneCategory(cat.key);
+                        }}
+                        className={`h-1.5 rounded-full transition-all ${
+                          index === currentCategoryIndex
+                            ? 'w-6 bg-primary'
+                            : 'w-1.5 bg-muted-foreground/30'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+
         {/* Left Column: Zone Cards */}
         <div className="order-2 lg:order-1 space-y-4">
           {/* Category Toggle Tabs */}
@@ -240,7 +339,7 @@ export function LEDZonesView() {
           </div>
 
           {/* Zone Cards - Scrollable Container */}
-          <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+          <div className="lg:max-h-[600px] overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeZoneCategory}
@@ -311,8 +410,8 @@ export function LEDZonesView() {
           </div>
         </div>
 
-        {/* Right Column: Diagram - Sticky on Desktop */}
-        <div className="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
+        {/* Right Column: Diagram - Desktop Only, Sticky */}
+        <div className="hidden lg:block order-2 lg:sticky lg:top-24 lg:self-start">
           <div className="glass rounded-xl p-4 border border-border/50">
             <motion.div
               drag="x"
