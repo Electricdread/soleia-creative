@@ -19,7 +19,7 @@ import { AdminPanel } from '@/components/admin/AdminPanel';
 import { UserMenu } from '@/components/auth/UserMenu';
 import AnimatedRays from '@/components/AnimatedRays';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
-import sunIcon from '@/assets/sun-icon.jpeg';
+
 import { generateSelectionsPdf } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import VenueScreenMap, { SCREEN_GROUPS } from '@/components/VenueScreenMap';
@@ -408,10 +408,9 @@ const MotionGraphicsLookbook = () => {
             
             {/* Looks Collection Title */}
             <h1 
-              className="text-3xl font-light tracking-[0.35em] uppercase text-gradient-gold mb-1 opacity-0 animate-fade-in-up relative z-10"
+              className="text-3xl font-display font-light tracking-[0.35em] uppercase text-gradient-gold mb-1 opacity-0 animate-fade-in-up relative z-10"
               style={{ 
                 textShadow: '0 2px 8px hsl(38 92% 50% / 0.3), 0 4px 16px hsl(38 92% 50% / 0.15)',
-                fontFamily: 'serif',
                 letterSpacing: '0.35em',
                 animationDelay: '300ms',
                 animationFillMode: 'forwards'
@@ -422,9 +421,8 @@ const MotionGraphicsLookbook = () => {
             
             {/* Motion Backgrounds Subtitle */}
             <p 
-              className="text-lg font-light tracking-[0.2em] uppercase text-muted-foreground mb-4 opacity-0 animate-fade-in-up relative z-10"
+              className="text-lg font-display font-light tracking-[0.2em] uppercase text-muted-foreground mb-4 opacity-0 animate-fade-in-up relative z-10"
               style={{ 
-                fontFamily: 'serif',
                 animationDelay: '400ms',
                 animationFillMode: 'forwards'
               }}
@@ -489,7 +487,7 @@ const MotionGraphicsLookbook = () => {
                 }`}
               >
                 <img 
-                  src={sunIcon} 
+                  src="/soleia-icon.png" 
                   alt="" 
                   className="w-5 h-5 object-contain" 
                 />

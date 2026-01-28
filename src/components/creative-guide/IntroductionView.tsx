@@ -63,7 +63,7 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold text-gradient-gold">ShowBlox × Soleia</h2>
+        <h2 className="text-2xl font-display font-semibold text-gradient-gold">ShowBlox × Soleia</h2>
         <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
           Immersive entertainment and branded experiences brought to life through cutting-edge technology, thoughtful design, and seamless execution.
         </p>
