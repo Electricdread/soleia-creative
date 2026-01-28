@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import ClipThumbnail from '@/components/ClipThumbnail';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import SharedSelectionsSummary from '@/components/SharedSelectionsSummary';
+import SessionFileUploader from '@/components/SessionFileUploader';
 import VenueScreenMap, { SCREEN_GROUPS } from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import PlacementBadges from '@/components/PlacementBadges';
@@ -20,6 +21,7 @@ import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import sunIcon from '@/assets/sun-icon.jpeg';
 import { format } from 'date-fns';
+import type { SessionUpload } from '@/hooks/useSharedSession';
 // Must match IDs from VenueScreenMap SCREEN_SEGMENTS
 const INTERIOR_PLACEMENTS = [
   'Sol Rays',
@@ -75,11 +77,13 @@ interface SharedGalleryViewProps {
   clientLink: ClientLink;
   sessionClips: SessionClip[];
   selections: SharedSelection[];
+  uploads: SessionUpload[];
   toggleSelection: (clip: ArtlistClip) => Promise<void>;
   updateNote: (clipId: string, note: string) => Promise<void>;
   updatePlacements: (clipId: string, placements: string[]) => Promise<void>;
   isSelected: (clipId: string) => boolean;
   getSelection: (clipId: string) => SharedSelection | undefined;
+  onUploadComplete: () => void;
 }
 
 const categoryGradients: Record<string, string> = {
@@ -96,11 +100,13 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
   clientLink,
   sessionClips,
   selections,
+  uploads,
   toggleSelection,
   updateNote,
   updatePlacements,
   isSelected,
   getSelection,
+  onUploadComplete,
 }) => {
   const { toast } = useToast();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -367,6 +373,15 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
       </header>
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
+        {/* File Upload Section */}
+        <div className="mb-8">
+          <SessionFileUploader 
+            linkId={clientLink.id} 
+            uploads={uploads} 
+            onUploadComplete={onUploadComplete}
+          />
+        </div>
+
         {/* Clip Count Stats */}
         <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3 md:gap-4">
           {filteredClips.length > 0 && (

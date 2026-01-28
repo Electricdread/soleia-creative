@@ -6,7 +6,20 @@ import soleiaLogo from '@/assets/soleia-logo-new.png';
 
 const SharedSession = () => {
   const { token } = useParams<{ token: string }>();
-  const { clientLink, sessionClips, selections, isLoading, error, toggleSelection, updateNote, updatePlacements, isSelected, getSelection } = useSharedSession(token);
+  const { 
+    clientLink, 
+    sessionClips, 
+    selections, 
+    uploads,
+    isLoading, 
+    error, 
+    toggleSelection, 
+    updateNote, 
+    updatePlacements, 
+    isSelected, 
+    getSelection,
+    refetchUploads 
+  } = useSharedSession(token);
 
   if (isLoading) {
     return (
@@ -46,11 +59,13 @@ const SharedSession = () => {
       clientLink={clientLink}
       sessionClips={sessionClips}
       selections={selections}
+      uploads={uploads}
       toggleSelection={toggleSelection}
       updateNote={updateNote}
       updatePlacements={updatePlacements}
       isSelected={isSelected}
       getSelection={getSelection}
+      onUploadComplete={refetchUploads}
     />
   );
 };
