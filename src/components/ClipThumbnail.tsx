@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, FileText, Sparkles } from 'lucide-react';
-import sunIcon from '@/assets/sun-icon.jpeg';
+import showbloxIcon from '@/assets/showblox-icon.png';
 
 interface ClipThumbnailProps {
   clip: {
@@ -88,11 +88,11 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
         />
       )}
 
-      {/* Sun Selection Indicator - Centered */}
+      {/* ShowBlox Selection Indicator - Centered */}
       {isSelected && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="w-16 h-16 flex items-center justify-center">
-            <img src={sunIcon} alt="Selected" className="w-full h-full object-contain drop-shadow-2xl" />
+            <img src={showbloxIcon} alt="Selected" className="w-full h-full object-contain drop-shadow-2xl showblox-icon-gold" />
           </div>
         </div>
       )}
@@ -114,10 +114,10 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
         </button>
       </div>
 
-      {/* Sun Icon Badge on hover - only show when not selected */}
+      {/* ShowBlox Icon Badge on hover - only show when not selected */}
       {!isSelected && (
         <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-elegant z-10">
-          <img src={sunIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
+          <img src={showbloxIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg showblox-icon-gold" />
         </div>
       )}
     </div>
