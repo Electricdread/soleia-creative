@@ -549,7 +549,7 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
               {detailClip?.title}
             </DialogTitle>
             <DialogDescription>
-              Configure screen placements and add notes for this clip
+              Add notes for this clip
             </DialogDescription>
           </DialogHeader>
           
@@ -562,62 +562,14 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
                     src={detailClip.previewUrl}
                     poster={detailClip.thumbnail}
                     controls
+                    loop
+                    autoPlay
+                    muted
+                    playsInline
                     className="w-full h-full object-cover"
                   />
                 </div>
               )}
-
-              {/* Screen Placements */}
-              <Collapsible open={isPlacementOpen} onOpenChange={setIsPlacementOpen}>
-                <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-between gap-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-primary" />
-                      <span>Screen Placements</span>
-                      {detailPlacements.length > 0 && (
-                        <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">
-                          {detailPlacements.length} selected
-                        </span>
-                      )}
-                    </div>
-                    {isPlacementOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4 space-y-4">
-                  <Tabs defaultValue="interior" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="interior">Interior</TabsTrigger>
-                      <TabsTrigger value="outdoor">Outdoor</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="interior" className="mt-4">
-                      <VenueScreenMap
-                        selectedPlacements={detailPlacements}
-                        onToggle={toggleDetailPlacement}
-                        interactive
-                      />
-                    </TabsContent>
-                    <TabsContent value="outdoor" className="mt-4">
-                      <OutdoorPlacementDiagram
-                        selectedPlacements={detailPlacements}
-                        onToggle={toggleDetailPlacement}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full mt-3"
-                        onClick={() => toggleDetailPlacement('Full Outdoor')}
-                      >
-                        {ALL_OUTDOOR_SCREENS.every(s => detailPlacements.includes(s)) 
-                          ? 'Clear All Outdoor' 
-                          : 'Select All Outdoor'}
-                      </Button>
-                    </TabsContent>
-                  </Tabs>
-                </CollapsibleContent>
-              </Collapsible>
 
               {/* Notes */}
               <div className="space-y-2">
