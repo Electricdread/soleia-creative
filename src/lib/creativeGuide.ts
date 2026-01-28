@@ -265,7 +265,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'SL Curves',
     category: 'indoor',
     subcategory: 'curves',
-    resolution: '1152x272 (x2)',
+    resolution: '2304x592',
     description: 'Stage left curved screens (2 sections) integrated into architectural elements enhancing spatial immersion.',
     useCases: [
       'Ambient brand color washes',
@@ -273,7 +273,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
       'Pattern-based visuals that complement main content',
     ],
     specs: {
-      resolution: '1152x272 each',
+      resolution: '2304x592',
     },
   },
   {
@@ -281,7 +281,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'SR Curves',
     category: 'indoor',
     subcategory: 'curves',
-    resolution: '1152x272 (x2)',
+    resolution: '2304x592',
     description: 'Stage right curved screens (2 sections) integrated into architectural elements enhancing spatial immersion.',
     useCases: [
       'Ambient brand color washes',
@@ -289,7 +289,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
       'Pattern-based visuals that complement main content',
     ],
     specs: {
-      resolution: '1152x272 each',
+      resolution: '2304x592',
     },
   },
   {
