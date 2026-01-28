@@ -221,7 +221,7 @@ export function LEDZonesView() {
 
           {/* Section Header */}
           <div className="flex items-center gap-2">
-            <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />
+            <img src={solIcon} alt="" className="w-5 h-5 object-contain" />
             <h2 className="text-lg font-semibold text-foreground">
               {activeZoneCategory === 'outdoor' ? 'Outdoor LED Zones' : 'Indoor LED Zones'}
             </h2>
