@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Tv, Monitor, Layers, Download, Printer } from 'lucide-react';
+import { Download, Printer } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
 import { TickerVideoCarousel } from './TickerVideoCarousel';
 import { LEDPixelMapCarousel } from './LEDPixelMapCarousel';
+import showbloxIcon from '@/assets/showblox-icon.png';
 
 const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
 const LED_PIXELMAP_IMAGE = '/creative-guide/led-main-interior-pixelmap.png';
@@ -18,10 +19,10 @@ interface DisplaySpecsViewProps {
 }
 
 const categoryIcons: Record<string, React.ReactNode> = {
-  'tv': <Tv className="w-5 h-5" />,
-  'elevator': <Layers className="w-5 h-5" />,
-  'led': <Monitor className="w-5 h-5" />,
-  'ticker': <FileText className="w-5 h-5" />,
+  'tv': <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />,
+  'elevator': <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />,
+  'led': <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />,
+  'ticker': <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />,
 };
 
 const categoryColors: Record<string, string> = {
@@ -316,8 +317,8 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 group-hover:from-primary/30 group-hover:to-accent/30 transition-colors">
-                  <FileText className="w-6 h-6 text-primary" />
+                <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 group-hover:from-primary/30 group-hover:to-accent/30 transition-colors">
+                  <img src={showbloxIcon} alt="" className="w-8 h-8 object-contain showblox-icon-gold" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Quick Reference Sheet</h3>

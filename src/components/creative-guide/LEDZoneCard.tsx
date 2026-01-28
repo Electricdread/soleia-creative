@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Monitor, Sun, Layers, Disc } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { LEDZone } from '@/lib/creativeGuide';
 import { ZONE_SUBCATEGORY_LABELS } from '@/lib/creativeGuide';
+import showbloxIcon from '@/assets/showblox-icon.png';
 
 interface LEDZoneCardProps {
   zone: LEDZone;
@@ -12,14 +13,9 @@ interface LEDZoneCardProps {
   onToggle: (zoneId: string) => void;
 }
 
-const subcategoryIcons: Record<string, React.ReactNode> = {
-  'arrival': <Sun className="w-4 h-4" />,
-  'main-feature': <Monitor className="w-4 h-4" />,
-  'architectural': <Layers className="w-4 h-4" />,
-  'vertical-transitional': <Monitor className="w-4 h-4" />,
-  'booth': <Disc className="w-4 h-4" />,
-  'curves': <Layers className="w-4 h-4" />,
-};
+const SubcategoryIcon = () => (
+  <img src={showbloxIcon} alt="" className="w-6 h-6 object-contain showblox-icon-gold" />
+);
 
 export function LEDZoneCard({ zone, isSelected, onToggle }: LEDZoneCardProps) {
   return (
@@ -52,8 +48,8 @@ export function LEDZoneCard({ zone, isSelected, onToggle }: LEDZoneCardProps) {
         <CardContent className="p-4 sm:p-5">
           {/* Header */}
           <div className="flex items-start gap-3 mb-3">
-            <div className={`p-2 rounded-lg ${isSelected ? 'bg-primary/20' : 'bg-muted/50'}`}>
-              {subcategoryIcons[zone.subcategory] || <Monitor className="w-4 h-4" />}
+            <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-primary/20' : 'bg-muted/50'}`}>
+              <SubcategoryIcon />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-foreground truncate">{zone.name}</h3>

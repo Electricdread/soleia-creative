@@ -158,6 +158,15 @@
   }
 }
 
+/* ShowBlox icon with gold tint */
+.showblox-icon-gold {
+  filter: sepia(50%) saturate(200%) brightness(90%) hue-rotate(-10deg);
+}
+
+.dark .showblox-icon-gold {
+  filter: invert(1) sepia(50%) saturate(200%) brightness(100%) hue-rotate(-10deg);
+}
+
 @layer utilities {
   /* Luxury glassmorphism - theme aware */
   .glass {

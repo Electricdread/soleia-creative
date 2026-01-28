@@ -124,8 +124,8 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
         <Card className="glass border-primary/30 overflow-hidden group hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
           <CardContent className="p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shrink-0">
-                <img src={showbloxIcon} alt="" className="w-6 h-6 object-contain dark:invert" />
+              <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shrink-0">
+                <img src={showbloxIcon} alt="" className="w-8 h-8 object-contain showblox-icon-gold" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-gradient-gold">The Platform</h3>
@@ -147,8 +147,8 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
         <Card className="glass border-primary/30 overflow-hidden group hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
           <CardContent className="p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shrink-0">
-                <img src={showbloxIcon} alt="" className="w-6 h-6 object-contain dark:invert" />
+              <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shrink-0">
+                <img src={showbloxIcon} alt="" className="w-8 h-8 object-contain showblox-icon-gold" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-gradient-gold">Our Approach</h3>
@@ -175,8 +175,8 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
           onKeyDown={(e) => e.key === 'Enter' && handleWhatsInsideClick()}
         >
           <CardContent className="p-6 sm:p-8 text-center space-y-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10 w-fit mx-auto">
-              <img src={showbloxIcon} alt="" className="w-6 h-6 object-contain dark:invert" />
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10 w-fit mx-auto">
+              <img src={showbloxIcon} alt="" className="w-8 h-8 object-contain showblox-icon-gold" />
             </div>
             <h3 className="text-lg font-semibold text-gradient-gold">What's Inside</h3>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
