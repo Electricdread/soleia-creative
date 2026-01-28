@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { DisplaySpecsView } from '@/components/creative-guide/DisplaySpecsView';
 import { VenueOverviewView } from '@/components/creative-guide/VenueOverviewView';
 import { CustomContentView } from '@/components/creative-guide/CustomContentView';
@@ -43,6 +44,13 @@ const CreativeGuideView = () => {
       setSelectedCategory(creativeGuideCategories[newIndex].key);
     }
   }, [currentCategoryIndex]);
+
+  // Swipe gestures for section navigation
+  const swipeHandlers = useSwipeNavigation({
+    onSwipeLeft: () => navigateCategory('next'),
+    onSwipeRight: () => navigateCategory('prev'),
+    threshold: 50,
+  });
 
   const categoryIcons: Record<string, React.ReactNode> = {
     'introduction': <BookOpen className="w-5 h-5" />,
@@ -185,68 +193,70 @@ const CreativeGuideView = () => {
           </Button>
         </div>
 
-        {/* Content */}
-        <AnimatePresence mode="wait">
-          {selectedCategory === 'introduction' && (
-            <motion.div
-              key="introduction"
-              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            >
-              <IntroductionView onNavigate={(category) => setSelectedCategory(category as CreativeGuideCategoryKey)} />
-            </motion.div>
-          )}
+        {/* Content with swipe gestures */}
+        <div {...swipeHandlers} className="touch-pan-y">
+          <AnimatePresence mode="wait">
+            {selectedCategory === 'introduction' && (
+              <motion.div
+                key="introduction"
+                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              >
+                <IntroductionView onNavigate={(category) => setSelectedCategory(category as CreativeGuideCategoryKey)} />
+              </motion.div>
+            )}
 
-          {selectedCategory === 'venue-overview' && (
-            <motion.div
-              key="venue-overview"
-              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            >
-              <VenueOverviewView />
-            </motion.div>
-          )}
+            {selectedCategory === 'venue-overview' && (
+              <motion.div
+                key="venue-overview"
+                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              >
+                <VenueOverviewView />
+              </motion.div>
+            )}
 
-          {selectedCategory === 'display-specs' && (
-            <motion.div
-              key="display-specs"
-              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            >
-              <DisplaySpecsView />
-            </motion.div>
-          )}
+            {selectedCategory === 'display-specs' && (
+              <motion.div
+                key="display-specs"
+                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              >
+                <DisplaySpecsView />
+              </motion.div>
+            )}
 
-          {selectedCategory === 'led-zones' && (
-            <motion.div
-              key="led-zones"
-              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            >
-              <LEDZonesView />
-            </motion.div>
-          )}
+            {selectedCategory === 'led-zones' && (
+              <motion.div
+                key="led-zones"
+                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              >
+                <LEDZonesView />
+              </motion.div>
+            )}
 
-          {selectedCategory === 'custom-content' && (
-            <motion.div
-              key="custom-content"
-              initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            >
-              <CustomContentView />
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {selectedCategory === 'custom-content' && (
+              <motion.div
+                key="custom-content"
+                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              >
+                <CustomContentView />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </main>
       
       {/* Powered by ShowBlox Footer */}
