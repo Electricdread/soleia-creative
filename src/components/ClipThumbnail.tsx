@@ -102,8 +102,9 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
           muted
           loop
           playsInline
-          preload="auto"
-          onCanPlayThrough={() => setVideoLoaded(true)}
+          preload="metadata"
+          onLoadedData={() => setVideoLoaded(true)}
+          onCanPlay={() => setVideoLoaded(true)}
           onError={() => setVideoError(true)}
           className={`absolute inset-0 w-full h-full object-cover transition-elegant ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
