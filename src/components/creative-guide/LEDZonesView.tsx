@@ -167,125 +167,57 @@ export function LEDZonesView() {
         </div>
       </div>
 
-      {/* Diagram Section - NOT sticky to avoid overlap issues */}
-      <div className="bg-background py-4 border-b border-border/30">
-        {/* Category Toggle Tabs */}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigateCategory('prev')}
-            disabled={currentCategoryIndex === 0}
-            className="w-10 h-10 rounded-full touch-manipulation active:scale-90"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
+      {/* Two Column Layout: Cards Left, Diagram Right */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column: Zone Cards */}
+        <div className="order-2 lg:order-1 space-y-4">
+          {/* Category Toggle Tabs */}
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigateCategory('prev')}
+              disabled={currentCategoryIndex === 0}
+              className="w-10 h-10 rounded-full touch-manipulation active:scale-90"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
 
-          <div className="flex gap-2">
-            {ZONE_CATEGORIES.map((cat) => (
-              <Button
-                key={cat.key}
-                variant={activeZoneCategory === cat.key ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  const currentIndex = ZONE_CATEGORIES.findIndex(c => c.key === activeZoneCategory);
-                  const newIndex = ZONE_CATEGORIES.findIndex(c => c.key === cat.key);
-                  setSwipeDirection(newIndex > currentIndex ? 'left' : 'right');
-                  setActiveZoneCategory(cat.key);
-                }}
-                className={`gap-2 transition-all ${
-                  activeZoneCategory === cat.key
-                    ? 'bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground shadow-lg'
-                    : ''
-                }`}
-              >
-                {cat.icon}
-                <span className="hidden sm:inline">{cat.label}</span>
-              </Button>
-            ))}
+            <div className="flex gap-2">
+              {ZONE_CATEGORIES.map((cat) => (
+                <Button
+                  key={cat.key}
+                  variant={activeZoneCategory === cat.key ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    const currentIndex = ZONE_CATEGORIES.findIndex(c => c.key === activeZoneCategory);
+                    const newIndex = ZONE_CATEGORIES.findIndex(c => c.key === cat.key);
+                    setSwipeDirection(newIndex > currentIndex ? 'left' : 'right');
+                    setActiveZoneCategory(cat.key);
+                  }}
+                  className={`gap-2 transition-all ${
+                    activeZoneCategory === cat.key
+                      ? 'bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground shadow-lg'
+                      : ''
+                  }`}
+                >
+                  {cat.icon}
+                  <span className="hidden sm:inline">{cat.label}</span>
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigateCategory('next')}
+              disabled={currentCategoryIndex === ZONE_CATEGORIES.length - 1}
+              className="w-10 h-10 rounded-full touch-manipulation active:scale-90"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigateCategory('next')}
-            disabled={currentCategoryIndex === ZONE_CATEGORIES.length - 1}
-            className="w-10 h-10 rounded-full touch-manipulation active:scale-90"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </Button>
-        </div>
-
-        {/* Diagram with swipe */}
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.1}
-          onDragEnd={handleDragEnd}
-          className="touch-pan-x"
-        >
-          <AnimatePresence mode="wait">
-            {activeZoneCategory === 'outdoor' ? (
-              <motion.div
-                key="outdoor-diagram"
-                initial={{ opacity: 0, x: swipeDirection === 'left' ? 100 : -100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: swipeDirection === 'left' ? -100 : 100 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              >
-                <OutdoorPlacementDiagram
-                  selectedPlacements={currentSelectedScreens}
-                  onToggle={handleScreenToggle}
-                  interactive={true}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="indoor-diagram"
-                initial={{ opacity: 0, x: swipeDirection === 'left' ? 100 : -100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: swipeDirection === 'left' ? -100 : 100 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              >
-                <VenueScreenMap
-                  selectedPlacements={currentSelectedScreens}
-                  onToggle={handleScreenToggle}
-                  interactive={true}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Dot indicators */}
-        <div className="flex justify-center gap-1.5 mt-3">
-          {ZONE_CATEGORIES.map((cat, index) => (
-            <button
-              key={cat.key}
-              onClick={() => {
-                setSwipeDirection(index > currentCategoryIndex ? 'left' : 'right');
-                setActiveZoneCategory(cat.key);
-              }}
-              className={`h-1.5 rounded-full transition-all ${
-                index === currentCategoryIndex
-                  ? 'w-6 bg-primary'
-                  : 'w-1.5 bg-muted-foreground/30'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Zone Cards with Animated Transitions */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeZoneCategory}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="space-y-6"
-        >
           {/* Section Header */}
           <div className="flex items-center gap-2">
             <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />
@@ -306,65 +238,141 @@ export function LEDZonesView() {
             </Badge>
           </div>
 
-          {/* Zone Cards */}
-          {activeZoneCategory === 'outdoor' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {OUTDOOR_LED_ZONES.map((zone, index) => (
-                <motion.div
-                  key={zone.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <LEDZoneCard
-                    zone={zone}
-                    isSelected={selectedZones.includes(zone.id)}
-                    onToggle={toggleZone}
-                  />
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            // Indoor zones grouped by subcategory
-            <div className="space-y-6">
-              {['booth', 'curves', 'vertical-transitional', 'main-feature'].map((subcategory, catIndex) => {
-                const zones = INDOOR_LED_ZONES.filter(z => z.subcategory === subcategory);
-                if (zones.length === 0) return null;
+          {/* Zone Cards - Scrollable Container */}
+          <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeZoneCategory}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                className="space-y-4"
+              >
+                {activeZoneCategory === 'outdoor' ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {OUTDOOR_LED_ZONES.map((zone, index) => (
+                      <motion.div
+                        key={zone.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <LEDZoneCard
+                          zone={zone}
+                          isSelected={selectedZones.includes(zone.id)}
+                          onToggle={toggleZone}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  // Indoor zones grouped by subcategory
+                  <div className="space-y-4">
+                    {['booth', 'curves', 'vertical-transitional', 'main-feature'].map((subcategory, catIndex) => {
+                      const zones = INDOOR_LED_ZONES.filter(z => z.subcategory === subcategory);
+                      if (zones.length === 0) return null;
 
-                return (
-                  <motion.div 
-                    key={subcategory} 
-                    className="space-y-3 pt-4 border-t border-border/30 first:pt-0 first:border-0"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: catIndex * 0.1 }}
-                  >
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      {ZONE_SUBCATEGORY_LABELS[subcategory] || subcategory}
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {zones.map((zone, index) => (
-                        <motion.div
-                          key={zone.id}
+                      return (
+                        <motion.div 
+                          key={subcategory} 
+                          className="space-y-2 pt-3 border-t border-border/30 first:pt-0 first:border-0"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: (catIndex * 0.1) + (index * 0.05) }}
+                          transition={{ delay: catIndex * 0.1 }}
                         >
-                          <LEDZoneCard
-                            zone={zone}
-                            isSelected={selectedZones.includes(zone.id)}
-                            onToggle={toggleZone}
-                          />
+                          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            {ZONE_SUBCATEGORY_LABELS[subcategory] || subcategory}
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {zones.map((zone, index) => (
+                              <motion.div
+                                key={zone.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: (catIndex * 0.1) + (index * 0.05) }}
+                              >
+                                <LEDZoneCard
+                                  zone={zone}
+                                  isSelected={selectedZones.includes(zone.id)}
+                                  onToggle={toggleZone}
+                                />
+                              </motion.div>
+                            ))}
+                          </div>
                         </motion.div>
-                      ))}
-                    </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Right Column: Diagram - Sticky on Desktop */}
+        <div className="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
+          <div className="glass rounded-xl p-4 border border-border/50">
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.1}
+              onDragEnd={handleDragEnd}
+              className="touch-pan-x"
+            >
+              <AnimatePresence mode="wait">
+                {activeZoneCategory === 'outdoor' ? (
+                  <motion.div
+                    key="outdoor-diagram"
+                    initial={{ opacity: 0, x: swipeDirection === 'left' ? 100 : -100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: swipeDirection === 'left' ? -100 : 100 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  >
+                    <OutdoorPlacementDiagram
+                      selectedPlacements={currentSelectedScreens}
+                      onToggle={handleScreenToggle}
+                      interactive={true}
+                    />
                   </motion.div>
-                );
-              })}
+                ) : (
+                  <motion.div
+                    key="indoor-diagram"
+                    initial={{ opacity: 0, x: swipeDirection === 'left' ? 100 : -100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: swipeDirection === 'left' ? -100 : 100 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  >
+                    <VenueScreenMap
+                      selectedPlacements={currentSelectedScreens}
+                      onToggle={handleScreenToggle}
+                      interactive={true}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Dot indicators */}
+            <div className="flex justify-center gap-1.5 mt-3">
+              {ZONE_CATEGORIES.map((cat, index) => (
+                <button
+                  key={cat.key}
+                  onClick={() => {
+                    setSwipeDirection(index > currentCategoryIndex ? 'left' : 'right');
+                    setActiveZoneCategory(cat.key);
+                  }}
+                  className={`h-1.5 rounded-full transition-all ${
+                    index === currentCategoryIndex
+                      ? 'w-6 bg-primary'
+                      : 'w-1.5 bg-muted-foreground/30'
+                  }`}
+                />
+              ))}
             </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
+          </div>
+        </div>
+      </div>
 
       {/* Selection Summary FAB */}
       <AnimatePresence>
