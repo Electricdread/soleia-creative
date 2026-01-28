@@ -48,8 +48,8 @@ export const DISPLAY_TYPES: DisplayType[] = [
     description: 'High-definition TV displays throughout the venue for branded content and event visuals.',
     videoSpecs: {
       resolution: '1920x1080 or 3840x2160',
-      format: 'MP4',
-      codec: 'H264',
+      format: 'MOV',
+      codec: 'DXV3',
       fileSize: 'Max 8GB',
     },
     graphicSpecs: {
