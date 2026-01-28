@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { VideoModal } from './VideoModal';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const ELEVATOR_VIDEO = `${SUPABASE_URL}/storage/v1/object/public/clips/venue-visualization/S-blox_Soleia%20Elevator.mp4`;
+const ELEVATOR_VIDEO = `${SUPABASE_URL}/storage/v1/object/public/clips/venue-visualization/S-blox_Soleia_Elevator.mp4`;
 
 export function ElevatorVideoPreview() {
   const [isModalOpen, setIsModalOpen] = useState(false);
