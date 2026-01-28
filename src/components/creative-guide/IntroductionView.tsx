@@ -75,13 +75,8 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
       >
-        <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
+        <Card className="glass border-primary/20 overflow-hidden">
           <div className="relative">
-            {/* Elegant frame with gold accent borders */}
-            <div className="absolute inset-0 z-10 pointer-events-none border-4 border-primary/10 dark:border-primary/20" />
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
-            
             <video 
               ref={videoRef}
               src={soleiaIntroVideo}
@@ -89,7 +84,7 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
               loop
               playsInline
               muted
-              className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
+              className="w-full h-auto"
             />
             
             {/* Video control buttons */}
@@ -115,16 +110,6 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
                 <Maximize className="w-5 h-5 text-primary" />
               </Button>
             </div>
-            
-            {/* Theme-aware gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none dark:from-background/70" />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-transparent pointer-events-none dark:from-background/40" />
-            
-            {/* Corner accents */}
-            <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-sm z-10" />
-            <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 rounded-tr-sm z-10" />
-            <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 rounded-bl-sm z-10" />
-            <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-sm z-10" />
           </div>
         </Card>
       </motion.div>
