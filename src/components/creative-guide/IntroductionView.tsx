@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { VideoModal } from '@/components/creative-guide/VideoModal';
 
 // High-quality hero video from Supabase storage
-const soleiaIntroVideo = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/clips/event%20clip/Soleia_hero_event(1).webm';
+const soleiaIntroVideo = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/clips/events/Soleia_hero_event(1).webm';
 
 interface IntroductionViewProps {
   onNavigate?: (category: string) => void;
