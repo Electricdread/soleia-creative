@@ -158,13 +158,13 @@
   }
 }
 
-/* ShowBlox icon with gold tint */
+/* ShowBlox icon with vibrant gold tint */
 .showblox-icon-gold {
-  filter: sepia(50%) saturate(200%) brightness(90%) hue-rotate(-10deg);
+  filter: sepia(80%) saturate(400%) brightness(95%) hue-rotate(-5deg);
 }
 
 .dark .showblox-icon-gold {
-  filter: invert(1) sepia(50%) saturate(200%) brightness(100%) hue-rotate(-10deg);
+  filter: invert(1) sepia(80%) saturate(400%) brightness(105%) hue-rotate(-5deg);
 }
 
 @layer utilities {
