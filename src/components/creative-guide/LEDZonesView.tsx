@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { Monitor, Sun, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import VenueScreenMap from '@/components/VenueScreenMap';
 import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import { LEDZoneCard } from './LEDZoneCard';
 import { ZoneSelectionSummary } from './ZoneSelectionSummary';
+import showbloxIcon from '@/assets/showblox-icon.png';
 import {
   OUTDOOR_LED_ZONES,
   INDOOR_LED_ZONES,
@@ -18,8 +19,8 @@ import {
 type ZoneCategory = 'outdoor' | 'indoor';
 
 const ZONE_CATEGORIES: { key: ZoneCategory; label: string; icon: React.ReactNode }[] = [
-  { key: 'indoor', label: 'Indoor Zones', icon: <Monitor className="w-4 h-4" /> },
-  { key: 'outdoor', label: 'Outdoor Zones', icon: <Sun className="w-4 h-4" /> },
+  { key: 'indoor', label: 'Indoor Zones', icon: <img src={showbloxIcon} alt="" className="w-4 h-4 object-contain showblox-icon-gold" /> },
+  { key: 'outdoor', label: 'Outdoor Zones', icon: <img src={showbloxIcon} alt="" className="w-4 h-4 object-contain showblox-icon-gold" /> },
 ];
 
 export function LEDZonesView() {
@@ -133,7 +134,7 @@ export function LEDZonesView() {
       {/* Quick select buttons */}
       <div className="glass rounded-xl p-4 border border-border/50">
         <div className="flex items-center gap-2 mb-3">
-          <Zap className="w-4 h-4 text-amber-500" />
+          <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />
           <span className="text-sm font-medium text-foreground">Quick Select</span>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -147,7 +148,7 @@ export function LEDZonesView() {
             }`}
             onClick={() => handleBulkSelect(outdoorZoneIds)}
           >
-            <Sun className="w-3 h-3" />
+            <img src={showbloxIcon} alt="" className="w-4 h-4 object-contain showblox-icon-gold" />
             All Outdoor
           </Button>
           <Button
@@ -160,7 +161,7 @@ export function LEDZonesView() {
             }`}
             onClick={() => handleBulkSelect(indoorZoneIds)}
           >
-            <Monitor className="w-3 h-3" />
+            <img src={showbloxIcon} alt="" className="w-4 h-4 object-contain showblox-icon-gold" />
             All Indoor
           </Button>
         </div>
@@ -287,11 +288,7 @@ export function LEDZonesView() {
         >
           {/* Section Header */}
           <div className="flex items-center gap-2">
-            {activeZoneCategory === 'outdoor' ? (
-              <Sun className="w-5 h-5 text-amber-500" />
-            ) : (
-              <Monitor className="w-5 h-5 text-primary" />
-            )}
+            <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />
             <h2 className="text-lg font-semibold text-foreground">
               {activeZoneCategory === 'outdoor' ? 'Outdoor LED Zones' : 'Indoor LED Zones'}
             </h2>
