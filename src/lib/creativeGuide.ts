@@ -235,7 +235,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'Center',
     category: 'indoor',
     subcategory: 'booth',
-    resolution: '1344x272',
+    resolution: '640x272',
     description: 'Main center stage screen providing the primary focal point for the audience.',
     useCases: [
       'Full-screen branded environments',
@@ -244,7 +244,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
       'Sponsor integrations and transitions',
     ],
     specs: {
-      resolution: '1344x272',
+      resolution: '640x272',
     },
   },
   {
@@ -252,6 +252,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'DJ Booth',
     category: 'indoor',
     subcategory: 'booth',
+    resolution: '1092x168',
     description: 'Behind DJ booth screen supporting performance visuals and branded backdrops.',
     useCases: [
       'Full-screen branded environments',
@@ -259,6 +260,9 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
       'Themed motion backgrounds',
       'Sponsor integrations and transitions',
     ],
+    specs: {
+      resolution: '1092x168',
+    },
   },
   {
     id: 'curves-sl',
@@ -297,24 +301,32 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'IMAG SL',
     category: 'indoor',
     subcategory: 'vertical-transitional',
+    resolution: '1216x592',
     description: 'Stage left IMAG screen connecting guest movement throughout the venue.',
     useCases: [
       'Directional branding',
       'Logo animations adapted for orientation',
       'Modular sponsor placements',
     ],
+    specs: {
+      resolution: '1216x592',
+    },
   },
   {
     id: 'imag-sr',
     name: 'IMAG SR',
     category: 'indoor',
     subcategory: 'vertical-transitional',
+    resolution: '1216x592',
     description: 'Stage right IMAG screen connecting guest movement throughout the venue.',
     useCases: [
       'Directional branding',
       'Logo animations adapted for orientation',
       'Modular sponsor placements',
     ],
+    specs: {
+      resolution: '1216x592',
+    },
   },
 ];
 
