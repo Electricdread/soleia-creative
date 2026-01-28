@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ZoomIn, RotateCcw } from 'lucide-react';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { usePinchZoom } from '@/hooks/usePinchZoom';
 import { Button } from '@/components/ui/button';
@@ -107,25 +107,22 @@ export function LEDPixelMapCarousel() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="absolute inset-0 cursor-pointer"
+            className="absolute inset-0 cursor-pointer group"
             onClick={openModal}
           >
             <img
               src={currentImage.path}
               alt={currentImage.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
+            {/* Tap indicator */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <span className="text-white/0 group-hover:text-white/80 text-sm font-medium transition-colors">
+                Tap for fullscreen
+              </span>
+            </div>
           </motion.div>
         </AnimatePresence>
-
-        {/* Maximize Button */}
-        <button
-          onClick={openModal}
-          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all z-10"
-          aria-label="View fullscreen"
-        >
-          <Maximize2 className="w-4 h-4" />
-        </button>
 
         {/* Navigation Arrows */}
         <button
@@ -205,7 +202,7 @@ export function LEDPixelMapCarousel() {
               </Button>
             </div>
 
-            {/* Zoom Hint */}
+            {/* Zoom Hint / Tap hint */}
             <AnimatePresence>
               {showZoomHint && !isZoomed && (
                 <motion.div
@@ -215,7 +212,7 @@ export function LEDPixelMapCarousel() {
                   className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-sm"
                 >
                   <ZoomIn className="w-4 h-4" />
-                  <span>Pinch to zoom • Scroll to zoom</span>
+                  <span>Pinch to zoom • Tap to close</span>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -1,8 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Volume2, VolumeX, Maximize } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { VideoModal } from '@/components/creative-guide/VideoModal';
 import solIcon from '@/assets/sol-icon.png';
 
@@ -15,8 +13,8 @@ interface IntroductionViewProps {
 
 export function IntroductionView({ onNavigate }: IntroductionViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   const handleWhatsInsideClick = () => {
     if (onNavigate) {
@@ -24,16 +22,12 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
     }
   };
 
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
-    }
-  };
-
-  const openFullscreen = () => {
+  // Tap/click on video opens fullscreen
+  const handleVideoClick = () => {
     // Pause inline video when opening modal
     if (videoRef.current) {
+      // Remember mute state
+      setIsMuted(videoRef.current.muted);
       videoRef.current.pause();
     }
     setIsModalOpen(true);
@@ -54,7 +48,6 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
       video.muted = true;
       setIsMuted(true);
       video.play().catch(() => {
-        // Autoplay failed, user will need to interact
         console.log('Autoplay blocked by browser');
       });
     }
@@ -70,13 +63,13 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
         </p>
       </div>
 
-      {/* Hero Video */}
+      {/* Hero Video - Tap to fullscreen */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
       >
-        <Card className="glass border-primary/20 overflow-hidden rounded-2xl">
+        <Card className="glass border-primary/20 overflow-hidden rounded-2xl cursor-pointer group" onClick={handleVideoClick}>
           <div className="relative">
             <video
               ref={videoRef}
@@ -85,31 +78,14 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
               loop
               playsInline
               muted
-              className="w-full h-auto"
+              className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.02]"
             />
             
-            {/* Video control buttons */}
-            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleMute}
-                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg"
-              >
-                {isMuted ? (
-                  <VolumeX className="w-5 h-5 text-primary" />
-                ) : (
-                  <Volume2 className="w-5 h-5 text-primary" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={openFullscreen}
-                className="bg-background/80 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg"
-              >
-                <Maximize className="w-5 h-5 text-primary" />
-              </Button>
+            {/* Tap indicator overlay */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <span className="text-white/0 group-hover:text-white/80 text-sm font-medium transition-colors">
+                Tap for fullscreen
+              </span>
             </div>
           </div>
         </Card>
