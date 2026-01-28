@@ -135,7 +135,7 @@ export function LEDZonesView() {
       {/* Quick select buttons */}
       <div className="glass rounded-xl p-4 border border-border/50">
         <div className="flex items-center gap-2 mb-3">
-          <img src={showbloxIcon} alt="" className="w-5 h-5 object-contain showblox-icon-gold" />
+          <img src={solIcon} alt="" className="w-5 h-5 object-contain" />
           <span className="text-sm font-medium text-foreground">Quick Select</span>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -149,7 +149,7 @@ export function LEDZonesView() {
             }`}
             onClick={() => handleBulkSelect(outdoorZoneIds)}
           >
-            <img src={showbloxIcon} alt="" className="w-4 h-4 object-contain showblox-icon-gold" />
+            <img src={solIcon} alt="" className="w-4 h-4 object-contain" />
             All Outdoor
           </Button>
           <Button
@@ -162,7 +162,7 @@ export function LEDZonesView() {
             }`}
             onClick={() => handleBulkSelect(indoorZoneIds)}
           >
-            <img src={showbloxIcon} alt="" className="w-4 h-4 object-contain showblox-icon-gold" />
+            <img src={solIcon} alt="" className="w-4 h-4 object-contain" />
             All Indoor
           </Button>
         </div>
