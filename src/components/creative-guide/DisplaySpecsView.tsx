@@ -11,6 +11,7 @@ import { LEDPixelMapCarousel } from './LEDPixelMapCarousel';
 
 const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
 const LED_PIXELMAP_IMAGE = '/creative-guide/led-main-interior-pixelmap.png';
+const LED_AE_TEMPLATE_ZIP = '/creative-guide/After_Effects_Template.zip';
 
 interface DisplaySpecsViewProps {
   onSelectDisplay?: (displayId: string) => void;
@@ -56,6 +57,15 @@ function DisplayCard({ display }: { display: DisplayType }) {
     const link = document.createElement('a');
     link.href = LED_PIXELMAP_IMAGE;
     link.download = 'LED-Main-Interior-Pixelmap.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadLEDTemplate = () => {
+    const link = document.createElement('a');
+    link.href = LED_AE_TEMPLATE_ZIP;
+    link.download = 'After_Effects_Template.zip';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -140,9 +150,9 @@ function DisplayCard({ display }: { display: DisplayType }) {
                 </div>
               )}
 
-              {/* LED Pixelmap download */}
+              {/* LED Pixelmap & AE Template downloads */}
               {isLED && (
-                <div className="pt-3 mt-2 border-t border-border/30">
+                <div className="pt-3 mt-2 border-t border-border/30 space-y-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -151,6 +161,15 @@ function DisplayCard({ display }: { display: DisplayType }) {
                   >
                     <Download className="w-3.5 h-3.5" />
                     Download Pixelmap
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadLEDTemplate}
+                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download After Effects Template
                   </Button>
                 </div>
               )}
