@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
 import { TickerVideoCarousel } from './TickerVideoCarousel';
+import { LEDPixelMapCarousel } from './LEDPixelMapCarousel';
 
 const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
 
@@ -39,7 +40,7 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 
 function DisplayCard({ display }: { display: DisplayType }) {
   const isTicker = display.category === 'ticker';
-  
+  const isLED = display.category === 'led';
   const handleDownloadTickerAssets = () => {
     const link = document.createElement('a');
     link.href = TICKER_ASSETS_ZIP;
@@ -62,6 +63,8 @@ function DisplayCard({ display }: { display: DisplayType }) {
         <div className="relative aspect-video overflow-hidden">
           {isTicker ? (
             <TickerVideoCarousel />
+          ) : isLED ? (
+            <LEDPixelMapCarousel />
           ) : (
             <img 
               src={display.image} 

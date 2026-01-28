@@ -92,7 +92,7 @@ export const DISPLAY_TYPES: DisplayType[] = [
   },
   {
     id: 'led',
-    name: 'LED Displays',
+    name: 'LED Display Pixel Map',
     category: 'led',
     description: 'Large-scale LED screens requiring high-resolution content optimized for bright displays.',
     videoSpecs: {
