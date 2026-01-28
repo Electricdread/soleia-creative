@@ -63,6 +63,8 @@ function DisplayCard({ display }: { display: DisplayType }) {
         <div className="relative aspect-video overflow-hidden">
           {isTicker ? (
             <TickerVideoCarousel />
+          ) : isLED ? (
+            <LEDPixelMapCarousel />
           ) : (
             <img 
               src={display.image} 
