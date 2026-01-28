@@ -78,19 +78,11 @@ const ClipThumbnail = forwardRef<HTMLDivElement, ClipThumbnailProps>(({
     }
   }, [isVisible, hasVideoPreview, videoLoaded]);
 
-  // Handle tap to play video
+  // Handle tap to open detail modal
   const handleThumbnailTap = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
-    if (hasVideoPreview && videoLoaded) {
-      const video = videoRef.current;
-      if (video) {
-        if (video.paused) {
-          playVideo();
-        } else {
-          video.pause();
-        }
-      }
-    }
+    e.preventDefault();
+    onPlayClick(e as React.MouseEvent);
   };
 
   // Handle video ready to play
