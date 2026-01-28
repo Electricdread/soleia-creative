@@ -4,7 +4,7 @@ import { Volume2, VolumeX, Maximize } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { VideoModal } from '@/components/creative-guide/VideoModal';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import solIcon from '@/assets/sol-icon.png';
 
 // High-quality hero video from Supabase storage
 const soleiaIntroVideo = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/clips/events/Soleia_hero_event(1).webm';
@@ -125,7 +125,7 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
           <CardContent className="p-6 sm:p-8">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shrink-0">
-                <img src={showbloxIcon} alt="" className="w-8 h-8 object-contain showblox-icon-gold" />
+                <img src={solIcon} alt="" className="w-8 h-8 object-contain" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-gradient-gold">The Platform</h3>
@@ -148,7 +148,7 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
           <CardContent className="p-6 sm:p-8">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shrink-0">
-                <img src={showbloxIcon} alt="" className="w-8 h-8 object-contain showblox-icon-gold" />
+                <img src={solIcon} alt="" className="w-8 h-8 object-contain" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-gradient-gold">Our Approach</h3>
@@ -176,7 +176,7 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
         >
           <CardContent className="p-6 sm:p-8 text-center space-y-4">
             <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10 w-fit mx-auto">
-              <img src={showbloxIcon} alt="" className="w-8 h-8 object-contain showblox-icon-gold" />
+              <img src={solIcon} alt="" className="w-8 h-8 object-contain" />
             </div>
             <h3 className="text-lg font-semibold text-gradient-gold">What's Inside</h3>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
