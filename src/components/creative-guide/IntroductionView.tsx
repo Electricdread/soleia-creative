@@ -75,9 +75,9 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
       >
-        <Card className="glass border-primary/20 overflow-hidden">
+        <Card className="glass border-primary/20 overflow-hidden rounded-2xl">
           <div className="relative">
-            <video 
+            <video
               ref={videoRef}
               src={soleiaIntroVideo}
               autoPlay
