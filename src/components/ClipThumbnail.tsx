@@ -52,25 +52,46 @@ const ClipThumbnail = forwardRef<HTMLDivElement, ClipThumbnailProps>(({
     return () => observer.disconnect();
   }, []);
 
+  // Play video function - used for both auto-play and tap-to-play
+  const playVideo = () => {
+    const video = videoRef.current;
+    if (!video || !hasVideoPreview) return;
+    
+    video.muted = true;
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((error) => {
+        console.log('Autoplay prevented:', error);
+      });
+    }
+  };
+
   // Auto-play video when visible - with iOS-friendly handling
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !hasVideoPreview) return;
 
     if (isVisible && videoLoaded) {
-      // Ensure video is muted for autoplay to work on iOS
-      video.muted = true;
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((error) => {
-          console.log('Autoplay prevented:', error);
-          // Don't set error state - thumbnail fallback handles this gracefully
-        });
-      }
+      playVideo();
     } else {
       video.pause();
     }
   }, [isVisible, hasVideoPreview, videoLoaded]);
+
+  // Handle tap to play video
+  const handleThumbnailTap = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if (hasVideoPreview && videoLoaded) {
+      const video = videoRef.current;
+      if (video) {
+        if (video.paused) {
+          playVideo();
+        } else {
+          video.pause();
+        }
+      }
+    }
+  };
 
   // Handle video ready to play
   const handleVideoReady = () => {
@@ -80,7 +101,6 @@ const ClipThumbnail = forwardRef<HTMLDivElement, ClipThumbnailProps>(({
   return (
     <div 
       ref={(node) => {
-        // Handle both internal ref and forwarded ref
         containerRef.current = node;
         if (typeof ref === 'function') {
           ref(node);
@@ -88,7 +108,9 @@ const ClipThumbnail = forwardRef<HTMLDivElement, ClipThumbnailProps>(({
           ref.current = node;
         }
       }}
-      className="relative aspect-[4/3] bg-secondary/20"
+      className="relative aspect-[4/3] bg-secondary/20 cursor-pointer"
+      onClick={handleThumbnailTap}
+      onTouchEnd={handleThumbnailTap}
     >
       {/* Luxury Gradient Background */}
       <div className={`absolute inset-0 bg-gradient-to-br ${categoryGradient} opacity-70`} />
