@@ -50,15 +50,27 @@ const getScreenStyles = () => `
     }
   }
   
+  /* Reset all clip paths that cause overlap */
+  .st0, .st1, .st3, .st4, .st5, .st6, .st7 {
+    clip-path: none !important;
+  }
+  
+  /* Ensure proper stacking for screen groups */
+  g[id] {
+    isolation: isolate;
+  }
+  
   .screen-group {
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: all;
   }
   
   .screen-group * {
     fill: #78350f;
     opacity: 0.5;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
   }
   
   .screen-group:hover * {
