@@ -53,13 +53,18 @@ export const DISPLAY_TYPES: DisplayType[] = [
       fileSize: 'Max 8GB',
     },
     graphicSpecs: {
-      resolution: '1280x720 or 1920x1080',
+      resolution: '1920x1080 or 3840x2160',
       format: 'PNG',
     },
     logoSpecs: {
       resolution: 'Vector preferred',
       format: 'EPS, AI, SVG (preferred) or high-res PNG with transparent background',
     },
+    creativeNotes: [
+      'DXV3 codec is required for optimal playback on our Resolume media servers.',
+      'Download the free Resolume Alley encoder from resolume.com to convert your videos to DXV3 format.',
+      'For best results, export your video in ProRes or high-quality H264 first, then encode to DXV3 using Resolume Alley.',
+    ],
     image: '/creative-guide/tv-specs.jpg',
     diagramImage: '/creative-guide/tv-display.jpg',
   },
