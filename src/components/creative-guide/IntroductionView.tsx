@@ -46,21 +46,15 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
     }
   };
 
-  // Auto-play with audio on mount (browsers may block unmuted autoplay)
+  // Auto-play muted on mount (browsers require muted for autoplay)
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      // Start muted to ensure autoplay works, then try to unmute
       video.muted = true;
-      video.play().then(() => {
-        // Try to unmute after successful play
-        video.muted = false;
-        setIsMuted(false);
-      }).catch(() => {
-        // If unmuted autoplay fails, keep it muted
-        video.muted = true;
-        setIsMuted(true);
-        video.play().catch(() => {});
+      setIsMuted(true);
+      video.play().catch(() => {
+        // Autoplay failed, user will need to interact
+        console.log('Autoplay blocked by browser');
       });
     }
   }, []);
