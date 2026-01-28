@@ -6,7 +6,7 @@ import soleiaLogo from '@/assets/soleia-logo-new.png';
 
 const SharedSession = () => {
   const { token } = useParams<{ token: string }>();
-  const { clientLink, selections, isLoading, error, toggleSelection, updateNote, updatePlacements, isSelected, getSelection } = useSharedSession(token);
+  const { clientLink, sessionClips, selections, isLoading, error, toggleSelection, updateNote, updatePlacements, isSelected, getSelection } = useSharedSession(token);
 
   if (isLoading) {
     return (
@@ -44,6 +44,7 @@ const SharedSession = () => {
   return (
     <SharedGalleryView
       clientLink={clientLink}
+      sessionClips={sessionClips}
       selections={selections}
       toggleSelection={toggleSelection}
       updateNote={updateNote}

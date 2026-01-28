@@ -23,9 +23,21 @@ interface SharedSelection {
   placements: string[];
 }
 
+interface SessionClip {
+  id: string;
+  title: string;
+  thumbnail: string | null;
+  video_url: string | null;
+  preview_url: string | null;
+  category: string;
+  duration: string | null;
+  resolution: string | null;
+}
+
 export function useSharedSession(token: string | undefined) {
   const { toast } = useToast();
   const [clientLink, setClientLink] = useState<ClientLink | null>(null);
+  const [sessionClips, setSessionClips] = useState<SessionClip[]>([]);
   const [selections, setSelections] = useState<SharedSelection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +70,31 @@ export function useSharedSession(token: string | undefined) {
         }
 
         setClientLink(linkData);
+
+        // Fetch clips assigned to this session
+        const { data: linkClipsData, error: linkClipsError } = await supabase
+          .from('link_clips')
+          .select(`
+            clip_id,
+            cached_clips!inner (
+              id,
+              title,
+              thumbnail,
+              video_url,
+              preview_url,
+              category,
+              duration,
+              resolution
+            )
+          `)
+          .eq('link_id', linkData.id);
+
+        if (linkClipsError) {
+          console.error('Error fetching link clips:', linkClipsError);
+        } else if (linkClipsData) {
+          const clips = linkClipsData.map((lc: any) => lc.cached_clips);
+          setSessionClips(clips);
+        }
 
         // Fetch existing selections
         const { data: selectionsData, error: selectionsError } = await supabase
@@ -217,6 +254,7 @@ export function useSharedSession(token: string | undefined) {
 
   return {
     clientLink,
+    sessionClips,
     selections,
     isLoading,
     error,
