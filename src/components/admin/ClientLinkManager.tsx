@@ -10,8 +10,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Eye } from 'lucide-react';
 import { ClipSelector } from './ClipSelector';
+import { ClipSelectionPreview } from './ClipSelectionPreview';
 import { SessionUploadsViewer } from './SessionUploadsViewer';
 
 interface ClientLink {
@@ -26,13 +27,15 @@ interface ClientLink {
   upload_count?: number;
 }
 
+type ClipSelectorView = 'closed' | 'select' | 'preview';
+
 export function ClientLinkManager() {
   const { toast } = useToast();
   const [clientName, setClientName] = useState('');
   const [eventName, setEventName] = useState('');
   const [eventDate, setEventDate] = useState<Date>();
   const [selectedClipIds, setSelectedClipIds] = useState<string[]>([]);
-  const [isClipSelectorOpen, setIsClipSelectorOpen] = useState(false);
+  const [clipSelectorView, setClipSelectorView] = useState<ClipSelectorView>('closed');
   const [isCreating, setIsCreating] = useState(false);
   const [links, setLinks] = useState<ClientLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -148,7 +151,7 @@ export function ClientLinkManager() {
       setEventName('');
       setEventDate(undefined);
       setSelectedClipIds([]);
-      setIsClipSelectorOpen(false);
+      setClipSelectorView('closed');
 
       toast({
         title: 'Session created!',
@@ -262,33 +265,83 @@ export function ClientLinkManager() {
             </div>
           </div>
 
-          {/* Clip Selector */}
-          <Collapsible open={isClipSelectorOpen} onOpenChange={setIsClipSelectorOpen}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Video className="w-4 h-4" />
-                  <span>Select Clips for Session</span>
-                  {selectedClipIds.length > 0 && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                      {selectedClipIds.length} selected
-                    </span>
-                  )}
-                </div>
-                {isClipSelectorOpen ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
+          {/* Clip Selector with Preview Toggle */}
+          <div className="space-y-3">
+            {/* Toggle Button */}
+            <Button 
+              variant="outline" 
+              className="w-full justify-between gap-2"
+              onClick={() => setClipSelectorView(clipSelectorView === 'closed' ? 'select' : 'closed')}
+            >
+              <div className="flex items-center gap-2">
+                <Video className="w-4 h-4" />
+                <span>Select Clips for Session</span>
+                {selectedClipIds.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
+                    {selectedClipIds.length} selected
+                  </span>
                 )}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-4">
-              <ClipSelector 
-                selectedClipIds={selectedClipIds}
-                onSelectionChange={setSelectedClipIds}
-              />
-            </CollapsibleContent>
-          </Collapsible>
+              </div>
+              {clipSelectorView !== 'closed' ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </Button>
+
+            {/* Expanded Content */}
+            {clipSelectorView !== 'closed' && (
+              <div className="rounded-xl border border-border/50 bg-secondary/10 p-4">
+                {/* View Toggle Tabs */}
+                <div className="flex items-center gap-2 mb-4 p-1 bg-secondary/50 rounded-lg w-fit">
+                  <button
+                    onClick={() => setClipSelectorView('select')}
+                    className={cn(
+                      "px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+                      clipSelectorView === 'select' 
+                        ? "bg-background shadow-sm text-foreground" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Select Clips
+                  </button>
+                  <button
+                    onClick={() => setClipSelectorView('preview')}
+                    disabled={selectedClipIds.length === 0}
+                    className={cn(
+                      "px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5",
+                      clipSelectorView === 'preview' 
+                        ? "bg-background shadow-sm text-foreground" 
+                        : "text-muted-foreground hover:text-foreground",
+                      selectedClipIds.length === 0 && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    Preview
+                    {selectedClipIds.length > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-xs">
+                        {selectedClipIds.length}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {/* View Content */}
+                {clipSelectorView === 'select' ? (
+                  <ClipSelector 
+                    selectedClipIds={selectedClipIds}
+                    onSelectionChange={setSelectedClipIds}
+                  />
+                ) : (
+                  <ClipSelectionPreview
+                    selectedClipIds={selectedClipIds}
+                    onRemoveClip={(id) => setSelectedClipIds(prev => prev.filter(cid => cid !== id))}
+                    onBack={() => setClipSelectorView('select')}
+                  />
+                )}
+              </div>
+            )}
+          </div>
           
           <Button
             onClick={createLink}
