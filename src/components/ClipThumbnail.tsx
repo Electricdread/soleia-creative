@@ -7,7 +7,7 @@ interface ClipThumbnailProps {
     id: string;
     title: string;
     thumbnail: string;
-    preview_url?: string | null;
+    previewUrl?: string | null;
   };
   isSelected: boolean;
   hasNote: boolean;
@@ -32,7 +32,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const hasVideoPreview = !!clip.preview_url && !videoError;
+  const hasVideoPreview = !!clip.previewUrl && !videoError;
 
   // Intersection Observer for auto-play when visible
   useEffect(() => {
@@ -97,7 +97,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
       {hasVideoPreview && (
         <video
           ref={videoRef}
-          src={clip.preview_url!}
+          src={clip.previewUrl!}
           poster={clip.thumbnail || undefined}
           muted
           loop
