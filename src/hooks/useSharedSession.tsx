@@ -34,11 +34,22 @@ interface SessionClip {
   resolution: string | null;
 }
 
+export interface SessionUpload {
+  id: string;
+  link_id: string;
+  file_url: string;
+  file_name: string;
+  file_type: string;
+  file_size: number | null;
+  created_at: string;
+}
+
 export function useSharedSession(token: string | undefined) {
   const { toast } = useToast();
   const [clientLink, setClientLink] = useState<ClientLink | null>(null);
   const [sessionClips, setSessionClips] = useState<SessionClip[]>([]);
   const [selections, setSelections] = useState<SharedSelection[]>([]);
+  const [uploads, setUploads] = useState<SessionUpload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,6 +115,19 @@ export function useSharedSession(token: string | undefined) {
 
         if (selectionsError) throw selectionsError;
         setSelections(selectionsData || []);
+
+        // Fetch existing uploads
+        const { data: uploadsData, error: uploadsError } = await supabase
+          .from('session_uploads')
+          .select('*')
+          .eq('link_id', linkData.id)
+          .order('created_at', { ascending: false });
+
+        if (uploadsError) {
+          console.error('Error fetching uploads:', uploadsError);
+        } else {
+          setUploads(uploadsData || []);
+        }
       } catch (err: any) {
         console.error('Error fetching session:', err);
         setError(err.message || 'Failed to load session');
@@ -115,12 +139,12 @@ export function useSharedSession(token: string | undefined) {
     fetchSession();
   }, [token]);
 
-  // Subscribe to realtime changes
+  // Subscribe to realtime changes for selections and uploads
   useEffect(() => {
     if (!clientLink?.id) return;
 
     const channel = supabase
-      .channel(`link_selections:${clientLink.id}`)
+      .channel(`session_realtime:${clientLink.id}`)
       .on(
         'postgres_changes',
         {
@@ -132,7 +156,6 @@ export function useSharedSession(token: string | undefined) {
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setSelections(prev => {
-              // Avoid duplicates
               if (prev.some(s => s.id === (payload.new as SharedSelection).id)) {
                 return prev;
               }
@@ -153,11 +176,49 @@ export function useSharedSession(token: string | undefined) {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'session_uploads',
+          filter: `link_id=eq.${clientLink.id}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setUploads(prev => {
+              if (prev.some(u => u.id === (payload.new as SessionUpload).id)) {
+                return prev;
+              }
+              return [payload.new as SessionUpload, ...prev];
+            });
+          } else if (payload.eventType === 'DELETE') {
+            setUploads(prev =>
+              prev.filter(u => u.id !== (payload.old as { id: string }).id)
+            );
+          }
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
+  }, [clientLink?.id]);
+
+  // Refetch uploads manually (for after upload completes)
+  const refetchUploads = useCallback(async () => {
+    if (!clientLink?.id) return;
+    
+    const { data, error } = await supabase
+      .from('session_uploads')
+      .select('*')
+      .eq('link_id', clientLink.id)
+      .order('created_at', { ascending: false });
+    
+    if (!error && data) {
+      setUploads(data);
+    }
   }, [clientLink?.id]);
 
   // Toggle clip selection (add or remove)
@@ -256,6 +317,7 @@ export function useSharedSession(token: string | undefined) {
     clientLink,
     sessionClips,
     selections,
+    uploads,
     isLoading,
     error,
     toggleSelection,
@@ -263,5 +325,6 @@ export function useSharedSession(token: string | undefined) {
     updatePlacements,
     isSelected,
     getSelection,
+    refetchUploads,
   };
 }
