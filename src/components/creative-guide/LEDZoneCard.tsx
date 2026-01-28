@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { LEDZone } from '@/lib/creativeGuide';
 import { ZONE_SUBCATEGORY_LABELS } from '@/lib/creativeGuide';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import solIcon from '@/assets/sol-icon.png';
 
 interface LEDZoneCardProps {
   zone: LEDZone;
@@ -14,7 +14,7 @@ interface LEDZoneCardProps {
 }
 
 const SubcategoryIcon = () => (
-  <img src={showbloxIcon} alt="" className="w-6 h-6 object-contain showblox-icon-gold" />
+  <img src={solIcon} alt="" className="w-6 h-6 object-contain" />
 );
 
 export function LEDZoneCard({ zone, isSelected, onToggle }: LEDZoneCardProps) {

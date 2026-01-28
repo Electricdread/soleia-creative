@@ -8,6 +8,7 @@ import OutdoorPlacementDiagram from '@/components/OutdoorPlacementDiagram';
 import { LEDZoneCard } from './LEDZoneCard';
 import { ZoneSelectionSummary } from './ZoneSelectionSummary';
 import showbloxIcon from '@/assets/showblox-icon.png';
+import solIcon from '@/assets/sol-icon.png';
 import {
   OUTDOOR_LED_ZONES,
   INDOOR_LED_ZONES,
@@ -19,8 +20,8 @@ import {
 type ZoneCategory = 'outdoor' | 'indoor';
 
 const ZONE_CATEGORIES: { key: ZoneCategory; label: string; icon: React.ReactNode }[] = [
-  { key: 'indoor', label: 'Indoor Zones', icon: <img src={showbloxIcon} alt="" className="w-4 h-4 object-contain showblox-icon-gold" /> },
-  { key: 'outdoor', label: 'Outdoor Zones', icon: <img src={showbloxIcon} alt="" className="w-4 h-4 object-contain showblox-icon-gold" /> },
+  { key: 'indoor', label: 'Indoor Zones', icon: <img src={solIcon} alt="" className="w-4 h-4 object-contain" /> },
+  { key: 'outdoor', label: 'Outdoor Zones', icon: <img src={solIcon} alt="" className="w-4 h-4 object-contain" /> },
 ];
 
 export function LEDZonesView() {
