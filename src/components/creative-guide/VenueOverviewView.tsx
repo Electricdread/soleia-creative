@@ -423,7 +423,6 @@ export function VenueOverviewView() {
               loop
               muted
               playsInline
-              poster={GUIDE_IMAGES.visualization3d}
             />
 
             {/* Expand button overlay */}
@@ -486,7 +485,7 @@ export function VenueOverviewView() {
         title="Soleia 3D Venue Visualization"
       />
 
-      {/* Outdoor LED Zones Section */}
+      {/* Indoor LED Zones Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -494,14 +493,14 @@ export function VenueOverviewView() {
         className="space-y-4"
       >
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/30">
-            <Sun className="w-3 h-3 mr-1" />
-            Outdoor
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+            <Layers className="w-3 h-3 mr-1" />
+            Indoor
           </Badge>
-          <h3 className="text-lg font-semibold text-foreground">Outdoor LED Zones</h3>
+          <h3 className="text-lg font-semibold text-foreground">Indoor LED Zones</h3>
         </div>
         
-        {OUTDOOR_ZONES.map((zone, index) => (
+        {INDOOR_ZONES.map((zone, index) => (
           <Card key={index} className="glass border-border/50">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
@@ -527,7 +526,7 @@ export function VenueOverviewView() {
         ))}
       </motion.div>
 
-      {/* Indoor LED Zones Section */}
+      {/* Outdoor LED Zones Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -535,14 +534,14 @@ export function VenueOverviewView() {
         className="space-y-4"
       >
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">
-            <Layers className="w-3 h-3 mr-1" />
-            Indoor
+          <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/30">
+            <Sun className="w-3 h-3 mr-1" />
+            Outdoor
           </Badge>
-          <h3 className="text-lg font-semibold text-foreground">Indoor LED Zones</h3>
+          <h3 className="text-lg font-semibold text-foreground">Outdoor LED Zones</h3>
         </div>
         
-        {INDOOR_ZONES.map((zone, index) => (
+        {OUTDOOR_ZONES.map((zone, index) => (
           <Card key={index} className="glass border-border/50">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
