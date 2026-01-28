@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import { FileText, Sparkles } from 'lucide-react';
 import showbloxIcon from '@/assets/showblox-icon.png';
 
@@ -17,7 +17,7 @@ interface ClipThumbnailProps {
   categoryGradient: string;
 }
 
-const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
+const ClipThumbnail = forwardRef<HTMLDivElement, ClipThumbnailProps>(({
   clip,
   isSelected,
   hasNote,
@@ -25,7 +25,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
   onImageError,
   onPlayClick,
   categoryGradient,
-}) => {
+}, ref) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -52,20 +52,42 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
     return () => observer.disconnect();
   }, []);
 
-  // Auto-play video when visible
+  // Auto-play video when visible - with iOS-friendly handling
   useEffect(() => {
-    if (isVisible && videoRef.current && hasVideoPreview && videoLoaded) {
-      videoRef.current.play().catch(() => {
-        setVideoError(true);
-      });
-    } else if (!isVisible && videoRef.current) {
-      videoRef.current.pause();
+    const video = videoRef.current;
+    if (!video || !hasVideoPreview) return;
+
+    if (isVisible && videoLoaded) {
+      // Ensure video is muted for autoplay to work on iOS
+      video.muted = true;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.log('Autoplay prevented:', error);
+          // Don't set error state - thumbnail fallback handles this gracefully
+        });
+      }
+    } else {
+      video.pause();
     }
   }, [isVisible, hasVideoPreview, videoLoaded]);
 
+  // Handle video ready to play
+  const handleVideoReady = () => {
+    setVideoLoaded(true);
+  };
+
   return (
     <div 
-      ref={containerRef}
+      ref={(node) => {
+        // Handle both internal ref and forwarded ref
+        containerRef.current = node;
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+      }}
       className="relative aspect-[4/3] bg-secondary/20"
     >
       {/* Luxury Gradient Background */}
@@ -82,7 +104,6 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
           onError={() => onImageError(clip.id)}
           loading="eager"
           decoding="async"
-          fetchPriority="high"
         />
       )}
 
@@ -102,9 +123,10 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
           muted
           loop
           playsInline
-          preload="metadata"
-          onLoadedData={() => setVideoLoaded(true)}
-          onCanPlay={() => setVideoLoaded(true)}
+          webkit-playsinline="true"
+          preload="auto"
+          onLoadedData={handleVideoReady}
+          onCanPlayThrough={handleVideoReady}
           onError={() => setVideoError(true)}
           className={`absolute inset-0 w-full h-full object-cover transition-elegant ${
             videoLoaded ? 'opacity-100' : 'opacity-0'
@@ -136,6 +158,8 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
       )}
     </div>
   );
-};
+});
+
+ClipThumbnail.displayName = 'ClipThumbnail';
 
 export default ClipThumbnail;
