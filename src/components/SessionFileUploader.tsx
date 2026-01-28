@@ -46,7 +46,6 @@ export default function SessionFileUploader({ linkId, uploads, onUploadComplete 
   };
 
   const uploadFile = async (file: File, category: string) => {
-    const fileExt = file.name.split('.').pop();
     const fileName = `${linkId}/${category}/${Date.now()}-${file.name}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -65,11 +64,26 @@ export default function SessionFileUploader({ linkId, uploads, onUploadComplete 
         link_id: linkId,
         file_url: publicUrl,
         file_name: file.name,
-        file_type: file.type,
+        file_type: category,
         file_size: file.size,
       });
 
     if (dbError) throw dbError;
+
+    // Send email notification
+    try {
+      await supabase.functions.invoke('notify-upload', {
+        body: {
+          linkId,
+          fileName: file.name,
+          fileType: category,
+          fileSize: file.size,
+        },
+      });
+    } catch (notifyError) {
+      console.error('Failed to send upload notification:', notifyError);
+      // Don't throw - notification failure shouldn't block upload
+    }
   };
 
   const handleFileSelect = useCallback(async (files: FileList | null, category: string) => {
