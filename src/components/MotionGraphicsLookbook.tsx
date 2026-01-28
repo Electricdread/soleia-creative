@@ -638,7 +638,7 @@ const MotionGraphicsLookbook = () => {
                           ? 'ring-2 ring-primary ring-offset-4 ring-offset-background scale-[1.02] glow-gold' 
                           : 'hover-lift hover:ring-1 hover:ring-primary/30 active:scale-[0.98]'
                       }`}
-                      onClick={() => toggleClipSelection(clip)}
+                      onClick={(e) => openPreview(clip, e)}
                     >
                       <ClipThumbnail
                         clip={clip}
