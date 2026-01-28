@@ -77,7 +77,7 @@ const CreativeGuideView = () => {
                 className="h-8 sm:h-10 object-contain"
               />
               <div className="hidden sm:block">
-                <h1 className="text-lg font-semibold text-gradient-gold">Creative Guide</h1>
+                <h1 className="text-lg font-display font-semibold text-gradient-gold">Creative Guide</h1>
                 <p className="text-xs text-muted-foreground">Digital Branding Specifications</p>
               </div>
             </div>
