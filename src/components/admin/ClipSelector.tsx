@@ -164,8 +164,8 @@ export function ClipSelector({ selectedClipIds, onSelectionChange }: ClipSelecto
       </div>
 
       {/* Clip Grid - Square thumbnails */}
-      <ScrollArea className={isMobile ? "h-[45vh]" : "h-[300px]"}>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 p-1">
+      <ScrollArea className={isMobile ? "h-[50vh]" : "h-[300px]"}>
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-1.5 p-1">
           {filteredClips.map((clip) => {
             const isSelected = selectedClipIds.includes(clip.id);
             const category = artlistCategories.find(c => c.key === clip.category);
@@ -176,50 +176,48 @@ export function ClipSelector({ selectedClipIds, onSelectionChange }: ClipSelecto
                 type="button"
                 onClick={() => toggleClip(clip.id)}
                 className={`
-                  relative group rounded-lg overflow-hidden border-2 transition-all touch-manipulation
+                  relative rounded-md overflow-hidden border-2 transition-all touch-manipulation
+                  aspect-square
                   ${isSelected 
                     ? 'border-primary ring-1 ring-primary/30' 
                     : 'border-transparent hover:border-border/50'
                   }
                 `}
               >
-                {/* Square Thumbnail */}
-                <div className="aspect-square bg-secondary/50 relative">
-                  {clip.thumbnail ? (
-                    <img
-                      src={clip.thumbnail}
-                      alt={clip.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Video className="w-6 h-6 text-muted-foreground" />
-                    </div>
-                  )}
-                  
-                  {/* Selection Checkmark */}
-                  <div className={`
-                    absolute top-1 right-1 w-5 h-5 rounded-full border-2 
-                    flex items-center justify-center transition-all
-                    ${isSelected 
-                      ? 'bg-primary border-primary' 
-                      : 'bg-background/80 border-muted-foreground/30'
-                    }
-                  `}>
-                    {isSelected && (
-                      <Check className="w-3 h-3 text-primary-foreground" strokeWidth={3} />
-                    )}
+                {clip.thumbnail ? (
+                  <img
+                    src={clip.thumbnail}
+                    alt={clip.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-secondary/50">
+                    <Video className="w-5 h-5 text-muted-foreground" />
                   </div>
-
-                  {/* Category dot */}
-                  {category && (
-                    <div 
-                      className="absolute bottom-1 left-1 w-2 h-2 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                    />
+                )}
+                
+                {/* Selection Checkmark */}
+                <div className={`
+                  absolute top-0.5 right-0.5 w-4 h-4 rounded-full border 
+                  flex items-center justify-center transition-all
+                  ${isSelected 
+                    ? 'bg-primary border-primary' 
+                    : 'bg-background/70 border-muted-foreground/40'
+                  }
+                `}>
+                  {isSelected && (
+                    <Check className="w-2.5 h-2.5 text-primary-foreground" strokeWidth={3} />
                   )}
                 </div>
+
+                {/* Category dot */}
+                {category && (
+                  <div 
+                    className="absolute bottom-0.5 left-0.5 w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: category.color }}
+                  />
+                )}
               </button>
             );
           })}
