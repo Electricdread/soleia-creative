@@ -10,6 +10,7 @@ import { TickerVideoCarousel } from './TickerVideoCarousel';
 import { LEDPixelMapCarousel } from './LEDPixelMapCarousel';
 
 const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
+const LED_PIXELMAP_IMAGE = '/creative-guide/led-main-interior-pixelmap.png';
 
 interface DisplaySpecsViewProps {
   onSelectDisplay?: (displayId: string) => void;
@@ -41,10 +42,20 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 function DisplayCard({ display }: { display: DisplayType }) {
   const isTicker = display.category === 'ticker';
   const isLED = display.category === 'led';
+  
   const handleDownloadTickerAssets = () => {
     const link = document.createElement('a');
     link.href = TICKER_ASSETS_ZIP;
     link.download = 'TICKER-MARQUEE.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadLEDPixelmap = () => {
+    const link = document.createElement('a');
+    link.href = LED_PIXELMAP_IMAGE;
+    link.download = 'LED-Main-Interior-Pixelmap.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -125,6 +136,21 @@ function DisplayCard({ display }: { display: DisplayType }) {
                   >
                     <Download className="w-3.5 h-3.5" />
                     Download Pixelmap & Work Comp
+                  </Button>
+                </div>
+              )}
+
+              {/* LED Pixelmap download */}
+              {isLED && (
+                <div className="pt-3 mt-2 border-t border-border/30">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadLEDPixelmap}
+                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download Pixelmap
                   </Button>
                 </div>
               )}
