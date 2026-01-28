@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { UserMenu } from '@/components/auth/UserMenu';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { artlistCategories, type ArtlistCategoryKey } from '@/lib/api/artlist';
-import sunIcon from '@/assets/sun-icon.jpeg';
+import showbloxIcon from '@/assets/showblox-icon.png';
 
 interface MobileMenuProps {
   selectedCategory: ArtlistCategoryKey;
@@ -66,7 +66,7 @@ export function MobileMenu({
                       : 'hover:bg-primary/5 text-foreground'
                   }`}
                 >
-                  <img src={sunIcon} alt="" className="w-6 h-6 object-contain" />
+                  <img src="/soleia-icon.png" alt="" className="w-6 h-6 object-contain" />
                   <span className="font-medium text-base">{cat.label}</span>
                 </button>
               ))}
@@ -98,6 +98,7 @@ export function MobileMenu({
               Appearance
             </p>
             <div className="px-2 flex items-center gap-3">
+              <img src={showbloxIcon} alt="ShowBlox" className="w-6 h-6 object-contain dark:invert" />
               <ThemeToggle />
               <span className="text-sm text-muted-foreground">Toggle theme</span>
             </div>
