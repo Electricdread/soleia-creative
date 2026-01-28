@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, FileText, Sparkles } from 'lucide-react';
+import { FileText, Sparkles } from 'lucide-react';
 import showbloxIcon from '@/assets/showblox-icon.png';
 
 interface ClipThumbnailProps {
@@ -26,53 +26,74 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
   onPlayClick,
   categoryGradient,
 }) => {
-  const [isHovering, setIsHovering] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const hasVideoPreview = !!clip.preview_url && !videoError;
 
+  // Intersection Observer for auto-play when visible
   useEffect(() => {
-    if (isHovering && videoRef.current && hasVideoPreview) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-play video when visible
+  useEffect(() => {
+    if (isVisible && videoRef.current && hasVideoPreview && videoLoaded) {
       videoRef.current.play().catch(() => {
         setVideoError(true);
       });
-    } else if (!isHovering && videoRef.current) {
+    } else if (!isVisible && videoRef.current) {
       videoRef.current.pause();
-      videoRef.current.currentTime = 0;
     }
-  }, [isHovering, hasVideoPreview]);
+  }, [isVisible, hasVideoPreview, videoLoaded]);
 
   return (
     <div 
+      ref={containerRef}
       className="relative aspect-[4/3] bg-secondary/20"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
     >
       {/* Luxury Gradient Background */}
       <div className={`absolute inset-0 bg-gradient-to-br ${categoryGradient} opacity-70`} />
 
-      {/* Static Thumbnail - always shown as base layer, greyed when selected */}
-      {!hasImageError ? (
+      {/* Static Thumbnail - shown as fallback when no video or video loading */}
+      {(!hasVideoPreview || !videoLoaded) && !hasImageError && (
         <img
           src={clip.thumbnail}
           alt={clip.title}
-          className={`absolute inset-0 w-full h-full object-cover transition-elegant group-hover:scale-105 ${
-            isHovering && videoLoaded && hasVideoPreview ? 'opacity-0' : 'opacity-100'
-          } ${isSelected ? 'grayscale opacity-50' : ''}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-elegant ${
+            isSelected ? 'grayscale opacity-50' : ''
+          }`}
           onError={() => onImageError(clip.id)}
           loading="eager"
           decoding="async"
           fetchPriority="high"
         />
-      ) : (
+      )}
+
+      {/* Fallback for image errors */}
+      {hasImageError && !hasVideoPreview && (
         <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/15 to-accent/10">
           <Sparkles className="w-12 h-12 text-primary/60" />
         </div>
       )}
 
-      {/* Video Preview - shown on hover if available, loops continuously, greyed when selected */}
+      {/* Video Preview - auto-plays when in viewport */}
       {hasVideoPreview && (
         <video
           ref={videoRef}
@@ -85,7 +106,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
           onCanPlayThrough={() => setVideoLoaded(true)}
           onError={() => setVideoError(true)}
           className={`absolute inset-0 w-full h-full object-cover transition-elegant ${
-            isHovering && videoLoaded ? 'opacity-100 scale-105' : 'opacity-0'
+            videoLoaded ? 'opacity-100' : 'opacity-0'
           } ${isSelected ? 'grayscale opacity-50' : ''}`}
         />
       )}
@@ -106,17 +127,7 @@ const ClipThumbnail: React.FC<ClipThumbnailProps> = ({
         </div>
       )}
 
-      {/* Luxury Play Button Overlay */}
-      <div className={`absolute inset-0 flex items-center justify-center bg-gradient-to-t from-background/60 via-transparent to-transparent transition-elegant z-10 ${isSelected ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
-        <button
-          onClick={onPlayClick}
-          className="w-16 h-16 bg-background/95 rounded-full flex items-center justify-center hover:bg-background transition-elegant shadow-2xl glow-gold hover:scale-110"
-        >
-          <Play className="w-8 h-8 text-primary ml-1" />
-        </button>
-      </div>
-
-      {/* ShowBlox Icon Badge on hover - only show when not selected */}
+      {/* ShowBlox Icon Badge - only show when not selected */}
       {!isSelected && (
         <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-elegant z-10">
           <img src={showbloxIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
