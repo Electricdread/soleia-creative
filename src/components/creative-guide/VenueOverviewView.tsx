@@ -1,12 +1,12 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, MapPin, Eye, Sun, Layers, Monitor, ArrowRight, CheckCircle2, Printer, Map, ChevronDown, Tv, LayoutGrid, Expand } from 'lucide-react';
+import { Building2, MapPin, Eye, Sun, Layers, Monitor, ArrowRight, CheckCircle2, Printer, Map, ChevronDown, Tv, LayoutGrid } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { GUIDE_IMAGES, VENUE_BLUEPRINT_DETAILS } from '@/lib/creativeGuide';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import solIcon from '@/assets/sol-icon.png';
 import { VideoModal } from './VideoModal';
 
 const VIDEO_URL = "https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/clips/Soleia%20Pixelmap%203D%20Preview.mp4";
@@ -401,15 +401,15 @@ export function VenueOverviewView() {
         </Card>
       </motion.div>
 
-      {/* 3D Visualization Video */}
+      {/* 3D Visualization Video - Tap to fullscreen */}
       <motion.div
         ref={videoContainerRef}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)]">
-          <div className="relative cursor-pointer" onClick={() => setVideoModalOpen(true)}>
+        <Card className="glass border-primary/20 overflow-hidden group hover:border-primary/40 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.3)] cursor-pointer" onClick={() => setVideoModalOpen(true)}>
+          <div className="relative">
             {/* Elegant frame with gold accent borders */}
             <div className="absolute inset-0 z-10 pointer-events-none border-4 border-primary/10 dark:border-primary/20" />
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent z-10" />
@@ -418,27 +418,18 @@ export function VenueOverviewView() {
             <video 
               ref={videoRef}
               src={VIDEO_URL}
-              className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
+              className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.02]"
               autoPlay
               loop
               muted
               playsInline
             />
 
-            {/* Expand button overlay */}
-            <div className="absolute top-4 right-4 z-20">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="gap-2 bg-background/80 backdrop-blur-sm hover:bg-background/90 shadow-lg"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setVideoModalOpen(true);
-                }}
-              >
-                <Expand className="w-4 h-4" />
-                <span className="hidden sm:inline">Fullscreen</span>
-              </Button>
+            {/* Tap indicator overlay */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center z-10">
+              <span className="text-white/0 group-hover:text-white/80 text-sm font-medium transition-colors">
+                Tap for fullscreen
+              </span>
             </div>
             
             {/* Corner accents */}
@@ -448,25 +439,14 @@ export function VenueOverviewView() {
             <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 rounded-br-sm z-10" />
           </div>
           <CardContent className="p-4 sm:p-6 bg-gradient-to-b from-transparent to-primary/5 dark:to-primary/10">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-primary/20 shadow-lg shadow-primary/10">
-                  <Eye className="w-5 h-5 text-amber-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gradient-gold">3D Venue Visualization</h3>
-                  <p className="text-xs text-muted-foreground">Interactive pixelmap preview of LED screen positions</p>
-                </div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-primary/20 shadow-lg shadow-primary/10">
+                <Eye className="w-5 h-5 text-amber-500" />
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-primary hover:bg-primary/10 gap-1"
-                onClick={() => setVideoModalOpen(true)}
-              >
-                <Expand className="w-4 h-4" />
-                <span className="hidden sm:inline">View Fullscreen</span>
-              </Button>
+              <div>
+                <h3 className="font-semibold text-gradient-gold">3D Venue Visualization</h3>
+                <p className="text-xs text-muted-foreground">Interactive pixelmap preview of LED screen positions</p>
+              </div>
             </div>
             <p className="text-sm text-muted-foreground">
               This 3D visualization shows the spatial relationship between all LED zones, including outdoor arrival screens, 

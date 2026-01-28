@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Maximize, X, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 
@@ -34,12 +34,21 @@ export function TickerVideoCarousel({ className }: TickerVideoCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
-  const [progress, setProgress] = useState(0);
+  const [showControls, setShowControls] = useState(true);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const modalVideoRef = useRef<HTMLVideoElement>(null);
-  const progressRef = useRef<HTMLDivElement>(null);
+  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const resetControlsTimeout = useCallback(() => {
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+    setShowControls(true);
+    controlsTimeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 2000);
+  }, []);
 
   const goToNext = useCallback(() => {
     setDirection(1);
@@ -53,13 +62,6 @@ export function TickerVideoCarousel({ className }: TickerVideoCarouselProps) {
 
   // Swipe navigation
   const swipeHandlers = useSwipeNavigation({
-    onSwipeLeft: goToNext,
-    onSwipeRight: goToPrev,
-    threshold: 50,
-  });
-
-  // Modal swipe navigation
-  const modalSwipeHandlers = useSwipeNavigation({
     onSwipeLeft: goToNext,
     onSwipeRight: goToPrev,
     threshold: 50,
@@ -81,25 +83,31 @@ export function TickerVideoCarousel({ className }: TickerVideoCarouselProps) {
     }
   }, [currentIndex, isModalOpen]);
 
-  // Handle modal video sync
+  // Handle modal video - auto-play when opened
   useEffect(() => {
     if (isModalOpen && modalVideoRef.current) {
+      modalVideoRef.current.muted = isMuted;
       modalVideoRef.current.currentTime = 0;
-      if (isPlaying) {
-        modalVideoRef.current.play().catch(() => {});
-      }
+      modalVideoRef.current.play().catch(() => {});
+      resetControlsTimeout();
     }
-  }, [isModalOpen, currentIndex]);
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    };
+  }, [isModalOpen, currentIndex, isMuted, resetControlsTimeout]);
 
+  // Tap on inline video opens fullscreen
   const openModal = () => {
     // Pause inline video
     videoRefs.current.forEach((video) => {
       if (video) video.pause();
     });
     setIsModalOpen(true);
-    setIsPlaying(true);
   };
 
+  // Tap anywhere in fullscreen closes it
   const closeModal = () => {
     setIsModalOpen(false);
     // Resume inline video
@@ -109,38 +117,23 @@ export function TickerVideoCarousel({ className }: TickerVideoCarouselProps) {
     }
   };
 
-  const togglePlay = () => {
-    if (modalVideoRef.current) {
-      if (isPlaying) {
-        modalVideoRef.current.pause();
-      } else {
-        modalVideoRef.current.play().catch(() => {});
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  const toggleMute = () => {
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (modalVideoRef.current) {
       modalVideoRef.current.muted = !modalVideoRef.current.muted;
       setIsMuted(modalVideoRef.current.muted);
     }
+    resetControlsTimeout();
   };
 
-  const handleTimeUpdate = () => {
-    if (modalVideoRef.current) {
-      const prog = (modalVideoRef.current.currentTime / modalVideoRef.current.duration) * 100;
-      setProgress(prog);
-    }
+  const handleModalNavPrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    goToPrev();
   };
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (progressRef.current && modalVideoRef.current) {
-      const rect = progressRef.current.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const percentage = clickX / rect.width;
-      modalVideoRef.current.currentTime = percentage * modalVideoRef.current.duration;
-    }
+  const handleModalNavNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    goToNext();
   };
 
   const slideVariants = {
@@ -180,18 +173,24 @@ export function TickerVideoCarousel({ className }: TickerVideoCarouselProps) {
               opacity: { duration: 0.2 },
               scale: { duration: 0.2 },
             }}
-            className="absolute inset-0 cursor-pointer"
+            className="absolute inset-0 cursor-pointer group"
             onClick={openModal}
           >
             <video
               ref={(el) => { videoRefs.current[currentIndex] = el; }}
               src={getStorageUrl(TICKER_VIDEOS[currentIndex].path)}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               loop
               muted
               playsInline
               autoPlay
             />
+            {/* Tap indicator */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <span className="text-white/0 group-hover:text-white/80 text-sm font-medium transition-colors">
+                Tap for fullscreen
+              </span>
+            </div>
           </motion.div>
         </AnimatePresence>
 
@@ -211,16 +210,6 @@ export function TickerVideoCarousel({ className }: TickerVideoCarouselProps) {
           className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg h-8 w-8"
         >
           <ChevronRight className="w-4 h-4 text-primary" />
-        </Button>
-
-        {/* Fullscreen button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => { e.stopPropagation(); openModal(); }}
-          className="absolute bottom-3 right-3 z-10 bg-background/70 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg h-7 w-7"
-        >
-          <Maximize className="w-3.5 h-3.5 text-primary" />
         </Button>
 
         {/* Dot indicators */}
@@ -251,127 +240,105 @@ export function TickerVideoCarousel({ className }: TickerVideoCarouselProps) {
         </div>
       </div>
 
-      {/* Fullscreen Video Modal */}
+      {/* Fullscreen Video Modal - Tap anywhere to close */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center cursor-pointer"
             onClick={closeModal}
+            onMouseMove={resetControlsTimeout}
+            onTouchStart={resetControlsTimeout}
           >
+            {/* Title overlay */}
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative w-full max-w-5xl mx-4"
-              onClick={(e) => e.stopPropagation()}
-              {...modalSwipeHandlers}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: showControls ? 1 : 0, y: showControls ? 0 : -20 }}
+              className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none"
             >
-              {/* Close button */}
+              <div className="flex items-center justify-between max-w-5xl mx-auto">
+                <div>
+                  <span className="text-white font-medium">
+                    {TICKER_VIDEOS[currentIndex].name}
+                  </span>
+                  <span className="text-white/50 ml-2 text-sm">
+                    {currentIndex + 1} / {TICKER_VIDEOS.length}
+                  </span>
+                </div>
+                <span className="text-white/50 text-xs">Tap anywhere to close</span>
+              </div>
+            </motion.div>
+
+            {/* Video */}
+            <video
+              ref={modalVideoRef}
+              src={getStorageUrl(TICKER_VIDEOS[currentIndex].path)}
+              className="w-full h-full object-contain"
+              loop
+              muted={isMuted}
+              playsInline
+              autoPlay
+            />
+
+            {/* Navigation arrows in modal */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: showControls ? 1 : 0 }}
+              className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 pointer-events-none z-20"
+            >
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={closeModal}
-                className="absolute -top-12 right-0 z-10 text-white hover:bg-white/10"
+                onClick={handleModalNavPrev}
+                className="bg-black/50 hover:bg-black/70 text-white h-12 w-12 pointer-events-auto"
               >
-                <X className="w-6 h-6" />
+                <ChevronLeft className="w-6 h-6" />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleModalNavNext}
+                className="bg-black/50 hover:bg-black/70 text-white h-12 w-12 pointer-events-auto"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </Button>
+            </motion.div>
 
-              {/* Video title */}
-              <div className="absolute -top-12 left-0 z-10">
-                <span className="text-white font-medium">
-                  {TICKER_VIDEOS[currentIndex].name}
-                </span>
-                <span className="text-white/50 ml-2 text-sm">
-                  {currentIndex + 1} / {TICKER_VIDEOS.length}
-                </span>
-              </div>
-
-              {/* Video container */}
-              <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-                <video
-                  ref={modalVideoRef}
-                  src={getStorageUrl(TICKER_VIDEOS[currentIndex].path)}
-                  className="w-full h-full object-contain"
-                  loop
-                  muted={isMuted}
-                  playsInline
-                  autoPlay
-                  onTimeUpdate={handleTimeUpdate}
-                />
-
-                {/* Navigation arrows in modal */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={goToPrev}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white h-12 w-12"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={goToNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white h-12 w-12"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </Button>
-              </div>
-
-              {/* Controls */}
-              <div className="mt-4 flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={togglePlay}
-                  className="text-white hover:bg-white/10"
-                >
-                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleMute}
-                  className="text-white hover:bg-white/10"
-                >
-                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                </Button>
-
-                {/* Progress bar */}
-                <div
-                  ref={progressRef}
-                  className="flex-1 h-1.5 bg-white/20 rounded-full cursor-pointer overflow-hidden"
-                  onClick={handleProgressClick}
-                >
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-100"
-                    style={{ width: `${progress}%` }}
+            {/* Mute button & dot indicators - bottom */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: showControls ? 1 : 0, y: showControls ? 0 : 20 }}
+              className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-4 pointer-events-none"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMute}
+                className="bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 rounded-full w-12 h-12 pointer-events-auto"
+              >
+                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+              </Button>
+              
+              {/* Dot indicators in modal */}
+              <div className="flex items-center gap-2 pointer-events-auto">
+                {TICKER_VIDEOS.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDirection(index > currentIndex ? 1 : -1);
+                      setCurrentIndex(index);
+                    }}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      index === currentIndex 
+                        ? 'bg-primary w-5' 
+                        : 'bg-white/30 hover:bg-white/60'
+                    }`}
+                    aria-label={`Go to video ${index + 1}`}
                   />
-                </div>
-
-                {/* Dot indicators in modal */}
-                <div className="flex items-center gap-2">
-                  {TICKER_VIDEOS.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setDirection(index > currentIndex ? 1 : -1);
-                        setCurrentIndex(index);
-                      }}
-                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                        index === currentIndex 
-                          ? 'bg-primary w-5' 
-                          : 'bg-white/30 hover:bg-white/60'
-                      }`}
-                      aria-label={`Go to video ${index + 1}`}
-                    />
-                  ))}
-                </div>
+                ))}
               </div>
             </motion.div>
           </motion.div>
