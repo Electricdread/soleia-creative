@@ -4,7 +4,9 @@ import { Sparkles, Zap, Target, Volume2, VolumeX, Maximize } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { VideoModal } from '@/components/creative-guide/VideoModal';
-import soleiaIntroVideo from '@/assets/soleia-intro-video.webm';
+
+// High-quality hero video from Supabase storage
+const soleiaIntroVideo = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/clips/event%20clip/Soleia_hero_event(1).webm';
 
 interface IntroductionViewProps {
   onNavigate?: (category: string) => void;
