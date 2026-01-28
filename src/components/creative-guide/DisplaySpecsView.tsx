@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
 import { TickerVideoCarousel } from './TickerVideoCarousel';
 import { LEDPixelMapCarousel } from './LEDPixelMapCarousel';
-import { TVVideoPreview } from './TVVideoPreview';
+import { TVVideoCarousel } from './TVVideoCarousel';
 import { ElevatorVideoPreview } from './ElevatorVideoPreview';
 import solIcon from '@/assets/sol-icon.png';
 
@@ -92,7 +92,7 @@ function DisplayCard({ display }: { display: DisplayType }) {
           ) : isLED ? (
             <LEDPixelMapCarousel />
           ) : isTV ? (
-            <TVVideoPreview />
+            <TVVideoCarousel />
           ) : isElevator ? (
             <ElevatorVideoPreview />
           ) : (
