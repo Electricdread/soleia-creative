@@ -258,7 +258,6 @@ const handlePrintBlueprint = () => {
 };
 
 export function VenueOverviewView() {
-  const [statsOpen, setStatsOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -402,73 +401,6 @@ export function VenueOverviewView() {
         </Card>
       </motion.div>
 
-      {/* Collapsible Venue Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.08 }}
-      >
-        <Collapsible open={statsOpen} onOpenChange={setStatsOpen}>
-          <Card className="glass border-primary/20 hover:border-primary/40 transition-all duration-300">
-            <CollapsibleTrigger asChild>
-              <button className="w-full p-4 sm:p-6 flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10">
-                    <LayoutGrid className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="font-semibold text-gradient-gold">Venue Statistics</h3>
-                    <p className="text-xs text-muted-foreground">Cabanas, bungalows, displays & amenities</p>
-                  </div>
-                </div>
-                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-300 ${statsOpen ? 'rotate-180' : ''}`} />
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <AnimatePresence>
-                {statsOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <CardContent className="pt-0 px-4 pb-4 sm:px-6 sm:pb-6">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/5 to-blue-500/10 border border-blue-500/20 shadow-sm">
-                          <p className="text-lg font-bold text-blue-500">15</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Cabanas</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/5 to-purple-500/10 border border-purple-500/20 shadow-sm">
-                          <p className="text-lg font-bold text-purple-500">9</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Bungalows</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/5 to-amber-500/10 border border-amber-500/20 shadow-sm">
-                          <p className="text-lg font-bold text-amber-500">24+</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">TV Displays</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/5 to-green-500/10 border border-green-500/20 shadow-sm">
-                          <p className="text-lg font-bold text-green-500">10+</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">LED Screens</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/5 to-cyan-500/10 border border-cyan-500/20 shadow-sm">
-                          <p className="text-lg font-bold text-cyan-500">1</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Main Pool</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-rose-500/5 to-rose-500/10 border border-rose-500/20 shadow-sm">
-                          <p className="text-lg font-bold text-rose-500">2</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Mezzanine</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
-      </motion.div>
-
       {/* 3D Visualization Video */}
       <motion.div
         ref={videoContainerRef}
@@ -487,6 +419,7 @@ export function VenueOverviewView() {
               ref={videoRef}
               src={VIDEO_URL}
               className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.02]"
+              autoPlay
               loop
               muted
               playsInline
