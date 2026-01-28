@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { VideoModal } from './VideoModal';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const TV_CABANAS_VIDEO = `${SUPABASE_URL}/storage/v1/object/public/clips/venue-visualization/Soleia%20Pixelmap%203D%20TV%20Cabanas%20Preview.webm`;
+const TV_VIDEO = `${SUPABASE_URL}/storage/v1/object/public/clips/venue-visualization/S-blox-Soleia_TV.webm`;
 
 export function TVVideoPreview() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,7 +20,7 @@ export function TVVideoPreview() {
       >
         <video
           ref={videoRef}
-          src={TV_CABANAS_VIDEO}
+          src={TV_VIDEO}
           className="w-full h-full object-cover"
           autoPlay
           loop
@@ -39,8 +39,8 @@ export function TVVideoPreview() {
       <VideoModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        videoSrc={TV_CABANAS_VIDEO}
-        title="Soleia Pixelmap 3D TV Cabanas Preview"
+        videoSrc={TV_VIDEO}
+        title="Soleia TV Display Preview"
       />
     </>
   );
