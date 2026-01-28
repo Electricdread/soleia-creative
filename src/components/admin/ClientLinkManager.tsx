@@ -10,8 +10,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp } from 'lucide-react';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react';
 import { ClipSelector } from './ClipSelector';
+import { SessionUploadsViewer } from './SessionUploadsViewer';
 
 interface ClientLink {
   id: string;
@@ -22,6 +23,7 @@ interface ClientLink {
   is_active: boolean;
   created_at: string;
   clip_count?: number;
+  upload_count?: number;
 }
 
 export function ClientLinkManager() {
@@ -34,6 +36,7 @@ export function ClientLinkManager() {
   const [isCreating, setIsCreating] = useState(false);
   const [links, setLinks] = useState<ClientLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewingUploadsFor, setViewingUploadsFor] = useState<{ id: string; name: string } | null>(null);
 
   // Generate a unique token
   const generateToken = () => {
@@ -52,14 +55,24 @@ export function ClientLinkManager() {
 
       if (error) throw error;
       
-      // Fetch clip counts for each link
+      // Fetch clip counts and upload counts for each link
       const linksWithCounts = await Promise.all(
         (linksData || []).map(async (link) => {
-          const { count } = await supabase
-            .from('link_clips')
-            .select('*', { count: 'exact', head: true })
-            .eq('link_id', link.id);
-          return { ...link, clip_count: count || 0 };
+          const [clipResult, uploadResult] = await Promise.all([
+            supabase
+              .from('link_clips')
+              .select('*', { count: 'exact', head: true })
+              .eq('link_id', link.id),
+            supabase
+              .from('session_uploads')
+              .select('*', { count: 'exact', head: true })
+              .eq('link_id', link.id)
+          ]);
+          return { 
+            ...link, 
+            clip_count: clipResult.count || 0,
+            upload_count: uploadResult.count || 0
+          };
         })
       );
       
@@ -337,9 +350,26 @@ export function ClientLinkManager() {
                           {link.clip_count} clips
                         </span>
                       )}
+                      {link.upload_count !== undefined && link.upload_count > 0 && (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500">
+                          <FolderOpen className="w-3 h-3" />
+                          {link.upload_count} uploads
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-4">
+                    {link.upload_count !== undefined && link.upload_count > 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setViewingUploadsFor({ id: link.id, name: link.client_name })}
+                        className="gap-1.5 border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+                      >
+                        <FolderOpen className="w-3.5 h-3.5" />
+                        Files
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="outline"
@@ -373,6 +403,19 @@ export function ClientLinkManager() {
           )}
         </CardContent>
       </Card>
+
+      {/* Uploads Viewer Modal */}
+      {viewingUploadsFor && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-3xl max-h-[80vh] overflow-auto">
+            <SessionUploadsViewer
+              linkId={viewingUploadsFor.id}
+              clientName={viewingUploadsFor.name}
+              onClose={() => setViewingUploadsFor(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
