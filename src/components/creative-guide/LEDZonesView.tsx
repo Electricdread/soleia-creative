@@ -166,8 +166,8 @@ export function LEDZonesView() {
         </div>
       </div>
 
-      {/* Sticky Diagram Section */}
-      <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-sm py-4 -mx-4 px-4 border-b border-border/30">
+      {/* Diagram Section - NOT sticky to avoid overlap issues */}
+      <div className="bg-background py-4 border-b border-border/30">
         {/* Category Toggle Tabs */}
         <div className="flex items-center justify-center gap-2 mb-4">
           <Button
