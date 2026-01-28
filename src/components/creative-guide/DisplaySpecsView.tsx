@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Download, Printer } from 'lucide-react';
+import { Download, Printer, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,8 @@ const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
 const LED_PIXELMAP_IMAGE = '/creative-guide/led-main-interior-pixelmap.png';
 const LED_AE_TEMPLATE_ZIP = '/creative-guide/After_Effects_Template.zip';
 const ELEVATOR_PIXELMAP_IMAGE = '/creative-guide/elevator-pixelmap.png';
+const TV_PIXELMAP_IMAGE = '/creative-guide/tv-pixelmap.png';
+const RESOLUME_URL = 'https://www.resolume.com';
 
 interface DisplaySpecsViewProps {
   onSelectDisplay?: (displayId: string) => void;
@@ -81,6 +83,15 @@ function DisplayCard({ display }: { display: DisplayType }) {
     const link = document.createElement('a');
     link.href = ELEVATOR_PIXELMAP_IMAGE;
     link.download = 'Elevator-Pixelmap.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadTVPixelmap = () => {
+    const link = document.createElement('a');
+    link.href = TV_PIXELMAP_IMAGE;
+    link.download = 'TV-Pixelmap.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -154,6 +165,30 @@ function DisplayCard({ display }: { display: DisplayType }) {
               <SpecRow label="Resolution" value={display.graphicSpecs.resolution} />
               <SpecRow label="Format" value={display.graphicSpecs.format} />
               
+              {/* TV Pixelmap & Resolume link */}
+              {isTV && (
+                <div className="pt-3 mt-2 border-t border-border/30 space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadTVPixelmap}
+                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download Pixelmap
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(RESOLUME_URL, '_blank')}
+                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Resolume Video Encoder
+                  </Button>
+                </div>
+              )}
+
               {/* Ticker Pixelmap & Work Comp download */}
               {isTicker && (
                 <div className="pt-3 mt-2 border-t border-border/30">
