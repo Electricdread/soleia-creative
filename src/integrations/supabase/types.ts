@@ -95,6 +95,42 @@ export type Database = {
         }
         Relationships: []
       }
+      link_clips: {
+        Row: {
+          clip_id: string
+          created_at: string
+          id: string
+          link_id: string
+        }
+        Insert: {
+          clip_id: string
+          created_at?: string
+          id?: string
+          link_id: string
+        }
+        Update: {
+          clip_id?: string
+          created_at?: string
+          id?: string
+          link_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_clips_clip_id_fkey"
+            columns: ["clip_id"]
+            isOneToOne: false
+            referencedRelation: "cached_clips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "link_clips_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "client_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       link_selections: {
         Row: {
           clip_category: string | null

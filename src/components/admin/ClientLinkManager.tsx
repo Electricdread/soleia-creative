@@ -5,11 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2 } from 'lucide-react';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp } from 'lucide-react';
+import { ClipSelector } from './ClipSelector';
 
 interface ClientLink {
   id: string;
@@ -19,6 +21,7 @@ interface ClientLink {
   event_date: string | null;
   is_active: boolean;
   created_at: string;
+  clip_count?: number;
 }
 
 export function ClientLinkManager() {
@@ -26,6 +29,8 @@ export function ClientLinkManager() {
   const [clientName, setClientName] = useState('');
   const [eventName, setEventName] = useState('');
   const [eventDate, setEventDate] = useState<Date>();
+  const [selectedClipIds, setSelectedClipIds] = useState<string[]>([]);
+  const [isClipSelectorOpen, setIsClipSelectorOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [links, setLinks] = useState<ClientLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,17 +41,29 @@ export function ClientLinkManager() {
            Math.random().toString(36).substring(2, 15);
   };
 
-  // Fetch existing links
+  // Fetch existing links with clip counts
   const fetchLinks = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: linksData, error } = await supabase
         .from('client_links')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLinks(data || []);
+      
+      // Fetch clip counts for each link
+      const linksWithCounts = await Promise.all(
+        (linksData || []).map(async (link) => {
+          const { count } = await supabase
+            .from('link_clips')
+            .select('*', { count: 'exact', head: true })
+            .eq('link_id', link.id);
+          return { ...link, clip_count: count || 0 };
+        })
+      );
+      
+      setLinks(linksWithCounts);
     } catch (error: any) {
       console.error('Error fetching links:', error);
       toast({
@@ -74,6 +91,15 @@ export function ClientLinkManager() {
       return;
     }
 
+    if (selectedClipIds.length === 0) {
+      toast({
+        title: 'No clips selected',
+        description: 'Please select at least one clip for this session',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsCreating(true);
     try {
       const token = generateToken();
@@ -90,14 +116,30 @@ export function ClientLinkManager() {
 
       if (error) throw error;
 
-      setLinks(prev => [data, ...prev]);
+      // Insert selected clips for this link
+      const clipInserts = selectedClipIds.map(clipId => ({
+        link_id: data.id,
+        clip_id: clipId,
+      }));
+
+      const { error: clipError } = await supabase
+        .from('link_clips')
+        .insert(clipInserts);
+
+      if (clipError) {
+        console.error('Error inserting clips:', clipError);
+      }
+
+      setLinks(prev => [{ ...data, clip_count: selectedClipIds.length }, ...prev]);
       setClientName('');
       setEventName('');
       setEventDate(undefined);
+      setSelectedClipIds([]);
+      setIsClipSelectorOpen(false);
 
       toast({
-        title: 'Link created!',
-        description: 'Share this link with your client',
+        title: 'Session created!',
+        description: `${selectedClipIds.length} clips ready for client review`,
       });
     } catch (error: any) {
       console.error('Error creating link:', error);
@@ -206,10 +248,38 @@ export function ClientLinkManager() {
               </Popover>
             </div>
           </div>
+
+          {/* Clip Selector */}
+          <Collapsible open={isClipSelectorOpen} onOpenChange={setIsClipSelectorOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Video className="w-4 h-4" />
+                  <span>Select Clips for Session</span>
+                  {selectedClipIds.length > 0 && (
+                    <span className="ml-2 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
+                      {selectedClipIds.length} selected
+                    </span>
+                  )}
+                </div>
+                {isClipSelectorOpen ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-4">
+              <ClipSelector 
+                selectedClipIds={selectedClipIds}
+                onSelectionChange={setSelectedClipIds}
+              />
+            </CollapsibleContent>
+          </Collapsible>
           
           <Button
             onClick={createLink}
-            disabled={isCreating || !clientName.trim() || !eventName.trim()}
+            disabled={isCreating || !clientName.trim() || !eventName.trim() || selectedClipIds.length === 0}
             className="w-full gap-2"
           >
             {isCreating ? (
@@ -217,7 +287,7 @@ export function ClientLinkManager() {
             ) : (
               <Link2 className="w-4 h-4" />
             )}
-            Generate Shareable Link
+            Generate Session ({selectedClipIds.length} clips)
           </Button>
         </CardContent>
       </Card>
@@ -257,9 +327,17 @@ export function ClientLinkManager() {
                       {link.event_name}
                       {link.event_date && ` • ${format(new Date(link.event_date), 'MMM d, yyyy')}`}
                     </p>
-                    <p className="text-xs text-muted-foreground/70 mt-1">
-                      Created {format(new Date(link.created_at), 'MMM d, yyyy')}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-muted-foreground/70">
+                        Created {format(new Date(link.created_at), 'MMM d, yyyy')}
+                      </span>
+                      {link.clip_count !== undefined && (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                          <Video className="w-3 h-3" />
+                          {link.clip_count} clips
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 ml-4">
                     <Button
