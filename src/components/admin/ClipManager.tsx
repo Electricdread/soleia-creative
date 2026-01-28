@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -8,25 +7,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { artlistCategories } from '@/lib/api/artlist';
-import { Trash2, Loader2, Search, Pencil, GripVertical } from 'lucide-react';
-import { FramePicker } from './FramePicker';
+import { Loader2, Search, GripVertical } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -35,10 +25,10 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableClipCard } from './SortableClipCard';
+import { ClipEditModal } from './ClipEditModal';
 
 interface Clip {
   id: string;
@@ -53,81 +43,6 @@ interface Clip {
   sort_order?: number;
 }
 
-interface SortableRowProps {
-  clip: Clip;
-  getCategoryLabel: (key: string) => string;
-  onEdit: (clip: Clip) => void;
-  onDelete: (id: string) => void;
-  deletingId: string | null;
-}
-
-function SortableRow({ clip, getCategoryLabel, onEdit, onDelete, deletingId }: SortableRowProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: clip.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1000 : undefined,
-  };
-
-  return (
-    <tr
-      ref={setNodeRef}
-      style={style}
-      className={`border-b border-border transition-colors hover:bg-muted/50 ${isDragging ? 'bg-muted' : ''}`}
-    >
-      <td className="p-3 w-10">
-        <button
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-      </td>
-      <td className="p-3 font-medium max-w-[200px] truncate">
-        {clip.title}
-      </td>
-      <td className="p-3">{getCategoryLabel(clip.category)}</td>
-      <td className="p-3">{clip.resolution}</td>
-      <td className="p-3">{clip.duration}</td>
-      <td className="p-3">
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit(clip)}
-            className="h-8 w-8"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(clip.id)}
-            disabled={deletingId === clip.id}
-            className="h-8 w-8 text-destructive hover:text-destructive"
-          >
-            {deletingId === clip.id ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-      </td>
-    </tr>
-  );
-}
-
 export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
   const { toast } = useToast();
   const [clips, setClips] = useState<Clip[]>([]);
@@ -135,7 +50,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  
+
   // Edit modal state
   const [editingClip, setEditingClip] = useState<Clip | null>(null);
   const [editForm, setEditForm] = useState({
@@ -150,7 +65,14 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
   const [isSaving, setIsSaving] = useState(false);
   const [isCapturingFrame, setIsCapturingFrame] = useState(false);
 
+  // Touch-optimized sensors with better activation constraints
   const sensors = useSensors(
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 8,
+      },
+    }),
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
@@ -200,11 +122,11 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (!over || active.id === over.id) return;
 
-    const oldIndex = clips.findIndex(c => c.id === active.id);
-    const newIndex = clips.findIndex(c => c.id === over.id);
+    const oldIndex = clips.findIndex((c) => c.id === active.id);
+    const newIndex = clips.findIndex((c) => c.id === over.id);
 
     const reorderedClips = arrayMove(clips, oldIndex, newIndex);
     setClips(reorderedClips);
@@ -239,14 +161,11 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
-      const { error } = await supabase
-        .from('cached_clips')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('cached_clips').delete().eq('id', id);
 
       if (error) throw error;
 
-      setClips(prev => prev.filter(c => c.id !== id));
+      setClips((prev) => prev.filter((c) => c.id !== id));
       toast({ title: 'Clip deleted' });
       onClipsUpdated?.();
     } catch (error) {
@@ -276,7 +195,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
 
   const handleSaveEdit = async () => {
     if (!editingClip) return;
-    
+
     setIsSaving(true);
     try {
       const { error } = await supabase
@@ -295,12 +214,20 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
       if (error) throw error;
 
       // Update local state
-      setClips(prev => prev.map(c => 
-        c.id === editingClip.id 
-          ? { ...c, ...editForm, video_url: editForm.video_url || null, source_url: editForm.source_url || null, thumbnail: editForm.thumbnail || null }
-          : c
-      ));
-      
+      setClips((prev) =>
+        prev.map((c) =>
+          c.id === editingClip.id
+            ? {
+                ...c,
+                ...editForm,
+                video_url: editForm.video_url || null,
+                source_url: editForm.source_url || null,
+                thumbnail: editForm.thumbnail || null,
+              }
+            : c
+        )
+      );
+
       toast({ title: 'Clip updated' });
       setEditingClip(null);
       onClipsUpdated?.();
@@ -317,18 +244,22 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
   };
 
   const getCategoryLabel = (key: string) => {
-    return artlistCategories.find(c => c.key === key)?.label || key;
+    return artlistCategories.find((c) => c.key === key)?.label || key;
+  };
+
+  const getCategoryColor = (key: string) => {
+    return artlistCategories.find((c) => c.key === key)?.color || '#888888';
   };
 
   const handleFrameCaptured = async (blob: Blob) => {
     if (!editingClip) return;
-    
+
     setIsCapturingFrame(true);
     try {
       // Upload thumbnail to storage
       const timestamp = Date.now();
       const thumbPath = `${timestamp}-thumb-${editingClip.id}.jpg`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('clip-previews')
         .upload(thumbPath, blob, {
@@ -339,9 +270,9 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
       if (uploadError) throw uploadError;
 
       // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('clip-previews')
-        .getPublicUrl(thumbPath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('clip-previews').getPublicUrl(thumbPath);
 
       // Update the database directly with the new thumbnail
       const { error: updateError } = await supabase
@@ -352,13 +283,13 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
       if (updateError) throw updateError;
 
       // Update local form state
-      setEditForm(prev => ({ ...prev, thumbnail: publicUrl }));
-      
+      setEditForm((prev) => ({ ...prev, thumbnail: publicUrl }));
+
       // Update clips list
-      setClips(prev => prev.map(c => 
-        c.id === editingClip.id ? { ...c, thumbnail: publicUrl } : c
-      ));
-      
+      setClips((prev) =>
+        prev.map((c) => (c.id === editingClip.id ? { ...c, thumbnail: publicUrl } : c))
+      );
+
       toast({ title: 'Thumbnail saved' });
       onClipsUpdated?.();
     } catch (error) {
@@ -375,18 +306,19 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-3">
+      {/* Search and filter controls - stacked on mobile */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search clips..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-11"
           />
         </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px] h-11">
             <SelectValue placeholder="All categories" />
           </SelectTrigger>
           <SelectContent>
@@ -394,7 +326,10 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
             {artlistCategories.map((cat) => (
               <SelectItem key={cat.key} value={cat.key}>
                 <span className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: cat.color }}
+                  />
                   {cat.label}
                 </span>
               </SelectItem>
@@ -403,182 +338,57 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
         </Select>
       </div>
 
+      {/* Drag hint for touch devices */}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+        <GripVertical className="h-3.5 w-3.5" />
+        <span>Hold and drag to reorder clips</span>
+      </div>
+
       {isLoading ? (
-        <div className="flex items-center justify-center py-8">
+        <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : clips.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          No clips found
-        </div>
+        <div className="text-center py-12 text-muted-foreground">No clips found</div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr className="border-b border-border">
-                  <th className="p-3 text-left text-sm font-medium w-10"></th>
-                  <th className="p-3 text-left text-sm font-medium">Title</th>
-                  <th className="p-3 text-left text-sm font-medium">Category</th>
-                  <th className="p-3 text-left text-sm font-medium">Resolution</th>
-                  <th className="p-3 text-left text-sm font-medium">Duration</th>
-                  <th className="p-3 text-left text-sm font-medium w-[100px]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <SortableContext
-                  items={clips.map(c => c.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {clips.map((clip) => (
-                    <SortableRow
-                      key={clip.id}
-                      clip={clip}
-                      getCategoryLabel={getCategoryLabel}
-                      onEdit={openEditModal}
-                      onDelete={handleDelete}
-                      deletingId={deletingId}
-                    />
-                  ))}
-                </SortableContext>
-              </tbody>
-            </table>
-          </DndContext>
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={clips.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {clips.map((clip) => (
+                <SortableClipCard
+                  key={clip.id}
+                  clip={clip}
+                  getCategoryLabel={getCategoryLabel}
+                  getCategoryColor={getCategoryColor}
+                  onEdit={openEditModal}
+                  onDelete={handleDelete}
+                  deletingId={deletingId}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
-      <p className="text-xs text-muted-foreground text-center">
-        Showing {clips.length} clips • Drag to reorder
+      <p className="text-xs text-muted-foreground text-center pt-2">
+        Showing {clips.length} clips
       </p>
 
       {/* Edit Modal */}
-      <Dialog open={!!editingClip} onOpenChange={(open) => !open && setEditingClip(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Clip</DialogTitle>
-            <DialogDescription>
-              Update clip details or pick a new thumbnail frame from the video.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-title">Title</Label>
-              <Input
-                id="edit-title"
-                value={editForm.title}
-                onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-video-url">Video URL</Label>
-              <Input
-                id="edit-video-url"
-                value={editForm.video_url}
-                onChange={(e) => setEditForm(prev => ({ ...prev, video_url: e.target.value }))}
-                placeholder="https://..."
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-source-url">Source URL</Label>
-              <Input
-                id="edit-source-url"
-                value={editForm.source_url}
-                onChange={(e) => setEditForm(prev => ({ ...prev, source_url: e.target.value }))}
-                placeholder="https://..."
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-thumbnail">Thumbnail URL</Label>
-              <Input
-                id="edit-thumbnail"
-                value={editForm.thumbnail}
-                onChange={(e) => setEditForm(prev => ({ ...prev, thumbnail: e.target.value }))}
-                placeholder="https://..."
-              />
-              {editForm.thumbnail && (
-                <img 
-                  src={editForm.thumbnail} 
-                  alt="Thumbnail preview" 
-                  className="w-full max-w-[200px] rounded border border-border mt-2"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
-                />
-              )}
-            </div>
-
-            {/* Frame Picker */}
-            {(editForm.video_url || editingClip?.video_url) && (
-              <div className="pt-4 border-t border-border">
-                <FramePicker
-                  videoUrl={editForm.video_url || editingClip?.video_url || ''}
-                  currentThumbnail={editForm.thumbnail}
-                  onFrameCaptured={handleFrameCaptured}
-                  isCapturing={isCapturingFrame}
-                />
-              </div>
-            )}
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-resolution">Resolution</Label>
-                <Input
-                  id="edit-resolution"
-                  value={editForm.resolution}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, resolution: e.target.value }))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="edit-duration">Duration</Label>
-                <Input
-                  id="edit-duration"
-                  value={editForm.duration}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, duration: e.target.value }))}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-category">Category</Label>
-              <Select 
-                value={editForm.category} 
-                onValueChange={(value) => setEditForm(prev => ({ ...prev, category: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {artlistCategories.map((cat) => (
-                    <SelectItem key={cat.key} value={cat.key}>
-                      <span className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                        {cat.label}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingClip(null)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveEdit} disabled={isSaving}>
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ClipEditModal
+        clip={editingClip}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        onClose={() => setEditingClip(null)}
+        onSave={handleSaveEdit}
+        onFrameCaptured={handleFrameCaptured}
+        isSaving={isSaving}
+        isCapturingFrame={isCapturingFrame}
+      />
     </div>
   );
 }
