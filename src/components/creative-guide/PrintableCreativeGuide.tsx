@@ -67,7 +67,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-gray-900 [color-scheme:light]" data-theme="light">
       {/* Sticky Header - Hidden in print */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 p-4 print:hidden">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -548,6 +548,31 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
 
       {/* Print Styles */}
       <style>{`
+        /* Force light mode for print guide */
+        [data-theme="light"],
+        [data-theme="light"] * {
+          color-scheme: light !important;
+        }
+        
+        [data-theme="light"] {
+          --background: 0 0% 100%;
+          --foreground: 0 0% 9%;
+        }
+        
+        /* Override any inherited dark mode text colors */
+        [data-theme="light"] h1,
+        [data-theme="light"] h2,
+        [data-theme="light"] h3,
+        [data-theme="light"] h4,
+        [data-theme="light"] h5,
+        [data-theme="light"] h6,
+        [data-theme="light"] p,
+        [data-theme="light"] span,
+        [data-theme="light"] li,
+        [data-theme="light"] td {
+          color: inherit;
+        }
+        
         @media print {
           @page {
             margin: 0.5in;
