@@ -39,8 +39,8 @@ const App = () => (
               <Route path="/creative/:token" element={<ProtectedRoute><CreativeSession /></ProtectedRoute>} />
               <Route path="/session/:token" element={<ProtectedRoute><SharedSession /></ProtectedRoute>} />
               
-              {/* Admin Routes - Require Authentication (admin check handled in components) */}
-              <Route path="/admin" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
+              {/* Admin Routes - Require Admin Role */}
+              <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPortal /></ProtectedRoute>} />
               <Route path="/admin/creative" element={<ProtectedRoute requireAdmin><AdminCreative /></ProtectedRoute>} />
               <Route path="/admin/looks" element={<ProtectedRoute requireAdmin><AdminLooks /></ProtectedRoute>} />
               
