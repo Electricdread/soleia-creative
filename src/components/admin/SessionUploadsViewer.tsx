@@ -74,14 +74,23 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
     return config ? config.icon : File;
   };
 
-  const downloadFile = (url: string, fileName: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadFile = async (url: string, fileName: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback: open in new tab
+      window.open(url, '_blank');
+    }
   };
 
   const downloadAll = () => {
