@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { CreativeSessionManager } from '@/components/admin/CreativeSessionManager';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Settings } from 'lucide-react';
 import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
 
 export default function AdminCreative() {
@@ -55,9 +55,19 @@ export default function AdminCreative() {
               />
             </div>
             
-            <h1 className="text-lg font-semibold text-white">
-              ShowBlox Creative
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-white">
+                ShowBlox Creative
+              </h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin')}
+                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
