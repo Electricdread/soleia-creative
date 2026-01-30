@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.notify-upload]
 verify_jwt = false
+
+[functions.notify-admin-signup]
+verify_jwt = false
+
+[functions.approve-user]
+verify_jwt = false
