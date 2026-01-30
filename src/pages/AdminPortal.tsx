@@ -1,0 +1,179 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Loader2, LogOut, Palette, Film, BookOpen, ExternalLink } from 'lucide-react';
+import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
+
+interface PortalCard {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  href: string;
+  external?: boolean;
+}
+
+const portals: PortalCard[] = [
+  {
+    title: 'ShowBlox Creative',
+    description: 'Internal creative sessions, mood boards, and team collaboration',
+    icon: <Palette className="w-8 h-8" />,
+    href: '/admin/creative',
+  },
+  {
+    title: 'Soleia Looks Collection',
+    description: 'Client gallery sessions for motion graphics selection',
+    icon: <Film className="w-8 h-8" />,
+    href: '/admin/looks',
+  },
+  {
+    title: 'Soleia Creative Guide',
+    description: 'Technical specifications and venue display documentation',
+    icon: <BookOpen className="w-8 h-8" />,
+    href: '/creative-guide',
+  },
+];
+
+export default function AdminPortal() {
+  const navigate = useNavigate();
+  const { user, isAdmin, isLoading, signOut } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate('/admin/login');
+    }
+  }, [user, isLoading, navigate]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/admin/login');
+  };
+
+  const handlePortalClick = (portal: PortalCard) => {
+    if (portal.external) {
+      window.open(portal.href, '_blank');
+    } else {
+      navigate(portal.href);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-black">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
+      <div 
+        className="absolute inset-0 opacity-5"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundSize: '50px 50px'
+        }}
+      />
+
+      {/* Header */}
+      <header className="relative z-10 border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <img 
+              src={showbloxLogo} 
+              alt="ShowBlox" 
+              className="h-10 w-auto object-contain"
+            />
+            
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-zinc-400 hidden sm:block">
+                {user.email}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+            Admin Portal
+          </h1>
+          <p className="text-zinc-400 text-lg">
+            Select a platform to manage
+          </p>
+        </div>
+
+        {/* Portal Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {portals.map((portal) => (
+            <button
+              key={portal.title}
+              onClick={() => handlePortalClick(portal)}
+              className="group relative bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-xl p-6 text-left transition-all duration-300 hover:border-zinc-600 hover:bg-zinc-800/80 hover:scale-[1.02] hover:shadow-2xl"
+            >
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-lg bg-white/5 border border-zinc-700 flex items-center justify-center mb-5 group-hover:bg-white/10 group-hover:border-zinc-600 transition-colors">
+                <div className="text-white group-hover:scale-110 transition-transform">
+                  {portal.icon}
+                </div>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
+                {portal.title}
+                {portal.external && (
+                  <ExternalLink className="w-4 h-4 text-zinc-500" />
+                )}
+              </h2>
+
+              {/* Description */}
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                {portal.description}
+              </p>
+
+              {/* Hover Arrow */}
+              <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                  <svg 
+                    className="w-4 h-4 text-white" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <p className="text-center text-zinc-600 text-sm">
+            © {new Date().getFullYear()} ShowBlox Creative Management System
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
