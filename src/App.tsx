@@ -33,8 +33,10 @@ const App = () => (
               {/* Public Route - Login */}
               <Route path="/admin/login" element={<AdminLogin />} />
               
+              {/* Root redirects to Admin Portal */}
+              <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
+              
               {/* Protected Routes - Require Authentication */}
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/creative-guide" element={<ProtectedRoute><CreativeGuide /></ProtectedRoute>} />
               <Route path="/creative-guide/print" element={<ProtectedRoute><PrintCreativeGuide /></ProtectedRoute>} />
               <Route path="/creative/:token" element={<ProtectedRoute><CreativeSession /></ProtectedRoute>} />
