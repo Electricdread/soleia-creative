@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Lock } from 'lucide-react';
-import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
+import showbloxIcon from '@/assets/showblox-icon.png';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -66,12 +66,13 @@ export default function AdminLogin() {
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
-        <div className="flex justify-center mb-12">
+        <div className="flex flex-col items-center mb-12">
           <img 
-            src={showbloxLogo} 
+            src={showbloxIcon} 
             alt="ShowBlox" 
-            className="h-20 w-auto object-contain"
+            className="h-20 w-20 object-contain mb-4"
           />
+          <span className="text-2xl font-bold tracking-wide text-white">SHOWBLOX</span>
         </div>
 
         {/* Login Card */}
