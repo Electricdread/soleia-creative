@@ -9,6 +9,7 @@ import { Loader2, User } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
+import portalHeroVideo from '@/assets/showblox-portal-hero.mp4';
 
 interface CreativeSessionData {
   id: string;
@@ -180,19 +181,19 @@ export default function CreativeSession() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-black">
+        <Card className="max-w-md w-full bg-zinc-900 border-zinc-800">
           <CardContent className="pt-6 text-center">
-            <h2 className="text-xl font-bold mb-2">Session Not Found</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-xl font-tech font-bold mb-2 text-white">SESSION_NOT_FOUND</h2>
+            <p className="text-zinc-400 font-tech text-sm">
               This creative session doesn't exist or has been deactivated.
             </p>
           </CardContent>
@@ -202,24 +203,42 @@ export default function CreativeSession() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto p-4 space-y-6">
+    <div className="min-h-screen bg-black font-tech">
+      {/* Header Video */}
+      <div className="relative h-32 sm:h-40 overflow-hidden">
+        <video
+          src={portalHeroVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black" />
+        <div className="absolute bottom-4 left-4 sm:left-6">
+          <span className="text-[10px] sm:text-xs font-tech uppercase tracking-[0.3em] text-cyan-400">
+            ShowBlox Creative
+          </span>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Cover Page */}
         <CreativeSessionCover session={session} />
 
-        {/* User Name Input + Add Button */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
+        {/* User Name Input + Add Button - Mobile Optimized */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
           <div className="flex-1 space-y-2">
-            <Label htmlFor="userName" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Your Name
+            <Label htmlFor="userName" className="flex items-center gap-2 text-xs font-tech uppercase tracking-wider text-cyan-400">
+              <User className="h-3.5 w-3.5" />
+              Your Identifier
             </Label>
             <Input
               id="userName"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
-              placeholder="Enter your name to react & comment..."
-              className="max-w-xs"
+              placeholder="Enter name to collaborate..."
+              className="h-12 sm:h-10 text-base sm:text-sm font-tech bg-zinc-900/80 border-zinc-700 focus:border-cyan-500/50 focus:ring-cyan-500/20 placeholder:text-zinc-600"
             />
           </div>
           <AddMoodBoardItem
@@ -229,17 +248,20 @@ export default function CreativeSession() {
           />
         </div>
 
-        {/* Mood Board Grid */}
+        {/* Mood Board Grid - Touch Optimized */}
         {items.length === 0 ? (
-          <Card>
+          <Card className="bg-zinc-900/60 border-zinc-800 border-dashed">
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">
-                No items on the mood board yet. Add Pinterest pins, Instagram posts, or upload files to get started!
+              <p className="text-zinc-500 font-tech text-sm uppercase tracking-wider">
+                // No items on the mood board yet
+              </p>
+              <p className="text-zinc-600 font-tech text-xs mt-2">
+                Add Pinterest pins, Instagram posts, or upload files to get started
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {items.map((item) => (
               <MoodBoardItem
                 key={item.id}
