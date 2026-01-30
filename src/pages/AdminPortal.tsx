@@ -142,20 +142,20 @@ export default function AdminPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Hero Video Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <video
-          src={portalHeroVideo}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-        />
-      </div>
+    <div className="relative min-h-screen bg-black overflow-hidden">
+      {/* Hero Video Background - Full Screen */}
+      <video
+        src={portalHeroVideo}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="fixed inset-0 w-full h-full object-cover z-0"
+      />
+      
+      {/* Subtle grid pattern overlay */}
       <div 
-        className="absolute inset-0 opacity-5"
+        className="fixed inset-0 z-[1] opacity-5 pointer-events-none"
         style={{
           backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
           backgroundSize: '50px 50px'
