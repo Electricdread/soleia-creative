@@ -9,7 +9,7 @@ import { BatchVideoUploader } from '@/components/admin/BatchVideoUploader';
 import { AddClipForm } from '@/components/admin/AddClipForm';
 import { BulkImportForm } from '@/components/admin/BulkImportForm';
 import { ClipManager } from '@/components/admin/ClipManager';
-import { ArrowLeft, Loader2, Link2, Video, Plus, Upload, List } from 'lucide-react';
+import { ArrowLeft, Loader2, Link2, Video, Plus, Upload, List, Settings } from 'lucide-react';
 import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
 
 export default function AdminLooks() {
@@ -66,9 +66,19 @@ export default function AdminLooks() {
               />
             </div>
             
-            <h1 className="text-lg font-semibold text-white">
-              Soleia Looks Collection
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-white">
+                Soleia Looks Collection
+              </h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin')}
+                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
