@@ -2,10 +2,27 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ExternalLink, ChevronDown, FileText, Palette, Wrench, Calendar } from 'lucide-react';
+import { ExternalLink, ChevronDown, FileText, Palette, Wrench, Calendar, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
+
+interface StrategicBrief {
+  headline: string;
+  executiveSummary: string;
+  keyObjectives: string[];
+  creativeDirection: {
+    theme: string;
+    description: string;
+    visualKeywords: string[];
+  };
+  technicalRequirements: string[];
+  timeline: {
+    phase: string;
+    description: string;
+  }[];
+  actionItems: string[];
+}
 
 interface CreativeSessionCoverProps {
   session: {
@@ -19,8 +36,25 @@ interface CreativeSessionCoverProps {
   };
 }
 
+// Try to parse strategic brief from circleback_summary
+function parseStrategicBrief(summary: string | null): StrategicBrief | null {
+  if (!summary) return null;
+  
+  try {
+    const parsed = JSON.parse(summary);
+    if (parsed.headline || parsed.executiveSummary || parsed.keyObjectives) {
+      return parsed as StrategicBrief;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const strategicBrief = parseStrategicBrief(session.circleback_summary);
+  const isLegacySummary = session.circleback_summary && !strategicBrief;
 
   return (
     <Card className="border-zinc-800 bg-zinc-900/80 backdrop-blur-sm overflow-hidden font-tech">
@@ -84,8 +118,105 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
         
         <CollapsibleContent>
           <CardContent className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 px-3 sm:px-6">
-            {/* Call Summary */}
-            {session.circleback_summary && (
+            {/* Strategic Brief (AI-generated structured format) */}
+            {strategicBrief && (
+              <div className="space-y-4">
+                {/* Headline */}
+                <div className="border-l-2 border-amber-500 pl-4">
+                  <h2 className="text-lg sm:text-xl font-tech font-bold text-white leading-tight">
+                    {strategicBrief.headline}
+                  </h2>
+                </div>
+
+                {/* Executive Summary */}
+                {strategicBrief.executiveSummary && (
+                  <div className="space-y-2">
+                    <h3 className="text-[10px] sm:text-xs font-tech uppercase tracking-widest flex items-center gap-2 text-amber-400">
+                      <FileText className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      Executive_Summary
+                    </h3>
+                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3 sm:p-4">
+                      <p className="text-xs sm:text-sm text-zinc-300 font-tech leading-relaxed">
+                        {strategicBrief.executiveSummary}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Key Objectives */}
+                {strategicBrief.keyObjectives && strategicBrief.keyObjectives.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-[10px] sm:text-xs font-tech uppercase tracking-widest flex items-center gap-2 text-cyan-400">
+                      <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      Key_Objectives
+                    </h3>
+                    <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-lg p-3 sm:p-4">
+                      <ul className="space-y-2">
+                        {strategicBrief.keyObjectives.map((objective, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-zinc-300 font-tech">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                            {objective}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Creative Direction */}
+                {strategicBrief.creativeDirection && (
+                  <div className="space-y-2">
+                    <h3 className="text-[10px] sm:text-xs font-tech uppercase tracking-widest flex items-center gap-2 text-pink-400">
+                      <Lightbulb className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      Creative_Direction
+                    </h3>
+                    <div className="bg-pink-500/5 border border-pink-500/20 rounded-lg p-3 sm:p-4 space-y-3">
+                      <div>
+                        <span className="text-[10px] font-tech uppercase tracking-wider text-pink-400/70">Theme:</span>
+                        <p className="text-sm text-white font-tech font-medium mt-0.5">
+                          {strategicBrief.creativeDirection.theme}
+                        </p>
+                      </div>
+                      <p className="text-xs sm:text-sm text-zinc-300 font-tech leading-relaxed">
+                        {strategicBrief.creativeDirection.description}
+                      </p>
+                      {strategicBrief.creativeDirection.visualKeywords && strategicBrief.creativeDirection.visualKeywords.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-2">
+                          {strategicBrief.creativeDirection.visualKeywords.map((keyword, idx) => (
+                            <Badge key={idx} variant="outline" className="text-[10px] border-pink-500/30 text-pink-300 font-tech">
+                              {keyword}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Items */}
+                {strategicBrief.actionItems && strategicBrief.actionItems.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-[10px] sm:text-xs font-tech uppercase tracking-widest flex items-center gap-2 text-emerald-400">
+                      <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      Action_Items
+                    </h3>
+                    <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 sm:p-4">
+                      <ul className="space-y-2">
+                        {strategicBrief.actionItems.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-zinc-300 font-tech">
+                            <span className="text-emerald-400 font-bold">{idx + 1}.</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Legacy Call Summary (plain text) */}
+            {isLegacySummary && (
               <div className="space-y-2">
                 <h3 className="text-[10px] sm:text-xs font-tech uppercase tracking-widest flex items-center gap-2 text-amber-400">
                   <FileText className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -131,7 +262,7 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
               )}
             </div>
 
-            {!session.circleback_summary && !session.technical_notes && !session.creative_notes && (
+            {!session.circleback_summary && !strategicBrief && !session.technical_notes && !session.creative_notes && (
               <p className="text-xs text-zinc-600 text-center py-4 font-tech uppercase tracking-wider">
                 // No session notes added
               </p>
