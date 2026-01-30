@@ -10,6 +10,12 @@ import { toast } from 'sonner';
 import { Plus, Zap } from 'lucide-react';
 import { CreativeSessionCard } from './CreativeSessionCard';
 
+interface CoverImage {
+  url: string;
+  theme: string;
+  prompt: string;
+}
+
 interface CreativeSession {
   id: string;
   token: string;
@@ -21,6 +27,9 @@ interface CreativeSession {
   creative_notes: string | null;
   created_at: string;
   is_active: boolean;
+  cover_images?: CoverImage[] | null;
+  cover_themes?: string[] | null;
+  cover_generated_at?: string | null;
 }
 
 export function CreativeSessionManager() {
@@ -52,7 +61,12 @@ export function CreativeSessionManager() {
       toast.error('Failed to load creative sessions');
       console.error(error);
     } else {
-      setSessions(data || []);
+      // Cast the JSON fields properly
+      const typedSessions = (data || []).map(session => ({
+        ...session,
+        cover_images: session.cover_images as unknown as CoverImage[] | null,
+      })) as CreativeSession[];
+      setSessions(typedSessions);
     }
     setLoading(false);
   };
@@ -287,6 +301,7 @@ export function CreativeSessionManager() {
                 onCopyLink={copyLink}
                 onDelete={deleteSession}
                 onOpen={openSession}
+                onSessionUpdate={fetchSessions}
               />
             ))
           )}

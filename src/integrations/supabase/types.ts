@@ -100,6 +100,9 @@ export type Database = {
           circleback_summary: string | null
           circleback_url: string | null
           client_name: string
+          cover_generated_at: string | null
+          cover_images: Json | null
+          cover_themes: string[] | null
           created_at: string
           created_by: string | null
           creative_notes: string | null
@@ -114,6 +117,9 @@ export type Database = {
           circleback_summary?: string | null
           circleback_url?: string | null
           client_name: string
+          cover_generated_at?: string | null
+          cover_images?: Json | null
+          cover_themes?: string[] | null
           created_at?: string
           created_by?: string | null
           creative_notes?: string | null
@@ -128,6 +134,9 @@ export type Database = {
           circleback_summary?: string | null
           circleback_url?: string | null
           client_name?: string
+          cover_generated_at?: string | null
+          cover_images?: Json | null
+          cover_themes?: string[] | null
           created_at?: string
           created_by?: string | null
           creative_notes?: string | null

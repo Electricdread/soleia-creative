@@ -3,8 +3,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, Image } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
+import { CoverPageGenerator } from './CoverPageGenerator';
+
+interface CoverImage {
+  url: string;
+  theme: string;
+  prompt: string;
+}
 
 interface CreativeSession {
   id: string;
@@ -17,6 +24,9 @@ interface CreativeSession {
   creative_notes: string | null;
   created_at: string;
   is_active: boolean;
+  cover_images?: CoverImage[] | null;
+  cover_themes?: string[] | null;
+  cover_generated_at?: string | null;
 }
 
 interface CreativeSessionCardProps {
@@ -25,6 +35,7 @@ interface CreativeSessionCardProps {
   onCopyLink: (token: string) => void;
   onDelete: (id: string) => void;
   onOpen: (token: string) => void;
+  onSessionUpdate?: () => void;
 }
 
 // Parse transcript and highlight key sections
@@ -64,8 +75,11 @@ function getHighlightClass(type: string | null) {
   }
 }
 
-export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOpen }: CreativeSessionCardProps) {
+export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOpen, onSessionUpdate }: CreativeSessionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [coverImages, setCoverImages] = useState<CoverImage[]>(
+    (session.cover_images as CoverImage[]) || []
+  );
   
   const sessionDate = new Date(session.created_at);
   const expirationDate = addDays(sessionDate, 21);
@@ -75,6 +89,10 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
   const parsedSummary = session.circleback_summary ? parseTranscript(session.circleback_summary) : [];
 
+  const handleImagesGenerated = (images: CoverImage[]) => {
+    setCoverImages(images);
+    onSessionUpdate?.();
+  };
   return (
     <Card className="group border-zinc-700/50 bg-zinc-900/90 hover:border-cyan-500/40 transition-all duration-300 overflow-hidden">
       {/* ShowBLOX gradient accent bar */}
@@ -142,6 +160,38 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                 </div>
               </div>
 
+              {/* AI Cover Images Display */}
+              {coverImages.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-[10px] font-tech uppercase tracking-widest text-purple-400">
+                    <Image className="h-3 w-3" />
+                    AI-Generated Cover Art
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {coverImages.map((img, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`relative group/img overflow-hidden rounded-lg border border-zinc-700 ${
+                          idx === 0 ? 'col-span-3 aspect-[21/9]' : 'aspect-video'
+                        }`}
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.theme}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                        <div className="absolute bottom-1 left-1.5 right-1.5">
+                          <span className="text-[8px] font-tech uppercase tracking-widest text-cyan-300">
+                            {img.theme}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Circleback Link */}
               {session.circleback_url && (
                 <a
@@ -154,6 +204,20 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                   View Call Recording
                 </a>
               )}
+
+              {/* Cover Image Generator */}
+              <div className="mt-4 pt-4 border-t border-zinc-700/30">
+                <CoverPageGenerator
+                  sessionId={session.id}
+                  projectName={session.project_name}
+                  clientName={session.client_name}
+                  circlebackSummary={session.circleback_summary}
+                  creativeNotes={session.creative_notes}
+                  technicalNotes={session.technical_notes}
+                  existingImages={coverImages}
+                  onImagesGenerated={handleImagesGenerated}
+                />
+              </div>
             </div>
 
             {/* Right: Action Buttons */}
