@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ExternalLink, ChevronDown, FileText, Palette, Wrench, Calendar, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { ExternalLink, ChevronDown, FileText, Palette, Wrench, Calendar, Target, Lightbulb, CheckCircle2, BookOpen, Newspaper } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
@@ -24,6 +24,12 @@ interface StrategicBrief {
   actionItems: string[];
 }
 
+interface CoverImage {
+  url: string;
+  theme: string;
+  prompt: string;
+}
+
 interface CreativeSessionCoverProps {
   session: {
     project_name: string;
@@ -33,6 +39,7 @@ interface CreativeSessionCoverProps {
     technical_notes: string | null;
     creative_notes: string | null;
     created_at: string;
+    cover_images?: CoverImage[] | null;
   };
 }
 
@@ -51,13 +58,69 @@ function parseStrategicBrief(summary: string | null): StrategicBrief | null {
   }
 }
 
+// Parse raw text and highlight key sections for editorial display
+function parseEditorialContent(text: string) {
+  const patterns = [
+    { regex: /(deadline|due date|deliver|by\s+\w+\s+\d+)/gi, type: 'deadline' },
+    { regex: /(budget|cost|\$\d+|\d+k)/gi, type: 'budget' },
+    { regex: /(action item|todo|task|need to|must|should)/gi, type: 'action' },
+    { regex: /(decision|decided|agreed|confirmed|approved)/gi, type: 'decision' },
+    { regex: /(next steps|follow up|schedule|meeting)/gi, type: 'followup' },
+  ];
+
+  const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+  
+  return paragraphs.map((paragraph, idx) => {
+    let type: string | null = null;
+    for (const pattern of patterns) {
+      if (pattern.regex.test(paragraph)) {
+        type = pattern.type;
+        break;
+      }
+    }
+    return { text: paragraph.trim(), type, id: idx };
+  });
+}
+
+function getHighlightClass(type: string | null) {
+  switch (type) {
+    case 'deadline': return 'border-l-2 border-red-500 bg-red-500/10 pl-3';
+    case 'budget': return 'border-l-2 border-emerald-500 bg-emerald-500/10 pl-3';
+    case 'action': return 'border-l-2 border-cyan-500 bg-cyan-500/10 pl-3';
+    case 'decision': return 'border-l-2 border-purple-500 bg-purple-500/10 pl-3';
+    case 'followup': return 'border-l-2 border-amber-500 bg-amber-500/10 pl-3';
+    default: return '';
+  }
+}
+
 export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const strategicBrief = parseStrategicBrief(session.circleback_summary);
   const isLegacySummary = session.circleback_summary && !strategicBrief;
+  const parsedEditorial = isLegacySummary ? parseEditorialContent(session.circleback_summary!) : [];
+  
+  // Get the selected cover image (first one in array)
+  const coverImage = (session.cover_images as CoverImage[] | null)?.[0] || null;
 
   return (
     <Card className="border-zinc-800 bg-zinc-900/80 backdrop-blur-sm overflow-hidden font-tech">
+      {/* Cover Image Hero */}
+      {coverImage && (
+        <div className="relative aspect-[21/9] overflow-hidden">
+          <img 
+            src={coverImage.url} 
+            alt={coverImage.theme}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
+          <div className="absolute bottom-4 left-4 sm:left-6">
+            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 font-tech text-[10px] uppercase tracking-widest">
+              {coverImage.theme}
+            </Badge>
+          </div>
+        </div>
+      )}
+      
       <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -215,17 +278,45 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
               </div>
             )}
 
-            {/* Legacy Call Summary (plain text) */}
+            {/* Legacy Call Summary (plain text) - Editorial Style */}
             {isLegacySummary && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <h3 className="text-[10px] sm:text-xs font-tech uppercase tracking-widest flex items-center gap-2 text-amber-400">
-                  <FileText className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                  Call_Summary
+                  <Newspaper className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  Call_Summary_Editorial
                 </h3>
-                <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3 sm:p-4">
-                  <p className="text-xs sm:text-sm text-zinc-300 whitespace-pre-wrap font-tech leading-relaxed">
-                    {session.circleback_summary}
-                  </p>
+                <div className="bg-zinc-950/50 border border-zinc-700/50 rounded-xl p-4 sm:p-5 space-y-4">
+                  {/* Header with divider */}
+                  <div className="border-b border-zinc-700/50 pb-4">
+                    <h4 className="text-lg sm:text-xl font-tech font-bold text-white mb-1">
+                      Meeting Notes
+                    </h4>
+                    <p className="text-xs text-zinc-500 font-tech">
+                      {format(new Date(session.created_at), 'EEEE, MMMM d, yyyy')}
+                    </p>
+                  </div>
+                  
+                  {/* Parsed content with highlights */}
+                  <div className="space-y-3">
+                    {parsedEditorial.map((block) => (
+                      <p 
+                        key={block.id} 
+                        className={`text-sm text-zinc-300 font-tech leading-relaxed rounded py-2 ${block.type ? getHighlightClass(block.type) : ''}`}
+                      >
+                        {block.text}
+                      </p>
+                    ))}
+                  </div>
+
+                  {/* Legend */}
+                  <div className="flex flex-wrap gap-2 pt-4 border-t border-zinc-700/30">
+                    <span className="text-[10px] font-tech text-zinc-600 uppercase tracking-wider">Key:</span>
+                    <Badge variant="outline" className="text-[10px] border-red-500/30 text-red-400">Deadline</Badge>
+                    <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-400">Budget</Badge>
+                    <Badge variant="outline" className="text-[10px] border-cyan-500/30 text-cyan-400">Action</Badge>
+                    <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-400">Decision</Badge>
+                    <Badge variant="outline" className="text-[10px] border-amber-500/30 text-amber-400">Follow-up</Badge>
+                  </div>
                 </div>
               </div>
             )}
