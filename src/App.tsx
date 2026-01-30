@@ -15,6 +15,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminPortal from "./pages/AdminPortal";
 import AdminCreative from "./pages/AdminCreative";
 import AdminLooks from "./pages/AdminLooks";
+import AdminUsers from "./pages/AdminUsers";
 import OfficePortal from "./pages/OfficePortal";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPortal /></ProtectedRoute>} />
               <Route path="/admin/creative" element={<ProtectedRoute requireAdmin><AdminCreative /></ProtectedRoute>} />
               <Route path="/admin/looks" element={<ProtectedRoute requireAdmin><AdminLooks /></ProtectedRoute>} />
+              <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
               
               {/* Operator Office Portal - Email-locked to luisdreams@me.com */}
               <Route path="/office" element={<OfficePortal />} />

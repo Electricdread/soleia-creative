@@ -36,9 +36,8 @@ const handler = async (req: Request): Promise<Response> => {
       minute: '2-digit'
     });
     
-    // Create approval/denial URLs
-    const approveUrl = `${SUPABASE_URL}/functions/v1/approve-user?userId=${userId}&action=approve`;
-    const denyUrl = `${SUPABASE_URL}/functions/v1/approve-user?userId=${userId}&action=deny`;
+    // Create approval URL - goes to the app management page
+    const managementUrl = `https://showblox-soleia.lovable.app/admin/users?userId=${userId}&action=approve`;
 
     const emailResponse = await resend.emails.send({
       from: "ShowBlox <onboarding@resend.dev>",
@@ -343,8 +342,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="section-title">Authorization Action</div>
               
               <div class="actions">
-                <a href="${approveUrl}" class="btn btn-approve">✓ Approve Access</a>
-                <a href="${denyUrl}" class="btn btn-deny">✕ Deny Request</a>
+                <a href="${managementUrl}" class="btn btn-approve">✓ Review & Approve Access</a>
               </div>
             </div>
             
