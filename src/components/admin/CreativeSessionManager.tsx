@@ -131,15 +131,19 @@ export function CreativeSessionManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Palette className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
+            <Palette className="h-5 w-5 text-zinc-400" />
             Creative Sessions
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-zinc-400">
             Internal mood boards for creative collaboration
           </p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} size="sm" className="gap-2">
+        <Button 
+          onClick={() => setShowForm(!showForm)} 
+          size="sm" 
+          className="gap-2 bg-white text-black hover:bg-zinc-200"
+        >
           <Plus className="h-4 w-4" />
           New Session
         </Button>
@@ -147,82 +151,96 @@ export function CreativeSessionManager() {
 
       {/* Create Form */}
       {showForm && (
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-zinc-700 bg-zinc-800/50">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base">Create Creative Session</CardTitle>
-            <CardDescription>Set up a new internal mood board with call notes</CardDescription>
+            <CardTitle className="text-base text-white">Create Creative Session</CardTitle>
+            <CardDescription className="text-zinc-400">Set up a new internal mood board with call notes</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="projectName">Project Name *</Label>
+                <Label htmlFor="projectName" className="text-zinc-300">Project Name *</Label>
                 <Input
                   id="projectName"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="e.g., Soleia Grand Opening"
+                  className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="clientName">Client Name *</Label>
+                <Label htmlFor="clientName" className="text-zinc-300">Client Name *</Label>
                 <Input
                   id="clientName"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   placeholder="e.g., Acme Corp"
+                  className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="circlebackUrl">Circleback Call URL</Label>
+              <Label htmlFor="circlebackUrl" className="text-zinc-300">Circleback Call URL</Label>
               <Input
                 id="circlebackUrl"
                 value={circlebackUrl}
                 onChange={(e) => setCirclebackUrl(e.target.value)}
                 placeholder="https://app.circleback.ai/view/..."
+                className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="circlebackSummary">Call Summary</Label>
+              <Label htmlFor="circlebackSummary" className="text-zinc-300">Call Summary</Label>
               <Textarea
                 id="circlebackSummary"
                 value={circlebackSummary}
                 onChange={(e) => setCirclebackSummary(e.target.value)}
                 placeholder="Paste the AI-generated call summary here..."
                 rows={3}
+                className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="technicalNotes">Technical Notes</Label>
+                <Label htmlFor="technicalNotes" className="text-zinc-300">Technical Notes</Label>
                 <Textarea
                   id="technicalNotes"
                   value={technicalNotes}
                   onChange={(e) => setTechnicalNotes(e.target.value)}
                   placeholder="Resolution requirements, file formats, deadlines..."
                   rows={3}
+                  className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="creativeNotes">Creative Notes</Label>
+                <Label htmlFor="creativeNotes" className="text-zinc-300">Creative Notes</Label>
                 <Textarea
                   id="creativeNotes"
                   value={creativeNotes}
                   onChange={(e) => setCreativeNotes(e.target.value)}
                   placeholder="Brand colors, mood, style direction..."
                   rows={3}
+                  className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
                 />
               </div>
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button onClick={createSession} disabled={creating}>
+              <Button 
+                onClick={createSession} 
+                disabled={creating}
+                className="bg-white text-black hover:bg-zinc-200"
+              >
                 {creating ? 'Creating...' : 'Create Session'}
               </Button>
-              <Button variant="outline" onClick={resetForm}>
+              <Button 
+                variant="outline" 
+                onClick={resetForm}
+                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              >
                 Cancel
               </Button>
             </div>
@@ -234,25 +252,25 @@ export function CreativeSessionManager() {
       <ScrollArea className="h-[400px]">
         <div className="space-y-3">
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading sessions...</div>
+            <div className="text-center py-8 text-zinc-400">Loading sessions...</div>
           ) : sessions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-zinc-400">
               No creative sessions yet. Create one to get started!
             </div>
           ) : (
             sessions.map((session) => (
-              <Card key={session.id} className="group hover:border-primary/30 transition-colors">
+              <Card key={session.id} className="group border-zinc-700 bg-zinc-800/50 hover:border-zinc-600 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium truncate">{session.project_name}</h4>
-                        <Badge variant="secondary" className="shrink-0">
+                        <h4 className="font-medium truncate text-white">{session.project_name}</h4>
+                        <Badge variant="secondary" className="shrink-0 bg-zinc-700 text-zinc-300 border-zinc-600">
                           <Users className="h-3 w-3 mr-1" />
                           {session.client_name}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3 text-xs text-zinc-500">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {format(new Date(session.created_at), 'MMM d, yyyy')}
@@ -262,7 +280,7 @@ export function CreativeSessionManager() {
                             href={session.circleback_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:underline flex items-center gap-1"
+                            className="text-zinc-400 hover:text-white hover:underline flex items-center gap-1"
                           >
                             <ExternalLink className="h-3 w-3" />
                             Call Recording
@@ -270,7 +288,7 @@ export function CreativeSessionManager() {
                         )}
                       </div>
                       {session.circleback_summary && (
-                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                        <p className="text-xs text-zinc-500 mt-2 line-clamp-2">
                           {session.circleback_summary}
                         </p>
                       )}
@@ -281,6 +299,7 @@ export function CreativeSessionManager() {
                         size="icon"
                         onClick={() => openSession(session.token)}
                         title="Open session"
+                        className="text-zinc-400 hover:text-white hover:bg-zinc-700"
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
@@ -289,6 +308,7 @@ export function CreativeSessionManager() {
                         size="icon"
                         onClick={() => copyLink(session.token)}
                         title="Copy link"
+                        className="text-zinc-400 hover:text-white hover:bg-zinc-700"
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
@@ -297,7 +317,7 @@ export function CreativeSessionManager() {
                         size="icon"
                         onClick={() => deleteSession(session.id)}
                         title="Delete session"
-                        className="text-destructive hover:text-destructive"
+                        className="text-red-400 hover:text-red-300 hover:bg-zinc-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
