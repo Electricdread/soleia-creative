@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Sparkles, RefreshCw, Brain, FileText } from 'lucide-react';
+import { Loader2, Sparkles, RefreshCw, Palette } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -45,77 +45,28 @@ export function CoverPageGenerator({
   sessionId,
   projectName,
   clientName,
-  circlebackUrl,
   circlebackSummary,
   creativeNotes,
   technicalNotes,
   existingImages,
   onImagesGenerated,
-  onBriefGenerated,
 }: CoverPageGeneratorProps) {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [images, setImages] = useState<CoverImage[]>(existingImages || []);
 
-  // Check if we have a Circleback URL to analyze
-  const hasCirclebackUrl = !!circlebackUrl?.trim();
-  const hasExistingBrief = !!circlebackSummary;
+  // Check if we have Creative Director notes to generate from
+  const hasCreativeNotes = !!creativeNotes?.trim();
+  const hasAnyContent = hasCreativeNotes || !!circlebackSummary || !!technicalNotes;
 
-  // Analyze Circleback URL with Perplexity
-  const analyzeCircleback = async () => {
-    if (!circlebackUrl) {
-      toast.error('No Circleback URL to analyze');
-      return;
-    }
-
-    setIsAnalyzing(true);
-    toast.info('Analyzing call recording with Perplexity AI...', {
-      description: 'This may take 30-60 seconds'
-    });
-
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-circleback', {
-        body: {
-          sessionId,
-          circlebackUrl,
-          projectName,
-          clientName,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.success) {
-        if (data.images && data.images.length > 0) {
-          setImages(data.images);
-          onImagesGenerated?.(data.images);
-        }
-        if (data.brief) {
-          onBriefGenerated?.(data.brief);
-        }
-        toast.success('Strategic brief generated!', {
-          description: `${data.images?.length || 0} cover images created`
-        });
-      } else {
-        toast.error(data.error || 'Analysis failed');
-      }
-    } catch (err) {
-      console.error('Error analyzing Circleback:', err);
-      toast.error('Failed to analyze call recording');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // Fallback: Generate images from existing notes (old method)
+  // Generate images from Creative Director notes
   const generateCoverImages = async () => {
-    if (!circlebackSummary && !creativeNotes && !technicalNotes) {
-      toast.error('Add call summary or notes to generate themed images');
+    if (!hasAnyContent) {
+      toast.error('Add Creative Director notes to generate themed images');
       return;
     }
 
     setIsGenerating(true);
-    toast.info('Generating cover images...');
+    toast.info('Generating cover images from Creative Director notes...');
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-cover-images', {
@@ -146,91 +97,46 @@ export function CoverPageGenerator({
     }
   };
 
-  const isLoading = isAnalyzing || isGenerating;
-
   return (
     <div className="space-y-3">
-      {/* Primary Action: Analyze Circleback URL */}
-      {hasCirclebackUrl && (
-        <Button
-          onClick={analyzeCircleback}
-          disabled={isLoading}
-          className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 hover:from-purple-500 hover:via-pink-400 hover:to-cyan-400 text-white font-tech uppercase tracking-wider h-12 touch-manipulation shadow-lg shadow-purple-500/20"
-        >
-          {isAnalyzing ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Analyzing Call with Perplexity...
-            </>
-          ) : hasExistingBrief ? (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Re-analyze Call Recording
-            </>
-          ) : (
-            <>
-              <Brain className="h-4 w-4 mr-2" />
-              Analyze Call & Generate Brief
-            </>
-          )}
-        </Button>
-      )}
-
-      {/* Secondary Action: Generate from Notes (when no URL) */}
-      {!hasCirclebackUrl && (
-        <Button
-          onClick={generateCoverImages}
-          disabled={isLoading}
-          variant="outline"
-          className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800 hover:text-white font-tech uppercase tracking-wider h-10 touch-manipulation"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Generating...
-            </>
-          ) : images.length > 0 ? (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Regenerate from Notes
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate from Notes
-            </>
-          )}
-        </Button>
-      )}
-
-      {/* Fallback option when URL exists */}
-      {hasCirclebackUrl && (circlebackSummary || creativeNotes || technicalNotes) && (
-        <Button
-          onClick={generateCoverImages}
-          disabled={isLoading}
-          variant="ghost"
-          size="sm"
-          className="w-full text-zinc-500 hover:text-zinc-300 font-tech text-xs uppercase tracking-wider"
-        >
-          <FileText className="h-3 w-3 mr-1.5" />
-          Or generate from existing notes only
-        </Button>
-      )}
+      {/* Primary Action: Generate from Creative Director Notes */}
+      <Button
+        onClick={generateCoverImages}
+        disabled={isGenerating || !hasAnyContent}
+        className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 hover:from-purple-500 hover:via-pink-400 hover:to-cyan-400 text-white font-tech uppercase tracking-wider h-12 touch-manipulation shadow-lg shadow-purple-500/20 disabled:opacity-50"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Generating from Creative Notes...
+          </>
+        ) : images.length > 0 ? (
+          <>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Regenerate Cover Images
+          </>
+        ) : (
+          <>
+            <Palette className="h-4 w-4 mr-2" />
+            Generate Cover Images
+          </>
+        )}
+      </Button>
 
       {/* Loading State */}
-      {isAnalyzing && (
+      {isGenerating && (
         <div className="border border-purple-500/30 bg-purple-500/5 rounded-lg p-4">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="w-10 h-10 rounded-full border-2 border-purple-500/30 border-t-purple-500 animate-spin" />
-              <Brain className="h-4 w-4 text-purple-400 absolute inset-0 m-auto" />
+              <Sparkles className="h-4 w-4 text-purple-400 absolute inset-0 m-auto" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-tech text-purple-300 uppercase tracking-wider">
-                Perplexity Analysis
+                AI Image Generation
               </p>
               <p className="text-xs font-tech text-zinc-500">
-                Reading call transcript • Extracting insights • Generating visuals
+                Reading Creative Director notes • Generating themed visuals
               </p>
             </div>
           </div>
@@ -238,14 +144,11 @@ export function CoverPageGenerator({
       )}
 
       {/* Empty State */}
-      {images.length === 0 && !isLoading && !hasCirclebackUrl && (
+      {images.length === 0 && !isGenerating && !hasCreativeNotes && (
         <div className="border border-dashed border-zinc-700 rounded-lg p-4 text-center">
-          <Sparkles className="h-6 w-6 mx-auto text-zinc-600 mb-2" />
+          <Palette className="h-6 w-6 mx-auto text-zinc-600 mb-2" />
           <p className="text-xs font-tech text-zinc-500 uppercase tracking-wider">
-            {hasCirclebackUrl 
-              ? 'Analyze Circleback URL to generate strategic brief'
-              : 'Add notes to generate cover images'
-            }
+            Add Creative Director notes to generate cover images
           </p>
         </div>
       )}
