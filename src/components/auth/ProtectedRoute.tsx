@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
@@ -9,21 +9,10 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAdmin, isLoading } = useAuth();
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      navigate('/admin/login');
-    }
-  }, [user, isLoading, navigate]);
-
-  useEffect(() => {
-    if (!isLoading && user && requireAdmin && !isAdmin) {
-      navigate('/admin');
-    }
-  }, [user, isAdmin, isLoading, requireAdmin, navigate]);
-
+  // Show loading spinner while checking auth state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -32,13 +21,16 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
+  // Not authenticated - redirect to login
   if (!user) {
-    return null;
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
+  // Authenticated but not admin when admin is required
   if (requireAdmin && !isAdmin) {
-    return null;
+    return <Navigate to="/admin" replace />;
   }
 
+  // Authenticated (and admin if required) - render children
   return <>{children}</>;
 }
