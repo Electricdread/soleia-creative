@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -9,35 +8,18 @@ import { BatchVideoUploader } from '@/components/admin/BatchVideoUploader';
 import { AddClipForm } from '@/components/admin/AddClipForm';
 import { BulkImportForm } from '@/components/admin/BulkImportForm';
 import { ClipManager } from '@/components/admin/ClipManager';
-import { ArrowLeft, Loader2, Link2, Video, Plus, Upload, List, Settings } from 'lucide-react';
+import { ArrowLeft, Link2, Video, Plus, Upload, List, Settings } from 'lucide-react';
 import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
 
+// This component is wrapped by ProtectedRoute with requireAdmin
+// Authentication is handled by the wrapper, not internally
 export default function AdminLooks() {
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      navigate('/admin/login');
-    }
-  }, [user, isLoading, navigate]);
 
   const handleClipsUpdated = () => {
     setRefreshKey(prev => prev + 1);
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-black">

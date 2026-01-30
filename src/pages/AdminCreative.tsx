@@ -1,32 +1,13 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { CreativeSessionManager } from '@/components/admin/CreativeSessionManager';
-import { ArrowLeft, Loader2, Settings } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
 import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
 
+// This component is wrapped by ProtectedRoute with requireAdmin
+// Authentication is handled by the wrapper, not internally
 export default function AdminCreative() {
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      navigate('/admin/login');
-    }
-  }, [user, isLoading, navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-black">
