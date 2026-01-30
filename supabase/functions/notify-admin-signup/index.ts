@@ -57,29 +57,26 @@ const handler = async (req: Request): Promise<Response> => {
             
             body { 
               font-family: 'JetBrains Mono', monospace;
-              background: linear-gradient(135deg, #09090b 0%, #18181b 50%, #09090b 100%);
+              background: #09090b;
               color: #fff; 
-              padding: 40px 20px;
+              padding: 20px;
               min-height: 100vh;
             }
             
             .document {
-              max-width: 650px;
+              max-width: 600px;
               margin: 0 auto;
-              background: linear-gradient(180deg, #18181b 0%, #0f0f11 100%);
-              border-radius: 16px;
+              background: #18181b;
+              border-radius: 12px;
               overflow: hidden;
-              box-shadow: 
-                0 0 0 1px rgba(255,255,255,0.05),
-                0 25px 50px -12px rgba(0,0,0,0.8),
-                0 0 100px -20px rgba(6,182,212,0.15);
+              border: 1px solid #27272a;
+              box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
             }
             
             /* Header Bar */
             .header-bar {
-              height: 4px;
-              background: linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899, #06b6d4);
-              background-size: 300% 100%;
+              height: 3px;
+              background: #3f3f46;
             }
             
             /* Document Header */
@@ -93,32 +90,32 @@ const handler = async (req: Request): Promise<Response> => {
               display: inline-flex;
               align-items: center;
               justify-content: center;
-              width: 60px;
-              height: 60px;
-              background: linear-gradient(135deg, #06b6d4, #8b5cf6);
-              border-radius: 12px;
-              margin-bottom: 20px;
-              box-shadow: 0 0 30px rgba(6,182,212,0.3);
+              width: 56px;
+              height: 56px;
+              background: #27272a;
+              border-radius: 10px;
+              margin-bottom: 16px;
+              border: 1px solid #3f3f46;
             }
             
             .logo-mark svg {
-              width: 32px;
-              height: 32px;
-              fill: white;
+              width: 28px;
+              height: 28px;
+              fill: #a1a1aa;
             }
             
             .brand-name {
-              font-size: 24px;
+              font-size: 20px;
               font-weight: 700;
               letter-spacing: 4px;
-              color: #fff;
-              margin-bottom: 8px;
+              color: #fafafa;
+              margin-bottom: 6px;
             }
             
             .doc-type {
-              font-size: 10px;
-              letter-spacing: 3px;
-              color: #71717a;
+              font-size: 9px;
+              letter-spacing: 2px;
+              color: #52525b;
               text-transform: uppercase;
             }
             
@@ -128,30 +125,30 @@ const handler = async (req: Request): Promise<Response> => {
             }
             
             .section-title {
-              font-size: 11px;
+              font-size: 10px;
               font-weight: 600;
               letter-spacing: 2px;
-              color: #06b6d4;
+              color: #71717a;
               text-transform: uppercase;
-              margin-bottom: 20px;
+              margin-bottom: 16px;
               display: flex;
               align-items: center;
-              gap: 12px;
+              gap: 10px;
             }
             
             .section-title::after {
               content: '';
               flex: 1;
               height: 1px;
-              background: linear-gradient(90deg, rgba(6,182,212,0.3) 0%, transparent 100%);
+              background: #27272a;
             }
             
             .info-card {
-              background: rgba(39,39,42,0.5);
-              border: 1px solid rgba(255,255,255,0.05);
-              border-radius: 12px;
-              padding: 24px;
-              margin-bottom: 30px;
+              background: #09090b;
+              border: 1px solid #27272a;
+              border-radius: 10px;
+              padding: 20px;
+              margin-bottom: 24px;
             }
             
             .info-row {
@@ -180,24 +177,25 @@ const handler = async (req: Request): Promise<Response> => {
             }
             
             .info-value.email {
-              color: #06b6d4;
-              background: rgba(6,182,212,0.1);
+              color: #fafafa;
+              background: #27272a;
               padding: 6px 12px;
               border-radius: 6px;
-              border: 1px solid rgba(6,182,212,0.2);
+              border: 1px solid #3f3f46;
+              font-size: 13px;
             }
             
             .info-value.pending {
-              color: #f59e0b;
+              color: #a1a1aa;
               display: flex;
               align-items: center;
               gap: 6px;
             }
             
             .pulse-dot {
-              width: 8px;
-              height: 8px;
-              background: #f59e0b;
+              width: 6px;
+              height: 6px;
+              background: #71717a;
               border-radius: 50%;
               animation: pulse 2s infinite;
             }
@@ -209,72 +207,68 @@ const handler = async (req: Request): Promise<Response> => {
             
             /* Message */
             .message {
-              font-size: 14px;
-              line-height: 1.8;
-              color: #a1a1aa;
-              margin-bottom: 30px;
-              padding: 20px;
-              background: rgba(6,182,212,0.05);
-              border-left: 3px solid #06b6d4;
+              font-size: 13px;
+              line-height: 1.7;
+              color: #71717a;
+              margin-bottom: 24px;
+              padding: 16px;
+              background: #09090b;
+              border-left: 2px solid #3f3f46;
               border-radius: 0 8px 8px 0;
             }
             
             /* Action Buttons */
             .actions {
               display: flex;
-              gap: 16px;
-              margin-top: 30px;
+              gap: 12px;
+              margin-top: 24px;
+              flex-direction: column;
+            }
+            
+            @media (min-width: 480px) {
+              .actions {
+                flex-direction: row;
+              }
             }
             
             .btn {
               flex: 1;
               display: inline-block;
-              padding: 18px 24px;
-              border-radius: 12px;
+              padding: 16px 20px;
+              border-radius: 8px;
               text-decoration: none;
               font-family: 'JetBrains Mono', monospace;
-              font-size: 12px;
+              font-size: 11px;
               font-weight: 600;
-              letter-spacing: 2px;
+              letter-spacing: 1.5px;
               text-transform: uppercase;
               text-align: center;
-              transition: all 0.3s ease;
+              transition: all 0.2s ease;
             }
             
             .btn-approve {
-              background: linear-gradient(135deg, #22c55e, #16a34a);
+              background: #22c55e;
               color: #fff;
-              box-shadow: 
-                0 0 20px rgba(34,197,94,0.4),
-                0 0 40px rgba(34,197,94,0.2),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-              border: 1px solid rgba(34,197,94,0.5);
+              box-shadow: 0 0 20px rgba(34,197,94,0.3);
+              border: none;
             }
             
             .btn-approve:hover {
-              box-shadow: 
-                0 0 30px rgba(34,197,94,0.6),
-                0 0 60px rgba(34,197,94,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-              transform: translateY(-2px);
+              background: #16a34a;
+              box-shadow: 0 0 30px rgba(34,197,94,0.5);
+              transform: translateY(-1px);
             }
             
             .btn-deny {
-              background: linear-gradient(135deg, #ef4444, #dc2626);
-              color: #fff;
-              box-shadow: 
-                0 0 20px rgba(239,68,68,0.4),
-                0 0 40px rgba(239,68,68,0.2),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-              border: 1px solid rgba(239,68,68,0.5);
+              background: #27272a;
+              color: #a1a1aa;
+              border: 1px solid #3f3f46;
             }
             
             .btn-deny:hover {
-              box-shadow: 
-                0 0 30px rgba(239,68,68,0.6),
-                0 0 60px rgba(239,68,68,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-              transform: translateY(-2px);
+              background: #3f3f46;
+              color: #fafafa;
+              transform: translateY(-1px);
             }
             
             /* Footer */

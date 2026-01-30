@@ -10,6 +10,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ data: { user: User | null } | null; error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,8 +103,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(false);
   };
 
+  const refreshAuth = async () => {
+    if (user) {
+      const adminStatus = await checkAdminRole(user.id);
+      setIsAdmin(adminStatus);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, isLoading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, isLoading, signIn, signUp, signOut, refreshAuth }}>
       {children}
     </AuthContext.Provider>
   );
