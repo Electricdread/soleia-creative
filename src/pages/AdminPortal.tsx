@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Loader2, LogOut, ExternalLink, Clock } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command } from 'lucide-react';
 import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
 import showbloxIcon from '@/assets/showblox-icon.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import portalHeroVideo from '@/assets/showblox-portal-hero.mp4';
+
+const OPERATOR_EMAIL = 'luisdreams@me.com';
 
 interface PortalCard {
   title: string;
@@ -176,6 +178,20 @@ export default function AdminPortal() {
               <span className="text-sm text-zinc-400 hidden sm:block">
                 {user.email}
               </span>
+              
+              {/* Operator Console Link - Only visible to operator */}
+              {user.email?.toLowerCase() === OPERATOR_EMAIL.toLowerCase() && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/office')}
+                  className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50"
+                >
+                  <Command className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Operator Console</span>
+                </Button>
+              )}
+              
               <Button
                 variant="ghost"
                 size="sm"
