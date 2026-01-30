@@ -15,6 +15,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminPortal from "./pages/AdminPortal";
 import AdminCreative from "./pages/AdminCreative";
 import AdminLooks from "./pages/AdminLooks";
+import OfficePortal from "./pages/OfficePortal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,9 @@ const App = () => (
               <Route path="/admin" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
               <Route path="/admin/creative" element={<ProtectedRoute requireAdmin><AdminCreative /></ProtectedRoute>} />
               <Route path="/admin/looks" element={<ProtectedRoute requireAdmin><AdminLooks /></ProtectedRoute>} />
+              
+              {/* Operator Office Portal - Email-locked to luisdreams@me.com */}
+              <Route path="/office" element={<OfficePortal />} />
               
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
