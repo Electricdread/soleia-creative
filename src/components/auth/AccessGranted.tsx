@@ -5,10 +5,18 @@ import { CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import showbloxIcon from '@/assets/showblox-icon.png';
 
-export function AccessGranted() {
+interface AccessGrantedProps {
+  onEnterPortal: () => void;
+}
+
+export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const handleEnterPortal = () => {
+    onEnterPortal();
+    navigate('/admin');
+  };
   return (
     <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center p-4">
       {/* Background */}
@@ -102,7 +110,7 @@ export function AccessGranted() {
               transition={{ delay: 0.6 }}
             >
               <Button
-                onClick={() => navigate('/admin')}
+                onClick={handleEnterPortal}
                 className="w-full h-12 bg-white hover:bg-zinc-200 text-black font-semibold text-sm uppercase tracking-wider transition-all"
               >
                 Enter Portal

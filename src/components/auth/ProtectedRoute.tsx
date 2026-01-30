@@ -62,7 +62,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
   // Show Access Granted celebration page
   if (showAccessGranted) {
-    return <AccessGranted />;
+    return <AccessGranted onEnterPortal={() => setShowAccessGranted(false)} />;
   }
 
   // Authenticated but not admin when admin is required - show pending approval
