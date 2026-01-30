@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
+import { PendingApproval } from './PendingApproval';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -26,9 +26,9 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
-  // Authenticated but not admin when admin is required
+  // Authenticated but not admin when admin is required - show pending approval
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/admin" replace />;
+    return <PendingApproval />;
   }
 
   // Authenticated (and admin if required) - render children
