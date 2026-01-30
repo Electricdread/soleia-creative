@@ -33,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
     const denyUrl = `${SUPABASE_URL}/functions/v1/approve-user?userId=${userId}&action=deny`;
 
     const emailResponse = await resend.emails.send({
-      from: "ShowBlox <noreply@ninemilelion.com>",
+      from: "ShowBlox <onboarding@resend.dev>",
       to: ["ninemilelion@gmail.com"],
       subject: "New Admin Registration Request - ShowBlox",
       html: `
