@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, ExternalLink, Play, Pause, X, Heart, Sparkles, Loader2, Grid3X3, LayoutGrid } from 'lucide-react';
+import { Download, ExternalLink, Play, Pause, X, Heart, Sparkles, Loader2, Grid3X3, LayoutGrid, RectangleHorizontal, Square, RectangleVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +20,19 @@ interface SyncedAlbumProps {
   source: string;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+}
+
+type AspectRatioCategory = 'landscape' | 'square' | 'portrait';
+
+function getAspectCategory(item: SyncedImage): AspectRatioCategory {
+  if (item.width && item.height) {
+    const ratio = item.width / item.height;
+    if (ratio > 1.2) return 'landscape';
+    if (ratio < 0.8) return 'portrait';
+    return 'square';
+  }
+  // Default to square if dimensions unknown
+  return 'square';
 }
 
 function AlbumItem({ item, index, onClick }: { item: SyncedImage; index: number; onClick: () => void }) {
@@ -73,35 +86,25 @@ function AlbumItem({ item, index, onClick }: { item: SyncedImage; index: number;
     }
   }, [isVisible, isVideo, videoLoaded]);
 
-  // Determine aspect ratio class for masonry effect
-  const getSpanClass = () => {
-    if (item.width && item.height) {
-      const ratio = item.height / item.width;
-      if (ratio > 1.4) return 'row-span-2';
-      if (ratio < 0.7) return 'col-span-2';
-    }
-    // Pseudo-random based on index for visual variety
-    if (index % 7 === 0) return 'row-span-2';
-    if (index % 11 === 0) return 'col-span-2';
-    return '';
-  };
+  // Calculate aspect ratio for proper sizing
+  const aspectRatio = item.width && item.height ? item.width / item.height : 1;
+  const aspectClass = aspectRatio > 1.2 ? 'aspect-video' : aspectRatio < 0.8 ? 'aspect-[3/4]' : 'aspect-square';
 
   return (
     <motion.div
       ref={containerRef}
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.03, duration: 0.3 }}
+      transition={{ delay: index * 0.02, duration: 0.3 }}
       className={cn(
-        "relative group cursor-pointer rounded-xl overflow-hidden bg-zinc-800/50",
-        "aspect-square",
-        getSpanClass()
+        "relative group cursor-pointer rounded-xl overflow-hidden bg-zinc-900/80 border border-zinc-800/50",
+        aspectClass
       )}
       onClick={onClick}
     >
       {/* Gradient shimmer while loading */}
       {!imageLoaded && !videoLoaded && (
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-pink-500/10 to-cyan-500/20 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-zinc-800 to-cyan-500/10 animate-pulse" />
       )}
 
       {isVideo ? (
@@ -302,9 +305,61 @@ function LightboxModal({
   );
 }
 
+interface AspectSectionProps {
+  title: string;
+  icon: React.ReactNode;
+  items: SyncedImage[];
+  allImages: SyncedImage[];
+  onSelect: (index: number) => void;
+}
+
+function AspectSection({ title, icon, items, allImages, onSelect }: AspectSectionProps) {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 px-1">
+        <div className="text-purple-400">{icon}</div>
+        <h3 className="text-xs font-tech uppercase tracking-widest text-zinc-400">{title}</h3>
+        <span className="text-[10px] font-tech text-zinc-600">({items.length})</span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {items.map((item, idx) => {
+          // Find the original index in allImages for lightbox navigation
+          const originalIndex = allImages.findIndex(img => img.id === item.id);
+          return (
+            <AlbumItem
+              key={item.id}
+              item={item}
+              index={idx}
+              onClick={() => onSelect(originalIndex)}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function SyncedAlbum({ images, source, onRefresh, isRefreshing }: SyncedAlbumProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('masonry');
+  const [viewMode, setViewMode] = useState<'sorted' | 'grid'>('sorted');
+
+  // Group images by aspect ratio
+  const groupedImages = useMemo(() => {
+    const landscape: SyncedImage[] = [];
+    const square: SyncedImage[] = [];
+    const portrait: SyncedImage[] = [];
+
+    images.forEach(img => {
+      const category = getAspectCategory(img);
+      if (category === 'landscape') landscape.push(img);
+      else if (category === 'portrait') portrait.push(img);
+      else square.push(img);
+    });
+
+    return { landscape, square, portrait };
+  }, [images]);
 
   const handlePrev = () => {
     if (selectedIndex !== null && selectedIndex > 0) {
@@ -335,7 +390,7 @@ export function SyncedAlbum({ images, source, onRefresh, isRefreshing }: SyncedA
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 bg-black/50 rounded-2xl p-4 sm:p-6 border border-zinc-800/50">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -345,13 +400,14 @@ export function SyncedAlbum({ images, source, onRefresh, isRefreshing }: SyncedA
           </div>
           
           {/* View toggle */}
-          <div className="flex items-center bg-zinc-800/50 rounded-lg p-0.5">
+          <div className="flex items-center bg-zinc-900/80 rounded-lg p-0.5 border border-zinc-800">
             <button
-              onClick={() => setViewMode('masonry')}
+              onClick={() => setViewMode('sorted')}
               className={cn(
                 "p-1.5 rounded-md transition-colors",
-                viewMode === 'masonry' ? "bg-purple-500/30 text-purple-400" : "text-zinc-500 hover:text-zinc-300"
+                viewMode === 'sorted' ? "bg-purple-500/30 text-purple-400" : "text-zinc-500 hover:text-zinc-300"
               )}
+              title="Sort by aspect ratio"
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
@@ -361,6 +417,7 @@ export function SyncedAlbum({ images, source, onRefresh, isRefreshing }: SyncedA
                 "p-1.5 rounded-md transition-colors",
                 viewMode === 'grid' ? "bg-purple-500/30 text-purple-400" : "text-zinc-500 hover:text-zinc-300"
               )}
+              title="Grid view"
             >
               <Grid3X3 className="w-4 h-4" />
             </button>
@@ -385,22 +442,43 @@ export function SyncedAlbum({ images, source, onRefresh, isRefreshing }: SyncedA
         )}
       </div>
 
-      {/* Album Grid */}
-      <div className={cn(
-        "gap-2",
-        viewMode === 'masonry' 
-          ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 auto-rows-[120px] sm:auto-rows-[150px]"
-          : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-      )}>
-        {images.map((item, index) => (
-          <AlbumItem
-            key={item.id}
-            item={item}
-            index={index}
-            onClick={() => setSelectedIndex(index)}
+      {/* Content */}
+      {viewMode === 'sorted' ? (
+        <div className="space-y-8">
+          <AspectSection
+            title="Landscape"
+            icon={<RectangleHorizontal className="w-4 h-4" />}
+            items={groupedImages.landscape}
+            allImages={images}
+            onSelect={setSelectedIndex}
           />
-        ))}
-      </div>
+          <AspectSection
+            title="Square"
+            icon={<Square className="w-4 h-4" />}
+            items={groupedImages.square}
+            allImages={images}
+            onSelect={setSelectedIndex}
+          />
+          <AspectSection
+            title="Portrait"
+            icon={<RectangleVertical className="w-4 h-4" />}
+            items={groupedImages.portrait}
+            allImages={images}
+            onSelect={setSelectedIndex}
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {images.map((item, index) => (
+            <AlbumItem
+              key={item.id}
+              item={item}
+              index={index}
+              onClick={() => setSelectedIndex(index)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Lightbox */}
       <AnimatePresence>

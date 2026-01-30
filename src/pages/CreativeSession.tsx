@@ -11,6 +11,12 @@ import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
 import showbloxIcon from '@/assets/showblox-icon.png';
 
+interface CoverImage {
+  url: string;
+  theme: string;
+  prompt: string;
+}
+
 interface CreativeSessionData {
   id: string;
   project_name: string;
@@ -20,6 +26,7 @@ interface CreativeSessionData {
   technical_notes: string | null;
   creative_notes: string | null;
   created_at: string;
+  cover_images?: CoverImage[] | null;
 }
 
 interface MoodBoardItemData {
@@ -96,7 +103,13 @@ export default function CreativeSession() {
       return;
     }
 
-    setSession(data);
+    // Cast cover_images properly
+    const sessionData: CreativeSessionData = {
+      ...data,
+      cover_images: data.cover_images as unknown as CoverImage[] | null,
+    };
+
+    setSession(sessionData);
     setLoading(false);
   };
 

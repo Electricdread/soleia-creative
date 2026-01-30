@@ -3,11 +3,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, BookOpen } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, BookOpen, ImageIcon } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { CoverPageGenerator } from './CoverPageGenerator';
 import { TechnicalBriefingArticle } from './TechnicalBriefingArticle';
-
+import { CoverImageSelector, CoverImagePreview } from './CoverImageSelector';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
 interface CoverImage {
   url: string;
   theme: string;
@@ -114,6 +117,9 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [coverImages, setCoverImages] = useState<CoverImage[]>(
     (session.cover_images as CoverImage[]) || []
   );
+  const [selectedCoverImage, setSelectedCoverImage] = useState<CoverImage | null>(
+    (session.cover_images as CoverImage[])?.find(img => img.url) || null
+  );
   const [strategicBrief, setStrategicBrief] = useState<StrategicBrief | null>(
     parseStrategicBrief(session.circleback_summary)
   );
@@ -130,6 +136,10 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
   const handleImagesGenerated = (images: CoverImage[]) => {
     setCoverImages(images);
+    // Auto-select first image if none selected
+    if (images.length > 0 && !selectedCoverImage) {
+      setSelectedCoverImage(images[0]);
+    }
     onSessionUpdate?.();
   };
 
@@ -139,6 +149,26 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
       setShowBriefing(true);
     }
     onSessionUpdate?.();
+  };
+
+  const handleCoverImageSelect = async (image: CoverImage) => {
+    setSelectedCoverImage(image);
+    
+    // Persist the selection - reorder cover_images so selected is first
+    const reorderedImages = [image, ...coverImages.filter(img => img.url !== image.url)];
+    
+    const { error } = await supabase
+      .from('creative_sessions')
+      .update({ cover_images: reorderedImages as unknown as Json })
+      .eq('id', session.id);
+
+    if (error) {
+      toast.error('Failed to save cover selection');
+      console.error(error);
+    } else {
+      toast.success('Cover image selected');
+      onSessionUpdate?.();
+    }
   };
 
   // Show briefing automatically if we have a strategic brief
@@ -229,6 +259,24 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                   </a>
                 )}
 
+                {/* Selected Cover Image Preview */}
+                {selectedCoverImage && (
+                  <div className="mt-4 pt-4 border-t border-zinc-700/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-tech uppercase tracking-widest text-amber-400 flex items-center gap-1.5">
+                        <ImageIcon className="h-3 w-3" />
+                        Session Cover
+                      </span>
+                      <CoverImageSelector
+                        images={coverImages}
+                        selectedImage={selectedCoverImage}
+                        onSelect={handleCoverImageSelect}
+                      />
+                    </div>
+                    <CoverImagePreview image={selectedCoverImage} />
+                  </div>
+                )}
+
                 {/* Cover Image Generator */}
                 <div className="mt-4 pt-4 border-t border-zinc-700/30">
                   <CoverPageGenerator
@@ -244,6 +292,17 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                     onBriefGenerated={handleBriefGenerated}
                   />
                 </div>
+
+                {/* Cover Image Selector (when images exist but none selected) */}
+                {coverImages.length > 0 && !selectedCoverImage && (
+                  <div className="mt-3">
+                    <CoverImageSelector
+                      images={coverImages}
+                      selectedImage={selectedCoverImage}
+                      onSelect={handleCoverImageSelect}
+                    />
+                  </div>
+                )}
 
                 {/* Toggle Briefing View Button */}
                 {strategicBrief && coverImages.length > 0 && (
