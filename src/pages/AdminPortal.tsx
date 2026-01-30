@@ -6,7 +6,7 @@ import { Loader2, LogOut, ExternalLink, Clock, Command } from 'lucide-react';
 import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
 import showbloxIcon from '@/assets/showblox-icon.png';
 import soleiaIcon from '@/assets/sol-icon.png';
-import portalHeroVideo from '@/assets/showblox-portal-hero.mp4';
+
 
 const OPERATOR_EMAIL = 'luisdreams@me.com';
 
@@ -145,15 +145,8 @@ export default function AdminPortal() {
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* Hero Video Background - Full Screen */}
-      <video
-        src={portalHeroVideo}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="fixed inset-0 w-full h-full object-cover z-0"
-      />
+      {/* Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-black via-zinc-900 to-black z-0" />
       
       {/* Subtle grid pattern overlay */}
       <div 
