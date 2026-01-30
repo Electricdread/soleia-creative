@@ -6,6 +6,7 @@ import { Loader2, LogOut, ExternalLink, Clock } from 'lucide-react';
 import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
 import showbloxIcon from '@/assets/showblox-icon.png';
 import soleiaIcon from '@/assets/sol-icon.png';
+import portalHeroVideo from '@/assets/showblox-portal-hero.mp4';
 
 interface PortalCard {
   title: string;
@@ -142,8 +143,18 @@ export default function AdminPortal() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
+      {/* Hero Video Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <video
+          src={portalHeroVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black" />
+      </div>
       <div 
         className="absolute inset-0 opacity-5"
         style={{
