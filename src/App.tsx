@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "next-themes";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
@@ -27,17 +28,22 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/creative-guide" element={<CreativeGuide />} />
-              <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
-              <Route path="/creative/:token" element={<CreativeSession />} />
-              <Route path="/session/:token" element={<SharedSession />} />
-              {/* Admin Routes */}
+              {/* Public Route - Login */}
               <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<AdminPortal />} />
-              <Route path="/admin/creative" element={<AdminCreative />} />
-              <Route path="/admin/looks" element={<AdminLooks />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              
+              {/* Protected Routes - Require Authentication */}
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/creative-guide" element={<ProtectedRoute><CreativeGuide /></ProtectedRoute>} />
+              <Route path="/creative-guide/print" element={<ProtectedRoute><PrintCreativeGuide /></ProtectedRoute>} />
+              <Route path="/creative/:token" element={<ProtectedRoute><CreativeSession /></ProtectedRoute>} />
+              <Route path="/session/:token" element={<ProtectedRoute><SharedSession /></ProtectedRoute>} />
+              
+              {/* Admin Routes - Require Authentication (admin check handled in components) */}
+              <Route path="/admin" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
+              <Route path="/admin/creative" element={<ProtectedRoute requireAdmin><AdminCreative /></ProtectedRoute>} />
+              <Route path="/admin/looks" element={<ProtectedRoute requireAdmin><AdminLooks /></ProtectedRoute>} />
+              
+              {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
