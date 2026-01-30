@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
@@ -10,37 +10,41 @@ interface ProtectedRouteProps {
   requireAdmin?: boolean;
 }
 
-const JUST_APPROVED_KEY = 'showblox_just_approved';
-
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const location = useLocation();
-  const { user, isAdmin, isLoading } = useAuth();
+  const { user, isAdmin, isLoading, refreshAuth } = useAuth();
   const [showAccessGranted, setShowAccessGranted] = useState(false);
-  const [previouslyPending, setPreviouslyPending] = useState(false);
+  const [wasMarkedPending, setWasMarkedPending] = useState(false);
 
-  // Track if user was previously pending (not admin)
+  // Check if user was approved (transitioned from pending to admin)
   useEffect(() => {
     if (user && !isLoading) {
-      const wasPending = sessionStorage.getItem(`pending_${user.id}`);
+      const pendingKey = `showblox_pending_${user.id}`;
+      const wasPending = localStorage.getItem(pendingKey) === 'true';
       
       if (!isAdmin && requireAdmin) {
-        // User is pending - mark them
-        sessionStorage.setItem(`pending_${user.id}`, 'true');
-        setPreviouslyPending(true);
+        // User is pending - mark them in localStorage
+        localStorage.setItem(pendingKey, 'true');
+        setWasMarkedPending(true);
       } else if (isAdmin && wasPending) {
         // User was pending but now is admin - they just got approved!
-        sessionStorage.removeItem(`pending_${user.id}`);
+        localStorage.removeItem(pendingKey);
         setShowAccessGranted(true);
-        
-        // Auto-dismiss after 5 seconds
-        const timer = setTimeout(() => {
-          setShowAccessGranted(false);
-        }, 5000);
-        
-        return () => clearTimeout(timer);
       }
     }
   }, [user, isAdmin, isLoading, requireAdmin]);
+
+  // Poll for approval status when user is pending
+  useEffect(() => {
+    if (!user || isLoading || isAdmin || !requireAdmin || !wasMarkedPending) return;
+    
+    // Poll every 5 seconds to check if user was approved
+    const pollInterval = setInterval(() => {
+      refreshAuth?.();
+    }, 5000);
+    
+    return () => clearInterval(pollInterval);
+  }, [user, isLoading, isAdmin, requireAdmin, wasMarkedPending, refreshAuth]);
 
   // Show loading spinner while checking auth state
   if (isLoading) {
