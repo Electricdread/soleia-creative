@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
+import CreativeSession from "./pages/CreativeSession";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/creative-guide" element={<CreativeGuide />} />
               <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
+              <Route path="/creative/:token" element={<CreativeSession />} />
               <Route path="/session/:token" element={<SharedSession />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
