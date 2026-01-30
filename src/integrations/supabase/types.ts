@@ -424,6 +424,51 @@ export type Database = {
           },
         ]
       }
+      synced_creative_content: {
+        Row: {
+          created_at: string
+          external_id: string
+          height: number | null
+          id: string
+          media_type: string | null
+          sort_order: number | null
+          source: string
+          synced_at: string
+          thumbnail: string | null
+          title: string | null
+          url: string
+          width: number | null
+        }
+        Insert: {
+          created_at?: string
+          external_id: string
+          height?: number | null
+          id?: string
+          media_type?: string | null
+          sort_order?: number | null
+          source: string
+          synced_at?: string
+          thumbnail?: string | null
+          title?: string | null
+          url: string
+          width?: number | null
+        }
+        Update: {
+          created_at?: string
+          external_id?: string
+          height?: number | null
+          id?: string
+          media_type?: string | null
+          sort_order?: number | null
+          source?: string
+          synced_at?: string
+          thumbnail?: string | null
+          title?: string | null
+          url?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
