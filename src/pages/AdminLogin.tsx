@@ -78,7 +78,7 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      const { error } = await signUp(email, password);
+      const { data, error } = await signUp(email, password);
       
       if (error) {
         toast({
@@ -89,19 +89,22 @@ export default function AdminLogin() {
         return;
       }
 
-      // Send notification email to admin
-      try {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user) {
+      // Send notification email to admin using the user data from signUp response
+      const userId = data?.user?.id;
+      if (userId) {
+        try {
           await supabase.functions.invoke('notify-admin-signup', {
             body: {
               userEmail: email,
-              userId: userData.user.id,
+              userId: userId,
             },
           });
+          console.log('Admin notification sent for userId:', userId);
+        } catch (notifyError) {
+          console.error('Failed to send admin notification:', notifyError);
         }
-      } catch (notifyError) {
-        console.error('Failed to send admin notification:', notifyError);
+      } else {
+        console.error('No user ID returned from signUp');
       }
 
       toast({
