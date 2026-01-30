@@ -145,23 +145,29 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
+        <Button className="gap-2 h-12 sm:h-10 px-4 sm:px-6 font-tech uppercase tracking-wider text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 hover:text-cyan-300 touch-manipulation active:scale-95 transition-all">
           <Plus className="h-4 w-4" />
-          Add to Board
+          Add Item
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-700 font-tech">
         <DialogHeader>
-          <DialogTitle>Add to Mood Board</DialogTitle>
+          <DialogTitle className="text-cyan-400 uppercase tracking-widest text-sm">Add_To_Board</DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="url" className="gap-2">
+          <TabsList className="grid w-full grid-cols-2 bg-zinc-800/50 h-12 sm:h-10">
+            <TabsTrigger 
+              value="url" 
+              className="gap-2 font-tech uppercase tracking-wider text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
+            >
               <Link2 className="h-4 w-4" />
               URL
             </TabsTrigger>
-            <TabsTrigger value="upload" className="gap-2">
+            <TabsTrigger 
+              value="upload" 
+              className="gap-2 font-tech uppercase tracking-wider text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
+            >
               <Upload className="h-4 w-4" />
               Upload
             </TabsTrigger>
@@ -169,43 +175,46 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
 
           <TabsContent value="url" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="url">URL *</Label>
+              <Label htmlFor="url" className="text-[10px] font-tech uppercase tracking-widest text-zinc-400">URL *</Label>
               <Input
                 id="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="Paste Pinterest, Instagram, or any URL..."
+                className="h-12 sm:h-10 text-base sm:text-sm font-tech bg-zinc-800/50 border-zinc-700 focus:border-cyan-500/50 placeholder:text-zinc-600"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] text-zinc-600 font-tech uppercase tracking-wider">
                 Supports Pinterest pins, Instagram posts, and general links
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="title">Title (optional)</Label>
+              <Label htmlFor="title" className="text-[10px] font-tech uppercase tracking-widest text-zinc-400">Title (optional)</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Give it a name..."
+                className="h-12 sm:h-10 text-base sm:text-sm font-tech bg-zinc-800/50 border-zinc-700 focus:border-cyan-500/50 placeholder:text-zinc-600"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Notes (optional)</Label>
+              <Label htmlFor="description" className="text-[10px] font-tech uppercase tracking-widest text-zinc-400">Notes (optional)</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Why does this inspire you?"
-                rows={2}
+                rows={3}
+                className="text-base sm:text-sm font-tech bg-zinc-800/50 border-zinc-700 focus:border-cyan-500/50 placeholder:text-zinc-600 resize-none"
               />
             </div>
 
             <Button 
               onClick={handleUrlSubmit} 
               disabled={loading} 
-              className="w-full"
+              className="w-full h-12 sm:h-10 font-tech uppercase tracking-widest text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 touch-manipulation active:scale-95"
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Add URL
@@ -214,7 +223,7 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
 
           <TabsContent value="upload" className="space-y-4 mt-4">
             <div 
-              className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+              className="border-2 border-dashed border-zinc-700 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-cyan-500/50 transition-colors touch-manipulation active:scale-[0.98]"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -225,19 +234,19 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
                 className="hidden"
                 onChange={handleFileChange}
               />
-              <Image className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm font-medium">Click to select files</p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <Image className="h-8 w-8 mx-auto mb-2 text-zinc-600" />
+              <p className="text-xs font-tech uppercase tracking-wider text-zinc-400">Tap to select files</p>
+              <p className="text-[10px] text-zinc-600 font-tech mt-1 uppercase tracking-wider">
                 Images, videos, and PDFs
               </p>
             </div>
 
             {selectedFiles.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Selected files:</p>
-                <ul className="text-xs text-muted-foreground space-y-1">
+              <div className="space-y-2 p-3 bg-zinc-800/30 rounded-lg">
+                <p className="text-[10px] font-tech uppercase tracking-widest text-cyan-400">Selected files:</p>
+                <ul className="text-xs text-zinc-400 space-y-1 font-tech">
                   {selectedFiles.map((file, i) => (
-                    <li key={i}>{file.name}</li>
+                    <li key={i} className="truncate">• {file.name}</li>
                   ))}
                 </ul>
               </div>
@@ -246,7 +255,7 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
             <Button 
               onClick={handleFileUpload} 
               disabled={loading || selectedFiles.length === 0} 
-              className="w-full"
+              className="w-full h-12 sm:h-10 font-tech uppercase tracking-widest text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 disabled:opacity-50 touch-manipulation active:scale-95"
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Upload {selectedFiles.length > 0 ? `(${selectedFiles.length})` : ''}

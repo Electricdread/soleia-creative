@@ -18,6 +18,8 @@ export default {
         display: ['Playfair Display', 'Georgia', 'serif'],
         logo: ['Oswald', 'ui-sans-serif', 'sans-serif'],
         'logo-alt': ['Bebas Neue', 'ui-sans-serif', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        tech: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",

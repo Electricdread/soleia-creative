@@ -50,10 +50,10 @@ const REACTION_ICONS = {
 } as const;
 
 const REACTION_COLORS = {
-  love: 'text-red-500',
-  fire: 'text-orange-500',
-  question: 'text-blue-500',
-  star: 'text-yellow-500',
+  love: 'text-red-400',
+  fire: 'text-orange-400',
+  question: 'text-cyan-400',
+  star: 'text-yellow-400',
 } as const;
 
 export function MoodBoardItem({
@@ -129,18 +129,17 @@ export function MoodBoardItem({
     const thumbnailUrl = item.thumbnail_url;
 
     if (item.item_type === 'instagram') {
-      // Instagram embed placeholder
       return (
         <div className="aspect-square bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
           <div className="text-center text-white p-4">
             <div className="text-2xl mb-2">📸</div>
-            <p className="text-sm font-medium">Instagram</p>
+            <p className="text-xs font-tech uppercase tracking-wider">Instagram</p>
             {item.url && (
               <a
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs underline mt-2 inline-flex items-center gap-1"
+                className="text-[10px] underline mt-2 inline-flex items-center gap-1 font-tech uppercase tracking-wider"
               >
                 View Post <ExternalLink className="h-3 w-3" />
               </a>
@@ -155,13 +154,13 @@ export function MoodBoardItem({
         <div className="aspect-square bg-gradient-to-br from-red-500 to-red-700 rounded-lg flex items-center justify-center">
           <div className="text-center text-white p-4">
             <div className="text-2xl mb-2">📌</div>
-            <p className="text-sm font-medium">Pinterest</p>
+            <p className="text-xs font-tech uppercase tracking-wider">Pinterest</p>
             {item.url && (
               <a
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs underline mt-2 inline-flex items-center gap-1"
+                className="text-[10px] underline mt-2 inline-flex items-center gap-1 font-tech uppercase tracking-wider"
               >
                 View Pin <ExternalLink className="h-3 w-3" />
               </a>
@@ -196,16 +195,16 @@ export function MoodBoardItem({
 
     if (item.item_type === 'link') {
       return (
-        <div className="aspect-square bg-muted rounded-lg flex items-center justify-center p-4">
+        <div className="aspect-square bg-zinc-800/50 rounded-lg flex items-center justify-center p-4">
           <div className="text-center">
             <div className="text-2xl mb-2">🔗</div>
-            <p className="text-sm font-medium line-clamp-2">{item.title || 'Link'}</p>
+            <p className="text-xs font-tech uppercase tracking-wider text-zinc-300 line-clamp-2">{item.title || 'Link'}</p>
             {item.url && (
               <a
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-primary underline mt-2 inline-flex items-center gap-1"
+                className="text-[10px] text-cyan-400 underline mt-2 inline-flex items-center gap-1 font-tech uppercase tracking-wider"
               >
                 Open <ExternalLink className="h-3 w-3" />
               </a>
@@ -216,44 +215,43 @@ export function MoodBoardItem({
     }
 
     return (
-      <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
-        <span className="text-muted-foreground">No preview</span>
+      <div className="aspect-square bg-zinc-800/50 rounded-lg flex items-center justify-center">
+        <span className="text-zinc-600 font-tech text-xs uppercase tracking-wider">No preview</span>
       </div>
     );
   };
 
   return (
-    <Card className="overflow-hidden group">
+    <Card className="overflow-hidden group bg-zinc-900/80 border-zinc-800 font-tech">
       <div className="relative">
         {renderMedia()}
         <Button
           variant="destructive"
           size="icon"
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 sm:transition-opacity h-8 w-8 touch-manipulation"
           onClick={() => onDelete(item.id)}
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-4 w-4" />
         </Button>
         {item.item_type && (
           <Badge
-            variant="secondary"
-            className="absolute top-2 left-2 text-[10px] capitalize"
+            className="absolute top-2 left-2 text-[8px] uppercase tracking-wider bg-zinc-900/80 text-zinc-300 border-zinc-700 font-tech"
           >
             {item.item_type}
           </Badge>
         )}
       </div>
 
-      <CardContent className="p-3 space-y-2">
+      <CardContent className="p-2.5 sm:p-3 space-y-2">
         {item.title && (
-          <p className="text-sm font-medium line-clamp-1">{item.title}</p>
+          <p className="text-xs font-tech text-zinc-200 line-clamp-1 uppercase tracking-wide">{item.title}</p>
         )}
         {item.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
+          <p className="text-[10px] text-zinc-500 line-clamp-2 font-tech">{item.description}</p>
         )}
 
-        {/* Reactions */}
-        <div className="flex items-center gap-1 flex-wrap">
+        {/* Reactions - Touch Optimized */}
+        <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap">
           {(Object.keys(REACTION_ICONS) as Array<keyof typeof REACTION_ICONS>).map((type) => {
             const Icon = REACTION_ICONS[type];
             const count = getReactionCount(type);
@@ -263,34 +261,34 @@ export function MoodBoardItem({
                 key={type}
                 variant="ghost"
                 size="sm"
-                className={`h-7 px-2 gap-1 ${isActive ? REACTION_COLORS[type] : ''}`}
+                className={`h-9 sm:h-7 px-2 sm:px-2 gap-1 touch-manipulation active:scale-90 ${isActive ? REACTION_COLORS[type] : 'text-zinc-500'}`}
                 onClick={() => toggleReaction(type)}
               >
-                <Icon className={`h-3.5 w-3.5 ${isActive ? 'fill-current' : ''}`} />
-                {count > 0 && <span className="text-xs">{count}</span>}
+                <Icon className={`h-4 w-4 sm:h-3.5 sm:w-3.5 ${isActive ? 'fill-current' : ''}`} />
+                {count > 0 && <span className="text-[10px] font-tech">{count}</span>}
               </Button>
             );
           })}
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 gap-1 ml-auto"
+            className="h-9 sm:h-7 px-2 gap-1 ml-auto text-zinc-500 touch-manipulation active:scale-90"
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className="h-3.5 w-3.5" />
-            {comments.length > 0 && <span className="text-xs">{comments.length}</span>}
+            <MessageCircle className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            {comments.length > 0 && <span className="text-[10px] font-tech">{comments.length}</span>}
           </Button>
         </div>
 
         {/* Comments Section */}
         {showComments && (
-          <div className="space-y-2 pt-2 border-t">
+          <div className="space-y-2 pt-2 border-t border-zinc-800">
             {comments.map((comment) => (
-              <div key={comment.id} className="text-xs group/comment">
+              <div key={comment.id} className="text-[10px] group/comment">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="font-medium">{comment.commenter_name}</span>
-                    <span className="text-muted-foreground ml-2">
+                    <span className="font-tech text-cyan-400 uppercase tracking-wider">{comment.commenter_name}</span>
+                    <span className="text-zinc-600 ml-2 font-tech">
                       {format(new Date(comment.created_at), 'MMM d, h:mm a')}
                     </span>
                   </div>
@@ -298,14 +296,14 @@ export function MoodBoardItem({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-5 w-5 opacity-0 group-hover/comment:opacity-100"
+                      className="h-6 w-6 opacity-0 group-hover/comment:opacity-100 touch-manipulation"
                       onClick={() => deleteComment(comment.id)}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   )}
                 </div>
-                <p className="text-muted-foreground mt-0.5">{comment.content}</p>
+                <p className="text-zinc-400 mt-0.5 font-tech">{comment.content}</p>
               </div>
             ))}
 
@@ -314,24 +312,24 @@ export function MoodBoardItem({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Add a note..."
-                className="h-8 text-xs"
+                className="h-10 sm:h-8 text-sm sm:text-xs font-tech bg-zinc-800/50 border-zinc-700 focus:border-cyan-500/50 placeholder:text-zinc-600"
                 onKeyDown={(e) => e.key === 'Enter' && addComment()}
               />
               <Button
                 size="icon"
-                className="h-8 w-8 shrink-0"
+                className="h-10 w-10 sm:h-8 sm:w-8 shrink-0 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 touch-manipulation active:scale-90"
                 onClick={addComment}
                 disabled={submitting}
               >
-                <Send className="h-3.5 w-3.5" />
+                <Send className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
               </Button>
             </div>
           </div>
         )}
 
         {item.added_by && (
-          <p className="text-[10px] text-muted-foreground">
-            Added by {item.added_by}
+          <p className="text-[8px] text-zinc-600 font-tech uppercase tracking-widest">
+            By {item.added_by}
           </p>
         )}
       </CardContent>
