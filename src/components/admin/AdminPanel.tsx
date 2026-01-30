@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,10 +10,16 @@ import { ClipManager } from './ClipManager';
 import { BatchVideoUploader } from './BatchVideoUploader';
 import { ClientLinkManager } from './ClientLinkManager';
 import { CreativeSessionManager } from './CreativeSessionManager';
-import { Settings, Plus, List, Upload, Video, Link2, Palette } from 'lucide-react';
+import { Settings, Plus, List, Upload, Video, Link2, Palette, ExternalLink } from 'lucide-react';
 
 export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleGoToPortal = () => {
+    setOpen(false);
+    navigate('/admin');
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -24,8 +31,21 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
       </DialogTrigger>
       <DialogContent className="w-[95vw] max-w-3xl h-[90vh] max-h-[90vh] p-0 gap-0 flex flex-col">
         <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border/50 flex-shrink-0">
-          <DialogTitle className="text-lg sm:text-xl">Admin Panel</DialogTitle>
-          <DialogDescription className="text-sm">Manage clips and create client session links.</DialogDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-lg sm:text-xl">Admin Panel</DialogTitle>
+              <DialogDescription className="text-sm">Manage clips and create client session links.</DialogDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGoToPortal}
+              className="gap-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span className="hidden sm:inline">ShowBlox Portal</span>
+            </Button>
+          </div>
         </DialogHeader>
         
         <Tabs defaultValue="sessions" className="flex-1 flex flex-col min-h-0">
