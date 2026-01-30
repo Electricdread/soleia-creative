@@ -7,6 +7,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,8 +20,16 @@ const handler = async (req: Request): Promise<Response> => {
     const userId = url.searchParams.get("userId");
     const action = url.searchParams.get("action");
 
+    console.log("Received request - userId:", userId, "action:", action);
+
     if (!userId || !action) {
       return createHtmlResponse("Error", "Missing userId or action parameter", false);
+    }
+
+    // Validate UUID format
+    if (!UUID_REGEX.test(userId)) {
+      console.error("Invalid UUID format:", userId);
+      return createHtmlResponse("Error", "Invalid user ID format", false);
     }
 
     if (action !== "approve" && action !== "deny") {
@@ -36,19 +47,32 @@ const handler = async (req: Request): Promise<Response> => {
     
     if (userError || !userData?.user) {
       console.error("Error fetching user:", userError);
-      return createHtmlResponse("Error", "User not found", false);
+      return createHtmlResponse("Error", "User not found. They may have already been processed.", false);
     }
 
     const userEmail = userData.user.email || "Unknown";
 
     if (action === "approve") {
+      // Check if user already has admin role
+      const { data: existingRole } = await supabaseAdmin
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (existingRole) {
+        return createHtmlResponse(
+          "Already Approved",
+          `${userEmail} already has admin access.`,
+          true
+        );
+      }
+
       // Add admin role to user
       const { error: roleError } = await supabaseAdmin
         .from("user_roles")
-        .upsert(
-          { user_id: userId, role: "admin" },
-          { onConflict: "user_id,role" }
-        );
+        .insert({ user_id: userId, role: "admin" });
 
       if (roleError) {
         console.error("Error adding admin role:", roleError);
