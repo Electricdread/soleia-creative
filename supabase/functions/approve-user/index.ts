@@ -23,17 +23,17 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Received request - userId:", userId, "action:", action);
 
     if (!userId || !action) {
-      return createHtmlResponse("Error", "Missing userId or action parameter", false);
+      return createHtmlResponse("error", "Missing userId or action parameter", "", "Missing required parameters");
     }
 
     // Validate UUID format
     if (!UUID_REGEX.test(userId)) {
       console.error("Invalid UUID format:", userId);
-      return createHtmlResponse("Error", "Invalid user ID format", false);
+      return createHtmlResponse("error", "Invalid user ID format", "", "The user ID provided is not valid");
     }
 
     if (action !== "approve" && action !== "deny") {
-      return createHtmlResponse("Error", "Invalid action. Must be 'approve' or 'deny'", false);
+      return createHtmlResponse("error", "Invalid action", "", "Action must be 'approve' or 'deny'");
     }
 
     const supabaseAdmin = createClient(
@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     if (userError || !userData?.user) {
       console.error("Error fetching user:", userError);
-      return createHtmlResponse("Error", "User not found. They may have already been processed.", false);
+      return createHtmlResponse("error", "User not found", "", "This user may have already been processed or doesn't exist");
     }
 
     const userEmail = userData.user.email || "Unknown";
@@ -62,11 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
         .maybeSingle();
 
       if (existingRole) {
-        return createHtmlResponse(
-          "Already Approved",
-          `${userEmail} already has admin access.`,
-          true
-        );
+        return createHtmlResponse("info", "Already Approved", userEmail, "This user already has admin access to ShowBlox");
       }
 
       // Add admin role to user
@@ -76,41 +72,64 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (roleError) {
         console.error("Error adding admin role:", roleError);
-        return createHtmlResponse("Error", "Failed to approve user: " + roleError.message, false);
+        return createHtmlResponse("error", "Approval Failed", userEmail, roleError.message);
       }
 
       console.log(`User ${userEmail} (${userId}) approved as admin`);
-      return createHtmlResponse(
-        "User Approved ✓",
-        `${userEmail} has been granted admin access to ShowBlox.`,
-        true
-      );
+      return createHtmlResponse("approved", "Access Granted", userEmail, "This user now has full admin access to ShowBlox");
     } else {
       // Deny - delete the user account
       const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
       if (deleteError) {
         console.error("Error deleting user:", deleteError);
-        return createHtmlResponse("Error", "Failed to deny user: " + deleteError.message, false);
+        return createHtmlResponse("error", "Denial Failed", userEmail, deleteError.message);
       }
 
       console.log(`User ${userEmail} (${userId}) denied and deleted`);
-      return createHtmlResponse(
-        "User Denied",
-        `${userEmail}'s registration has been denied and their account has been removed.`,
-        true
-      );
+      return createHtmlResponse("denied", "Access Denied", userEmail, "This user's registration has been denied and their account removed");
     }
   } catch (error: unknown) {
     console.error("Error in approve-user:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return createHtmlResponse("Error", errorMessage, false);
+    return createHtmlResponse("error", "System Error", "", errorMessage);
   }
 };
 
-function createHtmlResponse(title: string, message: string, success: boolean): Response {
-  const statusColor = success ? (title.includes("Denied") ? "#f59e0b" : "#22c55e") : "#ef4444";
-  const icon = success ? (title.includes("Denied") ? "🚫" : "✓") : "✕";
+function createHtmlResponse(
+  status: "approved" | "denied" | "error" | "info",
+  title: string,
+  email: string,
+  message: string
+): Response {
+  const configs = {
+    approved: {
+      gradient: "linear-gradient(135deg, #22c55e, #16a34a)",
+      glow: "rgba(34,197,94,0.4)",
+      icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+      color: "#22c55e",
+    },
+    denied: {
+      gradient: "linear-gradient(135deg, #f59e0b, #d97706)",
+      glow: "rgba(245,158,11,0.4)",
+      icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>`,
+      color: "#f59e0b",
+    },
+    error: {
+      gradient: "linear-gradient(135deg, #ef4444, #dc2626)",
+      glow: "rgba(239,68,68,0.4)",
+      icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+      color: "#ef4444",
+    },
+    info: {
+      gradient: "linear-gradient(135deg, #06b6d4, #0891b2)",
+      glow: "rgba(6,182,212,0.4)",
+      icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`,
+      color: "#06b6d4",
+    },
+  };
+
+  const config = configs[status];
   
   const html = `
     <!DOCTYPE html>
@@ -119,74 +138,234 @@ function createHtmlResponse(title: string, message: string, success: boolean): R
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title} - ShowBlox</title>
+      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background-color: #000;
+          font-family: 'JetBrains Mono', monospace;
+          background: linear-gradient(135deg, #09090b 0%, #18181b 50%, #09090b 100%);
           color: #fff;
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 20px;
+          position: relative;
+          overflow: hidden;
         }
+        
+        /* Animated background grid */
+        body::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-image: 
+            radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
+          background-size: 40px 40px;
+          pointer-events: none;
+        }
+        
+        /* Glow orbs */
+        .orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0.3;
+          pointer-events: none;
+        }
+        
+        .orb-1 {
+          width: 400px;
+          height: 400px;
+          background: ${config.glow};
+          top: -200px;
+          left: -100px;
+          animation: float 8s ease-in-out infinite;
+        }
+        
+        .orb-2 {
+          width: 300px;
+          height: 300px;
+          background: rgba(139,92,246,0.3);
+          bottom: -150px;
+          right: -100px;
+          animation: float 10s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(30px, -30px) scale(1.1); }
+        }
+        
         .container {
+          position: relative;
           max-width: 500px;
           width: 100%;
-          background-color: #18181b;
-          border-radius: 16px;
+          background: linear-gradient(180deg, rgba(24,24,27,0.95) 0%, rgba(15,15,17,0.95) 100%);
+          border-radius: 24px;
+          overflow: hidden;
+          box-shadow: 
+            0 0 0 1px rgba(255,255,255,0.05),
+            0 25px 50px -12px rgba(0,0,0,0.8),
+            0 0 100px -20px ${config.glow};
+          backdrop-filter: blur(20px);
+        }
+        
+        /* Gradient bar */
+        .gradient-bar {
+          height: 4px;
+          background: linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899, #06b6d4);
+          background-size: 300% 100%;
+          animation: gradient-flow 4s linear infinite;
+        }
+        
+        @keyframes gradient-flow {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 300% 50%; }
+        }
+        
+        .content {
           padding: 50px 40px;
           text-align: center;
-          border: 1px solid #27272a;
         }
+        
+        /* Logo */
         .logo {
-          font-size: 28px;
-          font-weight: bold;
-          letter-spacing: 3px;
-          margin-bottom: 40px;
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: 4px;
           color: #fff;
+          margin-bottom: 40px;
+          opacity: 0.7;
         }
-        .icon {
-          width: 80px;
-          height: 80px;
+        
+        /* Status Icon */
+        .icon-wrapper {
+          width: 100px;
+          height: 100px;
           border-radius: 50%;
-          background-color: ${statusColor}20;
+          background: ${config.gradient};
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0 auto 24px;
-          font-size: 36px;
-          color: ${statusColor};
+          margin: 0 auto 30px;
+          box-shadow: 
+            0 0 40px ${config.glow},
+            0 0 80px ${config.glow},
+            inset 0 0 30px rgba(255,255,255,0.1);
+          animation: icon-glow 2s ease-in-out infinite;
         }
+        
+        @keyframes icon-glow {
+          0%, 100% { 
+            box-shadow: 
+              0 0 40px ${config.glow},
+              0 0 80px ${config.glow},
+              inset 0 0 30px rgba(255,255,255,0.1);
+          }
+          50% { 
+            box-shadow: 
+              0 0 60px ${config.glow},
+              0 0 120px ${config.glow},
+              inset 0 0 40px rgba(255,255,255,0.15);
+          }
+        }
+        
         h1 {
-          font-size: 24px;
-          font-weight: 600;
+          font-size: 28px;
+          font-weight: 700;
           margin-bottom: 16px;
           color: #fff;
+          letter-spacing: 1px;
         }
-        p {
+        
+        .email {
+          display: inline-block;
+          font-size: 14px;
+          font-weight: 500;
+          color: ${config.color};
+          background: ${config.color}15;
+          padding: 10px 20px;
+          border-radius: 8px;
+          border: 1px solid ${config.color}30;
+          margin-bottom: 20px;
+        }
+        
+        .message {
+          font-size: 14px;
+          line-height: 1.8;
           color: #a1a1aa;
-          line-height: 1.6;
-          font-size: 16px;
+          max-width: 380px;
+          margin: 0 auto;
         }
-        .footer {
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 1px solid #27272a;
-          color: #52525b;
+        
+        ${status === "approved" ? `
+        .cta {
+          display: inline-block;
+          margin-top: 30px;
+          padding: 14px 32px;
+          background: ${config.gradient};
+          color: #fff;
+          text-decoration: none;
+          border-radius: 10px;
           font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          box-shadow: 0 0 30px ${config.glow};
+          transition: all 0.3s ease;
+        }
+        
+        .cta:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 0 50px ${config.glow};
+        }
+        ` : ''}
+        
+        .footer {
+          padding: 24px 40px;
+          border-top: 1px solid rgba(255,255,255,0.05);
+          text-align: center;
+        }
+        
+        .footer-text {
+          font-size: 10px;
+          letter-spacing: 2px;
+          color: #52525b;
+          text-transform: uppercase;
         }
       </style>
     </head>
     <body>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      
       <div class="container">
-        <div class="logo">SHOWBLOX</div>
-        <div class="icon">${icon}</div>
-        <h1>${title}</h1>
-        <p>${message}</p>
+        <div class="gradient-bar"></div>
+        
+        <div class="content">
+          <div class="logo">SHOWBLOX</div>
+          
+          <div class="icon-wrapper">
+            ${config.icon}
+          </div>
+          
+          <h1>${title}</h1>
+          
+          ${email ? `<div class="email">${email}</div>` : ''}
+          
+          <p class="message">${message}</p>
+          
+          ${status === "approved" ? `
+          <a href="https://showblox-soleia.lovable.app/admin" class="cta">
+            Go to Portal →
+          </a>
+          ` : ''}
+        </div>
+        
         <div class="footer">
-          ShowBlox Creative Management System
+          <div class="footer-text">ShowBlox Creative Management System</div>
         </div>
       </div>
     </body>
@@ -194,7 +373,7 @@ function createHtmlResponse(title: string, message: string, success: boolean): R
   `;
 
   return new Response(html, {
-    status: success ? 200 : 400,
+    status: status === "error" ? 400 : 200,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       ...corsHeaders,
