@@ -72,9 +72,10 @@ export default function AdminLooks() {
               </h1>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => navigate('/admin')}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+                className="text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 w-8"
+                aria-label="Go to admin portal"
               >
                 <Settings className="w-4 h-4" />
               </Button>
