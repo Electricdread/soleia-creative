@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Loader2, LogOut, ExternalLink, Clock, Command } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users } from 'lucide-react';
 import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
 import showbloxIcon from '@/assets/showblox-icon.png';
 import soleiaIcon from '@/assets/sol-icon.png';
@@ -13,7 +13,8 @@ const OPERATOR_EMAIL = 'luisdreams@me.com';
 interface PortalCard {
   title: string;
   description: string;
-  iconSrc: string;
+  iconSrc?: string;
+  icon?: React.ReactNode;
   href: string;
   external?: boolean;
 }
@@ -36,6 +37,12 @@ const portals: PortalCard[] = [
     description: 'Technical specifications and venue display documentation',
     iconSrc: soleiaIcon,
     href: '/creative-guide',
+  },
+  {
+    title: 'User Management',
+    description: 'Approve or reject new user access requests',
+    icon: <Users className="w-6 h-6 text-zinc-400" />,
+    href: '/admin/users',
   },
 ];
 
@@ -220,11 +227,17 @@ export default function AdminPortal() {
             >
               {/* Icon */}
               <div className="w-14 h-14 rounded-lg bg-white/5 border border-zinc-700 flex items-center justify-center mb-5 group-hover:bg-white/10 group-hover:border-zinc-600 transition-colors overflow-hidden">
-                <img 
-                  src={portal.iconSrc} 
-                  alt={portal.title} 
-                  className="w-10 h-10 object-contain group-hover:scale-110 transition-transform"
-                />
+                {portal.iconSrc ? (
+                  <img 
+                    src={portal.iconSrc} 
+                    alt={portal.title} 
+                    className="w-10 h-10 object-contain group-hover:scale-110 transition-transform"
+                  />
+                ) : portal.icon ? (
+                  <div className="group-hover:scale-110 transition-transform">
+                    {portal.icon}
+                  </div>
+                ) : null}
               </div>
 
               {/* Title */}
