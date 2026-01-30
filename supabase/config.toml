@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.analyze-circleback]
 verify_jwt = false
+
+[functions.scrape-creative-gallery]
+verify_jwt = false
