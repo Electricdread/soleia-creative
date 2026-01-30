@@ -8,7 +8,8 @@ import { BulkImportForm } from './BulkImportForm';
 import { ClipManager } from './ClipManager';
 import { BatchVideoUploader } from './BatchVideoUploader';
 import { ClientLinkManager } from './ClientLinkManager';
-import { Settings, Plus, List, Upload, Video, Link2 } from 'lucide-react';
+import { CreativeSessionManager } from './CreativeSessionManager';
+import { Settings, Plus, List, Upload, Video, Link2, Palette } from 'lucide-react';
 
 export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -38,6 +39,13 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
                 >
                   <Link2 className="h-4 w-4" />
                   <span className="text-xs sm:text-sm">Sessions</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="creative" 
+                  className="gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 data-[state=active]:bg-primary/10 rounded-lg whitespace-nowrap"
+                >
+                  <Palette className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm">Creative</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="upload" 
@@ -76,6 +84,10 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
           <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             <TabsContent value="sessions" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
               <ClientLinkManager />
+            </TabsContent>
+            
+            <TabsContent value="creative" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <CreativeSessionManager />
             </TabsContent>
             
             <TabsContent value="upload" className="mt-0 focus-visible:outline-none focus-visible:ring-0">

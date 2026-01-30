@@ -95,6 +95,51 @@ export type Database = {
         }
         Relationships: []
       }
+      creative_sessions: {
+        Row: {
+          circleback_summary: string | null
+          circleback_url: string | null
+          client_name: string
+          created_at: string
+          created_by: string | null
+          creative_notes: string | null
+          id: string
+          is_active: boolean
+          project_name: string
+          technical_notes: string | null
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          circleback_summary?: string | null
+          circleback_url?: string | null
+          client_name: string
+          created_at?: string
+          created_by?: string | null
+          creative_notes?: string | null
+          id?: string
+          is_active?: boolean
+          project_name: string
+          technical_notes?: string | null
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          circleback_summary?: string | null
+          circleback_url?: string | null
+          client_name?: string
+          created_at?: string
+          created_by?: string | null
+          creative_notes?: string | null
+          id?: string
+          is_active?: boolean
+          project_name?: string
+          technical_notes?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       link_clips: {
         Row: {
           clip_id: string
@@ -174,6 +219,133 @@ export type Database = {
             columns: ["link_id"]
             isOneToOne: false
             referencedRelation: "client_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mood_board_comments: {
+        Row: {
+          commenter_name: string
+          content: string
+          created_at: string
+          id: string
+          item_id: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          commenter_name: string
+          content: string
+          created_at?: string
+          id?: string
+          item_id: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          commenter_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mood_board_comments_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "mood_board_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mood_board_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "mood_board_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mood_board_items: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          description: string | null
+          file_url: string | null
+          id: string
+          item_type: string
+          session_id: string
+          sort_order: number | null
+          thumbnail_url: string | null
+          title: string | null
+          url: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          item_type: string
+          session_id: string
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          item_type?: string
+          session_id?: string
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mood_board_items_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "creative_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mood_board_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          reaction_type: string
+          reactor_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          reaction_type: string
+          reactor_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          reaction_type?: string
+          reactor_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mood_board_reactions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "mood_board_items"
             referencedColumns: ["id"]
           },
         ]
