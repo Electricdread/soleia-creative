@@ -17,6 +17,7 @@ import AdminCreative from "./pages/AdminCreative";
 import AdminLooks from "./pages/AdminLooks";
 import AdminUsers from "./pages/AdminUsers";
 import OfficePortal from "./pages/OfficePortal";
+import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,8 +31,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Public Route - Login */}
+              {/* Public Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/tutorial" element={<Tutorial />} />
               
               {/* Root redirects to Admin Portal */}
               <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
