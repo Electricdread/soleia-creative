@@ -112,14 +112,11 @@ export function FeaturedImageSelector({
                   className="w-full h-full object-cover"
                 />
                 
-                {/* Overlay */}
-                <div className={cn(
-                  "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity",
-                  isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                )}>
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-xs font-tech uppercase tracking-wider text-white">{image.theme}</p>
-                  </div>
+                {/* Theme label - minimal, no overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-2">
+                  <span className="text-[10px] font-tech uppercase tracking-wider text-white bg-black/60 px-2 py-0.5 rounded">
+                    {image.theme}
+                  </span>
                 </div>
 
                 {/* Selection indicator */}
@@ -179,11 +176,9 @@ export function FeaturedImageSelector({
                       alt={image.theme}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute top-1 left-1">
-                      <Badge className="bg-pink-500 text-white font-tech text-[10px] px-1.5 py-0">
-                        {idx + 1}
-                      </Badge>
-                    </div>
+                    <Badge className="absolute top-1 left-1 bg-pink-500 text-white font-tech text-[10px] px-1.5 py-0">
+                      {idx + 1}
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -229,10 +224,9 @@ export function FeaturedImagesPreview({ images }: { images: CoverImage[] }) {
             alt={image.theme}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          <span className="absolute bottom-0.5 left-1 text-[8px] font-tech text-pink-300">
+          <Badge className="absolute bottom-0.5 left-1 bg-pink-500/80 text-white font-tech text-[8px] px-1 py-0">
             {idx + 1}
-          </span>
+          </Badge>
         </div>
       ))}
     </div>

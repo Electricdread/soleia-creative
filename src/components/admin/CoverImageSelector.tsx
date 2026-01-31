@@ -72,14 +72,11 @@ export function CoverImageSelector({ images, selectedImage, onSelect }: CoverIma
                   className="w-full h-full object-cover"
                 />
                 
-                {/* Overlay */}
-                <div className={cn(
-                  "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity",
-                  isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                )}>
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-xs font-tech uppercase tracking-wider text-white">{image.theme}</p>
-                  </div>
+                {/* Theme label - minimal, no overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-2">
+                  <span className="text-[10px] font-tech uppercase tracking-wider text-white bg-black/60 px-2 py-0.5 rounded">
+                    {image.theme}
+                  </span>
                 </div>
 
                 {/* Selected indicator */}
@@ -103,9 +100,8 @@ export function CoverImageSelector({ images, selectedImage, onSelect }: CoverIma
                 alt={selectedImage.theme}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-4 left-4">
-                <p className="text-sm font-tech uppercase tracking-wider text-amber-400">{selectedImage.theme}</p>
+              <div className="absolute bottom-3 left-3">
+                <span className="text-xs font-tech uppercase tracking-wider text-amber-400 bg-black/60 px-2 py-1 rounded">{selectedImage.theme}</span>
               </div>
             </div>
           </div>
@@ -127,12 +123,11 @@ export function CoverImagePreview({ image, onClick }: { image: CoverImage; onCli
         alt={image.theme}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-        <span className="text-[10px] font-tech uppercase tracking-wider text-amber-400 bg-black/50 px-2 py-0.5 rounded">
+        <span className="text-[10px] font-tech uppercase tracking-wider text-amber-400 bg-black/60 px-2 py-0.5 rounded">
           {image.theme}
         </span>
-        <span className="text-[10px] font-tech text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-[10px] font-tech text-zinc-400 bg-black/60 px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
           Click to change
         </span>
       </div>
