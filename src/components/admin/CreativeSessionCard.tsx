@@ -3,14 +3,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, BookOpen, ImageIcon } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, BookOpen, ImageIcon, Images } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { CoverPageGenerator } from './CoverPageGenerator';
 import { TechnicalBriefingArticle } from './TechnicalBriefingArticle';
 import { CoverImageSelector, CoverImagePreview } from './CoverImageSelector';
+import { FeaturedImageSelector, FeaturedImagesPreview } from './FeaturedImageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+
 interface CoverImage {
   url: string;
   theme: string;
@@ -48,6 +50,7 @@ interface CreativeSession {
   cover_images?: CoverImage[] | null;
   cover_themes?: string[] | null;
   cover_generated_at?: string | null;
+  featured_images?: CoverImage[] | null;
 }
 
 interface CreativeSessionCardProps {
@@ -120,6 +123,9 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [selectedCoverImage, setSelectedCoverImage] = useState<CoverImage | null>(
     (session.cover_images as CoverImage[])?.find(img => img.url) || null
   );
+  const [featuredImages, setFeaturedImages] = useState<CoverImage[]>(
+    (session.featured_images as CoverImage[]) || []
+  );
   const [strategicBrief, setStrategicBrief] = useState<StrategicBrief | null>(
     parseStrategicBrief(session.circleback_summary)
   );
@@ -167,6 +173,23 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
       console.error(error);
     } else {
       toast.success('Cover image selected');
+      onSessionUpdate?.();
+    }
+  };
+
+  const handleFeaturedImagesSelect = async (images: CoverImage[]) => {
+    setFeaturedImages(images);
+    
+    const { error } = await supabase
+      .from('creative_sessions')
+      .update({ featured_images: images as unknown as Json })
+      .eq('id', session.id);
+
+    if (error) {
+      toast.error('Failed to save featured images');
+      console.error(error);
+    } else {
+      toast.success(`${images.length} image${images.length !== 1 ? 's' : ''} selected for editorial`);
       onSessionUpdate?.();
     }
   };
@@ -301,6 +324,26 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                       selectedImage={selectedCoverImage}
                       onSelect={handleCoverImageSelect}
                     />
+                  </div>
+                )}
+
+                {/* Featured Images Selector for Editorial */}
+                {coverImages.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-zinc-700/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-tech uppercase tracking-widest text-pink-400 flex items-center gap-1.5">
+                        <Images className="h-3 w-3" />
+                        Editorial Images
+                      </span>
+                    </div>
+                    <FeaturedImageSelector
+                      images={coverImages}
+                      featuredImages={featuredImages}
+                      onSelect={handleFeaturedImagesSelect}
+                    />
+                    {featuredImages.length > 0 && (
+                      <FeaturedImagesPreview images={featuredImages} />
+                    )}
                   </div>
                 )}
 

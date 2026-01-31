@@ -27,6 +27,7 @@ interface CreativeSessionData {
   creative_notes: string | null;
   created_at: string;
   cover_images?: CoverImage[] | null;
+  featured_images?: CoverImage[] | null;
 }
 
 interface MoodBoardItemData {
@@ -103,10 +104,11 @@ export default function CreativeSession() {
       return;
     }
 
-    // Cast cover_images properly
+    // Cast cover_images and featured_images properly
     const sessionData: CreativeSessionData = {
       ...data,
       cover_images: data.cover_images as unknown as CoverImage[] | null,
+      featured_images: data.featured_images as unknown as CoverImage[] | null,
     };
 
     setSession(sessionData);
