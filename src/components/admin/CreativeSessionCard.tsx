@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, BookOpen, ImageIcon, Images, ZoomIn } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, BookOpen, ImageIcon, Images, ZoomIn, Globe, Lock, Pencil, Check, X } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { CoverPageGenerator } from './CoverPageGenerator';
 import { TechnicalBriefingArticle } from './TechnicalBriefingArticle';
@@ -48,6 +50,7 @@ interface CreativeSession {
   creative_notes: string | null;
   created_at: string;
   is_active: boolean;
+  is_public?: boolean;
   cover_images?: CoverImage[] | null;
   cover_themes?: string[] | null;
   cover_generated_at?: string | null;
@@ -131,6 +134,10 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [strategicBrief, setStrategicBrief] = useState<StrategicBrief | null>(
     parseStrategicBrief(session.circleback_summary)
   );
+  const [isPublic, setIsPublic] = useState(session.is_public ?? false);
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [editedCreativeNotes, setEditedCreativeNotes] = useState(session.creative_notes || '');
+  const [savingNotes, setSavingNotes] = useState(false);
   
   const sessionDate = new Date(session.created_at);
   const expirationDate = addDays(sessionDate, 21);
@@ -196,6 +203,48 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     }
   };
 
+  const handlePublicToggle = async (checked: boolean) => {
+    setIsPublic(checked);
+    
+    const { error } = await supabase
+      .from('creative_sessions')
+      .update({ is_public: checked })
+      .eq('id', session.id);
+
+    if (error) {
+      toast.error('Failed to update visibility');
+      setIsPublic(!checked);
+      console.error(error);
+    } else {
+      toast.success(checked ? 'Session is now public' : 'Session is now private');
+      onSessionUpdate?.();
+    }
+  };
+
+  const handleSaveCreativeNotes = async () => {
+    setSavingNotes(true);
+    
+    const { error } = await supabase
+      .from('creative_sessions')
+      .update({ creative_notes: editedCreativeNotes.trim() || null })
+      .eq('id', session.id);
+
+    if (error) {
+      toast.error('Failed to save notes');
+      console.error(error);
+    } else {
+      toast.success('Creative notes saved');
+      setIsEditingNotes(false);
+      onSessionUpdate?.();
+    }
+    setSavingNotes(false);
+  };
+
+  const handleCancelEditNotes = () => {
+    setEditedCreativeNotes(session.creative_notes || '');
+    setIsEditingNotes(false);
+  };
+
   // Show briefing automatically if we have a strategic brief
   useEffect(() => {
     if (strategicBrief && coverImages.length > 0) {
@@ -235,11 +284,30 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                       {session.project_name}
                     </h3>
                     
-                    {/* Client Badge */}
-                    <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 font-tech uppercase text-xs tracking-wider h-6">
-                      <Users className="h-3 w-3 mr-1.5" />
-                      {session.client_name}
-                    </Badge>
+                    {/* Client Badge + Visibility */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 font-tech uppercase text-xs tracking-wider h-6">
+                        <Users className="h-3 w-3 mr-1.5" />
+                        {session.client_name}
+                      </Badge>
+                      
+                      {/* Public/Private Toggle */}
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={isPublic}
+                          onCheckedChange={handlePublicToggle}
+                          className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-amber-500/50"
+                        />
+                        <Badge className={`font-tech uppercase text-[10px] tracking-wider h-5 ${
+                          isPublic 
+                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' 
+                            : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                        }`}>
+                          {isPublic ? <Globe className="h-3 w-3 mr-1" /> : <Lock className="h-3 w-3 mr-1" />}
+                          {isPublic ? 'Public' : 'Private'}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -375,6 +443,64 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                   </div>
                 )}
 
+                {/* Quick Creative Notes Editor */}
+                <div className="mt-3 pt-3 border-t border-zinc-700/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-tech uppercase tracking-widest text-pink-400 flex items-center gap-1.5">
+                      <Palette className="h-3 w-3" />
+                      Creative Notes
+                    </span>
+                    {!isEditingNotes && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditingNotes(true)}
+                        className="h-6 px-2 text-[10px] text-pink-400 hover:text-pink-300 hover:bg-pink-500/10 font-tech uppercase tracking-wider"
+                      >
+                        <Pencil className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                  {isEditingNotes ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={editedCreativeNotes}
+                        onChange={(e) => setEditedCreativeNotes(e.target.value)}
+                        placeholder="Brand colors, mood, style direction..."
+                        className="bg-black/50 border-pink-500/30 text-white placeholder:text-zinc-600 focus:border-pink-500 focus:ring-pink-500/20 font-tech text-xs min-h-[80px]"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSaveCreativeNotes}
+                          disabled={savingNotes}
+                          className="h-7 px-2 bg-pink-500 hover:bg-pink-600 text-white font-tech text-[10px] uppercase"
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleCancelEditNotes}
+                          disabled={savingNotes}
+                          className="h-7 px-2 text-zinc-400 hover:text-white font-tech text-[10px] uppercase"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : session.creative_notes ? (
+                    <p className="text-xs font-tech text-zinc-400 leading-relaxed whitespace-pre-wrap bg-pink-500/5 border border-pink-500/20 rounded-lg p-2">
+                      {session.creative_notes}
+                    </p>
+                  ) : (
+                    <p className="text-xs font-tech text-zinc-600 italic">No creative notes yet. Click Edit to add.</p>
+                  )}
+                </div>
+
                 {/* Toggle Briefing View Button */}
                 {strategicBrief && coverImages.length > 0 && (
                   <Button
@@ -481,15 +607,59 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                       </div>
                     )}
                     
-                    {session.creative_notes && (
+                    {(session.creative_notes || isEditingNotes) && (
                       <div className="bg-pink-500/5 border border-pink-500/20 rounded-lg p-3">
-                        <h4 className="text-[10px] font-tech uppercase tracking-widest text-pink-400 mb-2 flex items-center gap-1.5">
-                          <Palette className="h-3 w-3" />
-                          Creative Notes
+                        <h4 className="text-[10px] font-tech uppercase tracking-widest text-pink-400 mb-2 flex items-center justify-between">
+                          <span className="flex items-center gap-1.5">
+                            <Palette className="h-3 w-3" />
+                            Creative Notes
+                          </span>
+                          {!isEditingNotes && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setIsEditingNotes(true)}
+                              className="h-5 px-1.5 text-pink-400 hover:text-pink-300 hover:bg-pink-500/10"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          )}
                         </h4>
-                        <p className="text-xs font-tech text-zinc-400 leading-relaxed whitespace-pre-wrap">
-                          {session.creative_notes}
-                        </p>
+                        {isEditingNotes ? (
+                          <div className="space-y-2">
+                            <Textarea
+                              value={editedCreativeNotes}
+                              onChange={(e) => setEditedCreativeNotes(e.target.value)}
+                              placeholder="Brand colors, mood, style direction..."
+                              className="bg-black/50 border-pink-500/30 text-white placeholder:text-zinc-600 focus:border-pink-500 focus:ring-pink-500/20 font-tech text-xs min-h-[80px]"
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={handleSaveCreativeNotes}
+                                disabled={savingNotes}
+                                className="h-7 px-2 bg-pink-500 hover:bg-pink-600 text-white font-tech text-[10px] uppercase"
+                              >
+                                <Check className="h-3 w-3 mr-1" />
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={handleCancelEditNotes}
+                                disabled={savingNotes}
+                                className="h-7 px-2 text-zinc-400 hover:text-white font-tech text-[10px] uppercase"
+                              >
+                                <X className="h-3 w-3 mr-1" />
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs font-tech text-zinc-400 leading-relaxed whitespace-pre-wrap">
+                            {session.creative_notes}
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
