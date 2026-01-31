@@ -112,6 +112,7 @@ export type Database = {
           featured_images: Json | null
           id: string
           is_active: boolean
+          is_public: boolean
           project_name: string
           technical_notes: string | null
           token: string
@@ -130,6 +131,7 @@ export type Database = {
           featured_images?: Json | null
           id?: string
           is_active?: boolean
+          is_public?: boolean
           project_name: string
           technical_notes?: string | null
           token: string
@@ -148,6 +150,7 @@ export type Database = {
           featured_images?: Json | null
           id?: string
           is_active?: boolean
+          is_public?: boolean
           project_name?: string
           technical_notes?: string | null
           token?: string

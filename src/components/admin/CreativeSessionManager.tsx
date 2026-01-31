@@ -24,6 +24,7 @@ interface CreativeSession {
   creative_notes: string | null;
   created_at: string;
   is_active: boolean;
+  is_public?: boolean;
   cover_images?: CoverImage[] | null;
   cover_themes?: string[] | null;
   cover_generated_at?: string | null;
