@@ -1,9 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   FileText, Target, Lightbulb, CheckCircle2, Calendar, 
-  Layers, Clock, Newspaper, Sparkles
+  Layers, Clock, Newspaper, Sparkles, ArrowLeft
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -332,6 +333,18 @@ export function EditorialBriefingModal({ open, onOpenChange, session }: Editoria
                 </p>
               </div>
             )}
+
+            {/* Back to Session Button */}
+            <div className="pt-6 border-t border-zinc-800">
+              <Button 
+                onClick={() => onOpenChange(false)}
+                variant="outline"
+                className="w-full sm:w-auto bg-zinc-900 border-zinc-700 hover:bg-zinc-800 hover:border-cyan-500/50 text-zinc-200 font-tech"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Session
+              </Button>
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>
