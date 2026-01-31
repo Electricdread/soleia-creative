@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ExternalLink, ChevronDown, FileText, Palette, Wrench, Calendar, Target, Lightbulb, CheckCircle2, BookOpen, Newspaper } from 'lucide-react';
+import { ExternalLink, ChevronDown, FileText, Palette, Wrench, Calendar, Target, Lightbulb, CheckCircle2, BookOpen, Newspaper, Images } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
@@ -40,6 +40,7 @@ interface CreativeSessionCoverProps {
     creative_notes: string | null;
     created_at: string;
     cover_images?: CoverImage[] | null;
+    featured_images?: CoverImage[] | null;
   };
 }
 
@@ -93,14 +94,111 @@ function getHighlightClass(type: string | null) {
   }
 }
 
+// Editorial Image Grid Component
+function EditorialImageGrid({ images, headline }: { images: CoverImage[]; headline?: string }) {
+  if (images.length === 0) return null;
+
+  // For 1 image: full width hero
+  if (images.length === 1) {
+    return (
+      <div className="relative aspect-[21/9] rounded-xl overflow-hidden mb-6">
+        <img 
+          src={images[0].url} 
+          alt={images[0].theme}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/30 to-transparent" />
+        <div className="absolute bottom-4 left-4">
+          <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30 font-tech text-[10px] uppercase tracking-widest">
+            {images[0].theme}
+          </Badge>
+        </div>
+        {headline && (
+          <h2 className="absolute bottom-4 right-4 text-xl sm:text-2xl font-tech font-bold text-white text-right max-w-[60%] leading-tight">
+            {headline}
+          </h2>
+        )}
+      </div>
+    );
+  }
+
+  // For 2 images: side by side
+  if (images.length === 2) {
+    return (
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {images.map((img, idx) => (
+          <div key={idx} className="relative aspect-video rounded-xl overflow-hidden">
+            <img 
+              src={img.url} 
+              alt={img.theme}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <div className="absolute bottom-3 left-3">
+              <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30 font-tech text-[10px] uppercase tracking-widest">
+                {img.theme}
+              </Badge>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // For 3 images: 1 large hero + 2 smaller
+  return (
+    <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="col-span-2 relative aspect-[16/9] rounded-xl overflow-hidden">
+        <img 
+          src={images[0].url} 
+          alt={images[0].theme}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/20 to-transparent" />
+        <div className="absolute bottom-3 left-3">
+          <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30 font-tech text-[10px] uppercase tracking-widest">
+            {images[0].theme}
+          </Badge>
+        </div>
+        {headline && (
+          <h2 className="absolute bottom-3 right-3 text-lg sm:text-xl font-tech font-bold text-white text-right max-w-[60%] leading-tight">
+            {headline}
+          </h2>
+        )}
+      </div>
+      <div className="flex flex-col gap-3">
+        {images.slice(1, 3).map((img, idx) => (
+          <div key={idx} className="relative flex-1 rounded-xl overflow-hidden min-h-0">
+            <img 
+              src={img.url} 
+              alt={img.theme}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <div className="absolute bottom-2 left-2">
+              <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30 font-tech text-[8px] sm:text-[10px] uppercase tracking-widest">
+                {img.theme}
+              </Badge>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const strategicBrief = parseStrategicBrief(session.circleback_summary);
   const isLegacySummary = session.circleback_summary && !strategicBrief;
   const parsedEditorial = isLegacySummary ? parseEditorialContent(session.circleback_summary!) : [];
   
-  // Get the selected cover image (first one in array)
+  // Get the selected cover image (first one in array) for hero
   const coverImage = (session.cover_images as CoverImage[] | null)?.[0] || null;
+  
+  // Get featured images for editorial (or fallback to cover_images)
+  const featuredImages = (session.featured_images as CoverImage[] | null) || [];
+  const hasFeaturedImages = featuredImages.length > 0;
 
   return (
     <Card className="border-zinc-800 bg-zinc-900/80 backdrop-blur-sm overflow-hidden font-tech">
@@ -181,15 +279,25 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
         
         <CollapsibleContent>
           <CardContent className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 px-3 sm:px-6">
+            {/* Featured Editorial Images */}
+            {hasFeaturedImages && (
+              <EditorialImageGrid 
+                images={featuredImages} 
+                headline={strategicBrief?.headline}
+              />
+            )}
+
             {/* Strategic Brief (AI-generated structured format) */}
             {strategicBrief && (
               <div className="space-y-4">
-                {/* Headline */}
-                <div className="border-l-2 border-amber-500 pl-4">
-                  <h2 className="text-lg sm:text-xl font-tech font-bold text-white leading-tight">
-                    {strategicBrief.headline}
-                  </h2>
-                </div>
+                {/* Headline - only show if no featured images (it's in the grid otherwise) */}
+                {!hasFeaturedImages && (
+                  <div className="border-l-2 border-amber-500 pl-4">
+                    <h2 className="text-lg sm:text-xl font-tech font-bold text-white leading-tight">
+                      {strategicBrief.headline}
+                    </h2>
+                  </div>
+                )}
 
                 {/* Executive Summary */}
                 {strategicBrief.executiveSummary && (

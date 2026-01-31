@@ -106,6 +106,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           creative_notes: string | null
+          featured_images: Json | null
           id: string
           is_active: boolean
           project_name: string
@@ -123,6 +124,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           creative_notes?: string | null
+          featured_images?: Json | null
           id?: string
           is_active?: boolean
           project_name: string
@@ -140,6 +142,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           creative_notes?: string | null
+          featured_images?: Json | null
           id?: string
           is_active?: boolean
           project_name?: string
