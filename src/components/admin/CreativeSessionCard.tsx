@@ -3,12 +3,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, BookOpen, ImageIcon, Images } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, ChevronDown, Users, Clock, FileText, Wrench, Palette, BookOpen, ImageIcon, Images, ZoomIn } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { CoverPageGenerator } from './CoverPageGenerator';
 import { TechnicalBriefingArticle } from './TechnicalBriefingArticle';
 import { CoverImageSelector, CoverImagePreview } from './CoverImageSelector';
 import { FeaturedImageSelector, FeaturedImagesPreview } from './FeaturedImageSelector';
+import { EditorialBriefingModal } from '@/components/creative/EditorialBriefingModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
@@ -117,6 +118,7 @@ function getHighlightClass(type: string | null) {
 export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOpen, onSessionUpdate }: CreativeSessionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showBriefing, setShowBriefing] = useState(false);
+  const [isBriefingModalOpen, setIsBriefingModalOpen] = useState(false);
   const [coverImages, setCoverImages] = useState<CoverImage[]>(
     (session.cover_images as CoverImage[]) || []
   );
@@ -282,7 +284,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                   </a>
                 )}
 
-                {/* Selected Cover Image Preview */}
+                {/* Selected Cover Image Preview - Clickable for Briefing */}
                 {selectedCoverImage && (
                   <div className="mt-4 pt-4 border-t border-zinc-700/30">
                     <div className="flex items-center justify-between mb-2">
@@ -296,9 +298,35 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                         onSelect={handleCoverImageSelect}
                       />
                     </div>
-                    <CoverImagePreview image={selectedCoverImage} />
+                    <div 
+                      className="relative cursor-pointer group"
+                      onClick={() => setIsBriefingModalOpen(true)}
+                    >
+                      <CoverImagePreview image={selectedCoverImage} />
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-lg">
+                        <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center gap-2 border border-zinc-700">
+                          <ZoomIn className="h-4 w-4 text-amber-400" />
+                          <span className="text-xs font-tech uppercase tracking-wider text-white">View Briefing</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
+                
+                {/* Editorial Briefing Modal */}
+                <EditorialBriefingModal
+                  open={isBriefingModalOpen}
+                  onOpenChange={setIsBriefingModalOpen}
+                  session={{
+                    project_name: session.project_name,
+                    client_name: session.client_name,
+                    circleback_summary: session.circleback_summary,
+                    created_at: session.created_at,
+                    cover_images: coverImages,
+                    featured_images: featuredImages,
+                  }}
+                />
 
                 {/* Cover Image Generator */}
                 <div className="mt-4 pt-4 border-t border-zinc-700/30">
