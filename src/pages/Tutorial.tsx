@@ -111,65 +111,7 @@ function WorkflowStep({ number, title, description, details, color, isLast = fal
 function CreativeSessionsSection() {
   return (
     <div className="space-y-16">
-      {/* Features Grid */}
-      <div>
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-2xl font-tech font-bold uppercase tracking-wider text-white mb-2">Core Features</h2>
-          <p className="text-zinc-500 font-tech text-sm uppercase tracking-widest">Internal collaboration tools</p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <FeatureCard
-            icon={<Zap className="w-6 h-6 text-white" />}
-            title="Creative Sessions"
-            description="Time-boxed collaborative workspaces for each project. Sessions include mood boards, briefings, and AI-generated cover art."
-            color="bg-gradient-to-br from-cyan-500 to-blue-600"
-            delay={0}
-          />
-          <FeatureCard
-            icon={<Layout className="w-6 h-6 text-white" />}
-            title="Mood Boards"
-            description="Curate and organize visual references, videos, and inspiration. Supports drag-and-drop uploads and social media embeds."
-            color="bg-gradient-to-br from-purple-500 to-pink-600"
-            delay={0.1}
-          />
-          <FeatureCard
-            icon={<Sparkles className="w-6 h-6 text-white" />}
-            title="AI Cover Generation"
-            description="Generate themed cover images using AI based on project details and creative notes. Multiple themes available per session."
-            color="bg-gradient-to-br from-amber-500 to-orange-600"
-            delay={0.2}
-          />
-          <FeatureCard
-            icon={<FileText className="w-6 h-6 text-white" />}
-            title="Technical Briefings"
-            description="AI-powered transcript analysis extracts key points, deadlines, and action items from meeting recordings."
-            color="bg-gradient-to-br from-emerald-500 to-teal-600"
-            delay={0.3}
-          />
-          <FeatureCard
-            icon={<MessageSquare className="w-6 h-6 text-white" />}
-            title="Reactions & Comments"
-            description="Real-time collaboration with emoji reactions and threaded comments on mood board items."
-            color="bg-gradient-to-br from-rose-500 to-red-600"
-            delay={0.4}
-          />
-          <FeatureCard
-            icon={<Share2 className="w-6 h-6 text-white" />}
-            title="Shareable Links"
-            description="Generate unique session links for client collaboration. Links auto-expire after 21 days for security."
-            color="bg-gradient-to-br from-indigo-500 to-violet-600"
-            delay={0.5}
-          />
-        </div>
-      </div>
-
-      {/* Workflow */}
+      {/* Workflow - Now First */}
       <div className="bg-zinc-900/30 rounded-3xl p-8 md:p-12">
         <motion.div
           initial={{ opacity: 0 }}
@@ -288,6 +230,64 @@ function CreativeSessionsSection() {
           ))}
         </div>
       </div>
+
+      {/* Features Grid - Now at Bottom */}
+      <div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-2xl font-tech font-bold uppercase tracking-wider text-white mb-2">Core Features</h2>
+          <p className="text-zinc-500 font-tech text-sm uppercase tracking-widest">Internal collaboration tools</p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <FeatureCard
+            icon={<Zap className="w-6 h-6 text-white" />}
+            title="Creative Sessions"
+            description="Time-boxed collaborative workspaces for each project. Sessions include mood boards, briefings, and AI-generated cover art."
+            color="bg-gradient-to-br from-cyan-500 to-blue-600"
+            delay={0}
+          />
+          <FeatureCard
+            icon={<Layout className="w-6 h-6 text-white" />}
+            title="Mood Boards"
+            description="Curate and organize visual references, videos, and inspiration. Supports drag-and-drop uploads and social media embeds."
+            color="bg-gradient-to-br from-purple-500 to-pink-600"
+            delay={0.1}
+          />
+          <FeatureCard
+            icon={<Sparkles className="w-6 h-6 text-white" />}
+            title="AI Cover Generation"
+            description="Generate themed cover images using AI based on project details and creative notes. Multiple themes available per session."
+            color="bg-gradient-to-br from-amber-500 to-orange-600"
+            delay={0.2}
+          />
+          <FeatureCard
+            icon={<FileText className="w-6 h-6 text-white" />}
+            title="Technical Briefings"
+            description="AI-powered transcript analysis extracts key points, deadlines, and action items from meeting recordings."
+            color="bg-gradient-to-br from-emerald-500 to-teal-600"
+            delay={0.3}
+          />
+          <FeatureCard
+            icon={<MessageSquare className="w-6 h-6 text-white" />}
+            title="Reactions & Comments"
+            description="Real-time collaboration with emoji reactions and threaded comments on mood board items."
+            color="bg-gradient-to-br from-rose-500 to-red-600"
+            delay={0.4}
+          />
+          <FeatureCard
+            icon={<Share2 className="w-6 h-6 text-white" />}
+            title="Shareable Links"
+            description="Generate unique session links for client collaboration. Links auto-expire after 21 days for security."
+            color="bg-gradient-to-br from-indigo-500 to-violet-600"
+            delay={0.5}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -315,53 +315,7 @@ function LooksCollectionSection() {
         </motion.div>
       </div>
 
-      {/* Features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <FeatureCard
-          icon={<Grid className="w-6 h-6 text-white" />}
-          title="Featured Collections"
-          description="Curated motion graphics organized by category. The 'Featured Collections' tab is the default view for clients."
-          color="bg-gradient-to-br from-amber-500 to-orange-600"
-          delay={0}
-        />
-        <FeatureCard
-          icon={<Eye className="w-6 h-6 text-white" />}
-          title="Video Previews"
-          description="Each clip includes thumbnail previews, hover-to-play functionality, and fullscreen viewing with playback controls."
-          color="bg-gradient-to-br from-amber-600 to-yellow-500"
-          delay={0.1}
-        />
-        <FeatureCard
-          icon={<Check className="w-6 h-6 text-white" />}
-          title="Selection System"
-          description="Clients can select clips and assign them to specific venue screens. Selections are saved and shareable."
-          color="bg-gradient-to-br from-yellow-500 to-amber-400"
-          delay={0.2}
-        />
-        <FeatureCard
-          icon={<MapPin className="w-6 h-6 text-white" />}
-          title="Screen Placement"
-          description="Interactive venue diagram allows assigning graphics to specific screens: TVs, LEDs, elevators, and tickers."
-          color="bg-gradient-to-br from-amber-400 to-orange-500"
-          delay={0.3}
-        />
-        <FeatureCard
-          icon={<Share2 className="w-6 h-6 text-white" />}
-          title="Shareable Links"
-          description="Generate client-specific gallery links with unique tokens. Links include all selections and placements."
-          color="bg-gradient-to-br from-orange-500 to-red-500"
-          delay={0.4}
-        />
-        <FeatureCard
-          icon={<FileText className="w-6 h-6 text-white" />}
-          title="Selection Summary"
-          description="Export selections as PDF reports showing all chosen clips organized by screen placement."
-          color="bg-gradient-to-br from-red-500 to-pink-500"
-          delay={0.5}
-        />
-      </div>
-
-      {/* Workflow */}
+      {/* Workflow - Now First */}
       <div className="bg-zinc-900/30 rounded-3xl p-8 md:p-12">
         <motion.div
           initial={{ opacity: 0 }}
@@ -467,6 +421,52 @@ function LooksCollectionSection() {
           ))}
         </div>
       </div>
+
+      {/* Features - Now at Bottom */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <FeatureCard
+          icon={<Grid className="w-6 h-6 text-white" />}
+          title="Featured Collections"
+          description="Curated motion graphics organized by category. The 'Featured Collections' tab is the default view for clients."
+          color="bg-gradient-to-br from-amber-500 to-orange-600"
+          delay={0}
+        />
+        <FeatureCard
+          icon={<Eye className="w-6 h-6 text-white" />}
+          title="Video Previews"
+          description="Each clip includes thumbnail previews, hover-to-play functionality, and fullscreen viewing with playback controls."
+          color="bg-gradient-to-br from-amber-600 to-yellow-500"
+          delay={0.1}
+        />
+        <FeatureCard
+          icon={<Check className="w-6 h-6 text-white" />}
+          title="Selection System"
+          description="Clients can select clips and assign them to specific venue screens. Selections are saved and shareable."
+          color="bg-gradient-to-br from-yellow-500 to-amber-400"
+          delay={0.2}
+        />
+        <FeatureCard
+          icon={<MapPin className="w-6 h-6 text-white" />}
+          title="Screen Placement"
+          description="Interactive venue diagram allows assigning graphics to specific screens: TVs, LEDs, elevators, and tickers."
+          color="bg-gradient-to-br from-amber-400 to-orange-500"
+          delay={0.3}
+        />
+        <FeatureCard
+          icon={<Share2 className="w-6 h-6 text-white" />}
+          title="Shareable Links"
+          description="Generate client-specific gallery links with unique tokens. Links include all selections and placements."
+          color="bg-gradient-to-br from-orange-500 to-red-500"
+          delay={0.4}
+        />
+        <FeatureCard
+          icon={<FileText className="w-6 h-6 text-white" />}
+          title="Selection Summary"
+          description="Export selections as PDF reports showing all chosen clips organized by screen placement."
+          color="bg-gradient-to-br from-red-500 to-pink-500"
+          delay={0.5}
+        />
+      </div>
     </div>
   );
 }
@@ -492,38 +492,6 @@ function CreativeGuideSection() {
             pixel mapping guides, and custom content submission requirements.
           </p>
         </motion.div>
-      </div>
-
-      {/* Main Sections */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FeatureCard
-          icon={<Map className="w-6 h-6 text-white" />}
-          title="Venue Screen Map"
-          description="Interactive floor plan showing physical screen locations. Click diagram segments to learn about each zone's specifications."
-          color="bg-gradient-to-br from-emerald-500 to-teal-600"
-          delay={0}
-        />
-        <FeatureCard
-          icon={<Layers className="w-6 h-6 text-white" />}
-          title="LED Zones"
-          description="Detailed breakdowns of interior and outdoor LED zones: main walls, architectural accents, arrival screens, and vertical displays."
-          color="bg-gradient-to-br from-teal-500 to-cyan-600"
-          delay={0.1}
-        />
-        <FeatureCard
-          icon={<Monitor className="w-6 h-6 text-white" />}
-          title="Display Specifications"
-          description="Technical requirements for each display type: TV, Elevator, LED Master, and Ticker. Includes resolution, codec, and frame rates."
-          color="bg-gradient-to-br from-cyan-500 to-blue-600"
-          delay={0.2}
-        />
-        <FeatureCard
-          icon={<Palette className="w-6 h-6 text-white" />}
-          title="Custom Content"
-          description="ShowBlox partnership details, content development pricing, 21-day submission timeline, and terms of service."
-          color="bg-gradient-to-br from-blue-500 to-indigo-600"
-          delay={0.3}
-        />
       </div>
 
       {/* Display Types */}
@@ -684,6 +652,38 @@ function CreativeGuideSection() {
             ))}
           </ul>
         </div>
+      </div>
+
+      {/* Main Sections - Now at Bottom */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FeatureCard
+          icon={<Map className="w-6 h-6 text-white" />}
+          title="Venue Screen Map"
+          description="Interactive floor plan showing physical screen locations. Click diagram segments to learn about each zone's specifications."
+          color="bg-gradient-to-br from-emerald-500 to-teal-600"
+          delay={0}
+        />
+        <FeatureCard
+          icon={<Layers className="w-6 h-6 text-white" />}
+          title="LED Zones"
+          description="Detailed breakdowns of interior and outdoor LED zones: main walls, architectural accents, arrival screens, and vertical displays."
+          color="bg-gradient-to-br from-teal-500 to-cyan-600"
+          delay={0.1}
+        />
+        <FeatureCard
+          icon={<Monitor className="w-6 h-6 text-white" />}
+          title="Display Specifications"
+          description="Technical requirements for each display type: TV, Elevator, LED Master, and Ticker. Includes resolution, codec, and frame rates."
+          color="bg-gradient-to-br from-cyan-500 to-blue-600"
+          delay={0.2}
+        />
+        <FeatureCard
+          icon={<Palette className="w-6 h-6 text-white" />}
+          title="Custom Content"
+          description="ShowBlox partnership details, content development pricing, 21-day submission timeline, and terms of service."
+          color="bg-gradient-to-br from-blue-500 to-indigo-600"
+          delay={0.3}
+        />
       </div>
     </div>
   );
