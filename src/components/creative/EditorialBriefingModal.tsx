@@ -146,15 +146,15 @@ export function EditorialBriefingModal({ open, onOpenChange, session }: Editoria
               </div>
             </div>
 
-            {/* Secondary Images Grid */}
+            {/* Secondary Images Grid - inline, no overlap */}
             {featuredImages.length > 1 && (
-              <div className="flex gap-2 px-6 -mt-8 relative z-10">
+              <div className="flex gap-2 px-6 pb-4">
                 {featuredImages.slice(1, 3).map((img, idx) => (
-                  <div key={idx} className="flex-1 aspect-video rounded-lg overflow-hidden border-2 border-zinc-800">
+                  <div key={idx} className="flex-1 aspect-video rounded-lg overflow-hidden border border-zinc-700 max-h-20">
                     <img 
                       src={img.url} 
                       alt={img.theme}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover pointer-events-none"
                     />
                   </div>
                 ))}
