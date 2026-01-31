@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ExternalLink, ChevronDown, FileText, Palette, Wrench, Calendar, Target, Lightbulb, CheckCircle2, BookOpen, Newspaper, Images } from 'lucide-react';
+import { ExternalLink, ChevronDown, FileText, Palette, Wrench, Calendar, Target, Lightbulb, CheckCircle2, BookOpen, Newspaper, Images, ZoomIn } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
+import { EditorialBriefingModal } from './EditorialBriefingModal';
 
 interface StrategicBrief {
   headline: string;
@@ -189,6 +190,7 @@ function EditorialImageGrid({ images, headline }: { images: CoverImage[]; headli
 
 export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isBriefingOpen, setIsBriefingOpen] = useState(false);
   const strategicBrief = parseStrategicBrief(session.circleback_summary);
   const isLegacySummary = session.circleback_summary && !strategicBrief;
   const parsedEditorial = isLegacySummary ? parseEditorialContent(session.circleback_summary!) : [];
@@ -199,18 +201,35 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
   // Get featured images for editorial (or fallback to cover_images)
   const featuredImages = (session.featured_images as CoverImage[] | null) || [];
   const hasFeaturedImages = featuredImages.length > 0;
+  
+  // Check if briefing content is available
+  const hasBriefingContent = session.circleback_summary || hasFeaturedImages;
 
   return (
     <Card className="border-zinc-800 bg-zinc-900/80 backdrop-blur-sm overflow-hidden font-tech">
-      {/* Cover Image Hero */}
+      {/* Cover Image Hero - Clickable for Briefing */}
       {coverImage && (
-        <div className="relative aspect-[21/9] overflow-hidden">
+        <div 
+          className={`relative aspect-[21/9] overflow-hidden ${hasBriefingContent ? 'cursor-pointer group' : ''}`}
+          onClick={() => hasBriefingContent && setIsBriefingOpen(true)}
+        >
           <img 
             src={coverImage.url} 
             alt={coverImage.theme}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-transform duration-500 ${hasBriefingContent ? 'group-hover:scale-105' : ''}`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
+          
+          {/* Hover Overlay for Briefing */}
+          {hasBriefingContent && (
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl px-6 py-4 flex items-center gap-3 border border-zinc-700">
+                <ZoomIn className="h-5 w-5 text-amber-400" />
+                <span className="text-sm font-tech uppercase tracking-wider text-white">View Briefing</span>
+              </div>
+            </div>
+          )}
+          
           <div className="absolute bottom-4 left-4 sm:left-6">
             <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 font-tech text-[10px] uppercase tracking-widest">
               {coverImage.theme}
@@ -218,6 +237,13 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
           </div>
         </div>
       )}
+      
+      {/* Editorial Briefing Modal */}
+      <EditorialBriefingModal
+        open={isBriefingOpen}
+        onOpenChange={setIsBriefingOpen}
+        session={session}
+      />
       
       <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
