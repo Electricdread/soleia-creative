@@ -71,6 +71,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean
+          is_public: boolean
           token: string
         }
         Insert: {
@@ -81,6 +82,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
+          is_public?: boolean
           token: string
         }
         Update: {
@@ -91,6 +93,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
+          is_public?: boolean
           token?: string
         }
         Relationships: []
