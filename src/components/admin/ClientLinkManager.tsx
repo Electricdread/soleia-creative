@@ -5,11 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock } from 'lucide-react';
 import { ClipSelector } from './ClipSelector';
 import { SessionUploadsViewer } from './SessionUploadsViewer';
 
@@ -20,6 +21,7 @@ interface ClientLink {
   event_name: string;
   event_date: string | null;
   is_active: boolean;
+  is_public: boolean;
   created_at: string;
   clip_count?: number;
   upload_count?: number;
@@ -30,6 +32,7 @@ export function ClientLinkManager() {
   const [clientName, setClientName] = useState('');
   const [eventName, setEventName] = useState('');
   const [eventDate, setEventDate] = useState<Date>();
+  const [isPublic, setIsPublic] = useState(false);
   const [selectedClipIds, setSelectedClipIds] = useState<string[]>([]);
   const [isClipSelectorOpen, setIsClipSelectorOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -122,6 +125,7 @@ export function ClientLinkManager() {
           client_name: clientName.trim(),
           event_name: eventName.trim(),
           event_date: eventDate ? format(eventDate, 'yyyy-MM-dd') : null,
+          is_public: isPublic,
         })
         .select()
         .single();
@@ -142,10 +146,11 @@ export function ClientLinkManager() {
         console.error('Error inserting clips:', clipError);
       }
 
-      setLinks(prev => [{ ...data, clip_count: selectedClipIds.length }, ...prev]);
+      setLinks(prev => [{ ...data, clip_count: selectedClipIds.length, upload_count: 0 }, ...prev]);
       setClientName('');
       setEventName('');
       setEventDate(undefined);
+      setIsPublic(false);
       setSelectedClipIds([]);
       setIsClipSelectorOpen(false);
 
@@ -261,6 +266,33 @@ export function ClientLinkManager() {
             </div>
           </div>
 
+          {/* Public/Private Toggle */}
+          <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-secondary/10">
+            <div className="flex items-center gap-3">
+              {isPublic ? (
+                <Globe className="w-5 h-5 text-emerald-500" />
+              ) : (
+                <Lock className="w-5 h-5 text-amber-500" />
+              )}
+              <div>
+                <Label htmlFor="public-toggle" className="font-medium cursor-pointer">
+                  {isPublic ? 'Public Link' : 'Private Link'}
+                </Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isPublic 
+                    ? 'Anyone with the link can access without login' 
+                    : 'Requires authentication to view'
+                  }
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="public-toggle"
+              checked={isPublic}
+              onCheckedChange={setIsPublic}
+            />
+          </div>
+
           {/* Clip Selector */}
           <div className="space-y-3">
             <Button 
@@ -344,9 +376,21 @@ export function ClientLinkManager() {
                       {link.event_name}
                       {link.event_date && ` • ${format(new Date(link.event_date), 'MMM d, yyyy')}`}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-xs text-muted-foreground/70">
                         Created {format(new Date(link.created_at), 'MMM d, yyyy')}
+                      </span>
+                      <span className={cn(
+                        "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
+                        link.is_public 
+                          ? "bg-emerald-500/10 text-emerald-500" 
+                          : "bg-amber-500/10 text-amber-500"
+                      )}>
+                        {link.is_public ? (
+                          <><Globe className="w-3 h-3" /> Public</>
+                        ) : (
+                          <><Lock className="w-3 h-3" /> Private</>
+                        )}
                       </span>
                       {link.clip_count !== undefined && (
                         <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
@@ -355,7 +399,7 @@ export function ClientLinkManager() {
                         </span>
                       )}
                       {link.upload_count !== undefined && link.upload_count > 0 && (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500">
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400">
                           <FolderOpen className="w-3 h-3" />
                           {link.upload_count} uploads
                         </span>
