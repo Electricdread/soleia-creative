@@ -96,10 +96,14 @@ export function EditorialBriefingModal({ open, onOpenChange, session }: Editoria
   const isLegacySummary = session.circleback_summary && !strategicBrief;
   const parsedEditorial = isLegacySummary ? parseEditorialContent(session.circleback_summary!) : [];
   
+  const coverImages = (session.cover_images as CoverImage[] | null) || [];
   const featuredImages = (session.featured_images as CoverImage[] | null) || 
-                         (session.cover_images as CoverImage[] | null)?.slice(0, 3) || [];
+                         coverImages.slice(0, 3);
 
-  if (!session.circleback_summary && featuredImages.length === 0) {
+  // Show modal as long as we have something to display
+  const hasContent = session.circleback_summary || featuredImages.length > 0 || coverImages.length > 0;
+
+  if (!hasContent) {
     return null;
   }
 

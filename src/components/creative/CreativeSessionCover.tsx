@@ -202,8 +202,8 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
   const featuredImages = (session.featured_images as CoverImage[] | null) || [];
   const hasFeaturedImages = featuredImages.length > 0;
   
-  // Check if briefing content is available
-  const hasBriefingContent = session.circleback_summary || hasFeaturedImages;
+  // Cover is clickable if we have cover images (even without summary/featured)
+  const hasBriefingContent = coverImage || session.circleback_summary || hasFeaturedImages;
 
   return (
     <Card className="border-zinc-800 bg-zinc-900/80 backdrop-blur-sm overflow-hidden font-tech">
