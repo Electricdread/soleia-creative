@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Download, 
@@ -11,7 +11,9 @@ import {
   Clock,
   Sparkles,
   CheckCircle2,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +23,8 @@ import { Separator } from '@/components/ui/separator';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import solIcon from '@/assets/sol-icon.png';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
+import { downloadDeliveryGuidePdf } from '@/lib/deliveryGuidePdf';
+import { toast } from 'sonner';
 
 const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
@@ -90,6 +94,21 @@ const workflowSteps = [
 
 const DeliveryGuide = () => {
   const navigate = useNavigate();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    setIsDownloading(true);
+    try {
+      const livePageUrl = `${window.location.origin}/delivery-guide`;
+      await downloadDeliveryGuidePdf(livePageUrl);
+      toast.success('PDF downloaded successfully');
+    } catch (error) {
+      console.error('PDF download error:', error);
+      toast.error('Failed to download PDF');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50/30 to-white">
@@ -125,6 +144,20 @@ const DeliveryGuide = () => {
 
             {/* Right side */}
             <div className="flex items-center gap-2">
+              <Button 
+                size="sm"
+                variant="outline"
+                onClick={handleDownloadPdf}
+                disabled={isDownloading}
+                className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-50"
+              >
+                {isDownloading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">Download PDF</span>
+              </Button>
               <Button 
                 size="sm"
                 onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')}
