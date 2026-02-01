@@ -92,47 +92,30 @@ const DeliveryGuide = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50/30 to-white">
+    <div className="min-h-screen bg-[#FAF6F1]">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-amber-200/50 shadow-sm">
+      <header className="sticky top-0 z-40 bg-[#FAF6F1]/95 backdrop-blur-md border-b border-amber-200/30">
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Back button */}
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => navigate('/')}
-              className="gap-2 text-amber-900 hover:bg-amber-100/50"
+              className="text-amber-800 hover:bg-amber-100/50"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Looks</span>
+              <ArrowLeft className="w-5 h-5" />
             </Button>
 
             {/* Logo */}
-            <div className="flex items-center gap-3">
-              <img 
-                src={soleiaLogo} 
-                alt="Soleia" 
-                className="h-8 sm:h-10 object-contain"
-              />
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-display font-semibold bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 bg-clip-text text-transparent">
-                  Content Delivery Guide
-                </h1>
-                <p className="text-xs text-amber-800/60">DXV3 Format Specifications</p>
-              </div>
-            </div>
+            <img 
+              src={soleiaLogo} 
+              alt="Soleia" 
+              className="h-8 sm:h-10 object-contain"
+            />
 
             {/* Right side */}
             <div className="flex items-center gap-2">
-              <Button 
-                size="sm"
-                onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')}
-                className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg shadow-amber-600/25"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Download Encoder</span>
-              </Button>
               <PoweredByShowBlox variant="header" />
             </div>
           </div>
@@ -140,33 +123,36 @@ const DeliveryGuide = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-12 sm:py-16 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-200/40 via-transparent to-transparent" />
-        <div className="container mx-auto px-4 relative">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center max-w-3xl mx-auto space-y-4"
-          >
-            <div className="flex justify-center mb-4">
-              <img src={solIcon} alt="" className="w-16 h-16 object-contain drop-shadow-lg" />
-            </div>
-            <Badge className="bg-amber-100 text-amber-800 border-amber-300">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Ready-Made Content Delivery
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 bg-clip-text text-transparent">
-              Delivering Your Content
-            </h2>
-            <p className="text-amber-900/70 text-lg">
-              Our venue uses Resolume media servers. Follow this guide to ensure your content displays flawlessly.
-            </p>
-          </motion.div>
-        </div>
+      <section className="py-8 sm:py-12 px-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-2xl mx-auto space-y-5"
+        >
+          <h2 className="text-3xl sm:text-4xl font-display font-bold italic bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 bg-clip-text text-transparent">
+            Content Delivery Guide
+          </h2>
+          <p className="text-amber-800/80 text-base sm:text-lg leading-relaxed">
+            Our venue uses Resolume media servers. Follow this guide to ensure your content displays flawlessly across Soleia's dynamic display ecosystem.
+          </p>
+          
+          {/* Feature Badges */}
+          <div className="flex flex-col items-center gap-3 pt-2">
+            {['DXV3 Codec Required', 'Resolume Compatible', '21-Day Submission'].map((label) => (
+              <Badge 
+                key={label}
+                className="bg-amber-100/80 text-amber-800 border border-amber-300/50 px-4 py-2 text-sm font-medium rounded-full"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500 mr-2" />
+                {label}
+              </Badge>
+            ))}
+          </div>
+        </motion.div>
       </section>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 pb-16 space-y-10">
+      <main className="container mx-auto px-4 pb-16 space-y-6">
         
         {/* Resolume Download Card */}
         <motion.section
@@ -174,36 +160,36 @@ const DeliveryGuide = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="overflow-hidden border-amber-200 bg-white/80 backdrop-blur-sm shadow-xl shadow-amber-500/10">
-            <CardContent className="p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 shrink-0">
-                  <FileVideo className="w-10 h-10 text-amber-700" />
+          <Card className="overflow-hidden border-amber-200/50 bg-[#F5EFE6] rounded-2xl">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-xl bg-amber-100/80 shrink-0">
+                  <FileVideo className="w-6 h-6 text-amber-700" />
                 </div>
-                <div className="flex-1 text-center sm:text-left">
-                  <h3 className="text-xl font-display font-semibold text-amber-950 mb-2">
-                    DXV3 Codec Required
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-amber-950 mb-1">
+                    Download Encoder
                   </h3>
-                  <p className="text-amber-900/70 mb-4">
-                    Download the free Resolume Alley encoder to convert your videos to DXV3 format for optimal playback.
+                  <p className="text-amber-800/70 text-sm mb-4">
+                    Get the free Resolume Alley encoder to convert your videos to DXV3 format.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
+                  <div className="flex flex-wrap gap-2">
                     <Button 
-                      size="lg"
+                      size="sm"
                       onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')}
-                      className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg shadow-amber-600/25"
+                      className="gap-2 bg-amber-700 hover:bg-amber-800 text-white rounded-full px-4"
                     >
-                      <ExternalLink className="w-4 h-4" />
-                      Get Resolume Alley (Free)
+                      <Download className="w-4 h-4" />
+                      Resolume Alley
                     </Button>
                     <Button 
                       variant="outline"
-                      size="lg"
+                      size="sm"
                       onClick={() => window.open(RESOLUME_URL, '_blank')}
-                      className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-50"
+                      className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-50 rounded-full px-4"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      Resolume.com
+                      Website
                     </Button>
                   </div>
                 </div>
@@ -217,115 +203,99 @@ const DeliveryGuide = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="space-y-6"
         >
-          <div className="text-center">
-            <h3 className="text-2xl font-display font-semibold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent">
-              Encoding Workflow
-            </h3>
-          </div>
-          
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {workflowSteps.map((item, index) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-              >
-                <Card className="h-full border-amber-200 bg-white/80 backdrop-blur-sm hover:shadow-lg hover:shadow-amber-500/10 transition-all">
-                  <CardContent className="p-5 space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold shadow-lg shadow-amber-500/30">
+          <Card className="border-amber-200/50 bg-[#F5EFE6] rounded-2xl">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <img src={solIcon} alt="" className="w-6 h-6" />
+                <h3 className="text-lg font-semibold text-amber-950">Encoding Workflow</h3>
+              </div>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {workflowSteps.map((item) => (
+                  <div
+                    key={item.step}
+                    className="bg-amber-50/80 border border-amber-200/50 rounded-xl p-4"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white text-sm font-bold mb-2">
                       {item.step}
                     </div>
-                    <h4 className="font-semibold text-amber-950">{item.title}</h4>
-                    <p className="text-sm text-amber-900/70">{item.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                    <h4 className="font-medium text-amber-950 text-sm mb-1">{item.title}</h4>
+                    <p className="text-xs text-amber-700/70">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </motion.section>
-
-        <Separator className="bg-amber-200" />
 
         {/* Display Specifications */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="space-y-6"
         >
-          <div className="text-center">
-            <h3 className="text-2xl font-display font-semibold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent">
-              Display Specifications
-            </h3>
-            <p className="text-amber-900/60 mt-1">Technical requirements for each display type</p>
-          </div>
-          
-          <div className="grid sm:grid-cols-2 gap-4">
-            {displaySpecs.map((spec, index) => (
-              <motion.div
-                key={spec.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                whileHover={{ y: -4, scale: 1.02 }}
-              >
-                <Card className="h-full border-amber-200 bg-white/80 backdrop-blur-sm hover:shadow-xl hover:shadow-amber-500/15 transition-all duration-300">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100">
-                        <spec.icon className="w-6 h-6 text-amber-700" />
+          <Card className="border-amber-200/50 bg-[#F5EFE6] rounded-2xl">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <img src={solIcon} alt="" className="w-6 h-6" />
+                <h3 className="text-lg font-semibold text-amber-950">Display Specifications</h3>
+              </div>
+              
+              <div className="space-y-3">
+                {displaySpecs.map((spec) => (
+                  <div
+                    key={spec.id}
+                    className="bg-amber-50/80 border border-amber-200/50 rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg bg-amber-100/80">
+                        <spec.icon className="w-5 h-5 text-amber-700" />
                       </div>
-                      <div className="flex-1 space-y-3">
-                        <h4 className="font-semibold text-amber-950">{spec.name}</h4>
-                        <div className="space-y-1.5 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-amber-800/60">Resolution</span>
-                            <span className="font-mono text-amber-950">{spec.resolution}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-amber-800/60">Format</span>
-                            <span className="font-mono text-amber-950">{spec.format}</span>
-                          </div>
-                          {spec.codec && (
-                            <div className="flex justify-between">
-                              <span className="text-amber-800/60">Codec</span>
-                              <Badge className="bg-amber-100 text-amber-800 border-amber-300 font-mono text-xs">
-                                {spec.codec}
-                              </Badge>
-                            </div>
-                          )}
-                          {spec.frameRate && (
-                            <div className="flex justify-between">
-                              <span className="text-amber-800/60">Frame Rate</span>
-                              <span className="font-mono text-amber-950">{spec.frameRate}</span>
-                            </div>
-                          )}
-                          {spec.duration && (
-                            <div className="flex justify-between">
-                              <span className="text-amber-800/60">Duration</span>
-                              <span className="font-mono text-amber-950">{spec.duration}</span>
-                            </div>
-                          )}
-                          {spec.maxSize && (
-                            <div className="flex justify-between">
-                              <span className="text-amber-800/60">Max Size</span>
-                              <span className="font-mono text-amber-950">{spec.maxSize}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      <h4 className="font-semibold text-amber-950">{spec.name}</h4>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-amber-700/70">Resolution</span>
+                        <span className="font-mono text-amber-900 text-xs">{spec.resolution}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-amber-700/70">Format</span>
+                        <span className="font-mono text-amber-900 text-xs">{spec.format}</span>
+                      </div>
+                      {spec.codec && (
+                        <div className="flex justify-between">
+                          <span className="text-amber-700/70">Codec</span>
+                          <Badge className="bg-amber-200/80 text-amber-800 border-0 font-mono text-xs px-2 py-0">
+                            {spec.codec}
+                          </Badge>
+                        </div>
+                      )}
+                      {spec.frameRate && (
+                        <div className="flex justify-between">
+                          <span className="text-amber-700/70">Frame Rate</span>
+                          <span className="font-mono text-amber-900 text-xs">{spec.frameRate}</span>
+                        </div>
+                      )}
+                      {spec.duration && (
+                        <div className="flex justify-between">
+                          <span className="text-amber-700/70">Duration</span>
+                          <span className="font-mono text-amber-900 text-xs">{spec.duration}</span>
+                        </div>
+                      )}
+                      {spec.maxSize && (
+                        <div className="flex justify-between">
+                          <span className="text-amber-700/70">Max Size</span>
+                          <span className="font-mono text-amber-900 text-xs">{spec.maxSize}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </motion.section>
-
-        <Separator className="bg-amber-200" />
 
         {/* Submission Timeline */}
         <motion.section
@@ -333,20 +303,18 @@ const DeliveryGuide = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="border-amber-200 bg-gradient-to-br from-orange-50 to-amber-50 shadow-xl shadow-orange-500/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl text-amber-950">
-                <Clock className="w-6 h-6 text-orange-600" />
-                Submission Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/70 border border-orange-200">
-                <div className="text-4xl font-display font-bold text-orange-600">21</div>
+          <Card className="border-amber-200/50 bg-[#F5EFE6] rounded-2xl">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Clock className="w-6 h-6 text-amber-700" />
+                <h3 className="text-lg font-semibold text-amber-950">Submission Timeline</h3>
+              </div>
+              <div className="flex items-center gap-4 bg-amber-50/80 border border-amber-200/50 rounded-xl p-4">
+                <div className="text-3xl font-display font-bold text-amber-600">21</div>
                 <div>
-                  <p className="font-semibold text-amber-950">Business Days Minimum</p>
-                  <p className="text-sm text-amber-900/70">
-                    Submit your content at least 21 business days before your event for testing and approval.
+                  <p className="font-medium text-amber-950 text-sm">Business Days Minimum</p>
+                  <p className="text-xs text-amber-700/70">
+                    Submit content before your event for testing and approval.
                   </p>
                 </div>
               </div>
@@ -359,44 +327,45 @@ const DeliveryGuide = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="space-y-4"
         >
-          <h3 className="text-xl font-display font-semibold text-amber-950">Pro Tips</h3>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {[
-              { title: 'Export in ProRes first', desc: 'For best quality before encoding to DXV3.' },
-              { title: 'Avoid bright backgrounds', desc: 'LED screens are very bright—use darker tones.' },
-              { title: 'Use light logos', desc: 'White or light logo versions display best.' },
-              { title: 'Include alpha channel', desc: 'Use DXV3 Alpha for transparent overlays.' },
-            ].map((tip, idx) => (
-              <Card key={idx} className="border-amber-200 bg-white/80">
-                <CardContent className="p-4 flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-medium text-amber-950">{tip.title}</p>
-                    <p className="text-sm text-amber-900/70">{tip.desc}</p>
+          <Card className="border-amber-200/50 bg-[#F5EFE6] rounded-2xl">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <img src={solIcon} alt="" className="w-6 h-6" />
+                <h3 className="text-lg font-semibold text-amber-950">Pro Tips</h3>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {[
+                  { title: 'Export in ProRes first', desc: 'For best quality before encoding.' },
+                  { title: 'Avoid bright backgrounds', desc: 'LED screens are very bright.' },
+                  { title: 'Use light logos', desc: 'White versions display best.' },
+                  { title: 'Include alpha channel', desc: 'DXV3 Alpha for transparent overlays.' },
+                ].map((tip, idx) => (
+                  <div key={idx} className="bg-amber-50/80 border border-amber-200/50 rounded-xl p-3 flex items-start gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-medium text-amber-950 text-sm">{tip.title}</p>
+                      <p className="text-xs text-amber-700/70">{tip.desc}</p>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </motion.section>
       </main>
       
       {/* Footer */}
-      <footer className="border-t border-amber-200 bg-white/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img src={soleiaLogo} alt="Soleia" className="h-6 object-contain opacity-70" />
-            <span className="text-sm text-amber-800/60">Content Delivery Specifications</span>
-          </div>
+      <footer className="border-t border-amber-200/30 bg-[#F5EFE6]/50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <img src={soleiaLogo} alt="Soleia" className="h-5 object-contain opacity-60" />
           <a 
             href={RESOLUME_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1"
+            className="text-xs text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-3 h-3" />
             resolume.com
           </a>
         </div>
