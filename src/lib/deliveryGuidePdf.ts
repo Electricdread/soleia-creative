@@ -40,7 +40,7 @@ const workflowSteps = [
   { step: 1, title: 'Export Source Video', description: 'Export in ProRes 422 or high-quality H264 from your editing software.' },
   { step: 2, title: 'Open Resolume Alley', description: 'Download the free encoder from resolume.com/software/alley' },
   { step: 3, title: 'Encode to DXV3', description: 'Select DXV3 codec and export your content.' },
-  { step: 4, title: 'Submit Content', description: 'Deliver at least 21 business days before your event.' },
+  { step: 4, title: 'Submit Content', description: 'Send your encoded files to us for review.' },
 ];
 
 const proTips = [
@@ -137,30 +137,6 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   let yPos = 65;
 
-  // ========== ABOUT DXV3 ==========
-  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(12);
-  pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('WHAT IS DXV3?', margin, yPos);
-  yPos += 8;
-
-  pdf.setFillColor(...colors.cardBg as [number, number, number]);
-  pdf.setDrawColor(...colors.cardBorder as [number, number, number]);
-  pdf.roundedRect(margin, yPos, contentWidth, 28, 2, 2, 'FD');
-  
-  pdf.setTextColor(...colors.valueText as [number, number, number]);
-  pdf.setFontSize(9);
-  pdf.setFont(FONTS.body.family, FONTS.body.style);
-  const aboutText = [
-    'DXV3 is a GPU-accelerated codec designed for real-time video playback on Resolume media servers.',
-    'It provides instant random access to any frame, making it ideal for live event visuals.',
-    'The codec supports alpha channels for transparent overlays and handles high resolutions smoothly.'
-  ];
-  aboutText.forEach((line, i) => {
-    pdf.text(line, margin + 5, yPos + 8 + (i * 6));
-  });
-  
-  yPos += 38;
 
   // ========== ENCODING WORKFLOW ==========
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
@@ -208,28 +184,6 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   yPos += (stepHeight * 2) + 18;
 
-  // ========== SUBMISSION TIMELINE ==========
-  pdf.setFillColor(255, 251, 235);
-  pdf.setDrawColor(...colors.gold as [number, number, number]);
-  pdf.setLineWidth(0.5);
-  pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'FD');
-  
-  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(24);
-  pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('21', margin + 10, yPos + 15);
-  
-  pdf.setTextColor(...colors.titleText as [number, number, number]);
-  pdf.setFontSize(10);
-  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  pdf.text('Business Days Minimum', margin + 28, yPos + 10);
-  
-  pdf.setTextColor(...colors.labelText as [number, number, number]);
-  pdf.setFontSize(8);
-  pdf.setFont(FONTS.body.family, FONTS.body.style);
-  pdf.text('Submit your content at least 21 business days before your event for testing and approval.', margin + 28, yPos + 17);
-
-  yPos += 32;
 
   // ========== PRO TIPS ==========
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
