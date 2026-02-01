@@ -124,7 +124,18 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a4'
+    format: 'a4',
+    compress: true,
+    putOnlyUsedFonts: true,
+  });
+
+  // Set PDF metadata for print
+  pdf.setProperties({
+    title: 'Soleia Content Delivery Guide',
+    subject: 'DXV3 Format Specifications for Resolume Media Servers',
+    author: 'Soleia / ShowBlox',
+    keywords: 'DXV3, Resolume, Video Specs, LED, Content Delivery',
+    creator: 'Soleia Portal'
   });
 
   const pageWidth = pdf.internal.pageSize.getWidth();
