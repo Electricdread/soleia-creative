@@ -1,25 +1,21 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { 
   Download, 
   ExternalLink, 
   FileVideo, 
-  CheckCircle2, 
-  AlertCircle,
-  ArrowRight,
   Monitor,
   Tv,
   LayoutGrid,
-  Gauge
+  Gauge,
+  Info,
+  Clock,
+  HardDrive
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
-import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 
-const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
 
 const displaySpecs = [
@@ -28,400 +24,290 @@ const displaySpecs = [
     name: 'Television Displays',
     icon: Tv,
     resolution: '1920×1080 or 3840×2160',
-    format: 'MOV',
+    format: '.MOV',
     codec: 'DXV3',
-    maxSize: '8GB',
+    frameRate: '30 fps',
+    maxSize: '8 GB',
+    notes: 'Use white/light logos on dark backgrounds for optimal visibility.',
   },
   {
     id: 'led',
-    name: 'LED Display Pixel Map',
+    name: 'LED Pixel Map',
     icon: LayoutGrid,
     resolution: '3840×2160',
-    format: 'MOV with Alpha',
+    format: '.MOV (with Alpha)',
     codec: 'DXV3',
     frameRate: '60 fps',
-    maxSize: '30GB',
+    maxSize: '30 GB',
+    notes: 'Avoid highly saturated colors. LED screens are extremely bright.',
   },
   {
     id: 'elevator',
     name: 'Elevator Displays',
     icon: Gauge,
     resolution: '600×800',
-    format: 'WMV',
+    format: '.WMV',
+    codec: 'WMV',
     frameRate: '30 fps',
     duration: '30 sec',
+    notes: 'Provide separate files for up/down movement + idle state.',
   },
   {
     id: 'ticker',
-    name: 'Marquee/Ticker Display',
+    name: 'Marquee / Ticker',
     icon: Monitor,
     resolution: '1280×768',
-    format: 'MP4',
-    codec: 'H264',
+    format: '.MP4',
+    codec: 'H.264',
+    frameRate: '30 fps',
     duration: '15 sec',
-  },
-];
-
-const workflowSteps = [
-  {
-    step: 1,
-    title: 'Export Source Video',
-    description: 'Export your video in ProRes or high-quality H264 format from your editing software.',
-    icon: FileVideo,
-  },
-  {
-    step: 2,
-    title: 'Download Resolume Alley',
-    description: 'Get the free Resolume Alley encoder to convert your videos to DXV3 format.',
-    icon: Download,
-  },
-  {
-    step: 3,
-    title: 'Encode to DXV3',
-    description: 'Open your video in Alley and encode to DXV3. This ensures optimal playback on our media servers.',
-    icon: ArrowRight,
-  },
-  {
-    step: 4,
-    title: 'Submit for Review',
-    description: 'Share your encoded content at least 21 business days before your event for testing.',
-    icon: CheckCircle2,
+    notes: 'Horizontal scrolling content optimized for readability.',
   },
 ];
 
 const DeliveryGuide = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white text-zinc-900">
       {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-border/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img 
-                src={soleiaLogo} 
-                alt="Soleia" 
-                className="h-10 object-contain"
-              />
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-display font-semibold text-gradient-gold">Content Delivery Guide</h1>
-                <p className="text-xs text-muted-foreground">DXV3 Format & Submission Instructions</p>
-              </div>
-            </div>
-            <PoweredByShowBlox variant="header" />
+      <header className="border-b border-zinc-200 bg-zinc-50">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <img 
+              src={soleiaLogo} 
+              alt="Soleia" 
+              className="h-8 object-contain"
+            />
+            <div className="h-6 w-px bg-zinc-300" />
+            <span className="font-tech text-sm text-zinc-600 uppercase tracking-wide">Content Delivery Specs</span>
           </div>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')}
+            className="gap-2 border-zinc-300 text-zinc-700 hover:bg-zinc-100"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Resolume Alley</span>
+          </Button>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative py-12 sm:py-16 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        <div className="container mx-auto px-4 relative">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center max-w-3xl mx-auto space-y-4"
-          >
-            <Badge className="bg-primary/20 text-primary border-primary/30">
-              Ready-Made Content Delivery
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-gradient-gold">
-              Delivering Your Content in DXV3 Format
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Our venue uses Resolume media servers for optimal playback. 
-              Follow this guide to ensure your content displays flawlessly.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Main Content */}
-      <main className="container mx-auto px-4 pb-16 space-y-12">
+      <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
         
-        {/* Why DXV3 */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="glass border-primary/30 overflow-hidden">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <AlertCircle className="w-6 h-6 text-primary" />
-                Why DXV3 Format?
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                DXV3 is a high-performance video codec designed specifically for real-time video playback. 
-                Unlike standard codecs like H.264, DXV3 uses GPU acceleration for instant frame access, 
-                making it perfect for live events where timing and reliability are critical.
-              </p>
-              <div className="grid sm:grid-cols-3 gap-4 pt-2">
-                <div className="p-4 rounded-lg bg-muted/30 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-1">GPU Accelerated</h4>
-                  <p className="text-sm text-muted-foreground">Instant playback without buffering or stuttering</p>
-                </div>
-                <div className="p-4 rounded-lg bg-muted/30 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-1">Alpha Channel Support</h4>
-                  <p className="text-sm text-muted-foreground">Perfect for overlays and transparent backgrounds</p>
-                </div>
-                <div className="p-4 rounded-lg bg-muted/30 border border-border/50">
-                  <h4 className="font-semibold text-foreground mb-1">Real-Time Control</h4>
-                  <p className="text-sm text-muted-foreground">Instant seeking and speed changes during playback</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.section>
+        {/* Title Section */}
+        <section>
+          <h1 className="text-2xl font-tech font-bold text-zinc-900 uppercase tracking-tight">
+            Video Delivery Requirements
+          </h1>
+          <p className="text-zinc-600 mt-2 font-tech text-sm">
+            Technical specifications for ready-made content submission. All video content must be encoded in <span className="text-cyan-600 font-semibold">DXV3</span> format for Resolume playback.
+          </p>
+        </section>
 
-        {/* Download Resolume */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="glass border-accent/30 overflow-hidden bg-gradient-to-br from-accent/5 to-transparent">
-            <CardContent className="p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="p-4 rounded-2xl bg-accent/20 shrink-0">
-                  <Download className="w-10 h-10 text-accent" />
+        <Separator className="bg-zinc-200" />
+
+        {/* DXV3 Encoding Section */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <FileVideo className="w-5 h-5 text-cyan-600" />
+            <h2 className="text-lg font-tech font-semibold text-zinc-900 uppercase">DXV3 Codec</h2>
+          </div>
+          
+          <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-3">
+            <p className="text-sm text-zinc-700 font-tech">
+              DXV3 is a GPU-accelerated codec optimized for real-time video playback on Resolume media servers. Standard codecs (H.264, ProRes) are not supported for final delivery.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <a 
+                href={RESOLUME_ALLEY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded font-tech text-sm font-medium hover:bg-cyan-700 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Download Resolume Alley (Free Encoder)
+              </a>
+            </div>
+            
+            <div className="pt-2 border-t border-zinc-200 mt-3">
+              <p className="text-xs text-zinc-500 font-tech uppercase tracking-wide mb-2">Encoding Workflow</p>
+              <ol className="text-sm text-zinc-700 font-tech space-y-1 list-decimal list-inside">
+                <li>Export source video as <span className="text-purple-600">ProRes</span> or high-quality <span className="text-purple-600">H.264</span></li>
+                <li>Open in Resolume Alley</li>
+                <li>Select <span className="text-cyan-600">DXV3</span> codec (use DXV3 Alpha for transparency)</li>
+                <li>Export and submit</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <Separator className="bg-zinc-200" />
+
+        {/* Display Specifications Table */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Monitor className="w-5 h-5 text-cyan-600" />
+            <h2 className="text-lg font-tech font-semibold text-zinc-900 uppercase">Display Specifications</h2>
+          </div>
+          
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm font-tech border border-zinc-200 rounded-lg overflow-hidden">
+              <thead className="bg-zinc-100">
+                <tr className="text-left text-zinc-600 uppercase text-xs tracking-wide">
+                  <th className="px-4 py-3 border-b border-zinc-200">Display</th>
+                  <th className="px-4 py-3 border-b border-zinc-200">Resolution</th>
+                  <th className="px-4 py-3 border-b border-zinc-200">Format</th>
+                  <th className="px-4 py-3 border-b border-zinc-200">Codec</th>
+                  <th className="px-4 py-3 border-b border-zinc-200">Frame Rate</th>
+                  <th className="px-4 py-3 border-b border-zinc-200">Max Size</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white">
+                {displaySpecs.map((spec, index) => (
+                  <tr key={spec.id} className={index !== displaySpecs.length - 1 ? 'border-b border-zinc-100' : ''}>
+                    <td className="px-4 py-3 font-medium text-zinc-900">{spec.name}</td>
+                    <td className="px-4 py-3 text-cyan-600">{spec.resolution}</td>
+                    <td className="px-4 py-3 text-zinc-700">{spec.format}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant="secondary" className="bg-zinc-100 text-zinc-800 font-tech text-xs">
+                        {spec.codec}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-zinc-700">{spec.frameRate}</td>
+                    <td className="px-4 py-3 text-zinc-700">{spec.maxSize || spec.duration || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {displaySpecs.map((spec) => (
+              <div key={spec.id} className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <spec.icon className="w-4 h-4 text-cyan-600" />
+                  <span className="font-tech font-semibold text-zinc-900">{spec.name}</span>
                 </div>
-                <div className="flex-1 text-center sm:text-left">
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    Download Resolume Alley (Free)
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Resolume Alley is a free video encoder that converts your videos to DXV3 format. 
-                    Available for Windows and macOS.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button 
-                      size="lg"
-                      onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')}
-                      className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Download Resolume Alley
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="lg"
-                      onClick={() => window.open(RESOLUME_URL, '_blank')}
-                      className="gap-2 border-primary/30 hover:bg-primary/10"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Visit Resolume.com
-                    </Button>
+                <div className="grid grid-cols-2 gap-2 text-sm font-tech">
+                  <div>
+                    <span className="text-zinc-500 text-xs uppercase">Resolution</span>
+                    <p className="text-cyan-600">{spec.resolution}</p>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 text-xs uppercase">Format</span>
+                    <p className="text-zinc-700">{spec.format}</p>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 text-xs uppercase">Codec</span>
+                    <p className="text-zinc-700">{spec.codec}</p>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 text-xs uppercase">Frame Rate</span>
+                    <p className="text-zinc-700">{spec.frameRate}</p>
                   </div>
                 </div>
+                {spec.notes && (
+                  <p className="text-xs text-zinc-500 pt-2 border-t border-zinc-200">{spec.notes}</p>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </motion.section>
-
-        {/* Encoding Workflow */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-6"
-        >
-          <div className="text-center">
-            <h3 className="text-2xl font-semibold text-gradient-gold mb-2">Encoding Workflow</h3>
-            <p className="text-muted-foreground">Follow these steps to prepare your content</p>
-          </div>
-          
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {workflowSteps.map((item, index) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-              >
-                <Card className="glass h-full border-border/50 hover:border-primary/30 transition-colors">
-                  <CardContent className="p-5 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                        {item.step}
-                      </div>
-                      <item.icon className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                    <h4 className="font-semibold text-foreground">{item.title}</h4>
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
             ))}
           </div>
-        </motion.section>
+        </section>
 
-        <Separator className="bg-border/50" />
+        <Separator className="bg-zinc-200" />
 
-        {/* Display Specifications */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="space-y-6"
-        >
-          <div className="text-center">
-            <h3 className="text-2xl font-semibold text-gradient-gold mb-2">Display Specifications</h3>
-            <p className="text-muted-foreground">Technical requirements for each display type</p>
+        {/* Submission Requirements */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-red-500" />
+            <h2 className="text-lg font-tech font-semibold text-zinc-900 uppercase">Submission Deadline</h2>
           </div>
           
-          <div className="grid sm:grid-cols-2 gap-4">
-            {displaySpecs.map((spec, index) => (
-              <motion.div
-                key={spec.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + index * 0.1 }}
-              >
-                <Card className="glass h-full border-border/50 hover:border-primary/30 transition-all hover:shadow-lg">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <spec.icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <div className="flex-1 space-y-3">
-                        <h4 className="font-semibold text-foreground">{spec.name}</h4>
-                        <div className="space-y-1.5 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Resolution</span>
-                            <span className="font-mono text-foreground">{spec.resolution}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Format</span>
-                            <span className="font-mono text-foreground">{spec.format}</span>
-                          </div>
-                          {spec.codec && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Codec</span>
-                              <Badge variant="secondary" className="font-mono text-xs">
-                                {spec.codec}
-                              </Badge>
-                            </div>
-                          )}
-                          {spec.frameRate && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Frame Rate</span>
-                              <span className="font-mono text-foreground">{spec.frameRate}</span>
-                            </div>
-                          )}
-                          {spec.duration && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Duration</span>
-                              <span className="font-mono text-foreground">{spec.duration}</span>
-                            </div>
-                          )}
-                          {spec.maxSize && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Max Size</span>
-                              <span className="font-mono text-foreground">{spec.maxSize}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Submission Timeline */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card className="glass border-amber-500/30 overflow-hidden bg-gradient-to-br from-amber-500/5 to-transparent">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <AlertCircle className="w-6 h-6 text-amber-500" />
-                Submission Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <div className="text-3xl font-bold text-amber-500">21</div>
-                <div>
-                  <p className="font-semibold text-foreground">Business Days Minimum</p>
-                  <p className="text-sm text-muted-foreground">
-                    Submit your content at least 21 business days before your event for testing and approval.
-                  </p>
-                </div>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="text-3xl font-tech font-bold text-red-600">21</div>
+              <div>
+                <p className="font-tech font-semibold text-zinc-900">Business Days Before Event</p>
+                <p className="text-sm text-zinc-600 font-tech mt-1">
+                  All finalized content must be submitted minimum 21 business days prior to event date for testing, review, and preload.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                This timeline allows our video artists to meticulously review, test, and preload your content 
-                across all display systems, ensuring flawless presentation on the day of your event.
-              </p>
-            </CardContent>
-          </Card>
-        </motion.section>
-
-        {/* Pro Tips */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="space-y-4"
-        >
-          <h3 className="text-xl font-semibold text-foreground">Pro Tips</h3>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Card className="glass border-border/50">
-              <CardContent className="p-4 flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-medium text-foreground">Export in ProRes first</p>
-                  <p className="text-sm text-muted-foreground">
-                    For best quality, export from your editing software in Apple ProRes before encoding to DXV3.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="glass border-border/50">
-              <CardContent className="p-4 flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-medium text-foreground">Avoid overly bright colors</p>
-                  <p className="text-sm text-muted-foreground">
-                    LED screens are very bright—avoid highly saturated colors for background visuals.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="glass border-border/50">
-              <CardContent className="p-4 flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-medium text-foreground">Use light logos on dark backgrounds</p>
-                  <p className="text-sm text-muted-foreground">
-                    White or light logo versions display best against darker background visuals.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="glass border-border/50">
-              <CardContent className="p-4 flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-medium text-foreground">Include alpha channel when needed</p>
-                  <p className="text-sm text-muted-foreground">
-                    For overlay content, export with transparency and encode with DXV3 Alpha.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            </div>
           </div>
-        </motion.section>
+        </section>
+
+        <Separator className="bg-zinc-200" />
+
+        {/* Technical Notes */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5 text-amber-500" />
+            <h2 className="text-lg font-tech font-semibold text-zinc-900 uppercase">Technical Notes</h2>
+          </div>
+          
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <ul className="text-sm text-zinc-700 font-tech space-y-2">
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 mt-1">▸</span>
+                <span><strong>LED Screens:</strong> Avoid overly bright or highly saturated background colors.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 mt-1">▸</span>
+                <span><strong>Logos:</strong> Use white or light versions against dark backgrounds for visibility.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 mt-1">▸</span>
+                <span><strong>Alpha Channel:</strong> Use DXV3 Alpha codec for transparent overlays.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 mt-1">▸</span>
+                <span><strong>Source Quality:</strong> Export source in ProRes before encoding to DXV3 for best results.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 mt-1">▸</span>
+                <span><strong>Elevator Content:</strong> Provide 3 files: up movement, down movement, and idle state.</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        {/* File Delivery */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <HardDrive className="w-5 h-5 text-emerald-600" />
+            <h2 className="text-lg font-tech font-semibold text-zinc-900 uppercase">File Delivery</h2>
+          </div>
+          
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p className="text-sm text-zinc-700 font-tech">
+              Submit files via secure file transfer. For large files (30GB+), use services like Dropbox, Google Drive, or WeTransfer. 
+              Include display type and resolution in filename (e.g., <span className="text-emerald-700 font-medium">LED_3840x2160_ClientName.mov</span>).
+            </p>
+          </div>
+        </section>
+
       </main>
       
       {/* Footer */}
-      <PoweredByShowBlox className="border-t border-border/30" />
+      <footer className="border-t border-zinc-200 bg-zinc-50 mt-8">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <span className="text-xs text-zinc-500 font-tech uppercase tracking-wide">
+            Soleia Las Vegas • Content Delivery Specifications
+          </span>
+          <a 
+            href="https://resolume.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-cyan-600 font-tech hover:underline"
+          >
+            resolume.com
+          </a>
+        </div>
+      </footer>
     </div>
   );
 };
