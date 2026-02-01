@@ -128,7 +128,7 @@ const DeliveryGuide = () => {
                 ) : (
                   <FileText className="w-4 h-4" />
                 )}
-                <span className="hidden sm:inline">Download PDF</span>
+                <span>PDF</span>
               </Button>
               <Button 
                 size="sm"
