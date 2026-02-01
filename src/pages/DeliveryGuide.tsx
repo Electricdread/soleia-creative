@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Download, 
   ExternalLink, 
   FileVideo, 
   Monitor,
@@ -12,7 +11,7 @@ import {
   Sparkles,
   CheckCircle2,
   ArrowLeft,
-  FileText,
+  Printer,
   Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -23,7 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import solIcon from '@/assets/sol-icon.png';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
-import { downloadDeliveryGuidePdf } from '@/lib/deliveryGuidePdf';
+
 import { toast } from 'sonner';
 
 const RESOLUME_URL = 'https://www.resolume.com';
@@ -96,15 +95,24 @@ const DeliveryGuide = () => {
   const navigate = useNavigate();
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleDownloadPdf = async () => {
+  const handlePrintPdf = async () => {
     setIsDownloading(true);
     try {
       const livePageUrl = `${window.location.origin}/delivery-guide`;
-      await downloadDeliveryGuidePdf(livePageUrl);
-      toast.success('PDF downloaded successfully');
+      const blob = await import('@/lib/deliveryGuidePdf').then(m => m.generateDeliveryGuidePdf(livePageUrl));
+      const url = URL.createObjectURL(blob);
+      
+      // Open in new tab and trigger print
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      }
+      toast.success('PDF opened for printing');
     } catch (error) {
-      console.error('PDF download error:', error);
-      toast.error('Failed to download PDF');
+      console.error('PDF print error:', error);
+      toast.error('Failed to generate PDF');
     } finally {
       setIsDownloading(false);
     }
@@ -146,25 +154,16 @@ const DeliveryGuide = () => {
             <div className="flex items-center gap-2">
               <Button 
                 size="sm"
-                variant="outline"
-                onClick={handleDownloadPdf}
+                onClick={handlePrintPdf}
                 disabled={isDownloading}
-                className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-50"
+                className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg shadow-amber-600/25"
               >
                 {isDownloading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <FileText className="w-4 h-4" />
+                  <Printer className="w-4 h-4" />
                 )}
-                <span className="hidden sm:inline">Download PDF</span>
-              </Button>
-              <Button 
-                size="sm"
-                onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')}
-                className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg shadow-amber-600/25"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Download Encoder</span>
+                <span className="hidden sm:inline">Print PDF</span>
               </Button>
               <PoweredByShowBlox variant="header" />
             </div>
