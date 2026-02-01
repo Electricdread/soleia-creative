@@ -50,7 +50,7 @@ const workflowSteps = [
   {
     step: 4,
     title: 'Submit Content',
-    description: 'Deliver at least 21 business days before your event',
+    description: 'Send your encoded files to us for review',
     icon: Zap,
   },
 ];
@@ -173,51 +173,6 @@ const DeliveryGuide = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 pb-16 space-y-10">
         
-        {/* What is DXV3 */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="overflow-hidden border-amber-200 bg-white/80 backdrop-blur-sm shadow-xl shadow-amber-500/10">
-            <CardContent className="p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 shrink-0">
-                  <FileVideo className="w-10 h-10 text-amber-700" />
-                </div>
-                <div className="flex-1 text-center sm:text-left">
-                  <h3 className="text-xl font-display font-semibold text-amber-950 mb-2">
-                    What is DXV3?
-                  </h3>
-                  <p className="text-amber-900/70 mb-4">
-                    DXV3 is a GPU-accelerated video codec designed for real-time playback on Resolume media servers. 
-                    It enables instant random access to any frame, supports alpha channels for transparent overlays, 
-                    and handles high resolutions smoothly—making it ideal for live event visuals.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
-                    <Button 
-                      size="lg"
-                      onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')}
-                      className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg shadow-amber-600/25"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Get Resolume Alley (Free)
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="lg"
-                      onClick={() => window.open(RESOLUME_URL, '_blank')}
-                      className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-50"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Resolume.com
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.section>
 
         {/* Encoding Workflow */}
         <motion.section
@@ -260,32 +215,6 @@ const DeliveryGuide = () => {
 
         <Separator className="bg-amber-200" />
 
-        {/* Submission Timeline */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="border-amber-200 bg-gradient-to-br from-orange-50 to-amber-50 shadow-xl shadow-orange-500/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-xl text-amber-950">
-                <Clock className="w-6 h-6 text-orange-600" />
-                Submission Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/70 border border-orange-200">
-                <div className="text-4xl font-display font-bold text-orange-600">21</div>
-                <div>
-                  <p className="font-semibold text-amber-950">Business Days Minimum</p>
-                  <p className="text-sm text-amber-900/70">
-                    Submit your content at least 21 business days before your event for testing and approval.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.section>
 
         {/* Pro Tips */}
         <motion.section
