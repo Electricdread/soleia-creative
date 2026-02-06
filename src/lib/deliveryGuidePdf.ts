@@ -178,16 +178,6 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 42, { align: 'center' });
 
-  // Live page link
-  pdf.setTextColor(...colors.linkBlue as [number, number, number]);
-  pdf.setFontSize(8);
-  pdf.setFont(FONTS.body.family, FONTS.body.style);
-  const linkText = 'View Interactive Guide Online';
-  const linkWidth = pdf.getTextWidth(linkText);
-  pdf.textWithLink(linkText, (pageWidth - linkWidth) / 2, 49, { url: livePageUrl });
-  pdf.setDrawColor(...colors.linkBlue as [number, number, number]);
-  pdf.setLineWidth(0.3);
-  pdf.line((pageWidth - linkWidth) / 2, 50, (pageWidth + linkWidth) / 2, 50);
 
   let yPos = 65;
 
