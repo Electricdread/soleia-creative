@@ -99,17 +99,9 @@ const DeliveryGuide = () => {
     setIsDownloading(true);
     try {
       const livePageUrl = `${window.location.origin}/delivery-guide`;
-      const blob = await import('@/lib/deliveryGuidePdf').then(m => m.generateDeliveryGuidePdf(livePageUrl));
-      const url = URL.createObjectURL(blob);
-      
-      // Open in new tab and trigger print
-      const printWindow = window.open(url, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-        };
-      }
-      toast.success('PDF opened for printing');
+      const { downloadDeliveryGuidePdf } = await import('@/lib/deliveryGuidePdf');
+      await downloadDeliveryGuidePdf(livePageUrl);
+      toast.success('PDF downloaded - open the file and print');
     } catch (error) {
       console.error('PDF print error:', error);
       toast.error('Failed to generate PDF');
