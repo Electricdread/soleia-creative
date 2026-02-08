@@ -242,8 +242,104 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   yPos += 8;
 
+  // ========== SCREEN SPECIFICATION CHART ==========
+  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
+  pdf.setFontSize(12);
+  pdf.setFont(FONTS.title.family, FONTS.title.style);
+  pdf.text('SCREEN SPECIFICATIONS BY ZONE', margin, yPos);
+  yPos += 6;
+
+  const screenGroups = [
+    {
+      label: 'INDOOR SCREENS',
+      screens: [
+        { name: 'SR IMAG', res: '1216 × 592' },
+        { name: 'SL IMAG', res: '1216 × 592' },
+        { name: 'CENTER', res: '640 × 272' },
+        { name: 'DJ BOOTH', res: '1260 × 168' },
+        { name: 'SR CURVE', res: '2304 × 272' },
+        { name: 'SL CURVE', res: '2304 × 272' },
+      ],
+    },
+    {
+      label: 'OUTDOOR SCREENS',
+      screens: [
+        { name: 'OUTDOOR SR', res: '588 × 840' },
+        { name: 'OUTDOOR SL', res: '588 × 840' },
+        { name: 'OUTDOOR ARCH', res: '1512 × 504' },
+      ],
+    },
+    {
+      label: 'SUNRAY ELEMENTS (INDOOR)',
+      screens: [
+        { name: 'SUNRAY #1', res: '1920 × 128' },
+        { name: 'SUNRAY #2', res: '1536 × 128' },
+        { name: 'SUNRAY #3', res: '1792 × 128' },
+        { name: 'SUNRAY #4', res: '1792 × 128' },
+        { name: 'SUNRAY #5', res: '1792 × 128' },
+        { name: 'SUNRAY #6', res: '1536 × 128' },
+      ],
+    },
+  ];
+
+  // Three-column layout for the groups
+  const groupCount = screenGroups.length;
+  const groupGap = 4;
+  const groupWidth = (contentWidth - groupGap * (groupCount - 1)) / groupCount;
+  const rowH = 5.5;
+  const headerH = 7;
+
+  screenGroups.forEach((group, gi) => {
+    const gx = margin + gi * (groupWidth + groupGap);
+
+    // Group header
+    pdf.setFillColor(...colors.headerAccent as [number, number, number]);
+    pdf.rect(gx, yPos, groupWidth, headerH, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(6);
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
+    pdf.text(group.label, gx + groupWidth / 2, yPos + 5, { align: 'center' });
+
+    // Column sub-headers
+    const subY = yPos + headerH;
+    pdf.setFillColor(245, 240, 230);
+    pdf.rect(gx, subY, groupWidth, rowH, 'F');
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFontSize(5.5);
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
+    pdf.text('SCREEN', gx + 2, subY + 4);
+    pdf.text('RESOLUTION', gx + groupWidth - 2, subY + 4, { align: 'right' });
+
+    // Rows
+    group.screens.forEach((screen, si) => {
+      const ry = subY + rowH + si * rowH;
+      const rowBg = si % 2 === 0 ? colors.cardBg : [248, 245, 240];
+      pdf.setFillColor(...rowBg as [number, number, number]);
+      pdf.rect(gx, ry, groupWidth, rowH, 'F');
+
+      pdf.setTextColor(...colors.titleText as [number, number, number]);
+      pdf.setFontSize(6);
+      pdf.setFont(FONTS.body.family, FONTS.body.style);
+      pdf.text(screen.name, gx + 2, ry + 4);
+
+      pdf.setFont(FONTS.mono.family, FONTS.mono.style);
+      pdf.setFontSize(6);
+      pdf.setTextColor(...colors.valueText as [number, number, number]);
+      pdf.text(screen.res, gx + groupWidth - 2, ry + 4, { align: 'right' });
+    });
+
+    // Border around entire group
+    const totalH = headerH + rowH + group.screens.length * rowH;
+    pdf.setDrawColor(...colors.cardBorder as [number, number, number]);
+    pdf.setLineWidth(0.3);
+    pdf.rect(gx, yPos, groupWidth, totalH);
+  });
+
+  // Advance past the tallest column
+  const maxRows = Math.max(...screenGroups.map(g => g.screens.length));
+  yPos += headerH + rowH + maxRows * rowH + 10;
+
   const stepWidth = (contentWidth - 8) / 2;
-  // (Encoding workflow removed from print version)
 
   // ========== SUBMISSION TIMELINE ==========
   pdf.setFillColor(255, 251, 235);
