@@ -242,51 +242,8 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   yPos += 8;
 
-  // ========== ENCODING WORKFLOW ==========
-  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(12);
-  pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('ENCODING WORKFLOW', margin, yPos);
-  yPos += 10;
-
-  // Workflow steps in 2x2 grid
   const stepWidth = (contentWidth - 8) / 2;
-  const stepHeight = 22;
-  
-  workflowSteps.forEach((item, idx) => {
-    const col = idx % 2;
-    const row = Math.floor(idx / 2);
-    const stepX = margin + (col * (stepWidth + 8));
-    const stepY = yPos + (row * (stepHeight + 4));
-    
-    // Card background
-    pdf.setFillColor(...colors.cardBg as [number, number, number]);
-    pdf.setDrawColor(...colors.cardBorder as [number, number, number]);
-    pdf.roundedRect(stepX, stepY, stepWidth, stepHeight, 2, 2, 'FD');
-    
-    // Step number circle
-    pdf.setFillColor(...colors.gold as [number, number, number]);
-    pdf.circle(stepX + 8, stepY + 8, 5, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(10);
-    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-    pdf.text(String(item.step), stepX + 8, stepY + 10, { align: 'center' });
-    
-    // Step title
-    pdf.setTextColor(...colors.titleText as [number, number, number]);
-    pdf.setFontSize(9);
-    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-    pdf.text(item.title, stepX + 17, stepY + 9);
-    
-    // Step description
-    pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFontSize(7);
-    pdf.setFont(FONTS.body.family, FONTS.body.style);
-    const descLines = pdf.splitTextToSize(item.description, stepWidth - 20);
-    pdf.text(descLines[0], stepX + 17, stepY + 16);
-  });
-
-  yPos += (stepHeight * 2) + 16;
+  // (Encoding workflow removed from print version)
 
   // ========== SUBMISSION TIMELINE ==========
   pdf.setFillColor(255, 251, 235);
