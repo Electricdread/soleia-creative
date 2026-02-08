@@ -5,32 +5,8 @@ import {
   DISPLAY_TYPES, 
   OUTDOOR_LED_ZONES, 
   INDOOR_LED_ZONES, 
-  CUSTOM_CONTENT_INFO,
   ZONE_SUBCATEGORY_LABELS 
 } from '@/lib/creativeGuide';
-
-const PRICING_ITEMS = [
-  {
-    title: 'Logo Animation / Preparation',
-    description: 'Animations preparing logos for pixel-mapped LED screens.',
-    price: '$2,000–$6,000+',
-  },
-  {
-    title: 'Themed / Branded Content',
-    description: 'Custom background animations aligned with event theme and brand colors.',
-    price: '$2,000–$6,000+',
-  },
-  {
-    title: 'Elevator Branding',
-    description: 'Main logo delivered in three files, prepared for static or vertical motion.',
-    price: '$500–$750+',
-  },
-  {
-    title: 'Individual Signage Feeds',
-    description: 'Setup of logo, graphic, or video feed in cabanas or bungalows.',
-    price: '$99 per feed',
-  },
-];
 
 const TERMS = [
   'Any new components outside this scope will require a separate estimate',
@@ -129,27 +105,24 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
           <div className="space-y-3">
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
               <span className="font-medium">1. Introduction & Partnership</span>
-              <span className="text-gray-500">Page 2</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
               <span className="font-medium">2. Display Specifications</span>
-              <span className="text-gray-500">Page 3</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <span className="font-medium">3. LED Zone Details</span>
-              <span className="text-gray-500">Page 5</span>
+              <span className="font-medium">3. Screen Specifications by Zone</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <span className="font-medium">4. Pricing & Timeline</span>
-              <span className="text-gray-500">Page 7</span>
+              <span className="font-medium">4. LED Zone Details</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <span className="font-medium">5. Terms & Conditions</span>
-              <span className="text-gray-500">Page 8</span>
+              <span className="font-medium">5. Content Delivery Requirements</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <span className="font-medium">6. Asset Downloads</span>
-              <span className="text-gray-500">Page 9</span>
+              <span className="font-medium">6. Terms & Conditions</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <span className="font-medium">7. Asset Downloads</span>
             </div>
           </div>
         </div>
@@ -310,10 +283,89 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
           </div>
         </section>
 
-        {/* Section 3: LED Zone Details */}
+        {/* Section 3: Screen Specifications by Zone */}
         <section className="mb-12 print:mb-8 page-break-after">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6 pb-2 border-b-2 border-amber-500">
-            3. LED Zone Details
+            3. Screen Specifications by Zone
+          </h2>
+
+          <div className="grid grid-cols-3 gap-3">
+            {/* Indoor Screens */}
+            <div className="border border-gray-300 rounded overflow-hidden">
+              <div className="bg-amber-600 text-white text-center py-1.5 px-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Indoor Screens</span>
+              </div>
+              <div className="bg-gray-100 flex justify-between px-2 py-1 text-[9px] font-bold text-gray-500 uppercase tracking-wide border-b border-gray-200">
+                <span>Screen</span><span>Resolution</span>
+              </div>
+              {[
+                { name: 'SR IMAG', res: '1216 × 592' },
+                { name: 'SL IMAG', res: '1216 × 592' },
+                { name: 'CENTER', res: '640 × 272' },
+                { name: 'DJ BOOTH', res: '1260 × 168' },
+                { name: 'SR CURVE', res: '2304 × 272' },
+                { name: 'SL CURVE', res: '2304 × 272' },
+              ].map((s, i) => (
+                <div key={s.name} className={`flex justify-between px-2 py-1 text-[10px] ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                  <span className="text-gray-800">{s.name}</span>
+                  <span className="font-mono text-gray-600">{s.res}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Outdoor Screens */}
+            <div className="border border-gray-300 rounded overflow-hidden">
+              <div className="bg-amber-600 text-white text-center py-1.5 px-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Outdoor Screens</span>
+              </div>
+              <div className="bg-gray-100 flex justify-between px-2 py-1 text-[9px] font-bold text-gray-500 uppercase tracking-wide border-b border-gray-200">
+                <span>Screen</span><span>Resolution</span>
+              </div>
+              {[
+                { name: 'OUTDOOR SR', res: '588 × 840' },
+                { name: 'OUTDOOR SL', res: '588 × 840' },
+                { name: 'OUTDOOR ARCH', res: '1512 × 504' },
+              ].map((s, i) => (
+                <div key={s.name} className={`flex justify-between px-2 py-1 text-[10px] ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                  <span className="text-gray-800">{s.name}</span>
+                  <span className="font-mono text-gray-600">{s.res}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Sunray Elements */}
+            <div className="border border-gray-300 rounded overflow-hidden">
+              <div className="bg-amber-600 text-white text-center py-1.5 px-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Sunray Elements</span>
+              </div>
+              <div className="bg-gray-100 flex justify-between px-2 py-1 text-[9px] font-bold text-gray-500 uppercase tracking-wide border-b border-gray-200">
+                <span>Screen</span><span>Resolution</span>
+              </div>
+              {[
+                { name: 'SUNRAY #1', res: '1920 × 128' },
+                { name: 'SUNRAY #2', res: '1536 × 128' },
+                { name: 'SUNRAY #3', res: '1792 × 128' },
+                { name: 'SUNRAY #4', res: '1792 × 128' },
+                { name: 'SUNRAY #5', res: '1792 × 128' },
+                { name: 'SUNRAY #6', res: '1536 × 128' },
+              ].map((s, i) => (
+                <div key={s.name} className={`flex justify-between px-2 py-1 text-[10px] ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                  <span className="text-gray-800">{s.name}</span>
+                  <span className="font-mono text-gray-600">{s.res}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-[10px] text-gray-400 mt-2 italic">
+            All LED content delivered as DXV3 codec via Resolume media servers • 60 fps • Alpha channel required for overlays
+          </p>
+        </section>
+
+        {/* Section 4: LED Zone Details */}
+        <section className="mb-12 print:mb-8 page-break-after">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6 pb-2 border-b-2 border-amber-500">
+            4. LED Zone Details
           </h2>
 
           {/* Outdoor Zones */}
@@ -389,50 +441,47 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
           })}
         </section>
 
-        {/* Section 4: Pricing & Timeline */}
+        {/* Section 5: Content Delivery Requirements */}
         <section className="mb-12 print:mb-8 page-break-after">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6 pb-2 border-b-2 border-amber-500">
-            4. Content Development Pricing
+            5. Content Delivery Requirements
           </h2>
 
-          <div className="space-y-4 mb-8">
-            {PRICING_ITEMS.map((item) => (
-              <div key={item.title} className="flex items-start justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{item.title}</h4>
-                  <p className="text-sm text-gray-600">{item.description}</p>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2 text-sm uppercase tracking-wide">Submission Deadline</h4>
+              <p className="text-2xl font-bold text-amber-600 mb-1">21 Business Days</p>
+              <p className="text-sm text-gray-600">Submit content at least 21 business days before your event for testing and approval.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2 text-sm uppercase tracking-wide">Required Codec</h4>
+              <p className="text-2xl font-bold text-amber-600 mb-1">DXV3</p>
+              <p className="text-sm text-gray-600">Download the free Resolume Alley encoder at resolume.com/software/alley</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+            {[
+              { tip: 'Export in ProRes first', desc: 'Best quality before encoding to DXV3.' },
+              { tip: 'Avoid bright backgrounds', desc: 'LED screens are very bright—use darker tones.' },
+              { tip: 'Use light logos', desc: 'White or light logo versions display best on screens.' },
+              { tip: 'Include alpha channel', desc: 'Use DXV3 Alpha for transparent overlays on LED.' },
+            ].map((t) => (
+              <div key={t.tip} className="flex items-start gap-2 py-2">
+                <span className="text-amber-500 font-bold">✓</span>
+                <div>
+                  <span className="font-medium text-gray-900 text-sm">{t.tip}</span>
+                  <span className="text-gray-500 text-sm"> — {t.desc}</span>
                 </div>
-                <span className="font-semibold text-amber-600 whitespace-nowrap ml-4">
-                  {item.price}
-                </span>
               </div>
             ))}
-          </div>
-
-          <h3 className="font-semibold text-gray-900 mb-4">Asset Timeline</h3>
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            {CUSTOM_CONTENT_INFO.timeline.map((item) => (
-              <div key={item.title} className="border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900 mb-1">{item.title}</h4>
-                <p className="text-amber-600 font-semibold text-sm mb-2">
-                  {item.days} Business Days Prior
-                </p>
-                <p className="text-gray-600 text-sm">{item.description}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-gray-700 italic text-sm">
-              "{CUSTOM_CONTENT_INFO.note}"
-            </p>
           </div>
         </section>
 
-        {/* Section 5: Terms */}
+        {/* Section 6: Terms */}
         <section className="mb-12 print:mb-8 page-break-after">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6 pb-2 border-b-2 border-amber-500">
-            5. Terms & Conditions
+            6. Terms & Conditions
           </h2>
 
           <ul className="space-y-3">
@@ -445,10 +494,10 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
           </ul>
         </section>
 
-        {/* Section 6: Asset Downloads */}
+        {/* Section 7: Asset Downloads */}
         <section className="mb-12 print:mb-8">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6 pb-2 border-b-2 border-amber-500">
-            6. Asset Downloads
+            7. Asset Downloads
           </h2>
 
           <p className="text-gray-600 mb-6">
