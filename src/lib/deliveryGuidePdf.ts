@@ -181,6 +181,13 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   let yPos = 65;
 
+  const checkPageBreak = (needed: number) => {
+    if (yPos + needed > pageHeight - 20) {
+      pdf.addPage();
+      yPos = 20;
+    }
+  };
+
   // ========== DISPLAY SPECIFICATIONS ==========
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
   pdf.setFontSize(12);
@@ -243,6 +250,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   yPos += 8;
 
   // ========== PIXEL MAP IMAGE ==========
+  checkPageBreak(120);
   const pixelmapImg = await assetToBase64('/creative-guide/soleia-pixelmap.png');
   if (pixelmapImg) {
     try {
@@ -256,6 +264,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   }
 
   // ========== SCREEN SPECIFICATION CHART ==========
+  checkPageBreak(70);
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
   pdf.setFontSize(12);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
@@ -355,6 +364,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   const stepWidth = (contentWidth - 8) / 2;
 
   // ========== SUBMISSION TIMELINE ==========
+  checkPageBreak(30);
   pdf.setFillColor(255, 251, 235);
   pdf.setDrawColor(...colors.gold as [number, number, number]);
   pdf.setLineWidth(0.5);
@@ -378,6 +388,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   yPos += 30;
 
   // ========== PRO TIPS ==========
+  checkPageBreak(45);
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
   pdf.setFontSize(12);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
@@ -411,6 +422,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   yPos += 35;
 
   // ========== RESOLUME DOWNLOAD BOX ==========
+  checkPageBreak(25);
   pdf.setFillColor(...colors.cardBg as [number, number, number]);
   pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
   pdf.setLineWidth(1);
