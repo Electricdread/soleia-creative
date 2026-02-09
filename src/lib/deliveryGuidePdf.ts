@@ -242,6 +242,19 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   yPos += 8;
 
+  // ========== PIXEL MAP IMAGE ==========
+  const pixelmapImg = await assetToBase64('/creative-guide/soleia-pixelmap.png');
+  if (pixelmapImg) {
+    try {
+      const imgWidth = contentWidth;
+      const imgHeight = imgWidth * (820 / 1456); // approximate aspect ratio
+      pdf.addImage(pixelmapImg, 'PNG', margin, yPos, imgWidth, imgHeight);
+      yPos += imgHeight + 6;
+    } catch (e) {
+      console.error('Failed to add pixelmap:', e);
+    }
+  }
+
   // ========== SCREEN SPECIFICATION CHART ==========
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
   pdf.setFontSize(12);
