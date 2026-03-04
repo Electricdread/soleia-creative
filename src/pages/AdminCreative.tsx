@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CreativeSessionManager } from '@/components/admin/CreativeSessionManager';
 import { ArrowLeft, Settings } from 'lucide-react';
-import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
+import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 // This component is wrapped by ProtectedRoute with requireAdmin
 // Authentication is handled by the wrapper, not internally
@@ -37,15 +37,15 @@ export default function AdminCreative() {
               </Button>
               <div className="h-6 w-px bg-zinc-700" />
               <img 
-                src={showbloxLogo} 
-                alt="ShowBlox" 
+                src={soleiaLogo} 
+                alt="Soleia" 
                 className="h-8 w-auto object-contain"
               />
             </div>
             
             <div className="flex items-center gap-3">
               <h1 className="text-lg font-semibold text-white">
-                ShowBlox Creative
+                Soleia Creative
               </h1>
               <Button
                 variant="ghost"
@@ -72,7 +72,7 @@ export default function AdminCreative() {
       <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-center text-zinc-600 text-sm">
-            © {new Date().getFullYear()} ShowBlox Creative Management System
+            © {new Date().getFullYear()} Soleia Creative Management System
           </p>
         </div>
       </footer>

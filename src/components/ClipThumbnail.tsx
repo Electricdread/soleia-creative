@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import { FileText, Sparkles } from 'lucide-react';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaIcon from '@/assets/sol-icon.png';
 
 interface ClipThumbnailProps {
   clip: {
@@ -134,11 +134,11 @@ const ClipThumbnail = forwardRef<HTMLDivElement, ClipThumbnailProps>(({
         />
       )}
 
-      {/* ShowBlox Selection Indicator - Centered with pulse animation */}
+      {/* Selection Indicator - Centered with pulse animation */}
       {isSelected && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="w-16 h-16 flex items-center justify-center">
-            <img src={showbloxIcon} alt="Selected" className="w-full h-full object-contain showblox-icon-selected" />
+            <img src={soleiaIcon} alt="Selected" className="w-full h-full object-contain showblox-icon-selected" />
           </div>
         </div>
       )}
@@ -150,10 +150,10 @@ const ClipThumbnail = forwardRef<HTMLDivElement, ClipThumbnailProps>(({
         </div>
       )}
 
-      {/* ShowBlox Icon Badge - only show when not selected */}
+      {/* Soleia Icon Badge - only show when not selected */}
       {!isSelected && (
         <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-elegant z-10">
-          <img src={showbloxIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
+          <img src={soleiaIcon} alt="Premium" className="w-full h-full object-contain drop-shadow-lg" />
         </div>
       )}
     </div>

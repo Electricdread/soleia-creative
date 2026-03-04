@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaIcon from '@/assets/sol-icon.png';
 
 interface AccessGrantedProps {
   onEnterPortal: () => void;
@@ -19,10 +19,7 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
   };
   return (
     <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center p-4">
-      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
-      
-      {/* Grid Pattern */}
       <div 
         className="absolute inset-0 opacity-[0.03]"
         style={{
@@ -31,14 +28,12 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
         }}
       />
 
-      {/* Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-sm"
       >
-        {/* ShowBlox Logo */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -46,20 +41,17 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
           className="flex flex-col items-center mb-10"
         >
           <img 
-            src={showbloxIcon} 
-            alt="ShowBlox" 
+            src={soleiaIcon} 
+            alt="Soleia" 
             className="h-20 w-20 sm:h-24 sm:w-24 object-contain mb-4"
           />
-          <span className="text-xl sm:text-2xl font-bold tracking-[4px] text-white">SHOWBLOX</span>
+          <span className="text-xl sm:text-2xl font-bold tracking-[4px] text-white">SOLEIA</span>
         </motion.div>
 
-        {/* Card */}
         <div className="bg-zinc-900/90 backdrop-blur-sm border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
-          {/* Top Bar */}
           <div className="h-1 bg-zinc-700" />
           
           <div className="p-6 sm:p-8 text-center">
-            {/* Success Icon */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -71,7 +63,6 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
               </div>
             </motion.div>
 
-            {/* Title */}
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -81,7 +72,6 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
               Access Granted
             </motion.h1>
 
-            {/* Email Badge */}
             {user?.email && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -93,17 +83,15 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
               </motion.div>
             )}
 
-            {/* Message */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
               className="text-sm text-zinc-500 leading-relaxed mb-8"
             >
-              Your admin access has been approved. You now have full access to the ShowBlox portal.
+              Your admin access has been approved. You now have full access to the Soleia portal.
             </motion.p>
 
-            {/* CTA Button */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -119,10 +107,9 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
             </motion.div>
           </div>
 
-          {/* Footer */}
           <div className="px-6 py-4 border-t border-zinc-800 text-center">
             <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
-              ShowBlox Creative Management System
+              Soleia Creative Management System
             </p>
           </div>
         </div>

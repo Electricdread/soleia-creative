@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Loader2, LogOut, ExternalLink, Clock, Command, Users } from 'lucide-react';
-import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 
 
@@ -21,9 +20,9 @@ interface PortalCard {
 
 const portals: PortalCard[] = [
   {
-    title: 'ShowBlox Creative',
+    title: 'Soleia Creative',
     description: 'Internal creative sessions, mood boards, and team collaboration',
-    iconSrc: showbloxIcon,
+    iconSrc: soleiaIcon,
     href: '/admin/creative',
   },
   {
@@ -100,8 +99,8 @@ export default function AdminPortal() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <img 
-                src={showbloxLogo} 
-                alt="ShowBlox" 
+                src={soleiaLogo} 
+                alt="Soleia" 
                 className="h-10 w-auto object-contain"
               />
               
@@ -142,7 +141,7 @@ export default function AdminPortal() {
         <footer className="relative z-10 border-t border-zinc-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <p className="text-center text-zinc-600 text-sm">
-              © {new Date().getFullYear()} ShowBlox Creative Management System
+              © {new Date().getFullYear()} Soleia Creative Management System
             </p>
           </div>
         </footer>
@@ -169,8 +168,8 @@ export default function AdminPortal() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <img 
-              src={showbloxLogo} 
-              alt="ShowBlox" 
+              src={soleiaLogo} 
+              alt="Soleia" 
               className="h-10 w-auto object-contain"
             />
             
@@ -275,7 +274,7 @@ export default function AdminPortal() {
       <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-center text-zinc-600 text-sm">
-            © {new Date().getFullYear()} ShowBlox Creative Management System
+            © {new Date().getFullYear()} Soleia Creative Management System
           </p>
         </div>
       </footer>
