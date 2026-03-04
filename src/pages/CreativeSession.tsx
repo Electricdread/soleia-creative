@@ -9,7 +9,7 @@ import { Loader2, User } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaIcon from '@/assets/sol-icon.png';
 
 interface CoverImage {
   url: string;
@@ -223,15 +223,15 @@ export default function CreativeSession() {
       <div className="relative h-32 sm:h-40 overflow-hidden bg-gradient-to-b from-zinc-900 to-black">
         <div className="absolute inset-0 flex items-center justify-center">
           <img 
-            src={showbloxIcon} 
-            alt="ShowBlox" 
+            src={soleiaIcon} 
+            alt="Soleia" 
             className="h-16 sm:h-20 w-auto object-contain opacity-80"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
         <div className="absolute bottom-4 left-4 sm:left-6">
           <span className="text-[10px] sm:text-xs font-tech uppercase tracking-[0.3em] text-cyan-400">
-            ShowBlox Creative
+            Soleia Creative
           </span>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaIcon from '@/assets/sol-icon.png';
 
 interface PoweredByShowBloxProps {
   className?: string;
@@ -32,9 +32,9 @@ export function PoweredByShowBlox({ className = '', variant = 'footer' }: Powere
           Powered by
         </span>
         <img 
-          src={showbloxIcon} 
-          alt="ShowBlox - Toggle Theme" 
-          className="h-5 sm:h-6 w-auto object-contain dark:invert transition-transform group-hover:scale-110"
+          src={soleiaIcon} 
+          alt="Soleia - Toggle Theme" 
+          className="h-5 sm:h-6 w-auto object-contain transition-transform group-hover:scale-110"
         />
       </button>
     );
@@ -51,9 +51,9 @@ export function PoweredByShowBlox({ className = '', variant = 'footer' }: Powere
       </span>
       <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
         <img 
-          src={showbloxIcon} 
-          alt="ShowBlox - Toggle Theme" 
-          className="h-6 w-auto object-contain dark:invert transition-transform group-hover:scale-110"
+          src={soleiaIcon} 
+          alt="Soleia - Toggle Theme" 
+          className="h-6 w-auto object-contain transition-transform group-hover:scale-110"
         />
       </div>
     </button>

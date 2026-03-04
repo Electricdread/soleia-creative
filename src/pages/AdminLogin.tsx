@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Lock, UserPlus } from 'lucide-react';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaIcon from '@/assets/sol-icon.png';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -21,7 +21,6 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
 
-  // Redirect authenticated users away from login page
   useEffect(() => {
     if (!authLoading && user) {
       navigate('/admin', { replace: true });
@@ -96,7 +95,6 @@ export default function AdminLogin() {
         return;
       }
 
-      // Send notification email to admin using the user data from signUp response
       const userId = data?.user?.id;
       if (userId) {
         try {
@@ -136,10 +134,7 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
-      
-      {/* Subtle grid pattern */}
       <div 
         className="absolute inset-0 opacity-5"
         style={{
@@ -152,11 +147,11 @@ export default function AdminLogin() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-12">
           <img 
-            src={showbloxIcon} 
-            alt="ShowBlox" 
+            src={soleiaIcon} 
+            alt="Soleia" 
             className="h-20 w-20 object-contain mb-4"
           />
-          <span className="text-2xl font-bold tracking-wide text-white">SHOWBLOX</span>
+          <span className="text-2xl font-bold tracking-wide text-white">SOLEIA</span>
         </div>
 
         {/* Login/Signup Card */}
@@ -185,7 +180,7 @@ export default function AdminLogin() {
                   <Input
                     id="signin-email"
                     type="email"
-                    placeholder="admin@showblox.com"
+                    placeholder="admin@soleia.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -295,7 +290,7 @@ export default function AdminLogin() {
         </div>
 
         <p className="text-center text-zinc-600 text-sm mt-6">
-          ShowBlox Creative Management System
+          Soleia Creative Management System
         </p>
       </div>
     </div>

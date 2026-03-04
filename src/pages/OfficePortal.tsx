@@ -9,7 +9,7 @@ import { SuperPromptGenerator } from '@/components/office/SuperPromptGenerator';
 import { QuickEntryForm } from '@/components/office/QuickEntryForm';
 import { Button } from '@/components/ui/button';
 import { LogOut, ArrowLeft, Command, Zap } from 'lucide-react';
-import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
+import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 function OfficePortalContent() {
   const navigate = useNavigate();
@@ -128,8 +128,8 @@ function OfficePortalContent() {
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <img 
-              src={showbloxLogo} 
-              alt="ShowBlox" 
+              src={soleiaLogo} 
+              alt="Soleia" 
               className="h-6 w-auto opacity-50"
             />
             <p className="font-tech text-[10px] text-zinc-600 uppercase tracking-wider">
