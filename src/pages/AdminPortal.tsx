@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Loader2, LogOut, ExternalLink, Clock, Command, Users } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
@@ -48,12 +50,36 @@ const portals: PortalCard[] = [
 export default function AdminPortal() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading, signOut } = useAuth();
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/admin/login');
     }
   }, [user, isLoading, navigate]);
+
+  // Fetch pending user count for badge
+  useEffect(() => {
+    if (!isLoading && isAdmin) {
+      const fetchPending = async () => {
+        try {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id');
+          const { data: adminRoles } = await supabase
+            .from('user_roles')
+            .select('user_id')
+            .eq('role', 'admin');
+          const adminIds = new Set(adminRoles?.map(r => r.user_id) || []);
+          const pending = (profiles || []).filter(p => !adminIds.has(p.user_id)).length;
+          setPendingCount(pending);
+        } catch (e) {
+          console.error('Failed to fetch pending count', e);
+        }
+      };
+      fetchPending();
+    }
+  }, [isLoading, isAdmin]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -244,6 +270,11 @@ export default function AdminPortal() {
                 {portal.title}
                 {portal.external && (
                   <ExternalLink className="w-4 h-4 text-zinc-500" />
+                )}
+                {portal.title === 'User Management' && pendingCount > 0 && (
+                  <Badge className="bg-amber-500 text-black text-xs font-bold px-2 py-0.5 rounded-full ml-1">
+                    {pendingCount}
+                  </Badge>
                 )}
               </h2>
 
