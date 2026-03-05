@@ -65,20 +65,6 @@ const displaySpecs = [
     frameRate: '60 fps',
     maxSize: '30GB',
   },
-  {
-    name: 'Elevator Displays',
-    resolution: '600×800',
-    format: 'WMV',
-    frameRate: '30 fps',
-    duration: '30 sec',
-  },
-  {
-    name: 'Marquee / Ticker',
-    resolution: '1280×768',
-    format: 'MP4',
-    codec: 'H264',
-    duration: '15 sec',
-  },
 ];
 
 const workflowSteps = [
@@ -178,8 +164,15 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 42, { align: 'center' });
 
+  // Intro paragraph
+  pdf.setTextColor(...colors.valueText as [number, number, number]);
+  pdf.setFontSize(9);
+  pdf.setFont(FONTS.body.family, FONTS.body.style);
+  const introText = 'We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping. This template is pre-built to match our venue\'s exact screen layout, so you can drop in your content and export with confidence.';
+  const introLines = pdf.splitTextToSize(introText, contentWidth - 10);
+  pdf.text(introLines, pageWidth / 2, 50, { align: 'center' });
 
-  let yPos = 65;
+  let yPos = 50 + introLines.length * 4 + 8;
 
   const checkPageBreak = (needed: number) => {
     if (yPos + needed > pageHeight - 20) {
@@ -196,8 +189,8 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   yPos += 8;
 
   // Specs table
-  const colWidths = [45, 45, 28, 22, 22, 22];
-  const tableHeaders = ['Display Type', 'Resolution', 'Format', 'Codec', 'Frame Rate', 'Duration'];
+  const colWidths = [50, 50, 32, 25, 25];
+  const tableHeaders = ['Display Type', 'Resolution', 'Format', 'Codec', 'Frame Rate'];
   
   // Table header background
   pdf.setFillColor(...colors.headerAccent as [number, number, number]);
@@ -240,9 +233,6 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
     xPos += colWidths[3];
     
     pdf.text(spec.frameRate || '-', xPos, yPos);
-    xPos += colWidths[4];
-    
-    pdf.text(spec.duration || '-', xPos, yPos);
     
     yPos += 10;
   });
