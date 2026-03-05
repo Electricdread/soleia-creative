@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       // For GET requests (email links), redirect to the app management page
       if (userId && action) {
-        const appUrl = `https://showblox-soleia.lovable.app/admin/users?userId=${userId}&action=${action}`;
+        const appUrl = `https://soleia-creative.lovable.app/admin/users?userId=${userId}&action=${action}`;
         return Response.redirect(appUrl, 302);
       }
     } else if (req.method === "POST") {
