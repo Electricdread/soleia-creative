@@ -7,107 +7,107 @@
 
 @layer base {
   :root {
-    /* Deep luxury dark foundation */
-    --background: 30 15% 5%;
-    --foreground: 45 30% 95%;
+    /* Bright elegant white foundation */
+    --background: 0 0% 100%;
+    --foreground: 220 15% 15%;
 
-    /* Rich warm cards */
-    --card: 30 20% 8%;
-    --card-foreground: 45 30% 95%;
+    /* Clean white cards */
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
 
-    --popover: 30 20% 8%;
-    --popover-foreground: 45 30% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
 
-    /* Sun goddess gold primary */
-    --primary: 38 92% 50%;
-    --primary-foreground: 30 15% 8%;
+    /* Warm gold primary */
+    --primary: 32 85% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Warm bronze secondary */
-    --secondary: 30 25% 15%;
-    --secondary-foreground: 45 30% 90%;
+    /* Soft warm secondary */
+    --secondary: 35 12% 93%;
+    --secondary-foreground: 220 15% 20%;
 
     /* Muted warm tones */
-    --muted: 30 15% 12%;
-    --muted-foreground: 35 20% 55%;
+    --muted: 40 10% 95%;
+    --muted-foreground: 220 10% 45%;
 
     /* Amber accent */
-    --accent: 32 85% 45%;
-    --accent-foreground: 30 15% 8%;
+    --accent: 28 80% 35%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 45 90% 48%;
-    --success-foreground: 30 15% 8%;
+    --success: 145 60% 36%;
+    --success-foreground: 0 0% 100%;
 
-    /* Warm borders */
-    --border: 30 25% 18%;
-    --input: 30 20% 14%;
-    --ring: 38 92% 50%;
+    /* Subtle borders */
+    --border: 220 10% 90%;
+    --input: 220 10% 93%;
+    --ring: 32 85% 38%;
 
     --radius: 0.75rem;
 
-    /* Custom luxury tokens */
-    --glass: 30 20% 10%;
-    --glass-border: 38 40% 25%;
-    --glow-gold: 38 92% 50%;
-    --glow-amber: 32 85% 45%;
-    --glow-warm: 25 80% 40%;
+    /* Glass tokens */
+    --glass: 0 0% 98%;
+    --glass-border: 220 10% 85%;
+    --glow-gold: 32 85% 38%;
+    --glow-amber: 28 80% 35%;
+    --glow-warm: 22 75% 30%;
     
-    /* Luxury gradients */
-    --gradient-luxury: linear-gradient(135deg, hsl(30 15% 4%) 0%, hsl(25 25% 10%) 50%, hsl(30 15% 4%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(45 90% 55%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
-    --gradient-sunset: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 80% 45%) 50%, hsl(15 75% 40%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(30 20% 10%) 0%, hsl(30 20% 6%) 100%);
+    /* Elegant gradients */
+    --gradient-luxury: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(40 20% 97%) 50%, hsl(0 0% 100%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(40 85% 52%) 0%, hsl(32 85% 38%) 50%, hsl(28 80% 35%) 100%);
+    --gradient-sunset: linear-gradient(135deg, hsl(32 85% 38%) 0%, hsl(25 80% 45%) 50%, hsl(15 75% 40%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 15% 97%) 100%);
     
-    /* Sidebar luxury theme */
-    --sidebar-background: 30 20% 6%;
-    --sidebar-foreground: 45 30% 90%;
-    --sidebar-primary: 38 92% 50%;
-    --sidebar-primary-foreground: 30 15% 8%;
-    --sidebar-accent: 30 25% 15%;
-    --sidebar-accent-foreground: 45 30% 90%;
-    --sidebar-border: 30 25% 18%;
-    --sidebar-ring: 38 92% 50%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 220 15% 20%;
+    --sidebar-primary: 32 85% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 35 12% 93%;
+    --sidebar-accent-foreground: 220 15% 20%;
+    --sidebar-border: 220 10% 90%;
+    --sidebar-ring: 32 85% 38%;
   }
 
-  /* Light mode - warm cream and gold aesthetic with strong contrast */
+  /* Light mode - clean white elegant */
   .light {
-    --background: 40 25% 95%;
-    --foreground: 25 30% 12%;
-    --card: 40 20% 98%;
-    --card-foreground: 25 30% 12%;
-    --popover: 40 20% 98%;
-    --popover-foreground: 25 30% 12%;
-    --primary: 32 85% 35%;
-    --primary-foreground: 40 30% 98%;
-    --secondary: 35 15% 88%;
-    --secondary-foreground: 25 30% 15%;
-    --muted: 35 12% 90%;
-    --muted-foreground: 25 20% 35%;
-    --accent: 28 80% 32%;
-    --accent-foreground: 40 30% 98%;
-    --destructive: 0 72% 45%;
+    --background: 0 0% 100%;
+    --foreground: 220 15% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+    --primary: 32 85% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 35 12% 93%;
+    --secondary-foreground: 220 15% 20%;
+    --muted: 40 10% 95%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 28 80% 35%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
-    --success: 45 85% 32%;
-    --success-foreground: 40 30% 98%;
-    --border: 30 20% 75%;
-    --input: 35 15% 88%;
-    --ring: 32 85% 35%;
-    --glass: 40 15% 92%;
-    --glass-border: 32 25% 65%;
-    --glow-gold: 32 85% 35%;
-    --glow-amber: 28 80% 32%;
-    --glow-warm: 22 75% 28%;
-    --gradient-luxury: linear-gradient(135deg, hsl(40 25% 96%) 0%, hsl(35 20% 92%) 50%, hsl(40 25% 96%) 100%);
-    --sidebar-background: 40 20% 96%;
-    --sidebar-foreground: 25 30% 15%;
-    --sidebar-primary: 32 85% 35%;
-    --sidebar-primary-foreground: 40 30% 98%;
-    --sidebar-accent: 35 15% 90%;
-    --sidebar-accent-foreground: 25 30% 15%;
-    --sidebar-border: 30 20% 78%;
-    --sidebar-ring: 32 85% 35%;
+    --success: 145 60% 36%;
+    --success-foreground: 0 0% 100%;
+    --border: 220 10% 90%;
+    --input: 220 10% 93%;
+    --ring: 32 85% 38%;
+    --glass: 0 0% 98%;
+    --glass-border: 220 10% 85%;
+    --glow-gold: 32 85% 38%;
+    --glow-amber: 28 80% 35%;
+    --glow-warm: 22 75% 30%;
+    --gradient-luxury: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(40 20% 97%) 50%, hsl(0 0% 100%) 100%);
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 220 15% 20%;
+    --sidebar-primary: 32 85% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 35 12% 93%;
+    --sidebar-accent-foreground: 220 15% 20%;
+    --sidebar-border: 220 10% 90%;
+    --sidebar-ring: 32 85% 38%;
   }
 
   .dark {
@@ -184,29 +184,25 @@
 }
 
 @layer utilities {
-  /* Luxury glassmorphism - theme aware */
+  /* Elegant glassmorphism - theme aware */
   .glass {
-    @apply bg-card/60 backdrop-blur-xl border border-border/40;
+    @apply bg-card/80 backdrop-blur-xl border border-border/30;
+    box-shadow: 0 1px 3px hsl(220 10% 50% / 0.06);
   }
   
   .dark .glass {
     background: linear-gradient(135deg, hsl(30 20% 10% / 0.7) 0%, hsl(30 20% 8% / 0.8) 100%);
-  }
-  
-  .light .glass {
-    background: linear-gradient(135deg, hsl(40 20% 98% / 0.8) 0%, hsl(40 15% 95% / 0.9) 100%);
+    box-shadow: none;
   }
   
   .glass-strong {
-    @apply bg-card/85 backdrop-blur-2xl border border-border/50;
+    @apply bg-card/95 backdrop-blur-2xl border border-border/40;
+    box-shadow: 0 2px 8px hsl(220 10% 50% / 0.08);
   }
   
   .dark .glass-strong {
     background: linear-gradient(180deg, hsl(30 20% 12% / 0.9) 0%, hsl(30 20% 8% / 0.95) 100%);
-  }
-  
-  .light .glass-strong {
-    background: linear-gradient(180deg, hsl(40 20% 99% / 0.95) 0%, hsl(40 15% 96% / 0.98) 100%);
+    box-shadow: none;
   }
   
   /* Sun goddess glows */
@@ -258,16 +254,16 @@
     background: linear-gradient(135deg, hsl(40 85% 50%) 0%, hsl(35 80% 45%) 50%, hsl(30 75% 40%) 100%);
   }
   
-  /* Luxury text gradient - theme aware */
+  /* Elegant text gradient - theme aware */
   .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(45 90% 60%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
+    background: linear-gradient(135deg, hsl(32 90% 35%) 0%, hsl(28 85% 30%) 50%, hsl(22 80% 25%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
-  .light .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(32 90% 35%) 0%, hsl(28 85% 30%) 50%, hsl(22 80% 25%) 100%);
+  .dark .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(45 90% 60%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
