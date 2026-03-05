@@ -387,6 +387,40 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   yPos += 30;
 
+  // ========== PRO TIPS ==========
+  checkPageBreak(45);
+  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
+  pdf.setFontSize(12);
+  pdf.setFont(FONTS.title.family, FONTS.title.style);
+  pdf.text('PRO TIPS', margin, yPos);
+  yPos += 8;
+
+  proTips.forEach((tip, idx) => {
+    const col = idx % 2;
+    const row = Math.floor(idx / 2);
+    const tipX = margin + (col * (stepWidth + 8));
+    const tipY = yPos + (row * 14);
+    
+    // Checkmark
+    pdf.setTextColor(...colors.gold as [number, number, number]);
+    pdf.setFontSize(10);
+    pdf.text('✓', tipX, tipY + 4);
+    
+    // Tip title
+    pdf.setTextColor(...colors.titleText as [number, number, number]);
+    pdf.setFontSize(8);
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
+    pdf.text(tip.title, tipX + 6, tipY + 4);
+    
+    // Tip description
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFontSize(7);
+    pdf.setFont(FONTS.body.family, FONTS.body.style);
+    pdf.text(tip.desc, tipX + 6, tipY + 10);
+  });
+
+  yPos += 35;
+
   // ========== RESOLUME DOWNLOAD BOX ==========
   checkPageBreak(25);
   pdf.setFillColor(...colors.cardBg as [number, number, number]);
