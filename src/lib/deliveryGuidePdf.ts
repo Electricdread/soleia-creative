@@ -392,7 +392,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
   pdf.setFontSize(12);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('PRO TIPS', margin, yPos);
+  pdf.text('ENCODING WORKFLOW', margin, yPos);
   yPos += 8;
 
   proTips.forEach((tip, idx) => {
