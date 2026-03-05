@@ -37,12 +37,12 @@ const handler = async (req: Request): Promise<Response> => {
     });
     
     // Create approval URL - goes to the app management page
-    const managementUrl = `https://showblox-soleia.lovable.app/admin/users?userId=${userId}&action=approve`;
+    const managementUrl = `https://soleia-creative.lovable.app/admin/users?userId=${userId}&action=approve`;
 
     const emailResponse = await resend.emails.send({
-      from: "ShowBlox <onboarding@resend.dev>",
+      from: "DSX Soleia <onboarding@resend.dev>",
       to: ["ninemilelion@gmail.com"],
-      subject: "🔐 Admin Access Request - ShowBlox Portal",
+      subject: "🔐 Admin Access Request - DSX SOLEIA Creative Team",
       html: `
         <!DOCTYPE html>
         <html>
@@ -304,8 +304,8 @@ const handler = async (req: Request): Promise<Response> => {
                   <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2"/>
                 </svg>
               </div>
-              <div class="brand-name">SHOWBLOX</div>
-              <div class="doc-type">Access Authorization Request</div>
+              <div class="brand-name">DSX SOLEIA</div>
+              <div class="doc-type">Creative Team — Access Authorization Request</div>
             </div>
             
             <div class="body">
@@ -334,7 +334,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div class="message">
-                A new user has requested administrative access to the ShowBlox Creative Management System. 
+                A new user has requested administrative access to the DSX SOLEIA Creative Management System. 
                 Please review this request and take appropriate action. Approved users will receive 
                 full access to all portal features.
               </div>
@@ -347,7 +347,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <div class="footer">
-              <div class="footer-text">ShowBlox Creative Management System</div>
+              <div class="footer-text">DSX SOLEIA Creative Team</div>
               <div class="doc-id">REF: ${userId.slice(0, 8).toUpperCase()}</div>
             </div>
           </div>
