@@ -44,24 +44,6 @@ const displaySpecs = [
     frameRate: '60 fps',
     maxSize: '30GB',
   },
-  {
-    id: 'elevator',
-    name: 'Elevator Displays',
-    icon: Gauge,
-    resolution: '600×800',
-    format: 'WMV',
-    frameRate: '30 fps',
-    duration: '30 sec',
-  },
-  {
-    id: 'ticker',
-    name: 'Marquee/Ticker',
-    icon: Monitor,
-    resolution: '1280×768',
-    format: 'MP4',
-    codec: 'H264',
-    duration: '15 sec',
-  },
 ];
 
 const workflowSteps = [
@@ -102,8 +84,6 @@ Make sure your files match these requirements:
 
 • TV Displays — 1920×1080 or 3840×2160 | MOV | DXV3 | Max 8GB
 • LED Pixel Map — 3840×2160 | MOV w/ Alpha | DXV3 | 60fps | Max 30GB
-• Elevator Displays — 600×800 | WMV | 30fps | 30 sec
-• Marquee/Ticker — 1280×768 | MP4 | H264 | 15 sec
 
 ──────────────────────────
 STEP 5: SUBMIT CONTENT
@@ -290,12 +270,6 @@ export const ContentDeliveryView = () => {
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Frame Rate</span>
                             <span className="font-mono text-foreground">{spec.frameRate}</span>
-                          </div>
-                        )}
-                        {spec.duration && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Duration</span>
-                            <span className="font-mono text-foreground">{spec.duration}</span>
                           </div>
                         )}
                         {spec.maxSize && (
