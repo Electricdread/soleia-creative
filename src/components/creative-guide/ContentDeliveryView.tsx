@@ -75,7 +75,9 @@ const DELIVERY_EMAIL_TEMPLATE = `Subject: Content Delivery Guide — Soleia Venu
 
 Hi [Client Name],
 
-Thank you for choosing Soleia for your upcoming event! Below is a quick step-by-step guide to deliver your custom content for our venue screens.
+We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping. This template is pre-built to match our venue's exact screen layout, so you can drop in your content and export with confidence.
+
+Below is a quick step-by-step guide to deliver your custom content for our venue screens.
 
 ──────────────────────────
 STEP 1: PREPARE YOUR VIDEO
@@ -184,7 +186,7 @@ export const ContentDeliveryView = () => {
           Delivering Your Content
         </h2>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Our venue uses Resolume media servers. Follow this guide to ensure your content displays flawlessly.
+          We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping. Follow this guide to ensure your content displays flawlessly.
         </p>
       </motion.div>
 
