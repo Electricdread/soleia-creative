@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,7 @@ import soleiaIcon from '@/assets/sol-icon.png';
 export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, signIn, signUp, isLoading: authLoading } = useAuth();
   
@@ -22,10 +23,18 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
 
-  const redirectTo =
+  const redirectFromQuery = searchParams.get('redirect');
+  const redirectFromState =
     (location.state as { from?: { pathname?: string; search?: string } } | null)?.from
       ? `${(location.state as { from: { pathname: string; search?: string } }).from.pathname}${(location.state as { from: { pathname: string; search?: string } }).from.search || ''}`
-      : '/admin';
+      : null;
+
+  const redirectTo =
+    (redirectFromQuery && redirectFromQuery.startsWith('/'))
+      ? redirectFromQuery
+      : (redirectFromState && redirectFromState.startsWith('/'))
+        ? redirectFromState
+        : '/admin';
 
   useEffect(() => {
     if (!authLoading && user) {

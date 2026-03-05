@@ -55,9 +55,16 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  // Not authenticated - redirect to login
+  // Not authenticated - redirect to login and preserve destination in both state + query param
   if (!user) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    const destination = `${location.pathname}${location.search}`;
+    return (
+      <Navigate
+        to={`/admin/login?redirect=${encodeURIComponent(destination)}`}
+        state={{ from: location }}
+        replace
+      />
+    );
   }
 
   // Show Access Granted celebration page
