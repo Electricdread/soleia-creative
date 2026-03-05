@@ -157,7 +157,7 @@ const DeliveryGuide = () => {
                 )}
                 <span className="hidden sm:inline">Print PDF</span>
               </Button>
-              <PoweredByShowBlox variant="header" />
+              
             </div>
           </div>
         </div>

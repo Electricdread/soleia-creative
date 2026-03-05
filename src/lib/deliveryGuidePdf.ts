@@ -459,24 +459,6 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text('Soleia Content Delivery Specifications', margin, footerY);
   
-  // ShowBlox branding
-  const poweredByText = 'Powered by';
-  pdf.setFontSize(6);
-  pdf.setFont(FONTS.body.family, FONTS.body.style);
-  const poweredByWidth = pdf.getTextWidth(poweredByText);
-  const iconWidth = 4;
-  const totalBrandWidth = poweredByWidth + iconWidth + 2;
-  const brandX = (pageWidth - totalBrandWidth) / 2;
-  
-  pdf.text(poweredByText, brandX, footerY);
-  
-  if (showbloxBase64) {
-    try {
-      pdf.addImage(showbloxBase64, 'PNG', brandX + poweredByWidth + 2, footerY - 3.5, iconWidth, iconWidth);
-    } catch (e) {
-      console.error('Failed to add ShowBlox icon:', e);
-    }
-  }
   
   // Date generated
   const dateText = `Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
