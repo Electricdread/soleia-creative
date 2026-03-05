@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,7 @@ import soleiaIcon from '@/assets/sol-icon.png';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user, signIn, signUp, isLoading: authLoading } = useAuth();
   
@@ -21,11 +22,16 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
 
+  const redirectTo =
+    (location.state as { from?: { pathname?: string; search?: string } } | null)?.from
+      ? `${(location.state as { from: { pathname: string; search?: string } }).from.pathname}${(location.state as { from: { pathname: string; search?: string } }).from.search || ''}`
+      : '/admin';
+
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/admin', { replace: true });
+      navigate(redirectTo, { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, redirectTo]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +54,7 @@ export default function AdminLogin() {
         description: 'Redirecting to admin portal...',
       });
 
-      navigate('/admin');
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       toast({
         title: 'Login failed',
