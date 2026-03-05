@@ -392,6 +392,12 @@ export const creativeGuideCategories = [
     description: 'Pixelmap specs and templates',
     icon: 'Palette'
   },
+  { 
+    key: 'content-delivery', 
+    label: 'Content Delivery', 
+    description: 'DXV3 encoding & submission guide',
+    icon: 'Send'
+  },
 ] as const;
 
 export type CreativeGuideCategoryKey = typeof creativeGuideCategories[number]['key'];

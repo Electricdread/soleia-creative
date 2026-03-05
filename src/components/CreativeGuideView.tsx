@@ -10,7 +10,8 @@ import {
   FileText,
   Palette,
   BookOpen,
-  Printer
+  Printer,
+  Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -20,6 +21,7 @@ import { VenueOverviewView } from '@/components/creative-guide/VenueOverviewView
 import { CustomContentView } from '@/components/creative-guide/CustomContentView';
 import { IntroductionView } from '@/components/creative-guide/IntroductionView';
 import { LEDZonesView } from '@/components/creative-guide/LEDZonesView';
+import { ContentDeliveryView } from '@/components/creative-guide/ContentDeliveryView';
 import { creativeGuideCategories, type CreativeGuideCategoryKey } from '@/lib/creativeGuide';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
@@ -58,6 +60,7 @@ const CreativeGuideView = () => {
     'display-specs': <FileText className="w-5 h-5" />,
     'led-zones': <Monitor className="w-5 h-5" />,
     'custom-content': <Palette className="w-5 h-5" />,
+    'content-delivery': <Send className="w-5 h-5" />,
   };
 
   return (
@@ -253,6 +256,18 @@ const CreativeGuideView = () => {
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               >
                 <CustomContentView />
+              </motion.div>
+            )}
+
+            {selectedCategory === 'content-delivery' && (
+              <motion.div
+                key="content-delivery"
+                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              >
+                <ContentDeliveryView />
               </motion.div>
             )}
           </AnimatePresence>
