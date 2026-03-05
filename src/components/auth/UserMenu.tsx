@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,12 +8,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import { AuthModal } from './AuthModal';
+import { useNavigate } from 'react-router-dom';
 import { User, LogOut, Shield, LogIn } from 'lucide-react';
 
 export function UserMenu() {
   const { user, isAdmin, signOut, isLoading } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -26,13 +25,10 @@ export function UserMenu() {
 
   if (!user) {
     return (
-      <>
-        <Button variant="outline" size="sm" onClick={() => setShowAuthModal(true)} className="gap-2">
-          <LogIn className="h-4 w-4" />
-          Sign In
-        </Button>
-        <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
-      </>
+      <Button variant="outline" size="sm" onClick={() => navigate('/admin/login')} className="gap-2">
+        <LogIn className="h-4 w-4" />
+        Sign In
+      </Button>
     );
   }
 
