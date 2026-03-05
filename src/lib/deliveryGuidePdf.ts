@@ -135,18 +135,18 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   // ========== HEADER ==========
   pdf.setFillColor(...colors.headerBg as [number, number, number]);
-  pdf.rect(0, 0, pageWidth, 55, 'F');
+  pdf.rect(0, 0, pageWidth, 62, 'F');
   
   // Gold accent line
   pdf.setFillColor(...colors.gold as [number, number, number]);
-  pdf.rect(0, 53, pageWidth, 2, 'F');
+  pdf.rect(0, 60, pageWidth, 2, 'F');
 
   // Logo
   if (logoBase64) {
     try {
       const logoWidth = 55;
       const logoHeight = 16;
-      pdf.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 8, logoWidth, logoHeight);
+      pdf.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 6, logoWidth, logoHeight);
     } catch (e) {
       console.error('Failed to add logo:', e);
     }
@@ -156,23 +156,23 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   pdf.setTextColor(...colors.titleText as [number, number, number]);
   pdf.setFontSize(18);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('CONTENT DELIVERY GUIDE', pageWidth / 2, 34, { align: 'center' });
+  pdf.text('CONTENT DELIVERY GUIDE', pageWidth / 2, 30, { align: 'center' });
 
   // Subtitle
   pdf.setTextColor(...colors.labelText as [number, number, number]);
   pdf.setFontSize(10);
   pdf.setFont(FONTS.accent.family, FONTS.accent.style);
-  pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 42, { align: 'center' });
+  pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 38, { align: 'center' });
 
-  // Intro paragraph
-  pdf.setTextColor(...colors.valueText as [number, number, number]);
-  pdf.setFontSize(9);
-  pdf.setFont(FONTS.body.family, FONTS.body.style);
+  // Intro paragraph — bold and larger for readability
+  pdf.setTextColor(...colors.titleText as [number, number, number]);
+  pdf.setFontSize(10);
+  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
   const introText = 'We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping. This template is pre-built to match our venue\'s exact screen layout, so you can drop in your content and export with confidence.';
-  const introLines = pdf.splitTextToSize(introText, contentWidth - 10);
-  pdf.text(introLines, pageWidth / 2, 50, { align: 'center' });
+  const introLines = pdf.splitTextToSize(introText, contentWidth - 20);
+  pdf.text(introLines, pageWidth / 2, 46, { align: 'center' });
 
-  let yPos = 50 + introLines.length * 4 + 8;
+  let yPos = 46 + introLines.length * 5 + 8;
 
   const checkPageBreak = (needed: number) => {
     if (yPos + needed > pageHeight - 20) {
