@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+
 import { Loader2, Lock, UserPlus } from 'lucide-react';
 import soleiaIcon from '@/assets/sol-icon.png';
 
@@ -102,25 +102,13 @@ export default function AdminLogin() {
       }
 
       const userId = data?.user?.id;
-      if (userId) {
-        try {
-          await supabase.functions.invoke('notify-admin-signup', {
-            body: {
-              userEmail: email,
-              userId: userId,
-            },
-          });
-          console.log('Admin notification sent for userId:', userId);
-        } catch (notifyError) {
-          console.error('Failed to send admin notification:', notifyError);
-        }
-      } else {
+      if (!userId) {
         console.error('No user ID returned from signUp');
       }
 
       toast({
         title: 'Registration submitted!',
-        description: 'Your request has been sent for approval. You will be notified once approved.',
+        description: 'Your request is pending admin approval. An admin can approve you in the Admin Users portal.',
       });
 
       setEmail('');
@@ -289,7 +277,7 @@ export default function AdminLogin() {
               </form>
 
               <p className="text-xs text-zinc-500 text-center mt-4">
-                Your registration will be reviewed by an administrator. You'll receive an email once approved.
+                Your registration stays pending until an administrator approves it in the Admin Users portal.
               </p>
             </TabsContent>
           </Tabs>
