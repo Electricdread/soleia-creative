@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ExternalLink, 
@@ -9,12 +9,15 @@ import {
   Gauge,
   Clock,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  Printer,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 
 const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
@@ -67,8 +70,40 @@ const workflowSteps = [
 ];
 
 export const ContentDeliveryView = () => {
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handlePrintPdf = async () => {
+    setIsDownloading(true);
+    try {
+      const livePageUrl = `${window.location.origin}/delivery-guide`;
+      const { downloadDeliveryGuidePdf } = await import('@/lib/deliveryGuidePdf');
+      await downloadDeliveryGuidePdf(livePageUrl);
+      toast.success('PDF downloaded — open the file and print');
+    } catch (error) {
+      console.error('PDF print error:', error);
+      toast.error('Failed to generate PDF');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="space-y-10 max-w-5xl mx-auto">
+      {/* Print PDF Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={handlePrintPdf}
+          disabled={isDownloading}
+          className="gap-2"
+        >
+          {isDownloading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Printer className="w-4 h-4" />
+          )}
+          Print Delivery Guide PDF
+        </Button>
+      </div>
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
