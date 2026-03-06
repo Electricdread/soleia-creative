@@ -563,7 +563,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
               <div className="text-right">
                 <span className="text-sm text-gray-500 flex items-center gap-1">
                   <ExternalLink className="w-4 h-4" />
-                  showblox-soleia.lovable.app/creative-guide
+                  soleia-creative.lovable.app/creative-guide
                 </span>
               </div>
             </div>
