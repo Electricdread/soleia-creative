@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, LogOut, ExternalLink, Clock, Command, Users } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
+import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
 
 
 const OPERATOR_EMAIL = 'luisdreams@me.com';
@@ -298,6 +299,12 @@ export default function AdminPortal() {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* Email Templates Section */}
+        <div className="max-w-5xl mx-auto mt-10">
+          <h2 className="text-xl font-semibold text-white mb-4">Client Templates</h2>
+          <EmailTemplateCard />
         </div>
       </main>
 
