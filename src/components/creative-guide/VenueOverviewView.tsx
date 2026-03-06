@@ -242,7 +242,7 @@ const handlePrintBlueprint = () => {
           <p>Generated from Soleia Creative Guide - ${new Date().toLocaleDateString()}</p>
           <div class="powered-by">
             <span>Powered by</span>
-            <img src="/soleia-icon.png" alt="ShowBlox" onerror="this.style.display='none'" />
+            <img src="/soleia-icon.png" alt="Soleia" onerror="this.style.display='none'" />
           </div>
         </div>
       </div>
