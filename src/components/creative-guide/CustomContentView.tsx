@@ -110,9 +110,9 @@ export function CustomContentView() {
                 <Sparkles className="w-6 h-6 text-primary" />
               </div>
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-gradient-gold">Content Creation with ShowBlox</h3>
+                <h3 className="text-lg font-semibold text-gradient-gold">Content Creation with Soleia Creative Team</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  ShowBlox develops custom motion graphics and branded content strategically designed for Soleia's multi-zone LED ecosystem. Our creative team ensures visual continuity, optimal resolution matching, and maximum impact across every screen in the venue.
+                  The Soleia Creative Team develops custom motion graphics and branded content strategically designed for Soleia's multi-zone LED ecosystem. Our creative team ensures visual continuity, optimal resolution matching, and maximum impact across every screen in the venue.
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   From immersive logo reveals to ambient architectural visuals, we craft content that transforms Soleia into a fully branded environment—seamlessly integrating your brand across focal displays and atmospheric zones alike.
