@@ -78,12 +78,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
           <div className="border-t border-b border-gray-200 py-6 my-8">
             <p className="text-sm text-gray-500 uppercase tracking-wider mb-2">Prepared by</p>
             <div className="flex items-center justify-center gap-2">
-              <img 
-                src="/assets/showblox-icon.png" 
-                alt="ShowBlox" 
-                className="h-6"
-              />
-              <span className="font-medium text-gray-700">ShowBlox</span>
+              <span className="font-medium text-gray-700">Soleia Creative Team</span>
             </div>
           </div>
 
