@@ -658,7 +658,7 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
         </DialogContent>
       </Dialog>
       
-      {/* Powered by ShowBlox Footer */}
+      {/* Footer */}
       <PoweredByShowBlox className="border-t border-border/30" />
     </div>
   );

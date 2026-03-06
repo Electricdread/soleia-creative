@@ -1035,7 +1035,7 @@ const MotionGraphicsLookbook = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Powered by ShowBlox Footer */}
+      {/* Footer */}
       <PoweredByShowBlox className="border-t border-border/30" />
     </div>
   );

@@ -238,7 +238,7 @@ const CreativeGuideView = () => {
         </div>
       </main>
       
-      {/* Powered by ShowBlox Footer */}
+      {/* Footer */}
       <PoweredByShowBlox className="border-t border-border/30 mt-8" />
     </div>
   );
