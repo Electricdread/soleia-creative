@@ -18,9 +18,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { DisplaySpecsView } from '@/components/creative-guide/DisplaySpecsView';
 import { VenueOverviewView } from '@/components/creative-guide/VenueOverviewView';
-import { CustomContentView } from '@/components/creative-guide/CustomContentView';
 import { IntroductionView } from '@/components/creative-guide/IntroductionView';
-import { LEDZonesView } from '@/components/creative-guide/LEDZonesView';
 import { ContentDeliveryView } from '@/components/creative-guide/ContentDeliveryView';
 import { creativeGuideCategories, type CreativeGuideCategoryKey } from '@/lib/creativeGuide';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
@@ -58,8 +56,6 @@ const CreativeGuideView = () => {
     'introduction': <BookOpen className="w-5 h-5" />,
     'venue-overview': <Building2 className="w-5 h-5" />,
     'display-specs': <FileText className="w-5 h-5" />,
-    'led-zones': <Monitor className="w-5 h-5" />,
-    'custom-content': <Palette className="w-5 h-5" />,
     'content-delivery': <Send className="w-5 h-5" />,
   };
 
@@ -224,30 +220,6 @@ const CreativeGuideView = () => {
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               >
                 <DisplaySpecsView />
-              </motion.div>
-            )}
-
-            {selectedCategory === 'led-zones' && (
-              <motion.div
-                key="led-zones"
-                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              >
-                <LEDZonesView />
-              </motion.div>
-            )}
-
-            {selectedCategory === 'custom-content' && (
-              <motion.div
-                key="custom-content"
-                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              >
-                <CustomContentView />
               </motion.div>
             )}
 
