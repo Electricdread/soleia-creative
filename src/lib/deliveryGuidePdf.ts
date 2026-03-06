@@ -68,10 +68,11 @@ const displaySpecs = [
 ];
 
 const workflowSteps = [
-  { step: 1, title: 'Export Source Video', description: 'Export in ProRes or high-quality H264 from your editing software.' },
-  { step: 2, title: 'Open Resolume Alley', description: 'Download the free encoder from resolume.com/software/alley' },
-  { step: 3, title: 'Encode to DXV3', description: 'Select DXV3 codec and export your content.' },
-  { step: 4, title: 'Submit Content', description: 'Deliver at least 21 business days before your event.' },
+  { step: 1, title: 'Prepare Your Video', description: 'Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.' },
+  { step: 2, title: 'Download Resolume Alley (Free)', description: 'Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder.' },
+  { step: 3, title: 'Encode to DXV3', description: 'Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select "DXV3 Alpha."' },
+  { step: 4, title: 'Check Specs', description: 'TV Displays: 1920x1080 or 3840x2160 | MOV | DXV3 | Max 8GB. LED Pixel Map: 3840x2160 | MOV w/ Alpha | DXV3 | 60fps | Max 30GB.' },
+  { step: 5, title: 'Submit Content', description: 'Submit your encoded files at least 21 business days before your event so we can test and approve playback.' },
 ];
 
 const proTips = [
@@ -181,7 +182,70 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
     }
   };
 
+  // ========== STEP-BY-STEP WORKFLOW ==========
+  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
+  pdf.setFontSize(12);
+  pdf.setFont(FONTS.title.family, FONTS.title.style);
+  pdf.text('STEP-BY-STEP WORKFLOW', margin, yPos);
+  yPos += 8;
+
+  workflowSteps.forEach((item) => {
+    checkPageBreak(16);
+    // Step number circle
+    pdf.setFillColor(...colors.headerAccent as [number, number, number]);
+    pdf.circle(margin + 5, yPos + 2, 4, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(9);
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
+    pdf.text(String(item.step), margin + 5, yPos + 4, { align: 'center' });
+
+    // Title
+    pdf.setTextColor(...colors.titleText as [number, number, number]);
+    pdf.setFontSize(9);
+    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
+    pdf.text(item.title, margin + 14, yPos + 2);
+
+    // Description
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFontSize(7.5);
+    pdf.setFont(FONTS.body.family, FONTS.body.style);
+    const descLines = pdf.splitTextToSize(item.description, contentWidth - 18);
+    pdf.text(descLines, margin + 14, yPos + 7);
+    yPos += 7 + descLines.length * 4 + 3;
+  });
+
+  yPos += 4;
+
+  // ========== RESOLUME DOWNLOAD BOX ==========
+  checkPageBreak(25);
+  pdf.setFillColor(...colors.cardBg as [number, number, number]);
+  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
+  pdf.setLineWidth(1);
+  pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'FD');
+  
+  pdf.setTextColor(...colors.titleText as [number, number, number]);
+  pdf.setFontSize(10);
+  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
+  pdf.text('DXV3 Codec Required', margin + 8, yPos + 8);
+  
+  pdf.setTextColor(...colors.labelText as [number, number, number]);
+  pdf.setFontSize(8);
+  pdf.setFont(FONTS.body.family, FONTS.body.style);
+  pdf.text('Download the free Resolume Alley encoder to convert your videos to DXV3 format.', margin + 8, yPos + 14);
+  
+  pdf.setTextColor(...colors.linkBlue as [number, number, number]);
+  pdf.setFontSize(8);
+  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
+  const resolumeLinkText = 'resolume.com/software/alley';
+  pdf.textWithLink(resolumeLinkText, margin + 8, yPos + 20, { url: 'https://resolume.com/software/alley' });
+  pdf.setDrawColor(...colors.linkBlue as [number, number, number]);
+  pdf.setLineWidth(0.3);
+  pdf.line(margin + 8, yPos + 21, margin + 8 + pdf.getTextWidth(resolumeLinkText), yPos + 21);
+
+  yPos += 30;
+
   // ========== DISPLAY SPECIFICATIONS ==========
+  checkPageBreak(40);
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
   pdf.setFontSize(12);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
@@ -239,120 +303,6 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   yPos += 8;
 
-  // ========== PIXEL MAP IMAGE ==========
-  checkPageBreak(120);
-  const pixelmapImg = await assetToBase64('/creative-guide/soleia-pixelmap.png');
-  if (pixelmapImg) {
-    try {
-      const imgWidth = contentWidth;
-      const imgHeight = imgWidth * (820 / 1456); // approximate aspect ratio
-      pdf.addImage(pixelmapImg, 'PNG', margin, yPos, imgWidth, imgHeight);
-      yPos += imgHeight + 6;
-    } catch (e) {
-      console.error('Failed to add pixelmap:', e);
-    }
-  }
-
-  // ========== SCREEN SPECIFICATION CHART ==========
-  checkPageBreak(70);
-  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(12);
-  pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('SCREEN SPECIFICATIONS BY ZONE', margin, yPos);
-  yPos += 6;
-
-  const screenGroups = [
-    {
-      label: 'INDOOR SCREENS',
-      screens: [
-        { name: 'SR IMAG', res: '1216 × 592' },
-        { name: 'SL IMAG', res: '1216 × 592' },
-        { name: 'CENTER', res: '640 × 272' },
-        { name: 'DJ BOOTH', res: '1260 × 168' },
-        { name: 'SR CURVE', res: '2304 × 272' },
-        { name: 'SL CURVE', res: '2304 × 272' },
-      ],
-    },
-    {
-      label: 'OUTDOOR SCREENS',
-      screens: [
-        { name: 'OUTDOOR SR', res: '588 × 840' },
-        { name: 'OUTDOOR SL', res: '588 × 840' },
-        { name: 'OUTDOOR ARCH', res: '1512 × 504' },
-      ],
-    },
-    {
-      label: 'SUNRAY ELEMENTS (INDOOR)',
-      screens: [
-        { name: 'SUNRAY #1', res: '1920 × 128' },
-        { name: 'SUNRAY #2', res: '1536 × 128' },
-        { name: 'SUNRAY #3', res: '1792 × 128' },
-        { name: 'SUNRAY #4', res: '1792 × 128' },
-        { name: 'SUNRAY #5', res: '1792 × 128' },
-        { name: 'SUNRAY #6', res: '1536 × 128' },
-      ],
-    },
-  ];
-
-  // Three-column layout for the groups
-  const groupCount = screenGroups.length;
-  const groupGap = 4;
-  const groupWidth = (contentWidth - groupGap * (groupCount - 1)) / groupCount;
-  const rowH = 5.5;
-  const headerH = 7;
-
-  screenGroups.forEach((group, gi) => {
-    const gx = margin + gi * (groupWidth + groupGap);
-
-    // Group header
-    pdf.setFillColor(...colors.headerAccent as [number, number, number]);
-    pdf.rect(gx, yPos, groupWidth, headerH, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(6);
-    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-    pdf.text(group.label, gx + groupWidth / 2, yPos + 5, { align: 'center' });
-
-    // Column sub-headers
-    const subY = yPos + headerH;
-    pdf.setFillColor(245, 240, 230);
-    pdf.rect(gx, subY, groupWidth, rowH, 'F');
-    pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFontSize(5.5);
-    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-    pdf.text('SCREEN', gx + 2, subY + 4);
-    pdf.text('RESOLUTION', gx + groupWidth - 2, subY + 4, { align: 'right' });
-
-    // Rows
-    group.screens.forEach((screen, si) => {
-      const ry = subY + rowH + si * rowH;
-      const rowBg = si % 2 === 0 ? colors.cardBg : [248, 245, 240];
-      pdf.setFillColor(...rowBg as [number, number, number]);
-      pdf.rect(gx, ry, groupWidth, rowH, 'F');
-
-      pdf.setTextColor(...colors.titleText as [number, number, number]);
-      pdf.setFontSize(6);
-      pdf.setFont(FONTS.body.family, FONTS.body.style);
-      pdf.text(screen.name, gx + 2, ry + 4);
-
-      pdf.setFont(FONTS.mono.family, FONTS.mono.style);
-      pdf.setFontSize(6);
-      pdf.setTextColor(...colors.valueText as [number, number, number]);
-      pdf.text(screen.res, gx + groupWidth - 2, ry + 4, { align: 'right' });
-    });
-
-    // Border around entire group
-    const totalH = headerH + rowH + group.screens.length * rowH;
-    pdf.setDrawColor(...colors.cardBorder as [number, number, number]);
-    pdf.setLineWidth(0.3);
-    pdf.rect(gx, yPos, groupWidth, totalH);
-  });
-
-  // Advance past the tallest column
-  const maxRows = Math.max(...screenGroups.map(g => g.screens.length));
-  yPos += headerH + rowH + maxRows * rowH + 10;
-
-  const stepWidth = (contentWidth - 8) / 2;
-
   // ========== SUBMISSION TIMELINE ==========
   checkPageBreak(30);
   pdf.setFillColor(255, 251, 235);
@@ -382,9 +332,10 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
   pdf.setFontSize(12);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('ENCODING WORKFLOW', margin, yPos);
+  pdf.text('PRO TIPS', margin, yPos);
   yPos += 8;
 
+  const stepWidth = (contentWidth - 8) / 2;
   proTips.forEach((tip, idx) => {
     const col = idx % 2;
     const row = Math.floor(idx / 2);
@@ -410,32 +361,6 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   });
 
   yPos += 35;
-
-  // ========== RESOLUME DOWNLOAD BOX ==========
-  checkPageBreak(25);
-  pdf.setFillColor(...colors.cardBg as [number, number, number]);
-  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
-  pdf.setLineWidth(1);
-  pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'FD');
-  
-  pdf.setTextColor(...colors.titleText as [number, number, number]);
-  pdf.setFontSize(10);
-  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  pdf.text('DXV3 Codec Required', margin + 8, yPos + 8);
-  
-  pdf.setTextColor(...colors.labelText as [number, number, number]);
-  pdf.setFontSize(8);
-  pdf.setFont(FONTS.body.family, FONTS.body.style);
-  pdf.text('Download the free Resolume Alley encoder to convert your videos to DXV3 format.', margin + 8, yPos + 14);
-  
-  pdf.setTextColor(...colors.linkBlue as [number, number, number]);
-  pdf.setFontSize(8);
-  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  const resolumeLinkText = 'resolume.com/software/alley';
-  pdf.textWithLink(resolumeLinkText, margin + 8, yPos + 20, { url: 'https://resolume.com/software/alley' });
-  pdf.setDrawColor(...colors.linkBlue as [number, number, number]);
-  pdf.setLineWidth(0.3);
-  pdf.line(margin + 8, yPos + 21, margin + 8 + pdf.getTextWidth(resolumeLinkText), yPos + 21);
 
   // ========== FOOTER ==========
   const footerY = pageHeight - 12;
