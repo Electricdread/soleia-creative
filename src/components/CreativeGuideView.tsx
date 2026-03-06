@@ -81,7 +81,7 @@ const CreativeGuideView = () => {
               </div>
             </div>
 
-            {/* Right side: Print button and ShowBlox (theme toggle) */}
+            {/* Right side: Print button and theme toggle */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
