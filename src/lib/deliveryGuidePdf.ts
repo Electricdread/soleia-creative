@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaIcon from '@/assets/sol-icon.png';
 
 // Font configuration for technical elegance
 const FONTS = {
