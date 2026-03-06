@@ -130,7 +130,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
           
           <div className="space-y-6">
             <div className="bg-amber-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-3">ShowBlox × Soleia</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Soleia Creative Team</h3>
               <p className="text-gray-700 leading-relaxed">
                 Immersive entertainment and branded experiences brought to life through cutting-edge technology, 
                 thoughtful design, and seamless execution.
