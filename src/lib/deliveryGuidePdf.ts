@@ -68,10 +68,11 @@ const displaySpecs = [
 ];
 
 const workflowSteps = [
-  { step: 1, title: 'Export Source Video', description: 'Export in ProRes or high-quality H264 from your editing software.' },
-  { step: 2, title: 'Open Resolume Alley', description: 'Download the free encoder from resolume.com/software/alley' },
-  { step: 3, title: 'Encode to DXV3', description: 'Select DXV3 codec and export your content.' },
-  { step: 4, title: 'Submit Content', description: 'Deliver at least 21 business days before your event.' },
+  { step: 1, title: 'Prepare Your Video', description: 'Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.' },
+  { step: 2, title: 'Download Resolume Alley (Free)', description: 'Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder.' },
+  { step: 3, title: 'Encode to DXV3', description: 'Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select "DXV3 Alpha."' },
+  { step: 4, title: 'Check Specs', description: 'TV Displays: 1920x1080 or 3840x2160 | MOV | DXV3 | Max 8GB. LED Pixel Map: 3840x2160 | MOV w/ Alpha | DXV3 | 60fps | Max 30GB.' },
+  { step: 5, title: 'Submit Content', description: 'Submit your encoded files at least 21 business days before your event so we can test and approve playback.' },
 ];
 
 const proTips = [
