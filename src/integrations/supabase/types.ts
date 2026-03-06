@@ -395,6 +395,177 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_gallery: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          proposal_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          proposal_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          proposal_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_gallery_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposal_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          price: number
+          proposal_id: string
+          sort_order: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          price?: number
+          proposal_id: string
+          sort_order?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          price?: number
+          proposal_id?: string
+          sort_order?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_items_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposal_timeline: {
+        Row: {
+          created_at: string
+          details: string | null
+          duration: string
+          id: string
+          phase: string
+          proposal_id: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          duration: string
+          id?: string
+          phase: string
+          proposal_id: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          duration?: string
+          id?: string
+          phase?: string
+          proposal_id?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_timeline_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposals: {
+        Row: {
+          client_name: string
+          client_signature: string | null
+          contact_email: string | null
+          created_at: string
+          created_by: string | null
+          event_date: string | null
+          event_name: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          quote_date: string
+          signed_at: string | null
+          status: string
+          token: string
+          updated_at: string
+          validity_days: number
+          venue_name: string | null
+        }
+        Insert: {
+          client_name: string
+          client_signature?: string | null
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          event_date?: string | null
+          event_name: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          quote_date?: string
+          signed_at?: string | null
+          status?: string
+          token: string
+          updated_at?: string
+          validity_days?: number
+          venue_name?: string | null
+        }
+        Update: {
+          client_name?: string
+          client_signature?: string | null
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          event_date?: string | null
+          event_name?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          quote_date?: string
+          signed_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+          validity_days?: number
+          venue_name?: string | null
+        }
+        Relationships: []
+      }
       session_uploads: {
         Row: {
           created_at: string
