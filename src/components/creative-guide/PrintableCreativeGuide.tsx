@@ -522,7 +522,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
               </div>
               <div className="hidden print:block text-sm text-gray-500">
                 <ExternalLink className="w-4 h-4 inline mr-1" />
-                showblox-soleia.lovable.app/creative-guide
+                soleia-creative.lovable.app/creative-guide
               </div>
             </div>
 
