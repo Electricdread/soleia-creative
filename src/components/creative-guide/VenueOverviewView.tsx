@@ -289,7 +289,7 @@ export function VenueOverviewView() {
                 <h3 className="font-semibold text-foreground mb-2">Multi-Zone LED Ecosystem</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Soleia features a layered, multi-zone LED ecosystem designed to deliver continuous brand presence 
-                  and immersive storytelling throughout the guest journey. ShowBlox develops content strategically 
+                  and immersive storytelling throughout the guest journey. The Soleia Creative Team develops content strategically 
                   for each LED zone to ensure visual continuity, optimal resolution, and maximum impact.
                 </p>
               </div>
