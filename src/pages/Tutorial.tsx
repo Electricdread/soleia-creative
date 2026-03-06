@@ -706,12 +706,12 @@ export default function Tutorial() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img 
-              src="/assets/showblox-icon.png" 
-              alt="ShowBlox" 
+              src="/soleia-icon.png" 
+              alt="Soleia" 
               className="w-10 h-10"
             />
             <div>
-              <span className="font-tech text-lg font-bold uppercase tracking-wider text-white">ShowBlox</span>
+              <span className="font-tech text-lg font-bold uppercase tracking-wider text-white">Soleia</span>
               <span className="text-zinc-500 text-xs font-tech uppercase tracking-widest block">Creative Platform</span>
             </div>
           </Link>
