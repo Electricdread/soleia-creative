@@ -362,32 +362,6 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   yPos += 35;
 
-  // ========== RESOLUME DOWNLOAD BOX ==========
-  checkPageBreak(25);
-  pdf.setFillColor(...colors.cardBg as [number, number, number]);
-  pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
-  pdf.setLineWidth(1);
-  pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'FD');
-  
-  pdf.setTextColor(...colors.titleText as [number, number, number]);
-  pdf.setFontSize(10);
-  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  pdf.text('DXV3 Codec Required', margin + 8, yPos + 8);
-  
-  pdf.setTextColor(...colors.labelText as [number, number, number]);
-  pdf.setFontSize(8);
-  pdf.setFont(FONTS.body.family, FONTS.body.style);
-  pdf.text('Download the free Resolume Alley encoder to convert your videos to DXV3 format.', margin + 8, yPos + 14);
-  
-  pdf.setTextColor(...colors.linkBlue as [number, number, number]);
-  pdf.setFontSize(8);
-  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  const resolumeLinkText = 'resolume.com/software/alley';
-  pdf.textWithLink(resolumeLinkText, margin + 8, yPos + 20, { url: 'https://resolume.com/software/alley' });
-  pdf.setDrawColor(...colors.linkBlue as [number, number, number]);
-  pdf.setLineWidth(0.3);
-  pdf.line(margin + 8, yPos + 21, margin + 8 + pdf.getTextWidth(resolumeLinkText), yPos + 21);
-
   // ========== FOOTER ==========
   const footerY = pageHeight - 12;
   
