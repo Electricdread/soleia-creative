@@ -133,7 +133,7 @@ export default function AdminProposals() {
     setVenueName('');
     setEventDate('');
     setValidityDays('7');
-    setContactEmail('info@show-blox.com');
+    setContactEmail('info@soleia-creative.com');
     setItemsList([{ title: '', description: '', price: '' }]);
   };
 

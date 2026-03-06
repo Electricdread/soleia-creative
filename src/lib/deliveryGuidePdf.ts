@@ -132,7 +132,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   // Load logos
   const logoBase64 = await assetToBase64(soleiaLogo);
-  const showbloxBase64 = await assetToBase64(showbloxIcon);
+  const soleiaIconBase64 = await assetToBase64(soleiaIcon);
 
   // ========== HEADER ==========
   pdf.setFillColor(...colors.headerBg as [number, number, number]);
