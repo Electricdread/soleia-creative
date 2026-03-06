@@ -255,7 +255,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   return (
     <div className="space-y-4">
       <Card className="group border-zinc-700/50 bg-zinc-900/90 hover:border-cyan-500/40 transition-all duration-300 overflow-hidden">
-        {/* ShowBLOX gradient accent bar */}
+        {/* Gradient accent bar */}
         <div className="h-1.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500" />
         
         <CardContent className="p-0">

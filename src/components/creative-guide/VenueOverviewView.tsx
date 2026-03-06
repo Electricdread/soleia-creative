@@ -242,7 +242,7 @@ const handlePrintBlueprint = () => {
           <p>Generated from Soleia Creative Guide - ${new Date().toLocaleDateString()}</p>
           <div class="powered-by">
             <span>Powered by</span>
-            <img src="/soleia-icon.png" alt="ShowBlox" onerror="this.style.display='none'" />
+            <img src="/soleia-icon.png" alt="Soleia" onerror="this.style.display='none'" />
           </div>
         </div>
       </div>
@@ -289,7 +289,7 @@ export function VenueOverviewView() {
                 <h3 className="font-semibold text-foreground mb-2">Multi-Zone LED Ecosystem</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   Soleia features a layered, multi-zone LED ecosystem designed to deliver continuous brand presence 
-                  and immersive storytelling throughout the guest journey. ShowBlox develops content strategically 
+                  and immersive storytelling throughout the guest journey. The Soleia Creative Team develops content strategically 
                   for each LED zone to ensure visual continuity, optimal resolution, and maximum impact.
                 </p>
               </div>
@@ -566,7 +566,7 @@ export function VenueOverviewView() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">ShowBlox ensures:</p>
+            <p className="text-sm text-muted-foreground">The Soleia Creative Team ensures:</p>
             <div className="grid gap-2">
               {CONTENT_STRATEGY.map((item, index) => (
                 <div key={index} className="flex items-start gap-2 text-sm">

@@ -19,7 +19,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   // Check if user was approved (transitioned from pending to admin)
   useEffect(() => {
     if (user && !isLoading) {
-      const pendingKey = `showblox_pending_${user.id}`;
+      const pendingKey = `soleia_pending_${user.id}`;
       const wasPending = localStorage.getItem(pendingKey) === 'true';
       
       if (!isAdmin && requireAdmin) {

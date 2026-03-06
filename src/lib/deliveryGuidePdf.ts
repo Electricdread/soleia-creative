@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaIcon from '@/assets/sol-icon.png';
 
 // Font configuration for technical elegance
 const FONTS = {
@@ -120,7 +120,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   pdf.setProperties({
     title: 'Soleia Content Delivery Guide',
     subject: 'DXV3 Format Specifications for Resolume Media Servers',
-    author: 'Soleia / ShowBlox',
+    author: 'Soleia Creative Team',
     keywords: 'DXV3, Resolume, Video Specs, LED, Content Delivery',
     creator: 'Soleia Portal'
   });
@@ -132,7 +132,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
 
   // Load logos
   const logoBase64 = await assetToBase64(soleiaLogo);
-  const showbloxBase64 = await assetToBase64(showbloxIcon);
+  const soleiaIconBase64 = await assetToBase64(soleiaIcon);
 
   // ========== HEADER ==========
   pdf.setFillColor(...colors.headerBg as [number, number, number]);

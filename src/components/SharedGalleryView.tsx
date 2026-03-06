@@ -255,7 +255,7 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
         <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-10">
           {/* Top Row: Logo Centered with Theme Toggle */}
           <div className="relative flex items-center justify-center mb-8">
-            {/* Theme toggle + ShowBlox - absolute positioned right */}
+            {/* Theme toggle - absolute positioned right */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
               <PoweredByShowBlox variant="header" />
               <ThemeToggle />
@@ -658,7 +658,7 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
         </DialogContent>
       </Dialog>
       
-      {/* Powered by ShowBlox Footer */}
+      {/* Footer */}
       <PoweredByShowBlox className="border-t border-border/30" />
     </div>
   );

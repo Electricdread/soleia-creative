@@ -43,7 +43,7 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
               className="gap-2"
             >
               <ExternalLink className="h-4 w-4" />
-              <span className="hidden sm:inline">ShowBlox Portal</span>
+              <span className="hidden sm:inline">Soleia Portal</span>
             </Button>
           </div>
         </DialogHeader>

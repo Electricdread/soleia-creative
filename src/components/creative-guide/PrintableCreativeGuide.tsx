@@ -78,12 +78,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
           <div className="border-t border-b border-gray-200 py-6 my-8">
             <p className="text-sm text-gray-500 uppercase tracking-wider mb-2">Prepared by</p>
             <div className="flex items-center justify-center gap-2">
-              <img 
-                src="/assets/showblox-icon.png" 
-                alt="ShowBlox" 
-                className="h-6"
-              />
-              <span className="font-medium text-gray-700">ShowBlox</span>
+              <span className="font-medium text-gray-700">Soleia Creative Team</span>
             </div>
           </div>
 
@@ -135,7 +130,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
           
           <div className="space-y-6">
             <div className="bg-amber-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-3">ShowBlox × Soleia</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Soleia Creative Team</h3>
               <p className="text-gray-700 leading-relaxed">
                 Immersive entertainment and branded experiences brought to life through cutting-edge technology, 
                 thoughtful design, and seamless execution.
@@ -145,7 +140,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">The Platform</h3>
               <p className="text-gray-700 leading-relaxed">
-                Together, ShowBlox's modular interactive systems and Soleia's visually iconic environment create 
+                Soleia's modular interactive systems and visually iconic environment create 
                 a platform where brands don't just appear—they are <strong>experienced</strong>. From interactive 
                 photo and video activations to custom gaming, LED branding, and real-time content, every touchpoint 
                 is designed to engage guests, amplify social sharing, and elevate the overall event atmosphere.
@@ -527,7 +522,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
               </div>
               <div className="hidden print:block text-sm text-gray-500">
                 <ExternalLink className="w-4 h-4 inline mr-1" />
-                showblox-soleia.lovable.app/creative-guide
+                soleia-creative.lovable.app/creative-guide
               </div>
             </div>
 
@@ -568,7 +563,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
               <div className="text-right">
                 <span className="text-sm text-gray-500 flex items-center gap-1">
                   <ExternalLink className="w-4 h-4" />
-                  showblox-soleia.lovable.app/creative-guide
+                  soleia-creative.lovable.app/creative-guide
                 </span>
               </div>
             </div>
@@ -578,19 +573,13 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
         {/* Footer */}
         <footer className="border-t border-gray-200 pt-6 mt-12 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-xs text-gray-500 uppercase tracking-wider">Powered by</span>
-            <img 
-              src="/assets/showblox-icon.png" 
-              alt="ShowBlox" 
-              className="h-5"
-            />
-            <span className="font-medium text-gray-700">ShowBlox</span>
+            <span className="font-medium text-gray-700">Soleia Creative Team</span>
           </div>
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Soleia Las Vegas. All rights reserved.
           </p>
           <p className="text-xs text-gray-400 mt-2">
-            For questions, contact your ShowBlox representative or visit showblox-soleia.lovable.app
+            For questions, contact your Soleia Creative Team representative or visit soleia-creative.lovable.app
           </p>
         </footer>
       </div>

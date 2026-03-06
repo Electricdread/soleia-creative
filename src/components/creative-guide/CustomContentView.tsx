@@ -98,7 +98,7 @@ export function CustomContentView() {
         </Card>
       </motion.div>
 
-      {/* ShowBlox Partnership Blurb */}
+      {/* Creative Team Blurb */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -110,9 +110,9 @@ export function CustomContentView() {
                 <Sparkles className="w-6 h-6 text-primary" />
               </div>
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-gradient-gold">Content Creation with ShowBlox</h3>
+                <h3 className="text-lg font-semibold text-gradient-gold">Content Creation with Soleia Creative Team</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  ShowBlox develops custom motion graphics and branded content strategically designed for Soleia's multi-zone LED ecosystem. Our creative team ensures visual continuity, optimal resolution matching, and maximum impact across every screen in the venue.
+                  The Soleia Creative Team develops custom motion graphics and branded content strategically designed for Soleia's multi-zone LED ecosystem. Our creative team ensures visual continuity, optimal resolution matching, and maximum impact across every screen in the venue.
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   From immersive logo reveals to ambient architectural visuals, we craft content that transforms Soleia into a fully branded environment—seamlessly integrating your brand across focal displays and atmospheric zones alike.
@@ -305,7 +305,7 @@ export function CustomContentView() {
             <h3 className="text-xl font-semibold text-gradient-gold">What's Next?</h3>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
               We're happy to answer any questions and walk you through the creative opportunities at Soleia. 
-              Schedule a creative call at any time, and the ShowBlox team will guide you through the process.
+              Schedule a creative call at any time, and the Soleia Creative Team will guide you through the process.
             </p>
           </CardContent>
         </Card>
