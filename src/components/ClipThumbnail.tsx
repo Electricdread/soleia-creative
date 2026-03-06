@@ -138,7 +138,7 @@ const ClipThumbnail = forwardRef<HTMLDivElement, ClipThumbnailProps>(({
       {isSelected && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="w-16 h-16 flex items-center justify-center">
-            <img src={soleiaIcon} alt="Selected" className="w-full h-full object-contain showblox-icon-selected" />
+            <img src={soleiaIcon} alt="Selected" className="w-full h-full object-contain soleia-icon-selected" />
           </div>
         </div>
       )}

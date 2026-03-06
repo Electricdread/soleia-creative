@@ -354,9 +354,7 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
             <div class="footer">
               <p style="color: #999; font-size: 12px; margin-bottom: 12px;">Generated from Soleia Creative Guide</p>
               <div class="powered-by">
-                <span>Powered by</span>
-                <img src="/assets/showblox-icon.png" alt="ShowBlox" style="height: 24px; width: auto;" onerror="this.style.display='none'" />
-                <span>ShowBlox</span>
+                <span>Soleia Creative Team</span>
               </div>
             </div>
           </body>
