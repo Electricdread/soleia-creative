@@ -41,8 +41,8 @@ const App = () => (
               <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
               
               {/* Protected Routes - Require Authentication */}
-              <Route path="/creative-guide" element={<ProtectedRoute><CreativeGuide /></ProtectedRoute>} />
-              <Route path="/creative-guide/print" element={<ProtectedRoute><PrintCreativeGuide /></ProtectedRoute>} />
+              <Route path="/creative-guide" element={<CreativeGuide />} />
+              <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
               <Route path="/creative/:token" element={<ProtectedRoute><CreativeSession /></ProtectedRoute>} />
               <Route path="/session/:token" element={<ProtectedRoute><SharedSession /></ProtectedRoute>} />
               

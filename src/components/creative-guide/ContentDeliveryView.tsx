@@ -12,8 +12,6 @@ import {
   CheckCircle2,
   Printer,
   Loader2,
-  Copy,
-  Mail
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,57 +51,6 @@ const workflowSteps = [
   { step: 4, title: 'Submit Content', description: '21 days before your event' },
 ];
 
-const DELIVERY_EMAIL_TEMPLATE = `Subject: Content Delivery Guide — Soleia Venue Screens
-
-Hi [Client Name],
-
-We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping. This template is pre-built to match our venue's exact screen layout, so you can drop in your content and export with confidence.
-
-Below is a quick step-by-step guide to deliver your custom content for our venue screens.
-
-──────────────────────────
-STEP 1: PREPARE YOUR VIDEO
-──────────────────────────
-Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.
-
-──────────────────────────
-STEP 2: DOWNLOAD RESOLUME ALLEY (FREE)
-──────────────────────────
-Our venue runs on Resolume media servers, which require DXV3-encoded files.
-Download the free Resolume Alley encoder here: https://resolume.com/software/alley
-
-──────────────────────────
-STEP 3: ENCODE TO DXV3
-──────────────────────────
-Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select "DXV3 Alpha."
-
-──────────────────────────
-STEP 4: CHECK SPECS
-──────────────────────────
-Make sure your files match these requirements:
-
-• TV Displays — 1920×1080 or 3840×2160 | MOV | DXV3 | Max 8GB
-• LED Pixel Map — 3840×2160 | MOV w/ Alpha | DXV3 | 60fps | Max 30GB
-
-──────────────────────────
-STEP 5: SUBMIT CONTENT
-──────────────────────────
-Please submit your encoded files at least 21 business days before your event so we can test and approve playback.
-
-──────────────────────────
-TIPS
-──────────────────────────
-• Export in ProRes first for best quality before DXV3 encoding
-• Use darker tones — LED screens are very bright
-• Use white or light logo versions for best visibility
-• Include alpha channel for transparent overlays
-
-If you have any questions, don't hesitate to reach out. We're here to help make your event look stunning!
-
-Best regards,
-DSX Soleia Creative Team
-`;
-
 export const ContentDeliveryView = () => {
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -122,23 +69,10 @@ export const ContentDeliveryView = () => {
     }
   };
 
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(DELIVERY_EMAIL_TEMPLATE);
-    toast.success('Email template copied to clipboard');
-  };
-
   return (
     <div className="space-y-10 max-w-5xl mx-auto">
       {/* Action Buttons */}
       <div className="flex flex-wrap justify-end gap-3">
-        <Button
-          variant="outline"
-          onClick={handleCopyEmail}
-          className="gap-2"
-        >
-          <Mail className="w-4 h-4" />
-          Copy Email Template
-        </Button>
         <Button
           onClick={handlePrintPdf}
           disabled={isDownloading}
