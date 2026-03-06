@@ -57,7 +57,7 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-display font-semibold text-gradient-gold">ShowBlox × Soleia</h2>
+        <h2 className="text-2xl font-display font-semibold text-gradient-gold">Soleia Creative Team</h2>
         <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
           Immersive entertainment and branded experiences brought to life through cutting-edge technology, thoughtful design, and seamless execution.
         </p>
@@ -106,7 +106,7 @@ export function IntroductionView({ onNavigate }: IntroductionViewProps) {
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-gradient-gold">The Platform</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Together, ShowBlox's modular interactive systems and Soleia's visually iconic environment create a platform where brands don't just appear—they are <strong className="text-foreground">experienced</strong>. From interactive photo and video activations to custom gaming, LED branding, and real-time content, every touchpoint is designed to engage guests, amplify social sharing, and elevate the overall event atmosphere.
+                  Soleia's modular interactive systems and visually iconic environment create a platform where brands don't just appear—they are <strong className="text-foreground">experienced</strong>. From interactive photo and video activations to custom gaming, LED branding, and real-time content, every touchpoint is designed to engage guests, amplify social sharing, and elevate the overall event atmosphere.
                 </p>
               </div>
             </div>
