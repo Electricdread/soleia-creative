@@ -745,7 +745,7 @@ export default function Tutorial() {
             </h1>
             
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-              Comprehensive documentation for ShowBlox Creative, Soleia Looks Collection, and the Creative Guide system.
+              Comprehensive documentation for Soleia Creative, Soleia Looks Collection, and the Creative Guide system.
             </p>
           </motion.div>
         </div>
