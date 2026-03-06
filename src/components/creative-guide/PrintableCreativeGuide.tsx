@@ -140,7 +140,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">The Platform</h3>
               <p className="text-gray-700 leading-relaxed">
-                Together, ShowBlox's modular interactive systems and Soleia's visually iconic environment create 
+                Soleia's modular interactive systems and visually iconic environment create 
                 a platform where brands don't just appear—they are <strong>experienced</strong>. From interactive 
                 photo and video activations to custom gaming, LED branding, and real-time content, every touchpoint 
                 is designed to engage guests, amplify social sharing, and elevate the overall event atmosphere.
