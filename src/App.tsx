@@ -17,6 +17,8 @@ import AdminPortal from "./pages/AdminPortal";
 import AdminCreative from "./pages/AdminCreative";
 import AdminLooks from "./pages/AdminLooks";
 import AdminUsers from "./pages/AdminUsers";
+import AdminProposals from "./pages/AdminProposals";
+import ClientProposal from "./pages/ClientProposal";
 import OfficePortal from "./pages/OfficePortal";
 import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
@@ -51,6 +53,10 @@ const App = () => (
               <Route path="/admin/creative" element={<ProtectedRoute requireAdmin><AdminCreative /></ProtectedRoute>} />
               <Route path="/admin/looks" element={<ProtectedRoute requireAdmin><AdminLooks /></ProtectedRoute>} />
               <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
+              <Route path="/admin/proposals" element={<ProtectedRoute requireAdmin><AdminProposals /></ProtectedRoute>} />
+              
+              {/* Public Proposal Page */}
+              <Route path="/proposal/:token" element={<ClientProposal />} />
               
               {/* Operator Office Portal - Email-locked to luisdreams@me.com */}
               <Route path="/office" element={<OfficePortal />} />
