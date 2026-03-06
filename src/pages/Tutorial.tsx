@@ -680,7 +680,7 @@ function CreativeGuideSection() {
         <FeatureCard
           icon={<Palette className="w-6 h-6 text-white" />}
           title="Custom Content"
-          description="ShowBlox partnership details, content development pricing, 21-day submission timeline, and terms of service."
+          description="Soleia Creative Team partnership details, content development pricing, 21-day submission timeline, and terms of service."
           color="bg-gradient-to-br from-blue-500 to-indigo-600"
           delay={0.3}
         />
