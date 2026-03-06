@@ -573,19 +573,13 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
         {/* Footer */}
         <footer className="border-t border-gray-200 pt-6 mt-12 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-xs text-gray-500 uppercase tracking-wider">Powered by</span>
-            <img 
-              src="/assets/showblox-icon.png" 
-              alt="ShowBlox" 
-              className="h-5"
-            />
-            <span className="font-medium text-gray-700">ShowBlox</span>
+            <span className="font-medium text-gray-700">Soleia Creative Team</span>
           </div>
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Soleia Las Vegas. All rights reserved.
           </p>
           <p className="text-xs text-gray-400 mt-2">
-            For questions, contact your ShowBlox representative or visit showblox-soleia.lovable.app
+            For questions, contact your Soleia Creative Team representative or visit soleia-creative.lovable.app
           </p>
         </footer>
       </div>

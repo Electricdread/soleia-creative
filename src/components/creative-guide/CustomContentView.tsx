@@ -305,7 +305,7 @@ export function CustomContentView() {
             <h3 className="text-xl font-semibold text-gradient-gold">What's Next?</h3>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
               We're happy to answer any questions and walk you through the creative opportunities at Soleia. 
-              Schedule a creative call at any time, and the ShowBlox team will guide you through the process.
+              Schedule a creative call at any time, and the Soleia Creative Team will guide you through the process.
             </p>
           </CardContent>
         </Card>

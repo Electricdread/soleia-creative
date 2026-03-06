@@ -42,8 +42,8 @@ export default function AdminLooks() {
               </Button>
               <div className="h-6 w-px bg-zinc-700" />
               <img 
-                src={showbloxLogo} 
-                alt="ShowBlox" 
+                src={soleiaLogo} 
+                alt="Soleia" 
                 className="h-8 w-auto object-contain"
               />
             </div>

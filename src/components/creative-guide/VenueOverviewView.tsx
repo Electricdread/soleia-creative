@@ -566,7 +566,7 @@ export function VenueOverviewView() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">ShowBlox ensures:</p>
+            <p className="text-sm text-muted-foreground">The Soleia Creative Team ensures:</p>
             <div className="grid gap-2">
               {CONTENT_STRATEGY.map((item, index) => (
                 <div key={index} className="flex items-start gap-2 text-sm">

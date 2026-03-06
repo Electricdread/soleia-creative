@@ -120,7 +120,7 @@ export async function generateDeliveryGuidePdf(livePageUrl: string): Promise<Blo
   pdf.setProperties({
     title: 'Soleia Content Delivery Guide',
     subject: 'DXV3 Format Specifications for Resolume Media Servers',
-    author: 'Soleia / ShowBlox',
+    author: 'Soleia Creative Team',
     keywords: 'DXV3, Resolume, Video Specs, LED, Content Delivery',
     creator: 'Soleia Portal'
   });
