@@ -223,30 +223,6 @@ const CreativeGuideView = () => {
               </motion.div>
             )}
 
-            {selectedCategory === 'led-zones' && (
-              <motion.div
-                key="led-zones"
-                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              >
-                <LEDZonesView />
-              </motion.div>
-            )}
-
-            {selectedCategory === 'custom-content' && (
-              <motion.div
-                key="custom-content"
-                initial={{ opacity: 0, x: swipeDirection === 'left' ? 50 : -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: swipeDirection === 'left' ? -50 : 50 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              >
-                <CustomContentView />
-              </motion.div>
-            )}
-
             {selectedCategory === 'content-delivery' && (
               <motion.div
                 key="content-delivery"

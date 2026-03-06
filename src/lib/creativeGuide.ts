@@ -381,18 +381,6 @@ export const creativeGuideCategories = [
     icon: 'FileText'
   },
   { 
-    key: 'led-zones', 
-    label: 'LED Zones', 
-    description: 'Interactive zone selection & specs',
-    icon: 'Monitor'
-  },
-  { 
-    key: 'custom-content', 
-    label: 'Custom Content', 
-    description: 'Pixelmap specs and templates',
-    icon: 'Palette'
-  },
-  { 
     key: 'content-delivery', 
     label: 'Content Delivery', 
     description: 'DXV3 encoding & submission guide',
