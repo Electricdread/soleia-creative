@@ -9,7 +9,7 @@ import { AddClipForm } from '@/components/admin/AddClipForm';
 import { BulkImportForm } from '@/components/admin/BulkImportForm';
 import { ClipManager } from '@/components/admin/ClipManager';
 import { ArrowLeft, Link2, Video, Plus, Upload, List, Settings } from 'lucide-react';
-import showbloxLogo from '@/assets/showblox-full-logo.jpeg';
+import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 // This component is wrapped by ProtectedRoute with requireAdmin
 // Authentication is handled by the wrapper, not internally
