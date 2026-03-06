@@ -378,33 +378,6 @@ const DeliveryGuide = () => {
           </Card>
         </motion.section>
 
-        {/* Pro Tips */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="space-y-4"
-        >
-          <h3 className="text-xl font-display font-semibold text-amber-950">Pro Tips</h3>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {[
-              { title: 'Export in ProRes first', desc: 'For best quality before encoding to DXV3.' },
-              { title: 'Avoid bright backgrounds', desc: 'LED screens are very bright—use darker tones.' },
-              { title: 'Use light logos', desc: 'White or light logo versions display best.' },
-              { title: 'Include alpha channel', desc: 'Use DXV3 Alpha for transparent overlays.' },
-            ].map((tip, idx) => (
-              <Card key={idx} className="border-amber-200 bg-white/80">
-                <CardContent className="p-4 flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-medium text-amber-950">{tip.title}</p>
-                    <p className="text-sm text-amber-900/70">{tip.desc}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </motion.section>
       </main>
       
       {/* Footer */}
