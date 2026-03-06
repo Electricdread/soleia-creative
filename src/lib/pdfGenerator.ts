@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import { format, parseISO } from 'date-fns';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
-import showbloxIcon from '@/assets/showblox-icon.png';
+import soleiaIcon from '@/assets/sol-icon.png';
 
 interface SelectionForPdf {
   id: string;
