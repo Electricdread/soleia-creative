@@ -86,6 +86,7 @@ export const ContentDeliveryView = () => {
           Print Delivery Guide PDF
         </Button>
       </div>
+
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -104,8 +105,36 @@ export const ContentDeliveryView = () => {
         </p>
       </motion.div>
 
+      {/* Encoding Workflow — numbered steps */}
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-6">
+        <div className="text-center">
+          <h3 className="text-2xl font-display font-semibold text-gradient-gold">Step-by-Step Workflow</h3>
+        </div>
+        <Card className="glass border-primary/20">
+          <CardContent className="p-6 sm:p-8 space-y-0 divide-y divide-border/40">
+            {[
+              { step: 1, title: 'Prepare Your Video', description: 'Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.' },
+              { step: 2, title: 'Download Resolume Alley (Free)', description: 'Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder.' },
+              { step: 3, title: 'Encode to DXV3', description: 'Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select "DXV3 Alpha."' },
+              { step: 4, title: 'Check Specs', description: 'TV Displays — 1920×1080 or 3840×2160 | MOV | DXV3 | Max 8GB. LED Pixel Map — 3840×2160 | MOV w/ Alpha | DXV3 | 60fps | Max 30GB.' },
+              { step: 5, title: 'Submit Content', description: 'Submit your encoded files at least 21 business days before your event so we can test and approve playback.' },
+            ].map((item, index) => (
+              <div key={item.step} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0 shadow-lg">
+                  {item.step}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-foreground">{item.title}</h4>
+                  <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </motion.section>
+
       {/* Resolume Download */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <Card className="overflow-hidden border-primary/20 glass">
           <CardContent className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -142,28 +171,6 @@ export const ContentDeliveryView = () => {
             </div>
           </CardContent>
         </Card>
-      </motion.section>
-
-      {/* Encoding Workflow */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-6">
-        <div className="text-center">
-          <h3 className="text-2xl font-display font-semibold text-gradient-gold">Encoding Workflow</h3>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {workflowSteps.map((item, index) => (
-            <motion.div key={item.step} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + index * 0.1 }}>
-              <Card className="h-full glass hover:shadow-lg transition-all">
-                <CardContent className="p-5 space-y-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold shadow-lg">
-                    {item.step}
-                  </div>
-                  <h4 className="font-semibold text-foreground">{item.title}</h4>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
       </motion.section>
 
       <Separator />
