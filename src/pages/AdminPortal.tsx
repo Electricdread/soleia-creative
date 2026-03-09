@@ -22,6 +22,7 @@ interface PortalCard {
 }
 
 const portals: PortalCard[] = [
+  /* 
   {
     title: 'Soleia Creative',
     description: 'Internal creative sessions, mood boards, and team collaboration',
@@ -34,18 +35,21 @@ const portals: PortalCard[] = [
     iconSrc: soleiaIcon,
     href: '/admin/looks',
   },
+  */
   {
     title: 'Soleia Creative Guide',
     description: 'Technical specifications and venue display documentation',
     iconSrc: soleiaIcon,
     href: '/creative-guide',
   },
+  /*
   {
     title: 'Client Proposals',
     description: 'Create and manage client proposals with interactive pricing',
     icon: <FileText className="w-6 h-6 text-zinc-400" />,
     href: '/admin/proposals',
   },
+  */
   {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
