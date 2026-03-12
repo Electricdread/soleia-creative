@@ -12,6 +12,7 @@ import CreativeGuide from "./pages/CreativeGuide";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import CreativeSession from "./pages/CreativeSession";
 import DeliveryGuide from "./pages/DeliveryGuide";
+import TailgateDeliveryGuide from "./pages/TailgateDeliveryGuide";
 import AdminLogin from "./pages/AdminLogin";
 import AdminPortal from "./pages/AdminPortal";
 import AdminCreative from "./pages/AdminCreative";
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/tutorial" element={<Tutorial />} />
               <Route path="/delivery-guide" element={<DeliveryGuide />} />
+              <Route path="/tailgate-delivery-guide" element={<TailgateDeliveryGuide />} />
               
               {/* Root redirects to Admin Portal */}
               <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
