@@ -3,10 +3,6 @@ import { motion } from 'framer-motion';
 import { 
   ExternalLink, 
   FileVideo, 
-  Monitor,
-  Tv,
-  LayoutGrid,
-  Gauge,
   Clock,
   Sparkles,
   ArrowLeft,
