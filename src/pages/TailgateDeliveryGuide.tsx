@@ -162,6 +162,26 @@ const TailgateDeliveryGuide = () => {
           </div>
         </motion.section>
 
+        {/* Display Specifications */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-2xl font-semibold text-[#2b4c6f]">Display Specifications</h3>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {displaySpecs.map((spec, index) => (
+              <motion.div key={spec.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + index * 0.1 }}>
+                <Card className="h-full border-slate-200 bg-white/80 hover:shadow-lg transition-all">
+                  <CardContent className="p-5 space-y-3">
+                    <h4 className="font-semibold text-slate-900 text-sm">{spec.label}</h4>
+                    <p className="text-2xl font-bold text-[#2b4c6f]">{spec.resolution}</p>
+                    <Badge className="bg-sky-100 text-sky-800 border-sky-300 text-xs">DXV3</Badge>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
         {/* Submission Timeline */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Card className="border-slate-200 bg-gradient-to-br from-sky-50 to-slate-50 shadow-xl">

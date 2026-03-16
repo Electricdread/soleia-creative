@@ -170,6 +170,44 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
 
   yPos += 30;
 
+  // ========== DISPLAY SPECIFICATIONS ==========
+  checkPageBreak(50);
+  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
+  pdf.setFontSize(12);
+  pdf.setFont(FONTS.title.family, FONTS.title.style);
+  pdf.text('DISPLAY SPECIFICATIONS', margin, yPos);
+  yPos += 8;
+
+  const specBoxWidth = (contentWidth - 6) / 2;
+  const specBoxHeight = 18;
+  let xOffset = margin;
+
+  displaySpecs.forEach((spec, index) => {
+    if (index === 2) {
+      yPos += specBoxHeight + 3;
+      xOffset = margin;
+    }
+    
+    pdf.setFillColor(...colors.cardBg as [number, number, number]);
+    pdf.setDrawColor(...colors.cardBorder as [number, number, number]);
+    pdf.setLineWidth(0.5);
+    pdf.roundedRect(xOffset, yPos, specBoxWidth, specBoxHeight, 2, 2, 'FD');
+    
+    pdf.setTextColor(...colors.labelText as [number, number, number]);
+    pdf.setFontSize(8);
+    pdf.setFont(FONTS.body.family, FONTS.body.style);
+    pdf.text(spec.label, xOffset + 4, yPos + 6);
+    
+    pdf.setTextColor(...colors.headerAccent as [number, number, number]);
+    pdf.setFontSize(14);
+    pdf.setFont(FONTS.title.family, FONTS.title.style);
+    pdf.text(spec.resolution, xOffset + 4, yPos + 13);
+    
+    xOffset += specBoxWidth + 3;
+  });
+
+  yPos += specBoxHeight + 8;
+
   // ========== SUBMISSION TIMELINE ==========
   checkPageBreak(30);
   pdf.setFillColor(240, 248, 255);
