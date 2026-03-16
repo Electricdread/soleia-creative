@@ -70,7 +70,7 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
   const margin = 15;
   const contentWidth = pageWidth - (margin * 2);
 
-  const logoBase64 = await assetToBase64(tailgateLogo);
+  const logoResult = await assetToBase64(tailgateLogo);
 
   // ========== HEADER ==========
   pdf.setFillColor(...colors.headerBg as [number, number, number]);
@@ -79,11 +79,13 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
   pdf.setFillColor(...colors.headerAccent as [number, number, number]);
   pdf.rect(0, 60, pageWidth, 2, 'F');
 
-  if (logoBase64) {
+  if (logoResult) {
     try {
-      const logoWidth = 55;
-      const logoHeight = 22;
-      pdf.addImage(logoBase64, 'PNG', (pageWidth - logoWidth) / 2, 4, logoWidth, logoHeight);
+      const maxLogoWidth = 55;
+      const aspectRatio = logoResult.height / logoResult.width;
+      const logoWidth = maxLogoWidth;
+      const logoHeight = maxLogoWidth * aspectRatio;
+      pdf.addImage(logoResult.data, 'PNG', (pageWidth - logoWidth) / 2, 4, logoWidth, logoHeight);
     } catch (e) { console.error('Failed to add logo:', e); }
   }
 
