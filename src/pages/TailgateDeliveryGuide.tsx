@@ -20,46 +20,6 @@ import { toast } from 'sonner';
 const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
 
-const displaySpecs = [
-  {
-    id: 'tv',
-    name: 'Television Displays',
-    icon: Tv,
-    resolution: '1920×1080 or 3840×2160',
-    format: 'MOV',
-    codec: 'DXV3',
-    maxSize: '8GB',
-  },
-  {
-    id: 'led',
-    name: 'LED Pixel Map',
-    icon: LayoutGrid,
-    resolution: '3840×2160',
-    format: 'MOV with Alpha',
-    codec: 'DXV3',
-    frameRate: '60 fps',
-    maxSize: '30GB',
-  },
-  {
-    id: 'elevator',
-    name: 'Elevator Displays',
-    icon: Gauge,
-    resolution: '600×800',
-    format: 'WMV',
-    frameRate: '30 fps',
-    duration: '30 sec',
-  },
-  {
-    id: 'ticker',
-    name: 'Marquee/Ticker',
-    icon: Monitor,
-    resolution: '1280×768',
-    format: 'MP4',
-    codec: 'H264',
-    duration: '15 sec',
-  },
-];
-
 const workflowSteps = [
   { step: 1, title: 'Export Source Video', description: 'Export in ProRes or high-quality H264' },
   { step: 2, title: 'Open Resolume Alley', description: 'Free encoder for DXV3 conversion' },
