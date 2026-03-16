@@ -74,177 +74,158 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 15;
+  const margin = 12;
   const contentWidth = pageWidth - (margin * 2);
 
   const logoResult = await assetToBase64(tailgateLogo);
 
-  // ========== HEADER ==========
+  // ========== HEADER (compact) ==========
   pdf.setFillColor(...colors.headerBg as [number, number, number]);
-  pdf.rect(0, 0, pageWidth, 70, 'F');
-  
+  pdf.rect(0, 0, pageWidth, 42, 'F');
   pdf.setFillColor(...colors.headerAccent as [number, number, number]);
-  pdf.rect(0, 68, pageWidth, 2, 'F');
+  pdf.rect(0, 41, pageWidth, 1.5, 'F');
 
   if (logoResult) {
     try {
-      const maxLogoWidth = 45;
+      const maxLogoWidth = 28;
       const aspectRatio = logoResult.height / logoResult.width;
-      const logoWidth = maxLogoWidth;
-      const logoHeight = maxLogoWidth * aspectRatio;
-      pdf.addImage(logoResult.data, 'PNG', (pageWidth - logoWidth) / 2, 5, logoWidth, logoHeight);
+      pdf.addImage(logoResult.data, 'PNG', (pageWidth - maxLogoWidth) / 2, 2, maxLogoWidth, maxLogoWidth * aspectRatio);
     } catch (e) { console.error('Failed to add logo:', e); }
   }
 
   pdf.setTextColor(...colors.titleText as [number, number, number]);
-  pdf.setFontSize(18);
+  pdf.setFontSize(14);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('CONTENT DELIVERY GUIDE', pageWidth / 2, 48, { align: 'center' });
+  pdf.text('CONTENT DELIVERY GUIDE', pageWidth / 2, 30, { align: 'center' });
 
   pdf.setTextColor(...colors.labelText as [number, number, number]);
-  pdf.setFontSize(10);
+  pdf.setFontSize(8);
   pdf.setFont(FONTS.accent.family, FONTS.accent.style);
-  pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 56, { align: 'center' });
+  pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 36, { align: 'center' });
 
-  let yPos = 78;
-
-  const checkPageBreak = (needed: number) => {
-    if (yPos + needed > pageHeight - 20) { pdf.addPage(); yPos = 20; }
-  };
+  let yPos = 48;
 
   // ========== STEP-BY-STEP WORKFLOW ==========
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(12);
+  pdf.setFontSize(9);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
   pdf.text('STEP-BY-STEP WORKFLOW', margin, yPos);
-  yPos += 8;
+  yPos += 5;
 
   workflowSteps.forEach((item) => {
-    checkPageBreak(16);
     pdf.setFillColor(...colors.headerAccent as [number, number, number]);
-    pdf.circle(margin + 5, yPos + 2, 4, 'F');
+    pdf.circle(margin + 4, yPos + 1.5, 3, 'F');
     pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(9);
+    pdf.setFontSize(7);
     pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-    pdf.text(String(item.step), margin + 5, yPos + 4, { align: 'center' });
+    pdf.text(String(item.step), margin + 4, yPos + 3, { align: 'center' });
 
     pdf.setTextColor(...colors.titleText as [number, number, number]);
-    pdf.setFontSize(9);
+    pdf.setFontSize(7.5);
     pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-    pdf.text(item.title, margin + 14, yPos + 2);
+    pdf.text(item.title, margin + 11, yPos + 1.5);
 
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFontSize(7.5);
+    pdf.setFontSize(6.5);
     pdf.setFont(FONTS.body.family, FONTS.body.style);
-    const descLines = pdf.splitTextToSize(item.description, contentWidth - 18);
-    pdf.text(descLines, margin + 14, yPos + 7);
-    yPos += 7 + descLines.length * 4 + 3;
+    const descLines = pdf.splitTextToSize(item.description, contentWidth - 14);
+    pdf.text(descLines, margin + 11, yPos + 5);
+    yPos += 5 + descLines.length * 3 + 1.5;
   });
 
-  yPos += 4;
+  yPos += 2;
 
   // ========== RESOLUME DOWNLOAD BOX ==========
-  checkPageBreak(25);
   pdf.setFillColor(...colors.cardBg as [number, number, number]);
   pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
-  pdf.setLineWidth(1);
-  pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'FD');
+  pdf.setLineWidth(0.8);
+  pdf.roundedRect(margin, yPos, contentWidth, 16, 2, 2, 'FD');
   
   pdf.setTextColor(...colors.titleText as [number, number, number]);
-  pdf.setFontSize(10);
+  pdf.setFontSize(8);
   pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  pdf.text('DXV3 Codec Required', margin + 8, yPos + 8);
+  pdf.text('DXV3 Codec Required', margin + 6, yPos + 5);
   
   pdf.setTextColor(...colors.labelText as [number, number, number]);
-  pdf.setFontSize(8);
+  pdf.setFontSize(7);
   pdf.setFont(FONTS.body.family, FONTS.body.style);
-  pdf.text('Download the free Resolume Alley encoder to convert your videos to DXV3 format.', margin + 8, yPos + 14);
+  pdf.text('Download the free Resolume Alley encoder to convert your videos to DXV3 format.', margin + 6, yPos + 10);
   
   pdf.setTextColor(...colors.linkBlue as [number, number, number]);
-  pdf.setFontSize(8);
+  pdf.setFontSize(7);
   pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
   const resolumeLinkText = 'resolume.com/software/alley';
-  pdf.textWithLink(resolumeLinkText, margin + 8, yPos + 20, { url: 'https://resolume.com/software/alley' });
+  pdf.textWithLink(resolumeLinkText, margin + 6, yPos + 14, { url: 'https://resolume.com/software/alley' });
   pdf.setDrawColor(...colors.linkBlue as [number, number, number]);
   pdf.setLineWidth(0.3);
-  pdf.line(margin + 8, yPos + 21, margin + 8 + pdf.getTextWidth(resolumeLinkText), yPos + 21);
+  pdf.line(margin + 6, yPos + 14.5, margin + 6 + pdf.getTextWidth(resolumeLinkText), yPos + 14.5);
 
-  yPos += 30;
+  yPos += 20;
 
   // ========== VENUE DISPLAY DIAGRAM ==========
   const diagramResult = await assetToBase64(displayDiagram);
   if (diagramResult) {
     const diagramAspect = diagramResult.height / diagramResult.width;
-    const diagramWidth = contentWidth;
+    const diagramWidth = contentWidth * 0.85;
     const diagramHeight = diagramWidth * diagramAspect;
-    checkPageBreak(diagramHeight + 10);
     try {
-      pdf.addImage(diagramResult.data, 'PNG', margin, yPos, diagramWidth, diagramHeight);
-      yPos += diagramHeight + 8;
+      pdf.addImage(diagramResult.data, 'PNG', margin + (contentWidth - diagramWidth) / 2, yPos, diagramWidth, diagramHeight);
+      yPos += diagramHeight + 4;
     } catch (e) { console.error('Failed to add diagram:', e); }
   }
 
   // ========== DISPLAY SPECIFICATIONS ==========
-  checkPageBreak(50);
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(12);
+  pdf.setFontSize(9);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
   pdf.text('DISPLAY SPECIFICATIONS', margin, yPos);
-  yPos += 8;
+  yPos += 5;
 
-  const specBoxWidth = (contentWidth - 6) / 2;
-  const specBoxHeight = 18;
+  const specBoxWidth = (contentWidth - 9) / 4;
+  const specBoxHeight = 14;
   let xOffset = margin;
 
-  displaySpecs.forEach((spec, index) => {
-    if (index === 2) {
-      yPos += specBoxHeight + 3;
-      xOffset = margin;
-    }
-    
+  displaySpecs.forEach((spec) => {
     pdf.setFillColor(...colors.cardBg as [number, number, number]);
     pdf.setDrawColor(...colors.cardBorder as [number, number, number]);
     pdf.setLineWidth(0.5);
     pdf.roundedRect(xOffset, yPos, specBoxWidth, specBoxHeight, 2, 2, 'FD');
     
     pdf.setTextColor(...colors.labelText as [number, number, number]);
-    pdf.setFontSize(8);
+    pdf.setFontSize(6);
     pdf.setFont(FONTS.body.family, FONTS.body.style);
-    pdf.text(spec.label, xOffset + 4, yPos + 6);
+    pdf.text(spec.label, xOffset + 3, yPos + 4);
     
     pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-    pdf.setFontSize(14);
+    pdf.setFontSize(10);
     pdf.setFont(FONTS.title.family, FONTS.title.style);
-    pdf.text(spec.resolution, xOffset + 4, yPos + 13);
+    pdf.text(spec.resolution, xOffset + 3, yPos + 11);
     
     xOffset += specBoxWidth + 3;
   });
 
-  yPos += specBoxHeight + 8;
+  yPos += specBoxHeight + 5;
 
   // ========== SUBMISSION TIMELINE ==========
-  checkPageBreak(30);
   pdf.setFillColor(240, 248, 255);
   pdf.setDrawColor(...colors.headerAccent as [number, number, number]);
   pdf.setLineWidth(0.5);
-  pdf.roundedRect(margin, yPos, contentWidth, 20, 3, 3, 'FD');
+  pdf.roundedRect(margin, yPos, contentWidth, 16, 2, 2, 'FD');
   
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(24);
+  pdf.setFontSize(18);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('21', margin + 10, yPos + 14);
+  pdf.text('21', margin + 8, yPos + 11);
   
   pdf.setTextColor(...colors.titleText as [number, number, number]);
-  pdf.setFontSize(10);
+  pdf.setFontSize(8);
   pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  pdf.text('Business Days Minimum', margin + 28, yPos + 9);
+  pdf.text('Business Days Minimum', margin + 22, yPos + 7);
   
   pdf.setTextColor(...colors.labelText as [number, number, number]);
-  pdf.setFontSize(8);
+  pdf.setFontSize(7);
   pdf.setFont(FONTS.body.family, FONTS.body.style);
-  pdf.text('Submit your content at least 21 business days before your event for testing and approval.', margin + 28, yPos + 16);
-
-  yPos += 30;
+  pdf.text('Submit your content at least 21 business days before your event for testing and approval.', margin + 22, yPos + 12);
 
   // ========== FOOTER ==========
   const footerY = pageHeight - 12;
