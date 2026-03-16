@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import tailgateLogo from '@/assets/tailgate-logo.png';
+import displayDiagram from '@/assets/tailgate-display-diagram.png';
 
 const FONTS = {
   header: { family: 'times', style: 'bold' },
