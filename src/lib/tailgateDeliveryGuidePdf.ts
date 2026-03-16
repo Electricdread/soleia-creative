@@ -24,11 +24,6 @@ const colors = {
   linkBlue: [37, 99, 235],
 };
 
-const displaySpecs = [
-  { name: 'Television Displays', resolution: '1920×1080 or 3840×2160', format: 'MOV', codec: 'DXV3', maxSize: '8GB' },
-  { name: 'LED Pixel Map', resolution: '3840×2160', format: 'MOV with Alpha', codec: 'DXV3', frameRate: '60 fps', maxSize: '30GB' },
-];
-
 const workflowSteps = [
   { step: 1, title: 'Prepare Your Video', description: 'Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.' },
   { step: 2, title: 'Download Resolume Alley (Free)', description: 'Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder.' },
@@ -171,55 +166,6 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
   pdf.line(margin + 8, yPos + 21, margin + 8 + pdf.getTextWidth(resolumeLinkText), yPos + 21);
 
   yPos += 30;
-
-  // ========== DISPLAY SPECIFICATIONS ==========
-  checkPageBreak(40);
-  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(12);
-  pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('DISPLAY SPECIFICATIONS', margin, yPos);
-  yPos += 8;
-
-  const colWidths = [50, 50, 32, 25, 25];
-  const tableHeaders = ['Display Type', 'Resolution', 'Format', 'Codec', 'Frame Rate'];
-  
-  pdf.setFillColor(...colors.headerAccent as [number, number, number]);
-  pdf.rect(margin, yPos - 4, contentWidth, 8, 'F');
-  
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(7);
-  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  let xPos = margin + 2;
-  tableHeaders.forEach((header, i) => { pdf.text(header, xPos, yPos); xPos += colWidths[i]; });
-  yPos += 6;
-
-  displaySpecs.forEach((spec, idx) => {
-    const rowBg = idx % 2 === 0 ? colors.cardBg : [240, 244, 250];
-    pdf.setFillColor(...rowBg as [number, number, number]);
-    pdf.rect(margin, yPos - 4, contentWidth, 10, 'F');
-    
-    xPos = margin + 2;
-    pdf.setTextColor(...colors.titleText as [number, number, number]);
-    pdf.setFontSize(8);
-    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-    pdf.text(spec.name, xPos, yPos);
-    xPos += colWidths[0];
-    
-    pdf.setFont(FONTS.mono.family, FONTS.mono.style);
-    pdf.setFontSize(7);
-    pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.text(spec.resolution, xPos, yPos);
-    xPos += colWidths[1];
-    pdf.text(spec.format, xPos, yPos);
-    xPos += colWidths[2];
-    pdf.text(spec.codec || '-', xPos, yPos);
-    xPos += colWidths[3];
-    pdf.text(spec.frameRate || '-', xPos, yPos);
-    
-    yPos += 10;
-  });
-
-  yPos += 8;
 
   // ========== SUBMISSION TIMELINE ==========
   checkPageBreak(30);
