@@ -74,30 +74,30 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
 
   // ========== HEADER ==========
   pdf.setFillColor(...colors.headerBg as [number, number, number]);
-  pdf.rect(0, 0, pageWidth, 62, 'F');
+  pdf.rect(0, 0, pageWidth, 70, 'F');
   
   pdf.setFillColor(...colors.headerAccent as [number, number, number]);
-  pdf.rect(0, 60, pageWidth, 2, 'F');
+  pdf.rect(0, 68, pageWidth, 2, 'F');
 
   if (logoResult) {
     try {
-      const maxLogoWidth = 55;
+      const maxLogoWidth = 45;
       const aspectRatio = logoResult.height / logoResult.width;
       const logoWidth = maxLogoWidth;
       const logoHeight = maxLogoWidth * aspectRatio;
-      pdf.addImage(logoResult.data, 'PNG', (pageWidth - logoWidth) / 2, 4, logoWidth, logoHeight);
+      pdf.addImage(logoResult.data, 'PNG', (pageWidth - logoWidth) / 2, 5, logoWidth, logoHeight);
     } catch (e) { console.error('Failed to add logo:', e); }
   }
 
   pdf.setTextColor(...colors.titleText as [number, number, number]);
   pdf.setFontSize(18);
   pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('CONTENT DELIVERY GUIDE', pageWidth / 2, 32, { align: 'center' });
+  pdf.text('CONTENT DELIVERY GUIDE', pageWidth / 2, 48, { align: 'center' });
 
   pdf.setTextColor(...colors.labelText as [number, number, number]);
   pdf.setFontSize(10);
   pdf.setFont(FONTS.accent.family, FONTS.accent.style);
-  pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 40, { align: 'center' });
+  pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 56, { align: 'center' });
 
   let yPos = 70;
 
