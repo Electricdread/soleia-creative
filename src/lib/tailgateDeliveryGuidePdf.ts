@@ -171,6 +171,19 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
 
   yPos += 30;
 
+  // ========== VENUE DISPLAY DIAGRAM ==========
+  const diagramResult = await assetToBase64(displayDiagram);
+  if (diagramResult) {
+    const diagramAspect = diagramResult.height / diagramResult.width;
+    const diagramWidth = contentWidth;
+    const diagramHeight = diagramWidth * diagramAspect;
+    checkPageBreak(diagramHeight + 10);
+    try {
+      pdf.addImage(diagramResult.data, 'PNG', margin, yPos, diagramWidth, diagramHeight);
+      yPos += diagramHeight + 8;
+    } catch (e) { console.error('Failed to add diagram:', e); }
+  }
+
   // ========== DISPLAY SPECIFICATIONS ==========
   checkPageBreak(50);
   pdf.setTextColor(...colors.headerAccent as [number, number, number]);
