@@ -24,11 +24,6 @@ const colors = {
   linkBlue: [37, 99, 235],
 };
 
-const displaySpecs = [
-  { name: 'Television Displays', resolution: '1920×1080 or 3840×2160', format: 'MOV', codec: 'DXV3', maxSize: '8GB' },
-  { name: 'LED Pixel Map', resolution: '3840×2160', format: 'MOV with Alpha', codec: 'DXV3', frameRate: '60 fps', maxSize: '30GB' },
-];
-
 const workflowSteps = [
   { step: 1, title: 'Prepare Your Video', description: 'Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.' },
   { step: 2, title: 'Download Resolume Alley (Free)', description: 'Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder.' },
