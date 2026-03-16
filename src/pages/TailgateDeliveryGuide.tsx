@@ -155,44 +155,6 @@ const TailgateDeliveryGuide = () => {
           </div>
         </motion.section>
 
-        <Separator className="bg-slate-200" />
-
-        {/* Display Specifications */}
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="space-y-6">
-          <div className="text-center">
-            <h3 className="text-2xl font-semibold text-[#2b4c6f]">Display Specifications</h3>
-            <p className="text-slate-500 mt-1">Technical requirements for each display type</p>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {displaySpecs.map((spec, index) => (
-              <motion.div key={spec.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + index * 0.1 }} whileHover={{ y: -4, scale: 1.02 }}>
-                <Card className="h-full border-slate-200 bg-white/80 hover:shadow-xl transition-all duration-300">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="p-2.5 rounded-xl bg-gradient-to-br from-sky-100 to-slate-100">
-                        <spec.icon className="w-6 h-6 text-[#2b4c6f]" />
-                      </div>
-                      <div className="flex-1 space-y-3">
-                        <h4 className="font-semibold text-slate-900">{spec.name}</h4>
-                        <div className="space-y-1.5 text-sm">
-                          <div className="flex justify-between"><span className="text-slate-500">Resolution</span><span className="font-mono text-slate-900">{spec.resolution}</span></div>
-                          <div className="flex justify-between"><span className="text-slate-500">Format</span><span className="font-mono text-slate-900">{spec.format}</span></div>
-                          {spec.codec && <div className="flex justify-between"><span className="text-slate-500">Codec</span><Badge className="bg-sky-100 text-sky-800 border-sky-300 font-mono text-xs">{spec.codec}</Badge></div>}
-                          {spec.frameRate && <div className="flex justify-between"><span className="text-slate-500">Frame Rate</span><span className="font-mono text-slate-900">{spec.frameRate}</span></div>}
-                          {spec.duration && <div className="flex justify-between"><span className="text-slate-500">Duration</span><span className="font-mono text-slate-900">{spec.duration}</span></div>}
-                          {spec.maxSize && <div className="flex justify-between"><span className="text-slate-500">Max Size</span><span className="font-mono text-slate-900">{spec.maxSize}</span></div>}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        <Separator className="bg-slate-200" />
-
         {/* Submission Timeline */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Card className="border-slate-200 bg-gradient-to-br from-sky-50 to-slate-50 shadow-xl">

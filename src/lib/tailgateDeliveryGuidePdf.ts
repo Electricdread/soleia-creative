@@ -167,55 +167,6 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
 
   yPos += 30;
 
-  // ========== DISPLAY SPECIFICATIONS ==========
-  checkPageBreak(40);
-  pdf.setTextColor(...colors.headerAccent as [number, number, number]);
-  pdf.setFontSize(12);
-  pdf.setFont(FONTS.title.family, FONTS.title.style);
-  pdf.text('DISPLAY SPECIFICATIONS', margin, yPos);
-  yPos += 8;
-
-  const colWidths = [50, 50, 32, 25, 25];
-  const tableHeaders = ['Display Type', 'Resolution', 'Format', 'Codec', 'Frame Rate'];
-  
-  pdf.setFillColor(...colors.headerAccent as [number, number, number]);
-  pdf.rect(margin, yPos - 4, contentWidth, 8, 'F');
-  
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(7);
-  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  let xPos = margin + 2;
-  tableHeaders.forEach((header, i) => { pdf.text(header, xPos, yPos); xPos += colWidths[i]; });
-  yPos += 6;
-
-  displaySpecs.forEach((spec, idx) => {
-    const rowBg = idx % 2 === 0 ? colors.cardBg : [240, 244, 250];
-    pdf.setFillColor(...rowBg as [number, number, number]);
-    pdf.rect(margin, yPos - 4, contentWidth, 10, 'F');
-    
-    xPos = margin + 2;
-    pdf.setTextColor(...colors.titleText as [number, number, number]);
-    pdf.setFontSize(8);
-    pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-    pdf.text(spec.name, xPos, yPos);
-    xPos += colWidths[0];
-    
-    pdf.setFont(FONTS.mono.family, FONTS.mono.style);
-    pdf.setFontSize(7);
-    pdf.setTextColor(...colors.valueText as [number, number, number]);
-    pdf.text(spec.resolution, xPos, yPos);
-    xPos += colWidths[1];
-    pdf.text(spec.format, xPos, yPos);
-    xPos += colWidths[2];
-    pdf.text(spec.codec || '-', xPos, yPos);
-    xPos += colWidths[3];
-    pdf.text(spec.frameRate || '-', xPos, yPos);
-    
-    yPos += 10;
-  });
-
-  yPos += 8;
-
   // ========== SUBMISSION TIMELINE ==========
   checkPageBreak(30);
   pdf.setFillColor(240, 248, 255);
