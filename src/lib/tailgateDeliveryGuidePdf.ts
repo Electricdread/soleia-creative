@@ -99,14 +99,7 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
   pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 40, { align: 'center' });
 
-  pdf.setTextColor(...colors.titleText as [number, number, number]);
-  pdf.setFontSize(10);
-  pdf.setFont(FONTS.bodyBold.family, FONTS.bodyBold.style);
-  const introText = 'We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping. This template is pre-built to match our venue\'s exact screen layout, so you can drop in your content and export with confidence.';
-  const introLines = pdf.splitTextToSize(introText, contentWidth - 20);
-  pdf.text(introLines, pageWidth / 2, 48, { align: 'center' });
-
-  let yPos = 48 + introLines.length * 5 + 8;
+  let yPos = 70;
 
   const checkPageBreak = (needed: number) => {
     if (yPos + needed > pageHeight - 20) { pdf.addPage(); yPos = 20; }
