@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import tailgateLogo from '@/assets/tailgate-logo.png';
+import displayDiagram from '@/assets/tailgate-display-diagram.png';
 import { toast } from 'sonner';
 
 const RESOLUME_URL = 'https://www.resolume.com';
