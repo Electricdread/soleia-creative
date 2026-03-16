@@ -99,7 +99,7 @@ export async function generateTailgateDeliveryGuidePdf(): Promise<Blob> {
   pdf.setFont(FONTS.accent.family, FONTS.accent.style);
   pdf.text('DXV3 Format Specifications for Resolume Media Servers', pageWidth / 2, 56, { align: 'center' });
 
-  let yPos = 70;
+  let yPos = 78;
 
   const checkPageBreak = (needed: number) => {
     if (yPos + needed > pageHeight - 20) { pdf.addPage(); yPos = 20; }
