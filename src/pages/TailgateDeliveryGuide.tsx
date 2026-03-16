@@ -163,6 +163,15 @@ const TailgateDeliveryGuide = () => {
           </div>
         </motion.section>
 
+        {/* Venue Display Diagram */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <Card className="overflow-hidden border-slate-200 bg-white/80 backdrop-blur-sm shadow-xl shadow-sky-500/10">
+            <CardContent className="p-4 sm:p-6">
+              <img src={displayDiagram} alt="Tailgate Beach Club Display Layout - Display 1 (5760x1000), Display 2A (1920x1056), Display 2 (1920x1056)" className="w-full rounded-lg" />
+            </CardContent>
+          </Card>
+        </motion.section>
+
         {/* Display Specifications */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="space-y-6">
           <div className="text-center">
