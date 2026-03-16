@@ -20,6 +20,13 @@ import { toast } from 'sonner';
 const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
 
+const displaySpecs = [
+  { label: 'TV Displays', resolution: '1920x1080' },
+  { label: 'Display 1 LED Screen', resolution: '5760x1000' },
+  { label: 'Display 2A LED Screen', resolution: '1920x1056' },
+  { label: 'Display 2 LED Screen', resolution: '1920x1056' },
+];
+
 const workflowSteps = [
   { step: 1, title: 'Export Source Video', description: 'Export in ProRes or high-quality H264' },
   { step: 2, title: 'Open Resolume Alley', description: 'Free encoder for DXV3 conversion' },
