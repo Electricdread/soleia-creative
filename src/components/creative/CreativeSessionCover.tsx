@@ -16,7 +16,6 @@ interface CreativeSessionCoverProps {
     client_name: string;
     created_at: string;
     cover_images?: CoverImage[] | null;
-    [key: string]: unknown;
   };
 }
 
