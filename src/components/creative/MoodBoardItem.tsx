@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Heart, Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2 } from 'lucide-react';
+import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -39,10 +39,11 @@ interface MoodBoardItemProps {
   reactions: Reaction[];
   comments: Comment[];
   userName: string;
-  onDelete: (id: string) => void;
+  onDelete?: (id: string) => void;
   onReactionChange: () => void;
   onCommentChange: () => void;
   onMediaClick: (id: string) => void;
+  readOnly?: boolean;
 }
 
 export function MoodBoardItem({
@@ -54,6 +55,7 @@ export function MoodBoardItem({
   onReactionChange,
   onCommentChange,
   onMediaClick,
+  readOnly = false,
 }: MoodBoardItemProps) {
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -65,7 +67,7 @@ export function MoodBoardItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.id });
+  } = useSortable({ id: item.id, disabled: readOnly });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -204,24 +206,31 @@ export function MoodBoardItem({
     >
       <div className="relative">
         {renderMedia()}
-        <button
-          {...attributes}
-          {...listeners}
-          className="absolute top-2 left-2 p-1.5 rounded-md bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-primary cursor-grab active:cursor-grabbing transition-colors touch-manipulation"
-          aria-label="Drag to reorder"
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-        <Button
-          variant="destructive"
-          size="icon"
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
-          onClick={() => onDelete(item.id)}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        {/* Admin-only controls */}
+        {!readOnly && (
+          <>
+            <button
+              {...attributes}
+              {...listeners}
+              className="absolute top-2 left-2 p-1.5 rounded-md bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-primary cursor-grab active:cursor-grabbing transition-colors touch-manipulation"
+              aria-label="Drag to reorder"
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+                onClick={() => onDelete(item.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </>
+        )}
         {item.item_type && (
-          <Badge variant="secondary" className="absolute top-10 left-2 text-[8px] uppercase tracking-wider">
+          <Badge variant="secondary" className={`absolute ${readOnly ? 'top-2' : 'top-10'} left-2 text-[8px] uppercase tracking-wider`}>
             {item.item_type}
           </Badge>
         )}
