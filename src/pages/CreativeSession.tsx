@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,20 @@ import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
 
 interface CoverImage {
   url: string;
@@ -112,9 +126,33 @@ export default function CreativeSession() {
       .from('mood_board_items')
       .select('*')
       .eq('session_id', session.id)
+      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false });
     setItems(data || []);
   };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = items.findIndex((i) => i.id === active.id);
+    const newIndex = items.findIndex((i) => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(items, oldIndex, newIndex);
+    setItems(reordered);
+
+    // Persist sort_order
+    const updates = reordered.map((item, idx) =>
+      supabase.from('mood_board_items').update({ sort_order: idx }).eq('id', item.id)
+    );
+    await Promise.all(updates);
+  }, [items]);
 
   const fetchReactions = async () => {
     if (!session?.id) return;
@@ -228,20 +266,24 @@ export default function CreativeSession() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {items.map((item) => (
-              <MoodBoardItem
-                key={item.id}
-                item={item}
-                reactions={reactions.filter((r) => r.item_id === item.id)}
-                comments={comments.filter((c) => c.item_id === item.id)}
-                userName={userName}
-                onDelete={deleteItem}
-                onReactionChange={fetchReactions}
-                onCommentChange={fetchComments}
-              />
-            ))}
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {items.map((item) => (
+                  <MoodBoardItem
+                    key={item.id}
+                    item={item}
+                    reactions={reactions.filter((r) => r.item_id === item.id)}
+                    comments={comments.filter((c) => c.item_id === item.id)}
+                    userName={userName}
+                    onDelete={deleteItem}
+                    onReactionChange={fetchReactions}
+                    onCommentChange={fetchComments}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
     </div>
