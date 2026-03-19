@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2, ArrowRight } from 'lucide-react';
 
 interface ApprovedItem {
   id: string;
@@ -13,9 +14,10 @@ interface ApprovedItem {
 interface ApprovalCartProps {
   items: ApprovedItem[];
   clientName: string;
+  onViewSummary: () => void;
 }
 
-export function ApprovalCart({ items, clientName }: ApprovalCartProps) {
+export function ApprovalCart({ items, clientName, onViewSummary }: ApprovalCartProps) {
   if (items.length === 0) return null;
 
   return (
@@ -60,9 +62,19 @@ export function ApprovalCart({ items, clientName }: ApprovalCartProps) {
           })}
         </div>
 
-        <p className="text-[10px] text-muted-foreground">
-          Selected by <span className="text-foreground font-medium">{clientName}</span> for approval
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] text-muted-foreground">
+            Selected by <span className="text-foreground font-medium">{clientName}</span>
+          </p>
+          <Button
+            size="sm"
+            onClick={onViewSummary}
+            className="gap-1.5 text-xs h-8 bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            View Summary
+            <ArrowRight className="h-3 w-3" />
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
