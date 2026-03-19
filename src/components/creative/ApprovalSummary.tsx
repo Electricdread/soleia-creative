@@ -75,6 +75,10 @@ export function ApprovalSummary({
   onBack,
 }: ApprovalSummaryProps) {
   const [generating, setGenerating] = useState(false);
+  const [signOffName, setSignOffName] = useState('');
+  const [signedOff, setSignedOff] = useState(false);
+
+  const isSignOffValid = signOffName.trim().toLowerCase() === clientName.trim().toLowerCase();
 
   const generatePDF = async () => {
     setGenerating(true);
