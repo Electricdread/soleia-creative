@@ -189,9 +189,21 @@ export function MoodBoardItem({
   };
 
   return (
-    <Card className="overflow-hidden group border border-border/50 bg-card">
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={`overflow-hidden group border border-border/50 bg-card transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-primary/50' : ''}`}
+    >
       <div className="relative">
         {renderMedia()}
+        <button
+          {...attributes}
+          {...listeners}
+          className="absolute top-2 left-2 p-1.5 rounded-md bg-background/70 backdrop-blur-sm text-muted-foreground hover:text-primary cursor-grab active:cursor-grabbing transition-colors touch-manipulation"
+          aria-label="Drag to reorder"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
         <Button
           variant="destructive"
           size="icon"
@@ -201,7 +213,7 @@ export function MoodBoardItem({
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
         {item.item_type && (
-          <Badge variant="secondary" className="absolute top-2 left-2 text-[8px] uppercase tracking-wider">
+          <Badge variant="secondary" className="absolute top-10 left-2 text-[8px] uppercase tracking-wider">
             {item.item_type}
           </Badge>
         )}
