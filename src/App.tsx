@@ -61,6 +61,9 @@ const App = () => (
               {/* Public Proposal Page */}
               <Route path="/proposal/:token" element={<ClientProposal />} />
               
+              {/* ShowBlox Content Preview */}
+              <Route path="/preview/:token" element={<ShowBloxPreview />} />
+              
               {/* Operator Office Portal - Email-locked to luisdreams@me.com */}
               <Route path="/office" element={<OfficePortal />} />
               
