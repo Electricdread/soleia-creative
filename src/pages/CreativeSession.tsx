@@ -9,6 +9,8 @@ import { Loader2, User } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
+import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
+import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import {
   DndContext,
@@ -77,6 +79,7 @@ export default function CreativeSession() {
   const [userName, setUserName] = useState(() =>
     localStorage.getItem('creative_session_name') || ''
   );
+  const [fullscreenItemId, setFullscreenItemId] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) fetchSession();
@@ -279,13 +282,32 @@ export default function CreativeSession() {
                     onDelete={deleteItem}
                     onReactionChange={fetchReactions}
                     onCommentChange={fetchComments}
+                    onMediaClick={setFullscreenItemId}
                   />
                 ))}
               </div>
             </SortableContext>
           </DndContext>
         )}
+
+        {/* Approval Cart */}
+        {(() => {
+          const approvedItems = items.filter((item) =>
+            reactions.some((r) => r.item_id === item.id && r.reaction_type === 'love' && r.reactor_name === userName)
+          );
+          return <ApprovalCart items={approvedItems} clientName={userName || 'Guest'} />;
+        })()}
       </div>
+
+      {/* Fullscreen Viewer */}
+      {fullscreenItemId && (
+        <FullscreenMediaViewer
+          items={items.filter((i) => i.item_type === 'image' || i.item_type === 'video')}
+          currentId={fullscreenItemId}
+          onClose={() => setFullscreenItemId(null)}
+          onNavigate={setFullscreenItemId}
+        />
+      )}
     </div>
   );
 }

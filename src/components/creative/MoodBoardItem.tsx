@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Heart, Trash2, ExternalLink, Send, MessageCircle, GripVertical } from 'lucide-react';
+import { Heart, Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -42,6 +42,7 @@ interface MoodBoardItemProps {
   onDelete: (id: string) => void;
   onReactionChange: () => void;
   onCommentChange: () => void;
+  onMediaClick: (id: string) => void;
 }
 
 export function MoodBoardItem({
@@ -52,6 +53,7 @@ export function MoodBoardItem({
   onDelete,
   onReactionChange,
   onCommentChange,
+  onMediaClick,
 }: MoodBoardItemProps) {
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -143,25 +145,29 @@ export function MoodBoardItem({
 
     if (item.item_type === 'image' && (mediaUrl || thumbnailUrl)) {
       return (
-        <img
-          src={mediaUrl || thumbnailUrl || ''}
-          alt={item.title || 'Image'}
-          className="w-full rounded-t-lg object-contain bg-secondary/30 max-h-[500px]"
-        />
+        <div className="cursor-pointer" onClick={() => onMediaClick(item.id)}>
+          <img
+            src={mediaUrl || thumbnailUrl || ''}
+            alt={item.title || 'Image'}
+            className="w-full rounded-t-lg object-contain bg-secondary/30 max-h-[500px]"
+          />
+        </div>
       );
     }
 
     if (item.item_type === 'video' && mediaUrl) {
       return (
-        <video
-          src={mediaUrl}
-          poster={thumbnailUrl || undefined}
-          className="w-full rounded-t-lg bg-secondary/30"
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
+        <div className="cursor-pointer relative" onClick={() => onMediaClick(item.id)}>
+          <video
+            src={mediaUrl}
+            poster={thumbnailUrl || undefined}
+            className="w-full rounded-t-lg bg-secondary/30"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        </div>
       );
     }
 
@@ -192,7 +198,9 @@ export function MoodBoardItem({
     <Card
       ref={setNodeRef}
       style={style}
-      className={`overflow-hidden group border border-border/50 bg-card transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-primary/50' : ''}`}
+      className={`overflow-hidden group border-2 transition-shadow ${
+        isDragging ? 'shadow-lg ring-2 ring-primary/50' : ''
+      } ${hasLiked ? 'border-primary/50 bg-primary/5' : 'border-border/50 bg-card'}`}
     >
       <div className="relative">
         {renderMedia()}
@@ -227,18 +235,21 @@ export function MoodBoardItem({
           <p className="text-[10px] text-muted-foreground line-clamp-2">{item.description}</p>
         )}
 
-        {/* Like Button */}
+        {/* Approve Button */}
         <div className="flex items-center gap-3 pt-1 border-t border-border/50">
           <Button
             variant="ghost"
             size="sm"
-            className={`h-8 px-3 gap-1.5 ${hasLiked ? 'text-red-500' : 'text-muted-foreground'}`}
+            className={`h-8 px-3 gap-1.5 ${hasLiked ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={toggleLike}
           >
-            <Heart className={`h-4 w-4 ${hasLiked ? 'fill-current' : ''}`} />
-            <span className="text-xs">{likeCount > 0 ? likeCount : 'Like'}</span>
+            <CheckCircle2 className={`h-4 w-4 ${hasLiked ? 'fill-primary text-primary-foreground' : ''}`} />
+            <span className="text-xs">{hasLiked ? 'Approved' : 'Approve'}</span>
           </Button>
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+          {likeCount > 0 && (
+            <span className="text-[10px] text-primary font-medium">{likeCount} approved</span>
+          )}
+          <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto">
             <MessageCircle className="h-3 w-3" />
             {comments.length > 0 ? `${comments.length}` : '0'}
           </span>
