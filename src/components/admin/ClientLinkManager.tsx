@@ -40,6 +40,7 @@ export function ClientLinkManager() {
   const [links, setLinks] = useState<ClientLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewingUploadsFor, setViewingUploadsFor] = useState<{ id: string; name: string } | null>(null);
+  const [viewingPrevizFor, setViewingPrevizFor] = useState<{ id: string; token: string; name: string } | null>(null);
 
   // Generate a unique token
   const generateToken = () => {
