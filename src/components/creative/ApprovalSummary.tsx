@@ -50,6 +50,22 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   }
 }
 
+function getImageDimensions(base64: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => resolve({ width: 1, height: 1 });
+    img.src = base64;
+  });
+}
+
+function fitImageInBox(imgW: number, imgH: number, boxW: number, boxH: number) {
+  const scale = Math.min(boxW / imgW, boxH / imgH);
+  const w = imgW * scale;
+  const h = imgH * scale;
+  return { w, h, x: (boxW - w) / 2, y: (boxH - h) / 2 };
+}
+
 export function ApprovalSummary({
   items,
   comments,
