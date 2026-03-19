@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Plus, Loader2, Upload, ImageIcon, X } from 'lucide-react';
+import { Plus, Loader2, Upload, X } from 'lucide-react';
 import type { Json } from '@/integrations/supabase/types';
 
 interface NewSessionFormProps {
@@ -49,7 +49,6 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
 
     let coverImages: Json | null = null;
 
-    // Upload cover image if provided
     if (coverFile) {
       const ext = coverFile.name.split('.').pop()?.toLowerCase();
       const path = `covers/${token}.${ext}`;
@@ -88,60 +87,47 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
   };
 
   return (
-    <Card className="border-zinc-700/50 bg-zinc-900/90 overflow-hidden">
-      <div className="h-1 bg-gradient-to-r from-cyan-500 to-blue-500" />
-
-      <CardHeader className="pb-4 border-b border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-            <Plus className="h-4 w-4 text-cyan-400" />
-          </div>
-          <div>
-            <CardTitle className="text-base font-tech font-bold uppercase tracking-wider text-white">
-              New Creative Session
-            </CardTitle>
-            <CardDescription className="text-zinc-500 text-[10px] font-tech tracking-widest uppercase">
-              Per-client mood board workspace
-            </CardDescription>
-          </div>
-        </div>
+    <Card className="border-primary/20">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Plus className="w-5 h-5 text-primary" />
+          New Creative Session
+        </CardTitle>
+        <CardDescription>
+          Create a mood board workspace for client collaboration
+        </CardDescription>
       </CardHeader>
 
-      <CardContent className="pt-5 space-y-5">
+      <CardContent className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-[10px] font-tech uppercase tracking-widest text-cyan-400">
-              Project Name *
-            </Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Project Name *</Label>
             <Input
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
               placeholder="e.g., Soleia Grand Opening"
-              className="bg-black/40 border-zinc-700 text-white placeholder:text-zinc-600 focus:border-cyan-500 font-tech h-11"
+              className="h-9 text-sm"
             />
           </div>
-          <div className="space-y-2">
-            <Label className="text-[10px] font-tech uppercase tracking-widest text-purple-400">
-              Client Name *
-            </Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Client Name *</Label>
             <Input
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               placeholder="e.g., Acme Corp"
-              className="bg-black/40 border-zinc-700 text-white placeholder:text-zinc-600 focus:border-purple-500 font-tech h-11"
+              className="h-9 text-sm"
             />
           </div>
         </div>
 
-        {/* Cover Image Upload */}
-        <div className="space-y-2">
-          <Label className="text-[10px] font-tech uppercase tracking-widest text-amber-400 flex items-center gap-1.5">
-            <ImageIcon className="h-3 w-3" />
+        {/* Cover Image */}
+        <div className="border border-dashed border-border/60 rounded-lg p-4 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Cover Image (optional)
-          </Label>
+          </p>
           {coverPreview ? (
             <div className="relative rounded-lg overflow-hidden">
-              <img src={coverPreview} alt="Cover" className="w-full max-h-48 object-cover rounded-lg" />
+              <img src={coverPreview} alt="Cover" className="w-full max-h-40 object-cover rounded-lg" />
               <Button
                 variant="destructive"
                 size="icon"
@@ -154,12 +140,10 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
           ) : (
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed border-zinc-700 rounded-lg p-6 text-center hover:border-amber-500/40 transition-colors"
+              className="w-full border border-dashed border-border/40 rounded-lg p-4 text-center hover:border-primary/40 transition-colors"
             >
-              <Upload className="h-6 w-6 mx-auto text-zinc-600 mb-2" />
-              <p className="text-xs font-tech text-zinc-500 uppercase tracking-wider">
-                Tap to upload cover image
-              </p>
+              <Upload className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+              <p className="text-xs text-muted-foreground">Click to upload</p>
             </button>
           )}
           <input
@@ -171,29 +155,20 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
           />
         </div>
 
-        <div className="flex gap-3 pt-3 border-t border-zinc-800">
+        <div className="flex gap-3">
           <Button
             onClick={createSession}
             disabled={creating || !projectName.trim() || !clientName.trim()}
-            className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 font-tech uppercase tracking-wider h-11"
+            className="gap-1.5 flex-1"
           >
             {creating ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Creating...
-              </>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Session
-              </>
+              <Plus className="w-3.5 h-3.5" />
             )}
+            Create Session
           </Button>
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            className="border-zinc-600 text-zinc-400 hover:bg-zinc-800 hover:text-white font-tech uppercase tracking-wider h-11"
-          >
+          <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
         </div>

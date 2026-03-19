@@ -4,8 +4,6 @@ import { CreativeSessionManager } from '@/components/admin/CreativeSessionManage
 import { ArrowLeft, Settings } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
-// This component is wrapped by ProtectedRoute with requireAdmin
-// Authentication is handled by the wrapper, not internally
 export default function AdminCreative() {
   const navigate = useNavigate();
 
@@ -13,13 +11,6 @@ export default function AdminCreative() {
     <div className="min-h-screen bg-black">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
-      <div 
-        className="absolute inset-0 opacity-5"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }}
-      />
 
       {/* Header */}
       <header className="relative z-10 border-b border-zinc-800">
@@ -36,13 +27,13 @@ export default function AdminCreative() {
                 Back
               </Button>
               <div className="h-6 w-px bg-zinc-700" />
-              <img 
-                src={soleiaLogo} 
-                alt="Soleia" 
+              <img
+                src={soleiaLogo}
+                alt="Soleia"
                 className="h-8 w-auto object-contain"
               />
             </div>
-            
+
             <div className="flex items-center gap-3">
               <h1 className="text-lg font-semibold text-white">
                 Soleia Creative
@@ -63,19 +54,10 @@ export default function AdminCreative() {
 
       {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-xl p-6">
+        <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-xl overflow-hidden p-6">
           <CreativeSessionManager />
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-zinc-600 text-sm">
-            © {new Date().getFullYear()} Soleia Creative Management System
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
