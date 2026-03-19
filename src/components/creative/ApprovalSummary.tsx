@@ -39,13 +39,17 @@ interface ApprovalSummaryProps {
 
 async function loadImageAsBase64(url: string): Promise<string | null> {
   try {
-    const response = await fetch(url, { mode: 'cors' });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(url, { mode: 'cors', signal: controller.signal });
+    clearTimeout(timeout);
     const blob = await response.blob();
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
       reader.onerror = () => resolve(null);
       reader.readAsDataURL(blob);
+      setTimeout(() => resolve(null), 3000);
     });
   } catch {
     return null;
@@ -307,8 +311,10 @@ export function ApprovalSummary({
       pdf.save(`${projectName.replace(/\s+/g, '-').toLowerCase()}-approval-summary.pdf`);
     } catch (err) {
       console.error('PDF generation error:', err);
+      toast.error('Failed to generate PDF. Please try again.');
+    } finally {
+      setGenerating(false);
     }
-    setGenerating(false);
   };
 
   return (
