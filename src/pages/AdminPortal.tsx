@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
@@ -22,7 +22,6 @@ interface PortalCard {
 }
 
 const portals: PortalCard[] = [
-  /* 
   {
     title: 'Soleia Creative',
     description: 'Internal creative sessions, mood boards, and team collaboration',
@@ -30,26 +29,17 @@ const portals: PortalCard[] = [
     href: '/admin/creative',
   },
   {
-    title: 'Soleia Looks Collection',
-    description: 'Client gallery sessions for motion graphics selection',
-    iconSrc: soleiaIcon,
-    href: '/admin/looks',
-  },
-  */
-  {
     title: 'Soleia Creative Guide',
     description: 'Technical specifications and venue display documentation',
     iconSrc: soleiaIcon,
     href: '/creative-guide',
   },
-  /*
   {
-    title: 'Client Proposals',
-    description: 'Create and manage client proposals with interactive pricing',
-    icon: <FileText className="w-6 h-6 text-zinc-400" />,
-    href: '/admin/proposals',
+    title: 'Content Previz',
+    description: 'Per-client video previews for content review and approval',
+    icon: <Video className="w-6 h-6 text-zinc-400" />,
+    href: '/admin/looks',
   },
-  */
   {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
