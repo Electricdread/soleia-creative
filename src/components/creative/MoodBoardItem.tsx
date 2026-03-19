@@ -235,18 +235,21 @@ export function MoodBoardItem({
           <p className="text-[10px] text-muted-foreground line-clamp-2">{item.description}</p>
         )}
 
-        {/* Like Button */}
+        {/* Approve Button */}
         <div className="flex items-center gap-3 pt-1 border-t border-border/50">
           <Button
             variant="ghost"
             size="sm"
-            className={`h-8 px-3 gap-1.5 ${hasLiked ? 'text-red-500' : 'text-muted-foreground'}`}
+            className={`h-8 px-3 gap-1.5 ${hasLiked ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={toggleLike}
           >
-            <Heart className={`h-4 w-4 ${hasLiked ? 'fill-current' : ''}`} />
-            <span className="text-xs">{likeCount > 0 ? likeCount : 'Like'}</span>
+            <CheckCircle2 className={`h-4 w-4 ${hasLiked ? 'fill-primary text-primary-foreground' : ''}`} />
+            <span className="text-xs">{hasLiked ? 'Approved' : 'Approve'}</span>
           </Button>
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+          {likeCount > 0 && (
+            <span className="text-[10px] text-primary font-medium">{likeCount} approved</span>
+          )}
+          <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto">
             <MessageCircle className="h-3 w-3" />
             {comments.length > 0 ? `${comments.length}` : '0'}
           </span>
