@@ -43,7 +43,7 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
           />
           <div className="h-6 w-px bg-border" />
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold font-serif text-foreground truncate">
+            <h1 className="text-xl sm:text-2xl font-bold font-display text-foreground truncate">
               {session.project_name}
             </h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">

@@ -192,7 +192,7 @@ export default function CreativeSession() {
         <Card className="max-w-sm w-full border border-border/50">
           <CardContent className="pt-8 pb-6 px-6 space-y-5">
             <div className="text-center space-y-1">
-              <h2 className="text-xl font-bold font-serif text-foreground">{session.project_name}</h2>
+              <h2 className="text-xl font-bold font-display text-foreground">{session.project_name}</h2>
               <p className="text-xs text-muted-foreground">Enter your name to review and approve content</p>
             </div>
             <div className="space-y-2">
