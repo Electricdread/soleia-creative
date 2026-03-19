@@ -9,7 +9,7 @@ import { Loader2, User } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
-import soleiaIcon from '@/assets/sol-icon.png';
+import soleiaLogo from '@/assets/soleia-logo-new.png';
 
 interface CoverImage {
   url: string;
@@ -158,19 +158,22 @@ export default function CreativeSession() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <img src={soleiaLogo} alt="Soleia" className="h-24 object-contain mb-8 opacity-50" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Loading your session...</p>
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-black">
-        <Card className="max-w-md w-full bg-zinc-900 border-zinc-800">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+        <img src={soleiaLogo} alt="Soleia" className="h-24 object-contain mb-8 opacity-50" />
+        <Card className="max-w-md w-full border border-border/50">
           <CardContent className="pt-6 text-center">
-            <h2 className="text-xl font-tech font-bold mb-2 text-white">Session Not Found</h2>
-            <p className="text-zinc-400 font-tech text-sm">
+            <h2 className="text-xl font-semibold mb-2 text-foreground">Session Not Found</h2>
+            <p className="text-muted-foreground text-sm">
               This creative session doesn't exist or has been deactivated.
             </p>
           </CardContent>
@@ -180,27 +183,24 @@ export default function CreativeSession() {
   }
 
   return (
-    <div className="min-h-screen bg-black font-tech">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="relative h-28 overflow-hidden bg-gradient-to-b from-zinc-900 to-black">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img src={soleiaIcon} alt="Soleia" className="h-14 w-auto object-contain opacity-80" />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black" />
-        <div className="absolute bottom-3 left-4">
-          <span className="text-[10px] font-tech uppercase tracking-[0.3em] text-cyan-400">
-            Soleia Creative
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <img src={soleiaLogo} alt="Soleia" className="h-8 sm:h-10 object-contain" />
+          <span className="text-[10px] font-tech uppercase tracking-[0.3em] text-muted-foreground">
+            Creative Session
           </span>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 space-y-5">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <CreativeSessionCover session={session} />
 
         {/* User Name + Add */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
           <div className="flex-1 space-y-1.5">
-            <Label htmlFor="userName" className="flex items-center gap-1.5 text-[10px] font-tech uppercase tracking-widest text-cyan-400">
+            <Label htmlFor="userName" className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
               <User className="h-3 w-3" />
               Your Name
             </Label>
@@ -209,7 +209,7 @@ export default function CreativeSession() {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="Enter your name..."
-              className="h-11 font-tech bg-zinc-900/80 border-zinc-700 focus:border-cyan-500/50 placeholder:text-zinc-600"
+              className="h-11 bg-secondary/30 border-border/50 focus:border-primary/50 placeholder:text-muted-foreground/50"
             />
           </div>
           <AddMoodBoardItem sessionId={session.id} userName={userName} onItemAdded={fetchItems} />
@@ -217,12 +217,12 @@ export default function CreativeSession() {
 
         {/* Content Gallery */}
         {items.length === 0 ? (
-          <Card className="bg-zinc-900/60 border-zinc-800 border-dashed">
+          <Card className="border border-dashed border-border/50">
             <CardContent className="py-12 text-center">
-              <p className="text-zinc-500 font-tech text-sm uppercase tracking-wider">
+              <p className="text-muted-foreground text-sm">
                 No items yet
               </p>
-              <p className="text-zinc-600 font-tech text-xs mt-1">
+              <p className="text-muted-foreground/60 text-xs mt-1">
                 Add images, videos, or links to start collaborating
               </p>
             </CardContent>
