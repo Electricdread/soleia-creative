@@ -42,6 +42,7 @@ interface MoodBoardItemProps {
   onDelete: (id: string) => void;
   onReactionChange: () => void;
   onCommentChange: () => void;
+  onMediaClick: (id: string) => void;
 }
 
 export function MoodBoardItem({
