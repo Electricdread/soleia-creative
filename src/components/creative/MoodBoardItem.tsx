@@ -145,25 +145,29 @@ export function MoodBoardItem({
 
     if (item.item_type === 'image' && (mediaUrl || thumbnailUrl)) {
       return (
-        <img
-          src={mediaUrl || thumbnailUrl || ''}
-          alt={item.title || 'Image'}
-          className="w-full rounded-t-lg object-contain bg-secondary/30 max-h-[500px]"
-        />
+        <div className="cursor-pointer" onClick={() => onMediaClick(item.id)}>
+          <img
+            src={mediaUrl || thumbnailUrl || ''}
+            alt={item.title || 'Image'}
+            className="w-full rounded-t-lg object-contain bg-secondary/30 max-h-[500px]"
+          />
+        </div>
       );
     }
 
     if (item.item_type === 'video' && mediaUrl) {
       return (
-        <video
-          src={mediaUrl}
-          poster={thumbnailUrl || undefined}
-          className="w-full rounded-t-lg bg-secondary/30"
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
+        <div className="cursor-pointer relative" onClick={() => onMediaClick(item.id)}>
+          <video
+            src={mediaUrl}
+            poster={thumbnailUrl || undefined}
+            className="w-full rounded-t-lg bg-secondary/30"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        </div>
       );
     }
 
