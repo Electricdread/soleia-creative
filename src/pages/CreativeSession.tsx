@@ -1,32 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, User } from 'lucide-react';
+import { Loader2, User, ArrowRight } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
-import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
 import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
 import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  rectSortingStrategy,
-  arrayMove,
-} from '@dnd-kit/sortable';
 
 interface CoverImage {
   url: string;
@@ -80,6 +65,9 @@ export default function CreativeSession() {
   const [userName, setUserName] = useState(() =>
     localStorage.getItem('creative_session_name') || ''
   );
+  const [nameConfirmed, setNameConfirmed] = useState(() =>
+    !!localStorage.getItem('creative_session_name')
+  );
   const [fullscreenItemId, setFullscreenItemId] = useState<string | null>(null);
   const [showSummary, setShowSummary] = useState(false);
 
@@ -98,8 +86,8 @@ export default function CreativeSession() {
   }, [session?.id]);
 
   useEffect(() => {
-    if (userName) localStorage.setItem('creative_session_name', userName);
-  }, [userName]);
+    if (userName && nameConfirmed) localStorage.setItem('creative_session_name', userName);
+  }, [userName, nameConfirmed]);
 
   const fetchSession = async () => {
     const { data, error } = await supabase
@@ -136,29 +124,6 @@ export default function CreativeSession() {
     setItems(data || []);
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
-  );
-
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = items.findIndex((i) => i.id === active.id);
-    const newIndex = items.findIndex((i) => i.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const reordered = arrayMove(items, oldIndex, newIndex);
-    setItems(reordered);
-
-    // Persist sort_order
-    const updates = reordered.map((item, idx) =>
-      supabase.from('mood_board_items').update({ sort_order: idx }).eq('id', item.id)
-    );
-    await Promise.all(updates);
-  }, [items]);
-
   const fetchReactions = async () => {
     if (!session?.id) return;
     const { data } = await supabase
@@ -193,12 +158,6 @@ export default function CreativeSession() {
     return () => { supabase.removeChannel(channel); };
   };
 
-  const deleteItem = async (itemId: string) => {
-    const { error } = await supabase.from('mood_board_items').delete().eq('id', itemId);
-    if (error) toast.error('Failed to delete item');
-    else fetchItems();
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
@@ -219,6 +178,46 @@ export default function CreativeSession() {
             <p className="text-muted-foreground text-sm">
               This creative session doesn't exist or has been deactivated.
             </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Name entry gate
+  if (!nameConfirmed) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">
+        <img src={soleiaLogo} alt="Soleia" className="h-16 object-contain mb-6 opacity-60" />
+        <Card className="max-w-sm w-full border border-border/50">
+          <CardContent className="pt-8 pb-6 px-6 space-y-5">
+            <div className="text-center space-y-1">
+              <h2 className="text-lg font-semibold text-foreground">{session.project_name}</h2>
+              <p className="text-xs text-muted-foreground">Enter your name to review and approve content</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+                <User className="h-3 w-3" />
+                Your Name
+              </div>
+              <Input
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your full name..."
+                className="h-12 bg-secondary/30 border-border/50 focus:border-primary/50 text-center"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && userName.trim()) setNameConfirmed(true);
+                }}
+              />
+            </div>
+            <Button
+              onClick={() => setNameConfirmed(true)}
+              disabled={!userName.trim()}
+              className="w-full h-11 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Enter Session
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -248,65 +247,45 @@ export default function CreativeSession() {
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <img src={soleiaLogo} alt="Soleia" className="h-8 sm:h-10 object-contain" />
-          <span className="text-[10px] font-tech uppercase tracking-[0.3em] text-muted-foreground">
-            Creative Session
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-muted-foreground">
+              Reviewing as <span className="text-foreground font-medium">{userName}</span>
+            </span>
+          </div>
         </div>
       </header>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <CreativeSessionCover session={session} />
 
-        {/* User Name + Add */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
-          <div className="flex-1 space-y-1.5">
-            <Label htmlFor="userName" className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
-              <User className="h-3 w-3" />
-              Your Name
-            </Label>
-            <Input
-              id="userName"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder="Enter your name..."
-              className="h-11 bg-secondary/30 border-border/50 focus:border-primary/50 placeholder:text-muted-foreground/50"
-            />
-          </div>
-          <AddMoodBoardItem sessionId={session.id} userName={userName} onItemAdded={fetchItems} />
-        </div>
-
-        {/* Content Gallery */}
+        {/* Content Gallery — Read Only */}
         {items.length === 0 ? (
           <Card className="border border-dashed border-border/50">
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground text-sm">
-                No items yet
+                Content is being prepared
               </p>
               <p className="text-muted-foreground/60 text-xs mt-1">
-                Add images, videos, or links to start collaborating
+                Check back soon — the creative team is uploading content for your review.
               </p>
             </CardContent>
           </Card>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {items.map((item) => (
-                  <MoodBoardItem
-                    key={item.id}
-                    item={item}
-                    reactions={reactions.filter((r) => r.item_id === item.id)}
-                    comments={comments.filter((c) => c.item_id === item.id)}
-                    userName={userName}
-                    onDelete={deleteItem}
-                    onReactionChange={fetchReactions}
-                    onCommentChange={fetchComments}
-                    onMediaClick={setFullscreenItemId}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {items.map((item) => (
+              <MoodBoardItem
+                key={item.id}
+                item={item}
+                reactions={reactions.filter((r) => r.item_id === item.id)}
+                comments={comments.filter((c) => c.item_id === item.id)}
+                userName={userName}
+                onReactionChange={fetchReactions}
+                onCommentChange={fetchComments}
+                onMediaClick={setFullscreenItemId}
+                readOnly
+              />
+            ))}
+          </div>
         )}
 
         {/* Approval Cart */}

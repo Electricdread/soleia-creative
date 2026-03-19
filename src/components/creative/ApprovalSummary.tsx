@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle2, Download, ArrowLeft, MessageCircle, Printer } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import jsPDF from 'jspdf';
 
@@ -75,6 +77,10 @@ export function ApprovalSummary({
   onBack,
 }: ApprovalSummaryProps) {
   const [generating, setGenerating] = useState(false);
+  const [signOffName, setSignOffName] = useState('');
+  const [signedOff, setSignedOff] = useState(false);
+
+  const isSignOffValid = signOffName.trim().toLowerCase() === clientName.trim().toLowerCase();
 
   const generatePDF = async () => {
     setGenerating(true);
@@ -243,14 +249,19 @@ export function ApprovalSummary({
       pdf.line(margin, y + 2, margin + 80, y + 2);
       y += 12;
 
-      // Signature line
+      // Signed-off name (typed confirmation)
       pdf.setTextColor(150, 150, 150);
       pdf.setFontSize(8);
-      pdf.text('Signature', margin, y);
-      y += 3;
+      pdf.text('Approved By (Typed Confirmation)', margin, y);
+      y += 6;
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(signedOff ? clientName : '___________________', margin, y);
+      pdf.setFont('helvetica', 'normal');
       pdf.setDrawColor(100, 100, 100);
-      pdf.line(margin, y + 12, margin + 80, y + 12);
-      y += 18;
+      pdf.line(margin, y + 2, margin + 80, y + 2);
+      y += 14;
 
       // Date
       pdf.setTextColor(150, 150, 150);
@@ -455,32 +466,54 @@ export function ApprovalSummary({
             Client Sign-Off
           </h2>
 
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                Client Name
-              </label>
-              <div className="border-b border-foreground/20 pb-2">
-                <span className="text-sm font-medium text-foreground">{clientName}</span>
+          {signedOff ? (
+            <div className="space-y-4">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Approved by {clientName}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {format(new Date(), 'MMMM d, yyyy • h:mm a')}
+                  </p>
+                </div>
               </div>
             </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                Signature
-              </label>
-              <div className="h-16 border border-dashed border-border rounded-md flex items-end px-4 pb-2">
-                <span className="text-[10px] text-muted-foreground/40">Sign here</span>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                To confirm your approval, type your full name below exactly as it appears: <span className="text-foreground font-medium">{clientName}</span>
+              </p>
+              <div className="space-y-2">
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Type Your Full Name to Approve
+                </label>
+                <Input
+                  value={signOffName}
+                  onChange={(e) => setSignOffName(e.target.value)}
+                  placeholder={clientName}
+                  className="h-12 text-base bg-secondary/30 border-border/50 focus:border-primary/50"
+                />
               </div>
+              <Button
+                onClick={() => {
+                  setSignedOff(true);
+                  toast.success('Approval confirmed!');
+                }}
+                disabled={!isSignOffValid}
+                className="w-full h-11 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Confirm Approval
+              </Button>
             </div>
+          )}
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                Date
-              </label>
-              <div className="border-b border-foreground/20 pb-2">
-                <span className="text-sm text-muted-foreground">{format(new Date(), 'MMMM d, yyyy')}</span>
-              </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              Date
+            </label>
+            <div className="border-b border-foreground/20 pb-2">
+              <span className="text-sm text-muted-foreground">{format(new Date(), 'MMMM d, yyyy')}</span>
             </div>
           </div>
 
