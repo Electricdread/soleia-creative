@@ -56,6 +56,60 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   }
 }
 
+function isVideoUrl(url: string): boolean {
+  const lower = url.toLowerCase();
+  return (
+    lower.includes('.mp4') ||
+    lower.includes('.webm') ||
+    lower.includes('.mov') ||
+    lower.includes('.avi') ||
+    lower.includes('.mkv') ||
+    /video/.test(lower)
+  );
+}
+
+async function extractThumbnailFromVideo(videoUrl: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(null), 8000);
+    const video = document.createElement('video');
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+
+    video.onloadedmetadata = () => {
+      video.currentTime = Math.min(1, video.duration * 0.25);
+    };
+
+    video.onseeked = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.min(640, video.videoWidth || 640);
+        canvas.height = Math.floor(canvas.width * ((video.videoHeight || 360) / (video.videoWidth || 640)));
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { clearTimeout(timeout); resolve(null); return; }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        clearTimeout(timeout);
+        resolve(dataUrl);
+      } catch {
+        clearTimeout(timeout);
+        resolve(null);
+      }
+    };
+
+    video.onerror = () => { clearTimeout(timeout); resolve(null); };
+    video.src = videoUrl;
+  });
+}
+
+async function loadThumbnail(url: string, itemType: string): Promise<string | null> {
+  if (itemType === 'video' || isVideoUrl(url)) {
+    return extractThumbnailFromVideo(url);
+  }
+  return loadImageAsBase64(url);
+}
+
 function getImageDimensions(base64: string): Promise<{ width: number; height: number }> {
   return new Promise((resolve) => {
     const img = new Image();
