@@ -15,6 +15,56 @@ interface AddMoodBoardItemProps {
   onItemAdded: () => void;
 }
 
+/**
+ * Extract a thumbnail from a video file at ~25% of its duration.
+ * Returns a Blob of the captured frame as JPEG, or null on failure.
+ */
+function extractVideoThumbnail(file: File): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    video.playsInline = true;
+
+    const url = URL.createObjectURL(file);
+    video.src = url;
+
+    video.onloadedmetadata = () => {
+      // Seek to 25% of duration to skip black intro frames
+      video.currentTime = Math.min(video.duration * 0.25, 5);
+    };
+
+    video.onseeked = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(null); return; }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          resolve(blob);
+        }, 'image/jpeg', 0.85);
+      } catch {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      }
+    };
+
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+
+    // Timeout fallback
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    }, 15000);
+  });
+}
+
 export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBoardItemProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -84,14 +134,15 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
 
     for (const file of selectedFiles) {
       const fileExt = file.name.split('.').pop()?.toLowerCase();
-      const fileName = `${sessionId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const baseName = `${sessionId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
+      const fileName = `${baseName}.${fileExt}`;
 
       // Determine file type
       let itemType: 'image' | 'video' | 'pdf' = 'image';
       if (file.type.startsWith('video/')) itemType = 'video';
       else if (file.type === 'application/pdf') itemType = 'pdf';
 
-      // Upload to storage
+      // Upload main file
       const { error: uploadError } = await supabase.storage
         .from('creative-uploads')
         .upload(fileName, file);
@@ -102,16 +153,35 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
         continue;
       }
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('creative-uploads')
         .getPublicUrl(fileName);
+
+      // Extract and upload thumbnail for videos
+      let thumbnailUrl: string | null = null;
+      if (itemType === 'video') {
+        const thumbBlob = await extractVideoThumbnail(file);
+        if (thumbBlob) {
+          const thumbPath = `${baseName}-thumb.jpg`;
+          const { error: thumbErr } = await supabase.storage
+            .from('creative-uploads')
+            .upload(thumbPath, thumbBlob, { contentType: 'image/jpeg' });
+
+          if (!thumbErr) {
+            const { data: thumbData } = supabase.storage
+              .from('creative-uploads')
+              .getPublicUrl(thumbPath);
+            thumbnailUrl = thumbData.publicUrl;
+          }
+        }
+      }
 
       // Create mood board item
       const { error: insertError } = await supabase.from('mood_board_items').insert({
         session_id: sessionId,
         item_type: itemType,
         file_url: urlData.publicUrl,
+        thumbnail_url: thumbnailUrl,
         title: file.name,
         added_by: userName,
       });
