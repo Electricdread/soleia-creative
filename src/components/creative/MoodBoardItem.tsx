@@ -238,10 +238,10 @@ export function MoodBoardItem({
 
       <CardContent className="p-3 space-y-2.5">
         {item.title && (
-          <p className="text-xs text-foreground line-clamp-1 font-medium">{item.title}</p>
+          <p className="text-base font-bold font-serif text-foreground line-clamp-2">{item.title}</p>
         )}
         {item.description && (
-          <p className="text-[10px] text-muted-foreground line-clamp-2">{item.description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{item.description}</p>
         )}
 
         {/* Approve Button */}
