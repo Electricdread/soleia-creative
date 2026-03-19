@@ -225,6 +225,23 @@ export default function CreativeSession() {
     );
   }
 
+  const approvedItems = items.filter((item) =>
+    reactions.some((r) => r.item_id === item.id && r.reaction_type === 'love' && r.reactor_name === userName)
+  );
+
+  if (showSummary && session) {
+    return (
+      <ApprovalSummary
+        items={approvedItems}
+        comments={comments}
+        clientName={userName || 'Guest'}
+        projectName={session.project_name}
+        sessionDate={session.created_at}
+        onBack={() => setShowSummary(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -293,12 +310,11 @@ export default function CreativeSession() {
         )}
 
         {/* Approval Cart */}
-        {(() => {
-          const approvedItems = items.filter((item) =>
-            reactions.some((r) => r.item_id === item.id && r.reaction_type === 'love' && r.reactor_name === userName)
-          );
-          return <ApprovalCart items={approvedItems} clientName={userName || 'Guest'} />;
-        })()}
+        <ApprovalCart
+          items={approvedItems}
+          clientName={userName || 'Guest'}
+          onViewSummary={() => setShowSummary(true)}
+        />
       </div>
 
       {/* Fullscreen Viewer */}
