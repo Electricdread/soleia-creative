@@ -11,6 +11,7 @@ import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
 import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
 import { ApprovalCart } from '@/components/creative/ApprovalCart';
+import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import {
   DndContext,
