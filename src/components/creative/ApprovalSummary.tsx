@@ -247,14 +247,19 @@ export function ApprovalSummary({
       pdf.line(margin, y + 2, margin + 80, y + 2);
       y += 12;
 
-      // Signature line
+      // Signed-off name (typed confirmation)
       pdf.setTextColor(150, 150, 150);
       pdf.setFontSize(8);
-      pdf.text('Signature', margin, y);
-      y += 3;
+      pdf.text('Approved By (Typed Confirmation)', margin, y);
+      y += 6;
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(signedOff ? clientName : '___________________', margin, y);
+      pdf.setFont('helvetica', 'normal');
       pdf.setDrawColor(100, 100, 100);
-      pdf.line(margin, y + 12, margin + 80, y + 12);
-      y += 18;
+      pdf.line(margin, y + 2, margin + 80, y + 2);
+      y += 14;
 
       // Date
       pdf.setTextColor(150, 150, 150);
