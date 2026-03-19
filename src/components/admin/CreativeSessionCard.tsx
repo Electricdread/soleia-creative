@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2 } from 'lucide-react';
+import { SessionContentManager } from './SessionContentManager';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -292,57 +294,74 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Edit Session</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="grid grid-cols-2 gap-4">
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details" className="gap-1.5 text-xs">
+                <Settings2 className="w-3.5 h-3.5" />
+                Details
+              </TabsTrigger>
+              <TabsTrigger value="content" className="gap-1.5 text-xs">
+                <FileImage className="w-3.5 h-3.5" />
+                Content
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="details" className="space-y-4 py-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Project Name</Label>
+                  <Input
+                    value={editProjectName}
+                    onChange={(e) => setEditProjectName(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Client Name</Label>
+                  <Input
+                    value={editClientName}
+                    onChange={(e) => setEditClientName(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+              </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Project Name</Label>
-                <Input
-                  value={editProjectName}
-                  onChange={(e) => setEditProjectName(e.target.value)}
-                  className="h-9 text-sm"
+                <Label className="text-xs">Creative Notes</Label>
+                <Textarea
+                  value={editCreativeNotes}
+                  onChange={(e) => setEditCreativeNotes(e.target.value)}
+                  placeholder="Direction, mood, color palette, references..."
+                  rows={3}
+                  className="text-sm resize-none"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Client Name</Label>
-                <Input
-                  value={editClientName}
-                  onChange={(e) => setEditClientName(e.target.value)}
-                  className="h-9 text-sm"
+                <Label className="text-xs">Technical Notes</Label>
+                <Textarea
+                  value={editTechnicalNotes}
+                  onChange={(e) => setEditTechnicalNotes(e.target.value)}
+                  placeholder="Specs, file formats, delivery requirements..."
+                  rows={3}
+                  className="text-sm resize-none"
                 />
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Creative Notes</Label>
-              <Textarea
-                value={editCreativeNotes}
-                onChange={(e) => setEditCreativeNotes(e.target.value)}
-                placeholder="Direction, mood, color palette, references..."
-                rows={3}
-                className="text-sm resize-none"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Technical Notes</Label>
-              <Textarea
-                value={editTechnicalNotes}
-                onChange={(e) => setEditTechnicalNotes(e.target.value)}
-                placeholder="Specs, file formats, delivery requirements..."
-                rows={3}
-                className="text-sm resize-none"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveEdit} disabled={saving} className="gap-1.5">
-              {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              Save Changes
-            </Button>
-          </DialogFooter>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+                <Button onClick={handleSaveEdit} disabled={saving} className="gap-1.5">
+                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+
+            <TabsContent value="content" className="py-2">
+              <SessionContentManager sessionId={session.id} />
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </>
