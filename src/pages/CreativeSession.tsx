@@ -174,7 +174,7 @@ export default function CreativeSession() {
         <img src={soleiaLogo} alt="Soleia" className="h-24 object-contain mb-8 opacity-50" />
         <Card className="max-w-md w-full border border-border/50">
           <CardContent className="pt-6 text-center">
-            <h2 className="text-xl font-semibold mb-2 text-foreground">Session Not Found</h2>
+            <h2 className="text-xl font-bold font-serif mb-2 text-foreground">Session Not Found</h2>
             <p className="text-muted-foreground text-sm">
               This creative session doesn't exist or has been deactivated.
             </p>
