@@ -22,6 +22,8 @@ interface CreativeSession {
   is_active: boolean;
   is_public?: boolean;
   cover_images?: CoverImage[] | null;
+  creative_notes?: string | null;
+  technical_notes?: string | null;
 }
 
 export function CreativeSessionManager() {
