@@ -126,9 +126,33 @@ export default function CreativeSession() {
       .from('mood_board_items')
       .select('*')
       .eq('session_id', session.id)
+      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false });
     setItems(data || []);
   };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  );
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = items.findIndex((i) => i.id === active.id);
+    const newIndex = items.findIndex((i) => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(items, oldIndex, newIndex);
+    setItems(reordered);
+
+    // Persist sort_order
+    const updates = reordered.map((item, idx) =>
+      supabase.from('mood_board_items').update({ sort_order: idx }).eq('id', item.id)
+    );
+    await Promise.all(updates);
+  }, [items]);
 
   const fetchReactions = async () => {
     if (!session?.id) return;
