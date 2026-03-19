@@ -198,7 +198,9 @@ export function MoodBoardItem({
     <Card
       ref={setNodeRef}
       style={style}
-      className={`overflow-hidden group border border-border/50 bg-card transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-primary/50' : ''}`}
+      className={`overflow-hidden group border-2 transition-shadow ${
+        isDragging ? 'shadow-lg ring-2 ring-primary/50' : ''
+      } ${hasLiked ? 'border-primary/50 bg-primary/5' : 'border-border/50 bg-card'}`}
     >
       <div className="relative">
         {renderMedia()}
