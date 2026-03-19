@@ -25,13 +25,12 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
   return (
     <Card className="border border-border/50 bg-card overflow-hidden">
       {coverImage && (
-        <div className="relative aspect-[21/9] overflow-hidden">
+        <div className="aspect-[21/9] overflow-hidden">
           <img
             src={coverImage.url}
             alt="Session cover"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
         </div>
       )}
 
