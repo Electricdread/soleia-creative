@@ -9,6 +9,8 @@ import { Loader2, User } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { AddMoodBoardItem } from '@/components/creative/AddMoodBoardItem';
+import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
+import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import {
   DndContext,
