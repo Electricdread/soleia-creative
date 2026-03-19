@@ -93,29 +93,41 @@ export function ApprovalSummary({
         }
       };
 
-      // Header
+      // Header with Soleia logo
       pdf.setFillColor(15, 15, 15);
-      pdf.rect(0, 0, pageWidth, 40, 'F');
+      pdf.rect(0, 0, pageWidth, 48, 'F');
+
+      // Add Soleia logo
+      const logoData = await loadImageAsBase64(soleiaLogo);
+      if (logoData) {
+        try {
+          const logoDims = await getImageDimensions(logoData);
+          const logoH = 8;
+          const logoW = (logoDims.width / logoDims.height) * logoH;
+          pdf.addImage(logoData, 'PNG', margin, 8, logoW, logoH);
+        } catch { /* skip logo */ }
+      }
 
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(18);
+      pdf.setFontSize(16);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(projectName.toUpperCase(), margin, 18);
+      pdf.text(projectName.toUpperCase(), margin, 26);
 
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(180, 180, 180);
-      pdf.text(`Client: ${clientName}`, margin, 26);
-      pdf.text(`Date: ${format(new Date(sessionDate), 'MMMM d, yyyy')}`, margin, 32);
+      pdf.text(`Client: ${clientName}`, margin, 33);
+      pdf.text(`Date: ${format(new Date(sessionDate), 'MMMM d, yyyy')}`, margin, 39);
 
       pdf.setTextColor(100, 200, 150);
-      pdf.text(`${items.length} APPROVED ITEM${items.length !== 1 ? 'S' : ''}`, pageWidth - margin, 18, { align: 'right' });
+      pdf.setFontSize(9);
+      pdf.text(`${items.length} APPROVED ITEM${items.length !== 1 ? 'S' : ''}`, pageWidth - margin, 26, { align: 'right' });
 
       pdf.setTextColor(180, 180, 180);
       pdf.setFontSize(7);
-      pdf.text('CREATIVE SESSION — APPROVAL SUMMARY', pageWidth - margin, 32, { align: 'right' });
+      pdf.text('CREATIVE SESSION — APPROVAL SUMMARY', pageWidth - margin, 39, { align: 'right' });
 
-      y = 50;
+      y = 56;
 
       // Items
       for (let i = 0; i < items.length; i++) {
