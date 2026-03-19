@@ -282,13 +282,32 @@ export default function CreativeSession() {
                     onDelete={deleteItem}
                     onReactionChange={fetchReactions}
                     onCommentChange={fetchComments}
+                    onMediaClick={setFullscreenItemId}
                   />
                 ))}
               </div>
             </SortableContext>
           </DndContext>
         )}
+
+        {/* Approval Cart */}
+        {(() => {
+          const approvedItems = items.filter((item) =>
+            reactions.some((r) => r.item_id === item.id && r.reaction_type === 'love' && r.reactor_name === userName)
+          );
+          return <ApprovalCart items={approvedItems} clientName={userName || 'Guest'} />;
+        })()}
       </div>
+
+      {/* Fullscreen Viewer */}
+      {fullscreenItemId && (
+        <FullscreenMediaViewer
+          items={items.filter((i) => i.item_type === 'image' || i.item_type === 'video')}
+          currentId={fullscreenItemId}
+          onClose={() => setFullscreenItemId(null)}
+          onNavigate={setFullscreenItemId}
+        />
+      )}
     </div>
   );
 }
