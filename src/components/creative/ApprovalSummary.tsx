@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -182,9 +182,66 @@ export function ApprovalSummary({
         y += 5;
       }
 
+      // Client Sign-Off
+      checkPageBreak(80);
+      y += 10;
+      pdf.setDrawColor(60, 60, 60);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 10;
+
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('CLIENT SIGN-OFF', margin, y);
+      y += 10;
+
+      // Client Name
+      pdf.setTextColor(150, 150, 150);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Client Name', margin, y);
+      y += 6;
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.text(clientName, margin, y);
+      pdf.setDrawColor(100, 100, 100);
+      pdf.line(margin, y + 2, margin + 80, y + 2);
+      y += 12;
+
+      // Signature line
+      pdf.setTextColor(150, 150, 150);
+      pdf.setFontSize(8);
+      pdf.text('Signature', margin, y);
+      y += 3;
+      pdf.setDrawColor(100, 100, 100);
+      pdf.line(margin, y + 12, margin + 80, y + 12);
+      y += 18;
+
+      // Date
+      pdf.setTextColor(150, 150, 150);
+      pdf.setFontSize(8);
+      pdf.text('Date', margin, y);
+      y += 6;
+      pdf.setTextColor(200, 200, 200);
+      pdf.text(format(new Date(), 'MMMM d, yyyy'), margin, y);
+      pdf.setDrawColor(100, 100, 100);
+      pdf.line(margin, y + 2, margin + 80, y + 2);
+      y += 14;
+
+      // Legal disclaimer
+      pdf.setFillColor(25, 25, 25);
+      const disclaimerText = 'By signing above, the undersigned client acknowledges and approves the creative selections listed in this document. This approval authorizes the production team to proceed with the approved content as outlined. Any modifications or additions beyond the scope of these approved items may incur additional costs and require a separate approval. All creative assets remain the intellectual property of their respective owners until final delivery and payment. This document serves as a record of creative direction approval and does not constitute a binding contract for services not previously agreed upon.';
+      const disclaimerLines = pdf.splitTextToSize(disclaimerText, contentWidth - 10);
+      const disclaimerHeight = disclaimerLines.length * 3.5 + 8;
+      checkPageBreak(disclaimerHeight + 5);
+      pdf.roundedRect(margin, y, contentWidth, disclaimerHeight, 2, 2, 'F');
+      pdf.setTextColor(130, 130, 130);
+      pdf.setFontSize(6);
+      pdf.text(disclaimerLines, margin + 5, y + 5);
+      y += disclaimerHeight + 8;
+
       // Footer
-      checkPageBreak(25);
-      y += 5;
+      checkPageBreak(15);
       pdf.setDrawColor(60, 60, 60);
       pdf.line(margin, y, pageWidth - margin, y);
       y += 8;
@@ -355,6 +412,57 @@ export function ApprovalSummary({
               </Card>
             );
           })}
+        </div>
+
+        {/* Client Sign-Off */}
+        <div className="border-t border-border/50 pt-8 space-y-6 print:mt-8 print:break-inside-avoid">
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+            Client Sign-Off
+          </h2>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Client Name
+              </label>
+              <div className="border-b border-foreground/20 pb-2">
+                <span className="text-sm font-medium text-foreground">{clientName}</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Signature
+              </label>
+              <div className="h-16 border border-dashed border-border rounded-md flex items-end px-4 pb-2">
+                <span className="text-[10px] text-muted-foreground/40">Sign here</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Date
+              </label>
+              <div className="border-b border-foreground/20 pb-2">
+                <span className="text-sm text-muted-foreground">{format(new Date(), 'MMMM d, yyyy')}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Legal Disclaimer */}
+          <div className="bg-secondary/30 rounded-lg p-4 space-y-2 print:bg-transparent print:border print:border-border">
+            <p className="text-[9px] text-muted-foreground/80 leading-relaxed">
+              By signing above, the undersigned client acknowledges and approves the creative selections listed in this document. 
+              This approval authorizes the production team to proceed with the approved content as outlined. Any modifications 
+              or additions beyond the scope of these approved items may incur additional costs and require a separate approval.
+            </p>
+            <p className="text-[9px] text-muted-foreground/80 leading-relaxed">
+              All creative assets remain the intellectual property of their respective owners until final delivery and payment. 
+              This document serves as a record of creative direction approval and does not constitute a binding contract for 
+              services not previously agreed upon. The client assumes responsibility for ensuring all approved content complies 
+              with applicable laws and regulations.
+            </p>
+          </div>
         </div>
 
         {/* Footer */}
