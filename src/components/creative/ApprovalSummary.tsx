@@ -50,6 +50,22 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   }
 }
 
+function getImageDimensions(base64: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => resolve({ width: 1, height: 1 });
+    img.src = base64;
+  });
+}
+
+function fitImageInBox(imgW: number, imgH: number, boxW: number, boxH: number) {
+  const scale = Math.min(boxW / imgW, boxH / imgH);
+  const w = imgW * scale;
+  const h = imgH * scale;
+  return { w, h, x: (boxW - w) / 2, y: (boxH - h) / 2 };
+}
+
 export function ApprovalSummary({
   items,
   comments,
@@ -77,29 +93,41 @@ export function ApprovalSummary({
         }
       };
 
-      // Header
+      // Header with Soleia logo
       pdf.setFillColor(15, 15, 15);
-      pdf.rect(0, 0, pageWidth, 40, 'F');
+      pdf.rect(0, 0, pageWidth, 48, 'F');
+
+      // Add Soleia logo
+      const logoData = await loadImageAsBase64(soleiaLogo);
+      if (logoData) {
+        try {
+          const logoDims = await getImageDimensions(logoData);
+          const logoH = 8;
+          const logoW = (logoDims.width / logoDims.height) * logoH;
+          pdf.addImage(logoData, 'PNG', margin, 8, logoW, logoH);
+        } catch { /* skip logo */ }
+      }
 
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(18);
+      pdf.setFontSize(16);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(projectName.toUpperCase(), margin, 18);
+      pdf.text(projectName.toUpperCase(), margin, 26);
 
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(180, 180, 180);
-      pdf.text(`Client: ${clientName}`, margin, 26);
-      pdf.text(`Date: ${format(new Date(sessionDate), 'MMMM d, yyyy')}`, margin, 32);
+      pdf.text(`Client: ${clientName}`, margin, 33);
+      pdf.text(`Date: ${format(new Date(sessionDate), 'MMMM d, yyyy')}`, margin, 39);
 
       pdf.setTextColor(100, 200, 150);
-      pdf.text(`${items.length} APPROVED ITEM${items.length !== 1 ? 'S' : ''}`, pageWidth - margin, 18, { align: 'right' });
+      pdf.setFontSize(9);
+      pdf.text(`${items.length} APPROVED ITEM${items.length !== 1 ? 'S' : ''}`, pageWidth - margin, 26, { align: 'right' });
 
       pdf.setTextColor(180, 180, 180);
       pdf.setFontSize(7);
-      pdf.text('CREATIVE SESSION — APPROVAL SUMMARY', pageWidth - margin, 32, { align: 'right' });
+      pdf.text('CREATIVE SESSION — APPROVAL SUMMARY', pageWidth - margin, 39, { align: 'right' });
 
-      y = 50;
+      y = 56;
 
       // Items
       for (let i = 0; i < items.length; i++) {
@@ -114,20 +142,27 @@ export function ApprovalSummary({
         pdf.setFillColor(30, 30, 30);
         pdf.roundedRect(margin, y, contentWidth, Math.max(55, estimatedHeight), 3, 3, 'F');
 
-        // Thumbnail
+        // Thumbnail — preserve aspect ratio
         const thumbUrl = item.thumbnail_url || item.file_url || item.url;
+        const thumbBoxW = 45;
+        const thumbBoxH = 35;
+        const thumbBoxX = margin + 3;
+        const thumbBoxY = y + 3;
+        // Dark background for thumbnail area
+        pdf.setFillColor(20, 20, 20);
+        pdf.rect(thumbBoxX, thumbBoxY, thumbBoxW, thumbBoxH, 'F');
+
         if (thumbUrl) {
           const imgData = await loadImageAsBase64(thumbUrl);
           if (imgData) {
             try {
-              pdf.addImage(imgData, 'JPEG', margin + 3, y + 3, 45, 35);
+              const dims = await getImageDimensions(imgData);
+              const fit = fitImageInBox(dims.width, dims.height, thumbBoxW, thumbBoxH);
+              pdf.addImage(imgData, 'JPEG', thumbBoxX + fit.x, thumbBoxY + fit.y, fit.w, fit.h);
             } catch {
-              // fallback placeholder
-              pdf.setFillColor(50, 50, 50);
-              pdf.rect(margin + 3, y + 3, 45, 35, 'F');
               pdf.setTextColor(120, 120, 120);
               pdf.setFontSize(7);
-              pdf.text('No Preview', margin + 25, y + 22, { align: 'center' });
+              pdf.text('No Preview', thumbBoxX + thumbBoxW / 2, thumbBoxY + thumbBoxH / 2, { align: 'center' });
             }
           }
         }
