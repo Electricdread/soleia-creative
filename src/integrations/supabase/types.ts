@@ -98,6 +98,47 @@ export type Database = {
         }
         Relationships: []
       }
+      content_previews: {
+        Row: {
+          created_at: string
+          id: string
+          link_id: string
+          sort_order: number | null
+          subtitle: string | null
+          title: string
+          video_type: string | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link_id: string
+          sort_order?: number | null
+          subtitle?: string | null
+          title: string
+          video_type?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link_id?: string
+          sort_order?: number | null
+          subtitle?: string | null
+          title?: string
+          video_type?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_previews_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "client_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creative_sessions: {
         Row: {
           circleback_summary: string | null

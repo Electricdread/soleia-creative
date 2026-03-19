@@ -10,9 +10,10 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock } from 'lucide-react';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard } from 'lucide-react';
 import { ClipSelector } from './ClipSelector';
 import { SessionUploadsViewer } from './SessionUploadsViewer';
+import { ContentPrevizManager } from './ContentPrevizManager';
 
 interface ClientLink {
   id: string;
@@ -39,6 +40,7 @@ export function ClientLinkManager() {
   const [links, setLinks] = useState<ClientLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewingUploadsFor, setViewingUploadsFor] = useState<{ id: string; name: string } | null>(null);
+  const [viewingPrevizFor, setViewingPrevizFor] = useState<{ id: string; token: string; name: string } | null>(null);
 
   // Generate a unique token
   const generateToken = () => {
@@ -460,6 +462,20 @@ export function ClientLinkManager() {
               linkId={viewingUploadsFor.id}
               clientName={viewingUploadsFor.name}
               onClose={() => setViewingUploadsFor(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Previz Manager Modal */}
+      {viewingPrevizFor && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl max-h-[80vh] overflow-auto">
+            <ContentPrevizManager
+              linkId={viewingPrevizFor.id}
+              linkToken={viewingPrevizFor.token}
+              clientName={viewingPrevizFor.name}
+              onClose={() => setViewingPrevizFor(null)}
             />
           </div>
         </div>
