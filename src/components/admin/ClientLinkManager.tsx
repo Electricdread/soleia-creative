@@ -466,6 +466,20 @@ export function ClientLinkManager() {
           </div>
         </div>
       )}
+
+      {/* Previz Manager Modal */}
+      {viewingPrevizFor && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl max-h-[80vh] overflow-auto">
+            <ContentPrevizManager
+              linkId={viewingPrevizFor.id}
+              linkToken={viewingPrevizFor.token}
+              clientName={viewingPrevizFor.name}
+              onClose={() => setViewingPrevizFor(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
