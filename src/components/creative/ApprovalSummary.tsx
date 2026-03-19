@@ -217,7 +217,7 @@ export function ApprovalSummary({
         pdf.rect(thumbBoxX, thumbBoxY, thumbBoxW, thumbBoxH, 'F');
 
         if (thumbUrl) {
-          const imgData = await loadImageAsBase64(thumbUrl);
+          const imgData = await loadThumbnail(thumbUrl, item.item_type);
           if (imgData) {
             try {
               const dims = await getImageDimensions(imgData);
@@ -228,6 +228,10 @@ export function ApprovalSummary({
               pdf.setFontSize(7);
               pdf.text('No Preview', thumbBoxX + thumbBoxW / 2, thumbBoxY + thumbBoxH / 2, { align: 'center' });
             }
+          } else {
+            pdf.setTextColor(120, 120, 120);
+            pdf.setFontSize(7);
+            pdf.text('No Preview', thumbBoxX + thumbBoxW / 2, thumbBoxY + thumbBoxH / 2, { align: 'center' });
           }
         }
 
