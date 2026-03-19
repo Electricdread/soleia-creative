@@ -311,8 +311,10 @@ export function ApprovalSummary({
       pdf.save(`${projectName.replace(/\s+/g, '-').toLowerCase()}-approval-summary.pdf`);
     } catch (err) {
       console.error('PDF generation error:', err);
+      toast.error('Failed to generate PDF. Please try again.');
+    } finally {
+      setGenerating(false);
     }
-    setGenerating(false);
   };
 
   return (
