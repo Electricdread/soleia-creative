@@ -23,6 +23,7 @@ import ClientProposal from "./pages/ClientProposal";
 import OfficePortal from "./pages/OfficePortal";
 import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
+import ShowBloxPreview from "./pages/ShowBloxPreview";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,9 @@ const App = () => (
               
               {/* Public Proposal Page */}
               <Route path="/proposal/:token" element={<ClientProposal />} />
+              
+              {/* ShowBlox Content Preview */}
+              <Route path="/preview/:token" element={<ShowBloxPreview />} />
               
               {/* Operator Office Portal - Email-locked to luisdreams@me.com */}
               <Route path="/office" element={<OfficePortal />} />
