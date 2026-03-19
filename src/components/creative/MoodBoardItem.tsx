@@ -56,6 +56,22 @@ export function MoodBoardItem({
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : undefined,
+  };
+
   const likeCount = reactions.filter((r) => r.reaction_type === 'love').length;
   const hasLiked = reactions.some((r) => r.reaction_type === 'love' && r.reactor_name === userName);
 
