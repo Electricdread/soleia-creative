@@ -142,20 +142,27 @@ export function ApprovalSummary({
         pdf.setFillColor(30, 30, 30);
         pdf.roundedRect(margin, y, contentWidth, Math.max(55, estimatedHeight), 3, 3, 'F');
 
-        // Thumbnail
+        // Thumbnail — preserve aspect ratio
         const thumbUrl = item.thumbnail_url || item.file_url || item.url;
+        const thumbBoxW = 45;
+        const thumbBoxH = 35;
+        const thumbBoxX = margin + 3;
+        const thumbBoxY = y + 3;
+        // Dark background for thumbnail area
+        pdf.setFillColor(20, 20, 20);
+        pdf.rect(thumbBoxX, thumbBoxY, thumbBoxW, thumbBoxH, 'F');
+
         if (thumbUrl) {
           const imgData = await loadImageAsBase64(thumbUrl);
           if (imgData) {
             try {
-              pdf.addImage(imgData, 'JPEG', margin + 3, y + 3, 45, 35);
+              const dims = await getImageDimensions(imgData);
+              const fit = fitImageInBox(dims.width, dims.height, thumbBoxW, thumbBoxH);
+              pdf.addImage(imgData, 'JPEG', thumbBoxX + fit.x, thumbBoxY + fit.y, fit.w, fit.h);
             } catch {
-              // fallback placeholder
-              pdf.setFillColor(50, 50, 50);
-              pdf.rect(margin + 3, y + 3, 45, 35, 'F');
               pdf.setTextColor(120, 120, 120);
               pdf.setFontSize(7);
-              pdf.text('No Preview', margin + 25, y + 22, { align: 'center' });
+              pdf.text('No Preview', thumbBoxX + thumbBoxW / 2, thumbBoxY + thumbBoxH / 2, { align: 'center' });
             }
           }
         }
