@@ -53,6 +53,7 @@ export function MoodBoardItem({
   onDelete,
   onReactionChange,
   onCommentChange,
+  onMediaClick,
 }: MoodBoardItemProps) {
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
