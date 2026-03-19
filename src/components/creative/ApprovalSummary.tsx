@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle2, Download, ArrowLeft, MessageCircle, Printer } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import jsPDF from 'jspdf';
 
