@@ -357,6 +357,57 @@ export function ApprovalSummary({
           })}
         </div>
 
+        {/* Client Sign-Off */}
+        <div className="border-t border-border/50 pt-8 space-y-6 print:mt-8 print:break-inside-avoid">
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+            Client Sign-Off
+          </h2>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Client Name
+              </label>
+              <div className="border-b border-foreground/20 pb-2">
+                <span className="text-sm font-medium text-foreground">{clientName}</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Signature
+              </label>
+              <div className="h-16 border border-dashed border-border rounded-md flex items-end px-4 pb-2">
+                <span className="text-[10px] text-muted-foreground/40">Sign here</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Date
+              </label>
+              <div className="border-b border-foreground/20 pb-2">
+                <span className="text-sm text-muted-foreground">{format(new Date(), 'MMMM d, yyyy')}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Legal Disclaimer */}
+          <div className="bg-secondary/30 rounded-lg p-4 space-y-2 print:bg-transparent print:border print:border-border">
+            <p className="text-[9px] text-muted-foreground/80 leading-relaxed">
+              By signing above, the undersigned client acknowledges and approves the creative selections listed in this document. 
+              This approval authorizes the production team to proceed with the approved content as outlined. Any modifications 
+              or additions beyond the scope of these approved items may incur additional costs and require a separate approval.
+            </p>
+            <p className="text-[9px] text-muted-foreground/80 leading-relaxed">
+              All creative assets remain the intellectual property of their respective owners until final delivery and payment. 
+              This document serves as a record of creative direction approval and does not constitute a binding contract for 
+              services not previously agreed upon. The client assumes responsibility for ensuring all approved content complies 
+              with applicable laws and regulations.
+            </p>
+          </div>
+        </div>
+
         {/* Footer */}
         <div className="text-center pt-6 border-t border-border/50 print:mt-8">
           <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest">
