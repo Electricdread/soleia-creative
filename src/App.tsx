@@ -23,6 +23,7 @@ import ClientProposal from "./pages/ClientProposal";
 import OfficePortal from "./pages/OfficePortal";
 import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
+import ShowBloxPreview from "./pages/ShowBloxPreview";
 
 const queryClient = new QueryClient();
 
