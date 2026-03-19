@@ -81,6 +81,7 @@ export default function CreativeSession() {
     localStorage.getItem('creative_session_name') || ''
   );
   const [fullscreenItemId, setFullscreenItemId] = useState<string | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
     if (token) fetchSession();
