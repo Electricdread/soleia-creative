@@ -445,7 +445,19 @@ export function ApprovalSummary({
                 <div className="flex flex-col sm:flex-row">
                   {/* Thumbnail */}
                   <div className="sm:w-48 sm:flex-shrink-0">
-                    {thumbUrl ? (
+                    {thumbUrl && (item.item_type === 'video' || isVideoUrl(thumbUrl)) ? (
+                      <video
+                        src={thumbUrl}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-40 sm:h-full object-cover bg-secondary/30"
+                        onLoadedMetadata={(e) => {
+                          const vid = e.currentTarget;
+                          vid.currentTime = Math.min(1, vid.duration * 0.25);
+                        }}
+                      />
+                    ) : thumbUrl ? (
                       <img
                         src={thumbUrl}
                         alt={item.title || 'Approved item'}
