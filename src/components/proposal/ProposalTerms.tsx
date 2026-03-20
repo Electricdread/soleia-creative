@@ -32,17 +32,6 @@ export default function ProposalTerms() {
           </ul>
         </div>
         <div>
-          <h4 className="font-semibold mb-1">Usage Rights</h4>
-          <p className="text-[#7f8c8d]">Upon full payment, the client receives the rights to use the final approved deliverables.</p>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-1">Promotional Use</h4>
-          <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
-            <li>Photo or video documentation of the production may be used for portfolio, website, and social media.</li>
-            <li>If usage is not permitted, written notice must be sent upon proposal approval.</li>
-          </ul>
-        </div>
-        <div>
           <h4 className="font-semibold mb-1">Cancellation</h4>
           <p className="text-[#7f8c8d]">If the project is canceled after work has started, time and work completed up to the cancellation date will be invoiced.</p>
         </div>
