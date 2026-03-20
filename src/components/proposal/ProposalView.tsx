@@ -272,19 +272,34 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <Button size="sm" onClick={saveItems} className="bg-[#2c3e50] text-white hover:bg-[#34495e]">
                   <Check className="w-3 h-3 mr-1" /> Save
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1) }))); }}>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '' }))); }}>
                   <X className="w-3 h-3 mr-1" /> Cancel
                 </Button>
               </div>
             </div>
             {editItems.map((item, idx) => (
               <div key={item.id || idx} className="bg-white rounded-lg p-4 border border-[#ecf0f1] space-y-2">
-                <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
+                <div className="grid grid-cols-[1fr_1fr] gap-2">
                   <Input
-                    placeholder="Title"
+                    placeholder="Category (e.g. Immersive LED Environments)"
+                    value={item.category}
+                    onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], category: e.target.value }; setEditItems(n); }}
+                    className="text-sm"
+                  />
+                  <Input
+                    placeholder="Line Item Title"
                     value={item.title}
                     onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], title: e.target.value }; setEditItems(n); }}
                     className="text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center">
+                  <Textarea
+                    placeholder="Description"
+                    value={item.description || ''}
+                    onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], description: e.target.value }; setEditItems(n); }}
+                    className="text-sm min-h-[36px] resize-none"
+                    rows={1}
                   />
                   <Input
                     placeholder="Qty"
@@ -295,7 +310,13 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                     className="text-sm w-16"
                   />
                   <Input
-                    placeholder="Price"
+                    placeholder="Unit (e.g. Project, Locations)"
+                    value={item.unit}
+                    onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], unit: e.target.value }; setEditItems(n); }}
+                    className="text-sm w-32"
+                  />
+                  <Input
+                    placeholder="Rate"
                     type="number"
                     value={item.price}
                     onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], price: e.target.value }; setEditItems(n); }}
@@ -305,20 +326,13 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-                <Textarea
-                  placeholder="Description"
-                  value={item.description || ''}
-                  onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], description: e.target.value }; setEditItems(n); }}
-                  className="text-sm min-h-[36px] resize-none"
-                  rows={1}
-                />
               </div>
             ))}
             <div className="flex gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', proposal_id: proposal.id, sort_order: editItems.length }])}
+                onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', category: '', unit: '', proposal_id: proposal.id, sort_order: editItems.length }])}
                 className="text-[#3498db]"
               >
                 <Plus className="w-3 h-3 mr-1" /> Add Item
@@ -344,6 +358,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                       description: t.description || '',
                       price: String(t.price),
                       quantity: '1',
+                      category: t.category || '',
+                      unit: '',
                       proposal_id: proposal.id,
                       sort_order: editItems.length,
                     }]);
@@ -354,7 +370,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             )}
           </div>
         ) : (
-          <div className="space-y-1 mb-10">
+          <div className="mb-10">
             {isAdmin && (
               <div className="flex justify-end mb-2">
                 <button onClick={() => setEditingItems(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors flex items-center gap-1 text-xs">
@@ -362,38 +378,60 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 </button>
               </div>
             )}
-            {items.map(item => (
-              <div
-                key={item.id}
-                className="bg-white rounded-lg p-5 flex items-start gap-4 border border-[#ecf0f1] hover:border-[#bdc3c7] transition-colors cursor-pointer"
-                onClick={() => !signed && !isAdmin && toggleItem(item.id)}
-              >
-                {!signed && !isAdmin && (
-                  <Checkbox
-                    checked={selectedIds.has(item.id)}
-                    onCheckedChange={() => toggleItem(item.id)}
-                    className="mt-1"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-[#2c3e50] mb-1">{item.title}</h3>
-                  {item.description && (
-                    <p className="text-sm text-[#7f8c8d] whitespace-pre-line">{item.description}</p>
-                  )}
-                </div>
-                <div className="text-right flex-shrink-0">
-                  {(item.quantity || 1) > 1 && (
-                    <span className="text-xs text-[#95a5a6] block">×{item.quantity}</span>
-                  )}
-                  <span className="text-lg font-semibold text-[#2c3e50]">
-                    {formatCurrency(Number(item.price) * Number(item.quantity || 1))}
-                  </span>
-                  {(item.quantity || 1) > 1 && (
-                    <span className="text-xs text-[#95a5a6] block">{formatCurrency(Number(item.price))} each</span>
-                  )}
-                </div>
-              </div>
-            ))}
+            <div className="bg-white rounded-lg border border-[#ecf0f1] overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-[#f8f9fa] border-b border-[#ecf0f1]">
+                    {!signed && !isAdmin && <TableHead className="w-10" />}
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Category</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Line Item</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold text-center w-16">Qty</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold w-24">Unit</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold text-right w-24">Rate</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold text-right w-28">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(() => {
+                    let lastCategory = '';
+                    return items.map(item => {
+                      const showCategory = item.category && item.category !== lastCategory;
+                      if (item.category) lastCategory = item.category;
+                      const lineTotal = Number(item.price) * Number(item.quantity || 1);
+                      return (
+                        <TableRow
+                          key={item.id}
+                          className="border-b border-[#f0f3f5] hover:bg-[#fafbfc] cursor-pointer transition-colors"
+                          onClick={() => !signed && !isAdmin && toggleItem(item.id)}
+                        >
+                          {!signed && !isAdmin && (
+                            <TableCell className="pr-0">
+                              <Checkbox
+                                checked={selectedIds.has(item.id)}
+                                onCheckedChange={() => toggleItem(item.id)}
+                              />
+                            </TableCell>
+                          )}
+                          <TableCell className="text-sm text-[#7f8c8d] font-medium align-top">
+                            {showCategory ? item.category : ''}
+                          </TableCell>
+                          <TableCell className="align-top">
+                            <div className="text-sm font-semibold text-[#2c3e50]">{item.title}</div>
+                            {item.description && (
+                              <p className="text-xs text-[#95a5a6] mt-0.5 whitespace-pre-line">{item.description}</p>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm text-[#2c3e50] text-center align-top">{item.quantity || 1}</TableCell>
+                          <TableCell className="text-sm text-[#7f8c8d] align-top">{item.unit || '—'}</TableCell>
+                          <TableCell className="text-sm text-[#2c3e50] text-right align-top">{formatCurrency(Number(item.price))}</TableCell>
+                          <TableCell className="text-sm font-semibold text-[#2c3e50] text-right align-top">{formatCurrency(lineTotal)}</TableCell>
+                        </TableRow>
+                      );
+                    });
+                  })()}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
 
