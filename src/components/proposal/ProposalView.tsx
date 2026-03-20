@@ -274,7 +274,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <Button size="sm" onClick={saveItems} className="bg-[#2c3e50] text-white hover:bg-[#34495e]">
                   <Check className="w-3 h-3 mr-1" /> Save
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '' }))); }}>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }))); }}>
                   <X className="w-3 h-3 mr-1" /> Cancel
                 </Button>
               </div>
