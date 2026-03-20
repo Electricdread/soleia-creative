@@ -22,6 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import solIcon from '@/assets/sol-icon.png';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
+import { DropboxUploadCard } from '@/components/delivery/DropboxUploadCard';
 
 import { toast } from 'sonner';
 
@@ -348,6 +349,11 @@ const DeliveryGuide = () => {
             ))}
           </div>
         </motion.section>
+
+        <Separator className="bg-amber-200" />
+
+        {/* Dropbox Upload */}
+        <DropboxUploadCard settingsKey="soleia_dropbox_url" variant="amber" />
 
         <Separator className="bg-amber-200" />
 
