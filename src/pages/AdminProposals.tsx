@@ -183,6 +183,23 @@ export default function AdminProposals() {
             <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain" />
             <h1 className="text-white text-lg font-semibold">Client Proposals</h1>
           </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab('proposals')}
+              className={`text-sm ${activeTab === 'proposals' ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-white'}`}
+            >
+              Proposals
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab('library')}
+              className={`text-sm gap-1.5 ${activeTab === 'library' ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-white'}`}
+            >
+              <Library className="w-3.5 h-3.5" /> Item Library
+            </Button>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-zinc-400 hover:text-white hover:bg-zinc-800">
               <Settings className="w-4 h-4" />
