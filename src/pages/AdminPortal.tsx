@@ -59,6 +59,7 @@ const portals: PortalCard[] = [
     icon: <Send className="w-6 h-6 text-zinc-400" />,
     href: '/delivery-guide',
   },
+];
 
 export default function AdminPortal() {
   const navigate = useNavigate();
