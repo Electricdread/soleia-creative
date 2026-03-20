@@ -338,6 +338,9 @@ export default function AdminProposals() {
                       Mark Sent
                     </Button>
                   )}
+                  <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} className="text-zinc-400 hover:text-white">
+                    <Pencil className="w-4 h-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" onClick={() => copyLink(p.token)} className="text-zinc-400 hover:text-white">
                     <Copy className="w-4 h-4" />
                   </Button>
