@@ -44,17 +44,19 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
 
+  const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1);
+
   const total = useMemo(() => {
     if (isAdmin && !editingItems) {
-      return items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+      return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
     }
     return items
       .filter(i => selectedIds.has(i.id))
-      .reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+      .reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [selectedIds, items, isAdmin, editingItems]);
 
   const grandTotal = useMemo(() => {
-    return items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+    return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [items]);
 
   const toggleItem = (id: string) => {
