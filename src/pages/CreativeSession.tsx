@@ -37,6 +37,14 @@ interface MoodBoardItemData {
   description: string | null;
   added_by: string | null;
   created_at: string;
+  scene_id: string | null;
+}
+
+interface SceneData {
+  id: string;
+  title: string;
+  description: string | null;
+  sort_order: number | null;
 }
 
 interface Reaction {
