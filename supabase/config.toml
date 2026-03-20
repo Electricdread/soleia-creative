@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.scrape-creative-gallery]
 verify_jwt = false
+
+[functions.notify-proposal-signed]
+verify_jwt = false
