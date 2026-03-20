@@ -208,6 +208,14 @@ export default function AdminProposals() {
       </header>
 
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        {activeTab === 'library' ? (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+            <h2 className="text-white text-lg font-semibold mb-4">Line Item Templates</h2>
+            <p className="text-zinc-500 text-sm mb-6">Save reusable services and items here, then quickly add them when creating proposals.</p>
+            <LineItemLibrary />
+          </div>
+        ) : (
+          <>
         {/* Create New */}
         {!showForm ? (
           <Button onClick={() => setShowForm(true)} className="mb-8 gap-2 bg-white text-black hover:bg-zinc-200">
