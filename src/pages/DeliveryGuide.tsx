@@ -176,10 +176,6 @@ const DeliveryGuide = () => {
             <div className="flex justify-center mb-4">
               <img src={solIcon} alt="" className="w-16 h-16 object-contain drop-shadow-lg" />
             </div>
-            <Badge className="bg-amber-100 text-amber-800 border-amber-300">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Ready-Made Content Delivery
-            </Badge>
             <h2 className="text-3xl sm:text-4xl font-display font-bold bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 bg-clip-text text-transparent">
               Delivering Your Content
             </h2>
