@@ -53,7 +53,12 @@ const portals: PortalCard[] = [
     icon: <Users className="w-6 h-6 text-zinc-400" />,
     href: '/admin/users',
   },
-];
+  {
+    title: 'Delivery Guides',
+    description: 'Session-based content delivery guides with asset upload links',
+    icon: <Send className="w-6 h-6 text-zinc-400" />,
+    href: '/delivery-guide',
+  },
 
 export default function AdminPortal() {
   const navigate = useNavigate();
