@@ -141,7 +141,7 @@ export default function AdminProposals() {
     setEventDate('');
     setValidityDays('7');
     setContactEmail('info@soleia-creative.com');
-    setItemsList([{ title: '', description: '', price: '', quantity: '1' }]);
+    setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '' }]);
   };
 
   const deleteProposal = async (id: string) => {
