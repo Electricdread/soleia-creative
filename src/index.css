@@ -546,6 +546,51 @@
     min-width: 44px;
   }
 
+  /* iOS momentum scrolling containers */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+
+  .scroll-touch-x {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+
+  /* Prevent iOS rubber-banding on fixed layouts */
+  .fixed-layout {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* iOS-safe fixed bottom bar */
+  .fixed-bottom-safe {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Prevent 300ms tap delay and double-tap zoom */
+  .fast-tap {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS standalone mode adjustments */
+  @media (display-mode: standalone) {
+    .safe-area-top {
+      padding-top: env(safe-area-inset-top, 20px);
+    }
+    
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+  }
+
   /* Venue screen map SVG overlay */
   .venue-screen-overlay svg {
     width: 100%;
