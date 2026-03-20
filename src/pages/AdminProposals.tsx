@@ -335,12 +335,12 @@ export default function AdminProposals() {
                   </Button>
                 </div>
               </div>
-            ))
+            ))}
             <div className="flex gap-2 mb-6">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1' }])}
+                onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1', category: '', unit: '' }])}
                 className="text-zinc-400 hover:text-white"
               >
                 <Plus className="w-3 h-3 mr-1" /> Add Item
