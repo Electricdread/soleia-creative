@@ -531,8 +531,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Contact</h2>
           <p className="text-sm text-[#34495e]">
             For any questions, please contact us at{' '}
-            <a href={`mailto:${proposal.contact_email || 'info@soleia-creative.com'}`} className="text-[#3498db] underline">
-              {proposal.contact_email || 'info@soleia-creative.com'}
+            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="text-[#3498db] underline">
+              {proposal.contact_email || 'luisdreamslv@gmail.com'}
             </a>
           </p>
         </section>

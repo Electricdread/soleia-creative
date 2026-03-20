@@ -24,14 +24,6 @@ export default function ProposalTerms() {
           </ul>
         </div>
         <div>
-          <h4 className="font-semibold mb-1">Third-Party Assets</h4>
-          <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
-            <li>Fonts, stock media, music, plugins, or other licensed materials are not included unless stated.</li>
-            <li>Required purchases will be billed to the client.</li>
-            <li>Usage rights follow the original supplier's license terms.</li>
-          </ul>
-        </div>
-        <div>
           <h4 className="font-semibold mb-1">Cancellation</h4>
           <p className="text-[#7f8c8d]">If the project is canceled after work has started, time and work completed up to the cancellation date will be invoiced.</p>
         </div>

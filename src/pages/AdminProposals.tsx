@@ -142,7 +142,7 @@ export default function AdminProposals() {
     setVenueName('');
     setEventDate('');
     setValidityDays('7');
-    setContactEmail('info@soleia-creative.com');
+    setContactEmail('luisdreamslv@gmail.com');
     setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
   };
 
