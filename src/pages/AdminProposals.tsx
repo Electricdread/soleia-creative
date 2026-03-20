@@ -102,6 +102,7 @@ export default function AdminProposals() {
             title: item.title,
             description: item.description || null,
             price: parseFloat(item.price) || 0,
+            quantity: parseInt(item.quantity) || 1,
             sort_order: idx,
           }))
         );
