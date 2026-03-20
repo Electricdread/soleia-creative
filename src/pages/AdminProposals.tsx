@@ -412,7 +412,6 @@ export default function AdminProposals() {
             ))}
           </div>
         )}
-        )}
         </>
         )}
       </main>
