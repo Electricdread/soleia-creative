@@ -144,12 +144,40 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    /* Safe area padding for notched iPhones */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   body {
     @apply bg-background text-foreground antialiased font-sans;
     background: var(--gradient-luxury);
     min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior-y: none;
+    touch-action: manipulation;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  @media (min-width: 768px) {
+    input, textarea, select {
+      font-size: inherit !important;
+    }
+  }
+
+  /* Ensure all buttons/links have proper touch targets */
+  button, a, [role="button"], [role="tab"], [role="menuitem"] {
+    touch-action: manipulation;
   }
 
   /* Typography hierarchy */
