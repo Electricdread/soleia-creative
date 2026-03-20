@@ -139,6 +139,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             description: item.description || null,
             price: parseFloat(item.price) || 0,
             quantity: parseInt(item.quantity) || 1,
+            category: item.category || null,
+            unit: item.unit || null,
             sort_order: idx,
           }).eq('id', item.id);
         } else {
@@ -148,6 +150,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             description: item.description || null,
             price: parseFloat(item.price) || 0,
             quantity: parseInt(item.quantity) || 1,
+            category: item.category || null,
+            unit: item.unit || null,
             sort_order: idx,
           });
         }
