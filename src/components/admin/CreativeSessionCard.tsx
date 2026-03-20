@@ -368,6 +368,55 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             <TabsContent value="content" className="py-2">
               <SessionContentManager sessionId={session.id} />
             </TabsContent>
+
+            <TabsContent value="delivery" className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Dropbox File Request URL</Label>
+                <Input
+                  value={editDropboxUrl}
+                  onChange={(e) => setEditDropboxUrl(e.target.value)}
+                  placeholder="https://www.dropbox.com/request/..."
+                  className="h-9 text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Paste the Dropbox file request link for this client. They'll see a branded upload button on their delivery guide.
+                </p>
+              </div>
+
+              {session.token && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Client Delivery Guide Link</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={`${window.location.origin}/delivery/${session.token}`}
+                      className="h-9 text-sm bg-muted/50"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/delivery/${session.token}`);
+                        toast.success('Delivery guide link copied!');
+                      }}
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Share this link with your client so they can view specs and submit assets.
+                  </p>
+                </div>
+              )}
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+                <Button onClick={handleSaveEdit} disabled={saving} className="gap-1.5">
+                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </TabsContent>
           </Tabs>
         </DialogContent>
       </Dialog>
