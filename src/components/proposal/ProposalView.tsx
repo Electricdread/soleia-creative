@@ -413,7 +413,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                     return items.map(item => {
                       const showCategory = item.category && item.category !== lastCategory;
                       if (item.category) lastCategory = item.category;
-                      const lineTotal = Number(item.price) * Number(item.quantity || 1);
+                      const lineTotal = calcLineTotal(item);
+                      const isFlatFee = !!item.is_flat_fee;
                       return (
                         <TableRow
                           key={item.id}
@@ -437,9 +438,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               <p className="text-xs text-[#95a5a6] mt-0.5 whitespace-pre-line">{item.description}</p>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-[#2c3e50] text-center align-top">{item.quantity || 1}</TableCell>
-                          <TableCell className="text-sm text-[#7f8c8d] align-top">{item.unit || '—'}</TableCell>
-                          <TableCell className="text-sm text-[#2c3e50] text-right align-top">{formatCurrency(Number(item.price))}</TableCell>
+                          <TableCell className="text-sm text-[#2c3e50] text-center align-top">
+                            {isFlatFee ? '—' : (item.quantity || 1)}
+                          </TableCell>
+                          <TableCell className="text-sm text-[#7f8c8d] align-top">
+                            {isFlatFee ? 'Flat Fee' : (item.unit || '—')}
+                          </TableCell>
+                          <TableCell className="text-sm text-[#2c3e50] text-right align-top">
+                            {isFlatFee ? '—' : formatCurrency(Number(item.price))}
+                          </TableCell>
                           <TableCell className="text-sm font-semibold text-[#2c3e50] text-right align-top">{formatCurrency(lineTotal)}</TableCell>
                         </TableRow>
                       );
