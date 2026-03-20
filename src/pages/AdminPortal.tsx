@@ -41,6 +41,12 @@ const portals: PortalCard[] = [
     href: '/admin/looks',
   },
   {
+    title: 'Client Proposals',
+    description: 'Create and manage interactive service agreements and quotes',
+    icon: <FileText className="w-6 h-6 text-zinc-400" />,
+    href: '/admin/proposals',
+  },
+  {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
     icon: <Users className="w-6 h-6 text-zinc-400" />,
