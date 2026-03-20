@@ -94,6 +94,18 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       if (error) throw error;
       setSigned(true);
       toast({ title: 'Proposal accepted!', description: 'Thank you for signing.' });
+
+      // Notify admin via email
+      supabase.functions.invoke('notify-proposal-signed', {
+        body: {
+          event_name: proposal.event_name,
+          client_name: proposal.client_name,
+          client_signature: clientName,
+          venue_name: proposal.venue_name,
+          event_date: proposal.event_date,
+          proposal_url: window.location.href,
+        },
+      }).catch(console.error);
     } catch (e: any) {
       toast({ title: 'Failed to sign', description: e.message, variant: 'destructive' });
     } finally {
