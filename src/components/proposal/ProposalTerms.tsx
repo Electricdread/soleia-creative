@@ -46,6 +46,14 @@ export default function ProposalTerms() {
           <h4 className="font-semibold mb-1">Cancellation</h4>
           <p className="text-[#7f8c8d]">If the project is canceled after work has started, time and work completed up to the cancellation date will be invoiced.</p>
         </div>
+        <div>
+          <h4 className="font-semibold mb-1">Creative Ownership & Licensing</h4>
+          <p className="text-[#7f8c8d]">The client is granted a limited, non-exclusive license to use these visual scenes for the duration and scope of the agreed-upon project or event. Ownership of the underlying creative files, content structures, and mapped configurations remains with 360 Productions. Any additional usage, replication, or modification beyond the agreed project requires prior written approval or a separate licensing agreement.</p>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-1">Logo Animation Rights</h4>
+          <p className="text-[#7f8c8d]">The transparent logo animation is a custom element designed and rendered by 360 Productions using the client's logo and brand assets. Because this animation integrates the client's proprietary branding, the finalized rendered animation may be retained and used by the client for internal display or promotional purposes.</p>
+        </div>
       </div>
     </section>
   );
