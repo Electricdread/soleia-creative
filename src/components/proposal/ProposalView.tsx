@@ -41,6 +41,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   });
   const [editingItems, setEditingItems] = useState(false);
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1) })));
+  const [showLibraryPicker, setShowLibraryPicker] = useState(false);
 
   const total = useMemo(() => {
     if (isAdmin && !editingItems) {
