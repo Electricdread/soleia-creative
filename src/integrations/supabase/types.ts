@@ -517,6 +517,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_flat_fee: boolean
           price: number
           proposal_id: string
           quantity: number
@@ -529,6 +530,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_flat_fee?: boolean
           price?: number
           proposal_id: string
           quantity?: number
@@ -541,6 +543,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_flat_fee?: boolean
           price?: number
           proposal_id?: string
           quantity?: number
