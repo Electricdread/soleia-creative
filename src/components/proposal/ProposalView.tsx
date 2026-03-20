@@ -443,8 +443,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                           <TableCell className="text-sm font-semibold text-[#2c3e50] text-right align-top">{formatCurrency(lineTotal)}</TableCell>
                         </TableRow>
                       );
-                    });
-                  })()}
+                  })}
                 </TableBody>
               </Table>
             </div>
