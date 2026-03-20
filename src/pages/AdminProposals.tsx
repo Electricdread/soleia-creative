@@ -281,6 +281,18 @@ export default function AdminProposals() {
                     className="bg-zinc-800 border-zinc-700 text-white text-sm"
                   />
                 </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Checkbox
+                    id={`create-flat-${idx}`}
+                    checked={item.is_flat_fee}
+                    onCheckedChange={(v) => {
+                      const n = [...itemsList];
+                      n[idx].is_flat_fee = !!v;
+                      setItemsList(n);
+                    }}
+                  />
+                  <label htmlFor={`create-flat-${idx}`} className="text-xs text-zinc-400 cursor-pointer">Flat Fee</label>
+                </div>
                 <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center">
                   <Textarea
                     placeholder="Description"
@@ -293,30 +305,34 @@ export default function AdminProposals() {
                     className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[38px] resize-none"
                     rows={1}
                   />
+                  {!item.is_flat_fee && (
+                    <>
+                      <Input
+                        placeholder="Qty"
+                        type="number"
+                        value={item.quantity}
+                        onChange={e => {
+                          const n = [...itemsList];
+                          n[idx].quantity = e.target.value;
+                          setItemsList(n);
+                        }}
+                        className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
+                        min="1"
+                      />
+                      <Input
+                        placeholder="Unit"
+                        value={item.unit}
+                        onChange={e => {
+                          const n = [...itemsList];
+                          n[idx].unit = e.target.value;
+                          setItemsList(n);
+                        }}
+                        className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
+                      />
+                    </>
+                  )}
                   <Input
-                    placeholder="Qty"
-                    type="number"
-                    value={item.quantity}
-                    onChange={e => {
-                      const n = [...itemsList];
-                      n[idx].quantity = e.target.value;
-                      setItemsList(n);
-                    }}
-                    className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
-                    min="1"
-                  />
-                  <Input
-                    placeholder="Unit"
-                    value={item.unit}
-                    onChange={e => {
-                      const n = [...itemsList];
-                      n[idx].unit = e.target.value;
-                      setItemsList(n);
-                    }}
-                    className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
-                  />
-                  <Input
-                    placeholder="Rate"
+                    placeholder={item.is_flat_fee ? "Flat Fee Amount" : "Rate"}
                     type="number"
                     value={item.price}
                     onChange={e => {
