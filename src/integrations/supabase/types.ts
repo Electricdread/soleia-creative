@@ -365,6 +365,7 @@ export type Database = {
           file_url: string | null
           id: string
           item_type: string
+          scene_id: string | null
           session_id: string
           sort_order: number | null
           thumbnail_url: string | null
@@ -378,6 +379,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           item_type: string
+          scene_id?: string | null
           session_id: string
           sort_order?: number | null
           thumbnail_url?: string | null
@@ -391,6 +393,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           item_type?: string
+          scene_id?: string | null
           session_id?: string
           sort_order?: number | null
           thumbnail_url?: string | null
@@ -398,6 +401,13 @@ export type Database = {
           url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "mood_board_items_scene_id_fkey"
+            columns: ["scene_id"]
+            isOneToOne: false
+            referencedRelation: "session_scenes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mood_board_items_session_id_fkey"
             columns: ["session_id"]
@@ -639,6 +649,41 @@ export type Database = {
           venue_name?: string | null
         }
         Relationships: []
+      }
+      session_scenes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          session_id: string
+          sort_order: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          session_id: string
+          sort_order?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          session_id?: string
+          sort_order?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_scenes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "creative_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       session_uploads: {
         Row: {
