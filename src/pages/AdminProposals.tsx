@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import { format } from 'date-fns';
 
@@ -48,7 +48,7 @@ export default function AdminProposals() {
   const [eventDate, setEventDate] = useState('');
   const [validityDays, setValidityDays] = useState('7');
   const [contactEmail, setContactEmail] = useState('info@soleia-creative.com');
-  const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '' }]);
+  const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1' }]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -102,6 +102,7 @@ export default function AdminProposals() {
             title: item.title,
             description: item.description || null,
             price: parseFloat(item.price) || 0,
+            quantity: parseInt(item.quantity) || 1,
             sort_order: idx,
           }))
         );
@@ -134,7 +135,7 @@ export default function AdminProposals() {
     setEventDate('');
     setValidityDays('7');
     setContactEmail('info@soleia-creative.com');
-    setItemsList([{ title: '', description: '', price: '' }]);
+    setItemsList([{ title: '', description: '', price: '', quantity: '1' }]);
   };
 
   const deleteProposal = async (id: string) => {
@@ -225,7 +226,7 @@ export default function AdminProposals() {
             {/* Line Items */}
             <h3 className="text-white font-medium mb-3">Line Items</h3>
             {itemsList.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_2fr_auto_auto] gap-2 mb-2 items-start">
+              <div key={idx} className="grid grid-cols-[1fr_2fr_auto_auto_auto] gap-2 mb-2 items-start">
                 <Input
                   placeholder="Title"
                   value={item.title}
@@ -246,6 +247,18 @@ export default function AdminProposals() {
                   }}
                   className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[38px] resize-none"
                   rows={1}
+                />
+                <Input
+                  placeholder="Qty"
+                  type="number"
+                  value={item.quantity}
+                  onChange={e => {
+                    const n = [...itemsList];
+                    n[idx].quantity = e.target.value;
+                    setItemsList(n);
+                  }}
+                  className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
+                  min="1"
                 />
                 <Input
                   placeholder="Price"
@@ -272,7 +285,7 @@ export default function AdminProposals() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '' }])}
+              onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1' }])}
               className="text-zinc-400 hover:text-white mb-6"
             >
               <Plus className="w-3 h-3 mr-1" /> Add Item
@@ -325,6 +338,9 @@ export default function AdminProposals() {
                       Mark Sent
                     </Button>
                   )}
+                  <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} className="text-zinc-400 hover:text-white">
+                    <Pencil className="w-4 h-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" onClick={() => copyLink(p.token)} className="text-zinc-400 hover:text-white">
                     <Copy className="w-4 h-4" />
                   </Button>

@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import ProposalView from '@/components/proposal/ProposalView';
 
 export default function ClientProposal() {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
+  const { isAdmin } = useAuth();
   const [proposal, setProposal] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [gallery, setGallery] = useState<any[]>([]);
@@ -13,37 +16,38 @@ export default function ClientProposal() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const isEditMode = searchParams.get('edit') === 'true' && isAdmin;
+
+  const load = async () => {
     if (!token) return;
-    const load = async () => {
-      setLoading(true);
-      const { data: p, error: pErr } = await supabase
-        .from('proposals')
-        .select('*')
-        .eq('token', token)
-        .eq('is_active', true)
-        .maybeSingle();
+    setLoading(true);
+    const { data: p, error: pErr } = await supabase
+      .from('proposals')
+      .select('*')
+      .eq('token', token)
+      .eq('is_active', true)
+      .maybeSingle();
 
-      if (pErr || !p) {
-        setError('Proposal not found or has expired.');
-        setLoading(false);
-        return;
-      }
-      setProposal(p);
-
-      const [itemsRes, galleryRes, timelineRes] = await Promise.all([
-        supabase.from('proposal_items').select('*').eq('proposal_id', p.id).order('sort_order'),
-        supabase.from('proposal_gallery').select('*').eq('proposal_id', p.id).order('sort_order'),
-        supabase.from('proposal_timeline').select('*').eq('proposal_id', p.id).order('sort_order'),
-      ]);
-
-      setItems(itemsRes.data || []);
-      setGallery(galleryRes.data || []);
-      setTimeline(timelineRes.data || []);
+    if (pErr || !p) {
+      setError('Proposal not found or has expired.');
       setLoading(false);
-    };
-    load();
-  }, [token]);
+      return;
+    }
+    setProposal(p);
+
+    const [itemsRes, galleryRes, timelineRes] = await Promise.all([
+      supabase.from('proposal_items').select('*').eq('proposal_id', p.id).order('sort_order'),
+      supabase.from('proposal_gallery').select('*').eq('proposal_id', p.id).order('sort_order'),
+      supabase.from('proposal_timeline').select('*').eq('proposal_id', p.id).order('sort_order'),
+    ]);
+
+    setItems(itemsRes.data || []);
+    setGallery(galleryRes.data || []);
+    setTimeline(timelineRes.data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [token]);
 
   if (loading) {
     return (
@@ -70,6 +74,8 @@ export default function ClientProposal() {
       items={items}
       gallery={gallery}
       timeline={timeline}
+      isAdmin={isEditMode}
+      onRefresh={load}
     />
   );
 }
