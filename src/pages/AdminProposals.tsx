@@ -226,7 +226,7 @@ export default function AdminProposals() {
             {/* Line Items */}
             <h3 className="text-white font-medium mb-3">Line Items</h3>
             {itemsList.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_2fr_auto_auto] gap-2 mb-2 items-start">
+              <div key={idx} className="grid grid-cols-[1fr_2fr_auto_auto_auto] gap-2 mb-2 items-start">
                 <Input
                   placeholder="Title"
                   value={item.title}
@@ -247,6 +247,18 @@ export default function AdminProposals() {
                   }}
                   className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[38px] resize-none"
                   rows={1}
+                />
+                <Input
+                  placeholder="Qty"
+                  type="number"
+                  value={item.quantity}
+                  onChange={e => {
+                    const n = [...itemsList];
+                    n[idx].quantity = e.target.value;
+                    setItemsList(n);
+                  }}
+                  className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
+                  min="1"
                 />
                 <Input
                   placeholder="Price"
