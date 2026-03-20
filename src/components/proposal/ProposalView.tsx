@@ -41,7 +41,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     contact_email: proposal.contact_email || 'info@soleia-creative.com',
   });
   const [editingItems, setEditingItems] = useState(false);
-  const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '' })));
+  const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
 
   const total = useMemo(() => {
