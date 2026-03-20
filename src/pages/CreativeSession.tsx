@@ -158,6 +158,16 @@ export default function CreativeSession() {
     })) || []);
   };
 
+  const fetchScenes = async () => {
+    if (!session?.id) return;
+    const { data } = await supabase
+      .from('session_scenes')
+      .select('*')
+      .eq('session_id', session.id)
+      .order('sort_order', { ascending: true });
+    setScenes((data as SceneData[]) || []);
+  };
+
   const setupRealtime = () => {
     const channel = supabase
       .channel(`creative-session-${session?.id}`)
