@@ -38,7 +38,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     venue_name: proposal.venue_name || '',
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
-    contact_email: proposal.contact_email || 'info@soleia-creative.com',
+    contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
   });
   const [editingItems, setEditingItems] = useState(false);
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
@@ -531,8 +531,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Contact</h2>
           <p className="text-sm text-[#34495e]">
             For any questions, please contact us at{' '}
-            <a href={`mailto:${proposal.contact_email || 'info@soleia-creative.com'}`} className="text-[#3498db] underline">
-              {proposal.contact_email || 'info@soleia-creative.com'}
+            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="text-[#3498db] underline">
+              {proposal.contact_email || 'luisdreamslv@gmail.com'}
             </a>
           </p>
         </section>
