@@ -109,6 +109,7 @@ export default function AdminProposals() {
             quantity: parseInt(item.quantity) || 1,
             category: item.category || null,
             unit: item.unit || null,
+            is_flat_fee: item.is_flat_fee,
             sort_order: idx,
           }))
         );
