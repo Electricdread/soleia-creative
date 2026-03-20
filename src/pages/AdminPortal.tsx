@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
@@ -52,6 +52,12 @@ const portals: PortalCard[] = [
     description: 'Approve or reject new user access requests',
     icon: <Users className="w-6 h-6 text-zinc-400" />,
     href: '/admin/users',
+  },
+  {
+    title: 'Delivery Guides',
+    description: 'Session-based content delivery guides with asset upload links',
+    icon: <Send className="w-6 h-6 text-zinc-400" />,
+    href: '/delivery-guide',
   },
 ];
 
