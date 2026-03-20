@@ -3,29 +3,56 @@ import { format, addDays } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Pencil, Check, X, Plus, Trash2 } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
+import ProposalGallery from './ProposalGallery';
+import ProposalTimeline from './ProposalTimeline';
+import ProposalTerms from './ProposalTerms';
 
 interface ProposalViewProps {
   proposal: any;
   items: any[];
   gallery: any[];
   timeline: any[];
+  isAdmin?: boolean;
+  onRefresh?: () => void;
 }
 
-export default function ProposalView({ proposal, items, gallery, timeline }: ProposalViewProps) {
+export default function ProposalView({ proposal, items, gallery, timeline, isAdmin, onRefresh }: ProposalViewProps) {
   const { toast } = useToast();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [clientName, setClientName] = useState('');
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(!!proposal.signed_at);
 
+  // Admin editing states
+  const [editingHeader, setEditingHeader] = useState(false);
+  const [editFields, setEditFields] = useState({
+    event_name: proposal.event_name,
+    client_name: proposal.client_name,
+    venue_name: proposal.venue_name || '',
+    event_date: proposal.event_date || '',
+    validity_days: String(proposal.validity_days || 7),
+    contact_email: proposal.contact_email || 'info@soleia-creative.com',
+  });
+  const [editingItems, setEditingItems] = useState(false);
+  const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1) })));
+
   const total = useMemo(() => {
+    if (isAdmin && !editingItems) {
+      return items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+    }
     return items
       .filter(i => selectedIds.has(i.id))
-      .reduce((sum, i) => sum + Number(i.price), 0);
-  }, [selectedIds, items]);
+      .reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+  }, [selectedIds, items, isAdmin, editingItems]);
+
+  const grandTotal = useMemo(() => {
+    return items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+  }, [items]);
 
   const toggleItem = (id: string) => {
     setSelectedIds(prev => {
@@ -69,6 +96,68 @@ export default function ProposalView({ proposal, items, gallery, timeline }: Pro
     }
   };
 
+  const saveHeader = async () => {
+    try {
+      const { error } = await supabase
+        .from('proposals')
+        .update({
+          event_name: editFields.event_name,
+          client_name: editFields.client_name,
+          venue_name: editFields.venue_name || null,
+          event_date: editFields.event_date || null,
+          validity_days: parseInt(editFields.validity_days) || 7,
+          contact_email: editFields.contact_email,
+        })
+        .eq('id', proposal.id);
+      if (error) throw error;
+      setEditingHeader(false);
+      toast({ title: 'Proposal updated' });
+      onRefresh?.();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    }
+  };
+
+  const saveItems = async () => {
+    try {
+      // Delete removed items
+      const editIds = new Set(editItems.filter(i => i.id && !i.id.startsWith('new-')).map(i => i.id));
+      const toDelete = items.filter(i => !editIds.has(i.id));
+      for (const d of toDelete) {
+        await supabase.from('proposal_items').delete().eq('id', d.id);
+      }
+
+      // Upsert existing and insert new
+      for (let idx = 0; idx < editItems.length; idx++) {
+        const item = editItems[idx];
+        if (item.id && !item.id.startsWith('new-')) {
+          await supabase.from('proposal_items').update({
+            title: item.title,
+            description: item.description || null,
+            price: parseFloat(item.price) || 0,
+            quantity: parseInt(item.quantity) || 1,
+            sort_order: idx,
+          }).eq('id', item.id);
+        } else {
+          await supabase.from('proposal_items').insert({
+            proposal_id: proposal.id,
+            title: item.title,
+            description: item.description || null,
+            price: parseFloat(item.price) || 0,
+            quantity: parseInt(item.quantity) || 1,
+            sort_order: idx,
+          });
+        }
+      }
+
+      setEditingItems(false);
+      toast({ title: 'Items updated' });
+      onRefresh?.();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    }
+  };
+
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 
@@ -86,29 +175,75 @@ export default function ProposalView({ proposal, items, gallery, timeline }: Pro
         </header>
 
         {/* Event Title & Info */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
-            <p className="text-[#7f8c8d]">
-              Prepared for <span className="font-medium text-[#2c3e50]">{proposal.client_name}</span>
-            </p>
-            {proposal.venue_name && (
-              <p className="text-[#95a5a6] text-sm">at {proposal.venue_name}</p>
-            )}
-          </div>
-          <div className="text-right text-sm space-y-1">
-            {eventDate && (
+        {editingHeader ? (
+          <div className="bg-white rounded-lg p-5 border border-[#ecf0f1] mb-8 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Event Date</span>
-                <span className="text-[#2c3e50] font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
+                <label className="text-xs text-[#95a5a6] font-semibold">Event Name</label>
+                <Input value={editFields.event_name} onChange={e => setEditFields({ ...editFields, event_name: e.target.value })} />
               </div>
-            )}
-            <div className="mt-2">
-              <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Quote Date</span>
-              <span className="text-[#2c3e50] font-medium">{format(quoteDate, 'M/d/yyyy')}</span>
+              <div>
+                <label className="text-xs text-[#95a5a6] font-semibold">Client Name</label>
+                <Input value={editFields.client_name} onChange={e => setEditFields({ ...editFields, client_name: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs text-[#95a5a6] font-semibold">Venue Name</label>
+                <Input value={editFields.venue_name} onChange={e => setEditFields({ ...editFields, venue_name: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs text-[#95a5a6] font-semibold">Event Date</label>
+                <Input type="date" value={editFields.event_date} onChange={e => setEditFields({ ...editFields, event_date: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs text-[#95a5a6] font-semibold">Validity (days)</label>
+                <Input type="number" value={editFields.validity_days} onChange={e => setEditFields({ ...editFields, validity_days: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs text-[#95a5a6] font-semibold">Contact Email</label>
+                <Input value={editFields.contact_email} onChange={e => setEditFields({ ...editFields, contact_email: e.target.value })} />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={saveHeader} className="bg-[#2c3e50] text-white hover:bg-[#34495e]">
+                <Check className="w-3 h-3 mr-1" /> Save
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setEditingHeader(false)}>
+                <X className="w-3 h-3 mr-1" /> Cancel
+              </Button>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
+                {isAdmin && (
+                  <button onClick={() => setEditingHeader(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-[#7f8c8d]">
+                Prepared for <span className="font-medium text-[#2c3e50]">{proposal.client_name}</span>
+              </p>
+              {proposal.venue_name && (
+                <p className="text-[#95a5a6] text-sm">at {proposal.venue_name}</p>
+              )}
+            </div>
+            <div className="text-right text-sm space-y-1">
+              {eventDate && (
+                <div>
+                  <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Event Date</span>
+                  <span className="text-[#2c3e50] font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
+                </div>
+              )}
+              <div className="mt-2">
+                <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Quote Date</span>
+                <span className="text-[#2c3e50] font-medium">{format(quoteDate, 'M/d/yyyy')}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Validity Notice */}
         <div className="bg-white border-l-4 border-[#3498db] rounded-r-lg p-5 mb-10 shadow-sm">
@@ -122,41 +257,117 @@ export default function ProposalView({ proposal, items, gallery, timeline }: Pro
         </div>
 
         {/* Line Items */}
-        <div className="space-y-1 mb-10">
-          {items.map(item => (
-            <div
-              key={item.id}
-              className="bg-white rounded-lg p-5 flex items-start gap-4 border border-[#ecf0f1] hover:border-[#bdc3c7] transition-colors cursor-pointer"
-              onClick={() => !signed && toggleItem(item.id)}
-            >
-              {!signed && (
-                <Checkbox
-                  checked={selectedIds.has(item.id)}
-                  onCheckedChange={() => toggleItem(item.id)}
-                  className="mt-1"
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-[#2c3e50] mb-1">{item.title}</h3>
-                {item.description && (
-                  <p className="text-sm text-[#7f8c8d] whitespace-pre-line">{item.description}</p>
-                )}
+        {editingItems ? (
+          <div className="space-y-2 mb-10">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-[#2c3e50]">Edit Items</h3>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={saveItems} className="bg-[#2c3e50] text-white hover:bg-[#34495e]">
+                  <Check className="w-3 h-3 mr-1" /> Save
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1) }))); }}>
+                  <X className="w-3 h-3 mr-1" /> Cancel
+                </Button>
               </div>
-              <span className="text-lg font-semibold text-[#2c3e50] flex-shrink-0">
-                {formatCurrency(Number(item.price))}
-              </span>
             </div>
-          ))}
-        </div>
+            {editItems.map((item, idx) => (
+              <div key={item.id || idx} className="bg-white rounded-lg p-4 border border-[#ecf0f1] space-y-2">
+                <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
+                  <Input
+                    placeholder="Title"
+                    value={item.title}
+                    onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], title: e.target.value }; setEditItems(n); }}
+                    className="text-sm"
+                  />
+                  <Input
+                    placeholder="Qty"
+                    type="number"
+                    min="1"
+                    value={item.quantity}
+                    onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], quantity: e.target.value }; setEditItems(n); }}
+                    className="text-sm w-16"
+                  />
+                  <Input
+                    placeholder="Price"
+                    type="number"
+                    value={item.price}
+                    onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], price: e.target.value }; setEditItems(n); }}
+                    className="text-sm w-28"
+                  />
+                  <Button variant="ghost" size="icon" onClick={() => setEditItems(editItems.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 h-8 w-8">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Textarea
+                  placeholder="Description"
+                  value={item.description || ''}
+                  onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], description: e.target.value }; setEditItems(n); }}
+                  className="text-sm min-h-[36px] resize-none"
+                  rows={1}
+                />
+              </div>
+            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', proposal_id: proposal.id, sort_order: editItems.length }])}
+              className="text-[#3498db]"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Add Item
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-1 mb-10">
+            {isAdmin && (
+              <div className="flex justify-end mb-2">
+                <button onClick={() => setEditingItems(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors flex items-center gap-1 text-xs">
+                  <Pencil className="w-3 h-3" /> Edit Items
+                </button>
+              </div>
+            )}
+            {items.map(item => (
+              <div
+                key={item.id}
+                className="bg-white rounded-lg p-5 flex items-start gap-4 border border-[#ecf0f1] hover:border-[#bdc3c7] transition-colors cursor-pointer"
+                onClick={() => !signed && !isAdmin && toggleItem(item.id)}
+              >
+                {!signed && !isAdmin && (
+                  <Checkbox
+                    checked={selectedIds.has(item.id)}
+                    onCheckedChange={() => toggleItem(item.id)}
+                    className="mt-1"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-[#2c3e50] mb-1">{item.title}</h3>
+                  {item.description && (
+                    <p className="text-sm text-[#7f8c8d] whitespace-pre-line">{item.description}</p>
+                  )}
+                </div>
+                <div className="text-right flex-shrink-0">
+                  {(item.quantity || 1) > 1 && (
+                    <span className="text-xs text-[#95a5a6] block">×{item.quantity}</span>
+                  )}
+                  <span className="text-lg font-semibold text-[#2c3e50]">
+                    {formatCurrency(Number(item.price) * Number(item.quantity || 1))}
+                  </span>
+                  {(item.quantity || 1) > 1 && (
+                    <span className="text-xs text-[#95a5a6] block">{formatCurrency(Number(item.price))} each</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Total */}
         <div className="bg-white rounded-lg p-5 border border-[#ecf0f1] mb-4 flex items-center justify-between">
-          <span className="text-[#7f8c8d] font-medium">Quote Total</span>
-          <span className="text-2xl font-bold text-[#2c3e50]">{formatCurrency(total)}</span>
+          <span className="text-[#7f8c8d] font-medium">{isAdmin ? 'Total' : 'Quote Total'}</span>
+          <span className="text-2xl font-bold text-[#2c3e50]">{formatCurrency(isAdmin ? grandTotal : total)}</span>
         </div>
 
         {/* Sign Section */}
-        {!signed ? (
+        {!isAdmin && !signed ? (
           <div className="bg-white rounded-lg p-6 border border-[#ecf0f1] mb-12">
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
@@ -174,7 +385,7 @@ export default function ProposalView({ proposal, items, gallery, timeline }: Pro
               </Button>
             </div>
           </div>
-        ) : (
+        ) : signed ? (
           <div className="bg-green-50 border border-green-200 rounded-lg p-5 mb-12 text-center">
             <p className="text-green-700 font-medium">
               ✓ Proposal accepted by {proposal.client_signature}
@@ -185,59 +396,13 @@ export default function ProposalView({ proposal, items, gallery, timeline }: Pro
               </p>
             )}
           </div>
-        )}
+        ) : null}
 
         {/* Gallery */}
-        {gallery.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-xl font-semibold text-[#2c3e50] mb-6 border-b border-[#ecf0f1] pb-2">Gallery</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {gallery.map(img => (
-                <div key={img.id} className="bg-white rounded-lg overflow-hidden border border-[#ecf0f1] shadow-sm">
-                  <img
-                    src={img.image_url}
-                    alt={img.caption || ''}
-                    className="w-full h-48 object-cover"
-                    loading="lazy"
-                  />
-                  {img.caption && (
-                    <p className="p-3 text-sm text-[#7f8c8d]">{img.caption}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-[#95a5a6] mt-4 italic">
-              These mockups are references for creative direction. The final design is rebuilt and realized for production.
-            </p>
-          </section>
-        )}
+        <ProposalGallery gallery={gallery} />
 
         {/* Timeline */}
-        {timeline.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Project Timeline</h2>
-            <div className="bg-white rounded-lg border border-[#ecf0f1] overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-[#f8f9fa] border-b border-[#ecf0f1]">
-                    <th className="text-left p-3 font-semibold text-[#7f8c8d]">Phase</th>
-                    <th className="text-left p-3 font-semibold text-[#7f8c8d]">Duration</th>
-                    <th className="text-left p-3 font-semibold text-[#7f8c8d]">Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {timeline.map(phase => (
-                    <tr key={phase.id} className="border-b border-[#ecf0f1] last:border-0">
-                      <td className="p-3 font-medium text-[#2c3e50]">{phase.phase}</td>
-                      <td className="p-3 text-[#7f8c8d]">{phase.duration}</td>
-                      <td className="p-3 text-[#7f8c8d]">{phase.details}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
+        <ProposalTimeline timeline={timeline} />
 
         {/* Asset Deadline */}
         <section className="mb-12">
@@ -264,54 +429,7 @@ export default function ProposalView({ proposal, items, gallery, timeline }: Pro
         </section>
 
         {/* Terms */}
-        <section className="mb-12">
-          <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Terms</h2>
-          <div className="bg-white rounded-lg p-5 border border-[#ecf0f1] text-sm text-[#34495e] space-y-4">
-            <div>
-              <h4 className="font-semibold mb-1">New Assets</h4>
-              <p className="text-[#7f8c8d]">New assets provided by the client will require a new estimate.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-1">Scope Changes</h4>
-              <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
-                <li>Items not explicitly defined in this proposal are outside the current scope.</li>
-                <li>Additional requests will require a separate estimate and written approval.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-1">Revisions</h4>
-              <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
-                <li>Includes <strong>one</strong> revision round within the approved creative direction and existing elements.</li>
-                <li>Revision requests must be submitted in writing.</li>
-                <li>Requests must be received no later than <strong>7 days prior to the event date</strong>.</li>
-                <li>Changes affecting the concept, direction, or new components require a new quote.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-1">Third-Party Assets</h4>
-              <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
-                <li>Fonts, stock media, music, plugins, or other licensed materials are not included unless stated.</li>
-                <li>Required purchases will be billed to the client.</li>
-                <li>Usage rights follow the original supplier's license terms.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-1">Usage Rights</h4>
-              <p className="text-[#7f8c8d]">Upon full payment, the client receives the rights to use the final approved deliverables.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-1">Promotional Use</h4>
-              <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
-                <li>Photo or video documentation of the production may be used for portfolio, website, and social media.</li>
-                <li>If usage is not permitted, written notice must be sent upon proposal approval.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-1">Cancellation</h4>
-              <p className="text-[#7f8c8d]">If the project is canceled after work has started, time and work completed up to the cancellation date will be invoiced.</p>
-            </div>
-          </div>
-        </section>
+        <ProposalTerms />
 
         {/* Footer */}
         <footer className="text-center pt-8 pb-12 border-t border-[#ecf0f1]">
