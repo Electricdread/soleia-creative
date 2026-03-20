@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import { format } from 'date-fns';
 
