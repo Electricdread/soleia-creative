@@ -13,6 +13,8 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import { format } from 'date-fns';
 
+type ViewTab = 'proposals' | 'library';
+
 function generateToken() {
   const arr = new Uint8Array(32);
   crypto.getRandomValues(arr);
