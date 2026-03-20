@@ -291,13 +291,84 @@ export default function CreativeSession() {
             </CardContent>
           </Card>
         ) : (
-          <div className="flex flex-col gap-4 max-w-2xl mx-auto">
-            {items.map((item) => (
+          <div className="flex flex-col gap-6 max-w-2xl mx-auto">
+            {/* Render scenes with their items */}
+            {scenes.length > 0 && (() => {
+              const sceneItems = scenes.map(scene => ({
+                scene,
+                items: items.filter(i => i.scene_id === scene.id),
+              })).filter(g => g.items.length > 0);
+
+              const unsorted = items.filter(i => !i.scene_id);
+
+              return (
+                <>
+                  {sceneItems.map(({ scene, items: sItems }) => (
+                    <div key={scene.id} className="space-y-3">
+                      <div className="border-b border-border/50 pb-2">
+                        <h3 className="text-lg font-display font-bold text-foreground">{scene.title}</h3>
+                        {scene.description && (
+                          <p className="text-sm text-muted-foreground mt-0.5">{scene.description}</p>
+                        )}
+                      </div>
+                      {sItems.map(item => (
+                        <MoodBoardItem
+                          key={item.id}
+                          item={item}
+                          reactions={reactions.filter(r => r.item_id === item.id)}
+                          comments={comments.filter(c => c.item_id === item.id)}
+                          userName={userName}
+                          onReactionChange={fetchReactions}
+                          onCommentChange={fetchComments}
+                          onMediaClick={setFullscreenItemId}
+                          readOnly
+                        />
+                      ))}
+                    </div>
+                  ))}
+                  {unsorted.length > 0 && sceneItems.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="border-b border-border/50 pb-2">
+                        <h3 className="text-lg font-display font-bold text-foreground">General</h3>
+                      </div>
+                      {unsorted.map(item => (
+                        <MoodBoardItem
+                          key={item.id}
+                          item={item}
+                          reactions={reactions.filter(r => r.item_id === item.id)}
+                          comments={comments.filter(c => c.item_id === item.id)}
+                          userName={userName}
+                          onReactionChange={fetchReactions}
+                          onCommentChange={fetchComments}
+                          onMediaClick={setFullscreenItemId}
+                          readOnly
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {unsorted.length > 0 && sceneItems.length === 0 && unsorted.map(item => (
+                    <MoodBoardItem
+                      key={item.id}
+                      item={item}
+                      reactions={reactions.filter(r => r.item_id === item.id)}
+                      comments={comments.filter(c => c.item_id === item.id)}
+                      userName={userName}
+                      onReactionChange={fetchReactions}
+                      onCommentChange={fetchComments}
+                      onMediaClick={setFullscreenItemId}
+                      readOnly
+                    />
+                  ))}
+                </>
+              );
+            })()}
+            {/* No scenes — flat list */}
+            {scenes.length === 0 && items.map(item => (
               <MoodBoardItem
                 key={item.id}
                 item={item}
-                reactions={reactions.filter((r) => r.item_id === item.id)}
-                comments={comments.filter((c) => c.item_id === item.id)}
+                reactions={reactions.filter(r => r.item_id === item.id)}
+                comments={comments.filter(c => c.item_id === item.id)}
                 userName={userName}
                 onReactionChange={fetchReactions}
                 onCommentChange={fetchComments}
