@@ -366,6 +366,8 @@ export default function AdminProposals() {
                       description: t.description || '',
                       price: String(t.price),
                       quantity: '1',
+                      category: t.category || '',
+                      unit: '',
                     }]);
                     setShowLibraryPicker(false);
                     toast({ title: `Added "${t.title}"` });
