@@ -70,6 +70,7 @@ export default function CreativeSession() {
   const [items, setItems] = useState<MoodBoardItemData[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [scenes, setScenes] = useState<SceneData[]>([]);
   const [userName, setUserName] = useState(() =>
     localStorage.getItem('creative_session_name') || ''
   );
