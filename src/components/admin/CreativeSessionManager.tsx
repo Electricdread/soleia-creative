@@ -62,6 +62,36 @@ export function CreativeSessionManager() {
   };
 
   const deleteSession = async (id: string) => {
+    // 1. Get all mood board items with file URLs to clean up storage
+    const { data: items } = await supabase
+      .from('mood_board_items')
+      .select('file_url, thumbnail_url')
+      .eq('session_id', id);
+
+    // 2. Collect storage paths to delete
+    const filesToDelete: string[] = [];
+    if (items) {
+      for (const item of items) {
+        for (const url of [item.file_url, item.thumbnail_url]) {
+          if (url && url.includes('/creative-uploads/')) {
+            const path = url.split('/creative-uploads/').pop();
+            if (path) filesToDelete.push(decodeURIComponent(path));
+          }
+        }
+      }
+    }
+
+    // 3. Delete files from storage bucket
+    if (filesToDelete.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from('creative-uploads')
+        .remove(filesToDelete);
+      if (storageError) {
+        console.error('Storage cleanup error:', storageError);
+      }
+    }
+
+    // 4. Delete the session (cascades to mood_board_items, session_scenes)
     const { error } = await supabase
       .from('creative_sessions')
       .delete()
@@ -70,7 +100,7 @@ export function CreativeSessionManager() {
     if (error) {
       toast.error('Failed to delete session');
     } else {
-      toast.success('Session deleted');
+      toast.success('Session deleted (files cleaned up)');
       fetchSessions();
     }
   };
