@@ -144,12 +144,40 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    /* Safe area padding for notched iPhones */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   body {
     @apply bg-background text-foreground antialiased font-sans;
     background: var(--gradient-luxury);
     min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior-y: none;
+    touch-action: manipulation;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  @media (min-width: 768px) {
+    input, textarea, select {
+      font-size: inherit !important;
+    }
+  }
+
+  /* Ensure all buttons/links have proper touch targets */
+  button, a, [role="button"], [role="tab"], [role="menuitem"] {
+    touch-action: manipulation;
   }
 
   /* Typography hierarchy */
@@ -516,6 +544,51 @@
   .touch-target {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* iOS momentum scrolling containers */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+
+  .scroll-touch-x {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+
+  /* Prevent iOS rubber-banding on fixed layouts */
+  .fixed-layout {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* iOS-safe fixed bottom bar */
+  .fixed-bottom-safe {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Prevent 300ms tap delay and double-tap zoom */
+  .fast-tap {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS standalone mode adjustments */
+  @media (display-mode: standalone) {
+    .safe-area-top {
+      padding-top: env(safe-area-inset-top, 20px);
+    }
+    
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
   }
 
   /* Venue screen map SVG overlay */
