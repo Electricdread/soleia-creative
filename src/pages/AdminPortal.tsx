@@ -8,6 +8,7 @@ import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, 
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
+import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
 
 
 const OPERATOR_EMAIL = 'luisdreams@me.com';
