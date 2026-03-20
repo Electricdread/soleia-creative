@@ -42,6 +42,7 @@ const App = () => (
               <Route path="/tutorial" element={<Tutorial />} />
               <Route path="/delivery-guide" element={<DeliveryGuide />} />
               <Route path="/tailgate-delivery-guide" element={<TailgateDeliveryGuide />} />
+              <Route path="/delivery/:token" element={<SessionDeliveryGuide />} />
               
               {/* Root redirects to Admin Portal */}
               <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
