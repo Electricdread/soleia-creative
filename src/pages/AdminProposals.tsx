@@ -52,7 +52,7 @@ export default function AdminProposals() {
   const [eventDate, setEventDate] = useState('');
   const [validityDays, setValidityDays] = useState('7');
   const [contactEmail, setContactEmail] = useState('info@soleia-creative.com');
-  const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1' }]);
+  const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '' }]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
