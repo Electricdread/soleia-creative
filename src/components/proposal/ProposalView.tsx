@@ -348,7 +348,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', category: '', unit: '', proposal_id: proposal.id, sort_order: editItems.length }])}
+                onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', category: '', unit: '', is_flat_fee: false, proposal_id: proposal.id, sort_order: editItems.length }])}
                 className="text-[#3498db]"
               >
                 <Plus className="w-3 h-3 mr-1" /> Add Item
