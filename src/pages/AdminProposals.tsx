@@ -369,6 +369,7 @@ export default function AdminProposals() {
                       quantity: '1',
                       category: t.category || '',
                       unit: '',
+                      is_flat_fee: false,
                     }]);
                     setShowLibraryPicker(false);
                     toast({ title: `Added "${t.title}"` });
