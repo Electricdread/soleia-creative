@@ -43,7 +43,8 @@ export default function AdminProposals() {
   const [proposals, setProposals] = useState<ProposalRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-
+  const [activeTab, setActiveTab] = useState<ViewTab>('proposals');
+  const [showLibraryPicker, setShowLibraryPicker] = useState(false);
   // Form state
   const [eventName, setEventName] = useState('');
   const [clientName, setClientName] = useState('');
