@@ -190,11 +190,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         {/* Header */}
         <header className="flex items-center justify-between mb-10">
           <img src={soleiaLogo} alt="Soleia" className="h-10 object-contain" />
-          {proposal.venue_name && (
-            <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase">
-              {proposal.venue_name}
-            </span>
-          )}
+          <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase">
+            Soleia Creative Team
+          </span>
         </header>
 
         {/* Event Title & Info */}
