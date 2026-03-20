@@ -132,6 +132,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     setEditClientName(session.client_name);
     setEditCreativeNotes(session.creative_notes || '');
     setEditTechnicalNotes(session.technical_notes || '');
+    setEditDropboxUrl((session as any).dropbox_url || '');
     setEditOpen(true);
   };
 
