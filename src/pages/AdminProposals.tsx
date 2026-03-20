@@ -285,7 +285,7 @@ export default function AdminProposals() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '' }])}
+              onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1' }])}
               className="text-zinc-400 hover:text-white mb-6"
             >
               <Plus className="w-3 h-3 mr-1" /> Add Item
