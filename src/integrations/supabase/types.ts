@@ -199,6 +199,36 @@ export type Database = {
         }
         Relationships: []
       }
+      line_item_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          price: number
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          price?: number
+          title: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          price?: number
+          title?: string
+        }
+        Relationships: []
+      }
       link_clips: {
         Row: {
           clip_id: string

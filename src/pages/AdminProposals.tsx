@@ -8,9 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
+import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import { format } from 'date-fns';
+
+type ViewTab = 'proposals' | 'library';
 
 function generateToken() {
   const arr = new Uint8Array(32);
@@ -40,7 +43,8 @@ export default function AdminProposals() {
   const [proposals, setProposals] = useState<ProposalRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-
+  const [activeTab, setActiveTab] = useState<ViewTab>('proposals');
+  const [showLibraryPicker, setShowLibraryPicker] = useState(false);
   // Form state
   const [eventName, setEventName] = useState('');
   const [clientName, setClientName] = useState('');
@@ -180,6 +184,22 @@ export default function AdminProposals() {
             <h1 className="text-white text-lg font-semibold">Client Proposals</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab('proposals')}
+              className={`text-sm ${activeTab === 'proposals' ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-white'}`}
+            >
+              Proposals
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveTab('library')}
+              className={`text-sm gap-1.5 ${activeTab === 'library' ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-white'}`}
+            >
+              <Library className="w-3.5 h-3.5" /> Item Library
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-zinc-400 hover:text-white hover:bg-zinc-800">
               <Settings className="w-4 h-4" />
             </Button>
@@ -188,6 +208,14 @@ export default function AdminProposals() {
       </header>
 
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        {activeTab === 'library' ? (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+            <h2 className="text-white text-lg font-semibold mb-4">Line Item Templates</h2>
+            <p className="text-zinc-500 text-sm mb-6">Save reusable services and items here, then quickly add them when creating proposals.</p>
+            <LineItemLibrary />
+          </div>
+        ) : (
+          <>
         {/* Create New */}
         {!showForm ? (
           <Button onClick={() => setShowForm(true)} className="mb-8 gap-2 bg-white text-black hover:bg-zinc-200">
@@ -282,14 +310,43 @@ export default function AdminProposals() {
                 </Button>
               </div>
             ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1' }])}
-              className="text-zinc-400 hover:text-white mb-6"
-            >
-              <Plus className="w-3 h-3 mr-1" /> Add Item
-            </Button>
+            <div className="flex gap-2 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1' }])}
+                className="text-zinc-400 hover:text-white"
+              >
+                <Plus className="w-3 h-3 mr-1" /> Add Item
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowLibraryPicker(!showLibraryPicker)}
+                className="text-zinc-400 hover:text-white"
+              >
+                <Library className="w-3 h-3 mr-1" /> From Library
+              </Button>
+            </div>
+
+            {showLibraryPicker && (
+              <div className="mb-6 bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
+                <h4 className="text-zinc-300 text-sm font-medium mb-3">Pick from Library</h4>
+                <LineItemLibrary
+                  compact
+                  onSelect={(t) => {
+                    setItemsList([...itemsList, {
+                      title: t.title,
+                      description: t.description || '',
+                      price: String(t.price),
+                      quantity: '1',
+                    }]);
+                    setShowLibraryPicker(false);
+                    toast({ title: `Added "${t.title}"` });
+                  }}
+                />
+              </div>
+            )}
 
             <div className="flex gap-3">
               <Button onClick={handleCreate} disabled={saving} className="bg-white text-black hover:bg-zinc-200">
@@ -354,6 +411,8 @@ export default function AdminProposals() {
               </div>
             ))}
           </div>
+        )}
+        </>
         )}
       </main>
     </div>
