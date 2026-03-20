@@ -193,6 +193,9 @@ const TailgateDeliveryGuide = () => {
           </div>
         </motion.section>
 
+        {/* Dropbox Upload */}
+        <DropboxUploadCard settingsKey="tailgate_dropbox_url" variant="slate" />
+
         {/* Submission Timeline */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <Card className="border-slate-200 bg-gradient-to-br from-sky-50 to-slate-50 shadow-xl">

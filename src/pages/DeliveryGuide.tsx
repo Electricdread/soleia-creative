@@ -352,6 +352,11 @@ const DeliveryGuide = () => {
 
         <Separator className="bg-amber-200" />
 
+        {/* Dropbox Upload */}
+        <DropboxUploadCard settingsKey="soleia_dropbox_url" variant="amber" />
+
+        <Separator className="bg-amber-200" />
+
         {/* Submission Timeline */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
