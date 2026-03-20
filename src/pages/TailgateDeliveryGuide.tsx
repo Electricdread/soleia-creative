@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import tailgateLogo from '@/assets/tailgate-logo.png';
 import displayDiagram from '@/assets/tailgate-display-diagram.png';
 import { toast } from 'sonner';
+import { DropboxUploadCard } from '@/components/delivery/DropboxUploadCard';
 
 const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
