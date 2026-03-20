@@ -286,14 +286,43 @@ export default function AdminProposals() {
                 </Button>
               </div>
             ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1' }])}
-              className="text-zinc-400 hover:text-white mb-6"
-            >
-              <Plus className="w-3 h-3 mr-1" /> Add Item
-            </Button>
+            <div className="flex gap-2 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1' }])}
+                className="text-zinc-400 hover:text-white"
+              >
+                <Plus className="w-3 h-3 mr-1" /> Add Item
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowLibraryPicker(!showLibraryPicker)}
+                className="text-zinc-400 hover:text-white"
+              >
+                <Library className="w-3 h-3 mr-1" /> From Library
+              </Button>
+            </div>
+
+            {showLibraryPicker && (
+              <div className="mb-6 bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
+                <h4 className="text-zinc-300 text-sm font-medium mb-3">Pick from Library</h4>
+                <LineItemLibrary
+                  compact
+                  onSelect={(t) => {
+                    setItemsList([...itemsList, {
+                      title: t.title,
+                      description: t.description || '',
+                      price: String(t.price),
+                      quantity: '1',
+                    }]);
+                    setShowLibraryPicker(false);
+                    toast({ title: `Added "${t.title}"` });
+                  }}
+                />
+              </div>
+            )}
 
             <div className="flex gap-3">
               <Button onClick={handleCreate} disabled={saving} className="bg-white text-black hover:bg-zinc-200">
