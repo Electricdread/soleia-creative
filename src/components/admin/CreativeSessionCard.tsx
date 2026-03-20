@@ -302,7 +302,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             <DialogTitle>Edit Session</DialogTitle>
           </DialogHeader>
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details" className="gap-1.5 text-xs">
                 <Settings2 className="w-3.5 h-3.5" />
                 Details
@@ -310,6 +310,10 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
               <TabsTrigger value="content" className="gap-1.5 text-xs">
                 <FileImage className="w-3.5 h-3.5" />
                 Content
+              </TabsTrigger>
+              <TabsTrigger value="delivery" className="gap-1.5 text-xs">
+                <Truck className="w-3.5 h-3.5" />
+                Delivery
               </TabsTrigger>
             </TabsList>
 
