@@ -309,14 +309,44 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 />
               </div>
             ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', proposal_id: proposal.id, sort_order: editItems.length }])}
-              className="text-[#3498db]"
-            >
-              <Plus className="w-3 h-3 mr-1" /> Add Item
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', proposal_id: proposal.id, sort_order: editItems.length }])}
+                className="text-[#3498db]"
+              >
+                <Plus className="w-3 h-3 mr-1" /> Add Item
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowLibraryPicker(!showLibraryPicker)}
+                className="text-[#3498db]"
+              >
+                <Library className="w-3 h-3 mr-1" /> From Library
+              </Button>
+            </div>
+            {showLibraryPicker && (
+              <div className="bg-[#f0f3f5] border border-[#dce1e6] rounded-lg p-4 mt-2">
+                <h4 className="text-[#2c3e50] text-sm font-medium mb-3">Pick from Library</h4>
+                <LineItemLibrary
+                  compact
+                  onSelect={(t) => {
+                    setEditItems([...editItems, {
+                      id: `new-${Date.now()}`,
+                      title: t.title,
+                      description: t.description || '',
+                      price: String(t.price),
+                      quantity: '1',
+                      proposal_id: proposal.id,
+                      sort_order: editItems.length,
+                    }]);
+                    setShowLibraryPicker(false);
+                  }}
+                />
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-1 mb-10">
