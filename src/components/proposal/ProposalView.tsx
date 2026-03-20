@@ -400,7 +400,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <TableHeader>
                   <TableRow className="bg-[#f8f9fa] border-b border-[#ecf0f1]">
                     {!signed && !isAdmin && <TableHead className="w-10" />}
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Category</TableHead>
                     <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Line Item</TableHead>
                     <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold text-center w-16">Qty</TableHead>
                     <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold w-24">Unit</TableHead>
@@ -409,11 +408,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(() => {
-                    let lastCategory = '';
-                    return items.map(item => {
-                      const showCategory = item.category && item.category !== lastCategory;
-                      if (item.category) lastCategory = item.category;
+                  {items.map(item => {
                       const lineTotal = calcLineTotal(item);
                       const isFlatFee = !!item.is_flat_fee;
                       return (
@@ -430,9 +425,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               />
                             </TableCell>
                           )}
-                          <TableCell className="text-sm text-[#7f8c8d] font-medium align-top">
-                            {showCategory ? item.category : ''}
-                          </TableCell>
                           <TableCell className="align-top">
                             <div className="text-sm font-semibold text-[#2c3e50]">{item.title}</div>
                             {item.description && (
