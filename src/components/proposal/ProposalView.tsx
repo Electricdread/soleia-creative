@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Pencil, Check, X, Plus, Trash2, Library } from 'lucide-react';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import ProposalGallery from './ProposalGallery';
