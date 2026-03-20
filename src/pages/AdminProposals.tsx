@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library } from 'lucide-react';
@@ -52,7 +53,7 @@ export default function AdminProposals() {
   const [eventDate, setEventDate] = useState('');
   const [validityDays, setValidityDays] = useState('7');
   const [contactEmail, setContactEmail] = useState('info@soleia-creative.com');
-  const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '' }]);
+  const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -109,6 +110,7 @@ export default function AdminProposals() {
             quantity: parseInt(item.quantity) || 1,
             category: item.category || null,
             unit: item.unit || null,
+            is_flat_fee: item.is_flat_fee,
             sort_order: idx,
           }))
         );
@@ -141,7 +143,7 @@ export default function AdminProposals() {
     setEventDate('');
     setValidityDays('7');
     setContactEmail('info@soleia-creative.com');
-    setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '' }]);
+    setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
   };
 
   const deleteProposal = async (id: string) => {
@@ -279,6 +281,18 @@ export default function AdminProposals() {
                     className="bg-zinc-800 border-zinc-700 text-white text-sm"
                   />
                 </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Checkbox
+                    id={`create-flat-${idx}`}
+                    checked={item.is_flat_fee}
+                    onCheckedChange={(v) => {
+                      const n = [...itemsList];
+                      n[idx].is_flat_fee = !!v;
+                      setItemsList(n);
+                    }}
+                  />
+                  <label htmlFor={`create-flat-${idx}`} className="text-xs text-zinc-400 cursor-pointer">Flat Fee</label>
+                </div>
                 <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center">
                   <Textarea
                     placeholder="Description"
@@ -291,30 +305,34 @@ export default function AdminProposals() {
                     className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[38px] resize-none"
                     rows={1}
                   />
+                  {!item.is_flat_fee && (
+                    <>
+                      <Input
+                        placeholder="Qty"
+                        type="number"
+                        value={item.quantity}
+                        onChange={e => {
+                          const n = [...itemsList];
+                          n[idx].quantity = e.target.value;
+                          setItemsList(n);
+                        }}
+                        className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
+                        min="1"
+                      />
+                      <Input
+                        placeholder="Unit"
+                        value={item.unit}
+                        onChange={e => {
+                          const n = [...itemsList];
+                          n[idx].unit = e.target.value;
+                          setItemsList(n);
+                        }}
+                        className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
+                      />
+                    </>
+                  )}
                   <Input
-                    placeholder="Qty"
-                    type="number"
-                    value={item.quantity}
-                    onChange={e => {
-                      const n = [...itemsList];
-                      n[idx].quantity = e.target.value;
-                      setItemsList(n);
-                    }}
-                    className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
-                    min="1"
-                  />
-                  <Input
-                    placeholder="Unit"
-                    value={item.unit}
-                    onChange={e => {
-                      const n = [...itemsList];
-                      n[idx].unit = e.target.value;
-                      setItemsList(n);
-                    }}
-                    className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
-                  />
-                  <Input
-                    placeholder="Rate"
+                    placeholder={item.is_flat_fee ? "Flat Fee Amount" : "Rate"}
                     type="number"
                     value={item.price}
                     onChange={e => {
@@ -340,7 +358,7 @@ export default function AdminProposals() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1', category: '', unit: '' }])}
+                onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }])}
                 className="text-zinc-400 hover:text-white"
               >
                 <Plus className="w-3 h-3 mr-1" /> Add Item
@@ -368,6 +386,7 @@ export default function AdminProposals() {
                       quantity: '1',
                       category: t.category || '',
                       unit: '',
+                      is_flat_fee: false,
                     }]);
                     setShowLibraryPicker(false);
                     toast({ title: `Added "${t.title}"` });

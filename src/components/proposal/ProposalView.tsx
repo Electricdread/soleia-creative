@@ -41,20 +41,22 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     contact_email: proposal.contact_email || 'info@soleia-creative.com',
   });
   const [editingItems, setEditingItems] = useState(false);
-  const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '' })));
+  const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
+
+  const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1);
 
   const total = useMemo(() => {
     if (isAdmin && !editingItems) {
-      return items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+      return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
     }
     return items
       .filter(i => selectedIds.has(i.id))
-      .reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+      .reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [selectedIds, items, isAdmin, editingItems]);
 
   const grandTotal = useMemo(() => {
-    return items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+    return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [items]);
 
   const toggleItem = (id: string) => {
@@ -141,6 +143,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             quantity: parseInt(item.quantity) || 1,
             category: item.category || null,
             unit: item.unit || null,
+            is_flat_fee: !!item.is_flat_fee,
             sort_order: idx,
           }).eq('id', item.id);
         } else {
@@ -152,6 +155,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             quantity: parseInt(item.quantity) || 1,
             category: item.category || null,
             unit: item.unit || null,
+            is_flat_fee: !!item.is_flat_fee,
             sort_order: idx,
           });
         }
@@ -272,7 +276,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <Button size="sm" onClick={saveItems} className="bg-[#2c3e50] text-white hover:bg-[#34495e]">
                   <Check className="w-3 h-3 mr-1" /> Save
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '' }))); }}>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }))); }}>
                   <X className="w-3 h-3 mr-1" /> Cancel
                 </Button>
               </div>
@@ -293,6 +297,14 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                     className="text-sm"
                   />
                 </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Checkbox
+                    id={`flat-${idx}`}
+                    checked={item.is_flat_fee}
+                    onCheckedChange={(v) => { const n = [...editItems]; n[idx] = { ...n[idx], is_flat_fee: !!v }; setEditItems(n); }}
+                  />
+                  <label htmlFor={`flat-${idx}`} className="text-xs text-[#7f8c8d] cursor-pointer">Flat Fee</label>
+                </div>
                 <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center">
                   <Textarea
                     placeholder="Description"
@@ -301,22 +313,26 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                     className="text-sm min-h-[36px] resize-none"
                     rows={1}
                   />
+                  {!item.is_flat_fee && (
+                    <>
+                      <Input
+                        placeholder="Qty"
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], quantity: e.target.value }; setEditItems(n); }}
+                        className="text-sm w-16"
+                      />
+                      <Input
+                        placeholder="Unit (e.g. Project, Locations)"
+                        value={item.unit}
+                        onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], unit: e.target.value }; setEditItems(n); }}
+                        className="text-sm w-32"
+                      />
+                    </>
+                  )}
                   <Input
-                    placeholder="Qty"
-                    type="number"
-                    min="1"
-                    value={item.quantity}
-                    onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], quantity: e.target.value }; setEditItems(n); }}
-                    className="text-sm w-16"
-                  />
-                  <Input
-                    placeholder="Unit (e.g. Project, Locations)"
-                    value={item.unit}
-                    onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], unit: e.target.value }; setEditItems(n); }}
-                    className="text-sm w-32"
-                  />
-                  <Input
-                    placeholder="Rate"
+                    placeholder={item.is_flat_fee ? "Flat Fee Amount" : "Rate"}
                     type="number"
                     value={item.price}
                     onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], price: e.target.value }; setEditItems(n); }}
@@ -332,7 +348,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', category: '', unit: '', proposal_id: proposal.id, sort_order: editItems.length }])}
+                onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', category: '', unit: '', is_flat_fee: false, proposal_id: proposal.id, sort_order: editItems.length }])}
                 className="text-[#3498db]"
               >
                 <Plus className="w-3 h-3 mr-1" /> Add Item
@@ -360,6 +376,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                       quantity: '1',
                       category: t.category || '',
                       unit: '',
+                      is_flat_fee: false,
                       proposal_id: proposal.id,
                       sort_order: editItems.length,
                     }]);
@@ -397,7 +414,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                     return items.map(item => {
                       const showCategory = item.category && item.category !== lastCategory;
                       if (item.category) lastCategory = item.category;
-                      const lineTotal = Number(item.price) * Number(item.quantity || 1);
+                      const lineTotal = calcLineTotal(item);
+                      const isFlatFee = !!item.is_flat_fee;
                       return (
                         <TableRow
                           key={item.id}
@@ -421,9 +439,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               <p className="text-xs text-[#95a5a6] mt-0.5 whitespace-pre-line">{item.description}</p>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-[#2c3e50] text-center align-top">{item.quantity || 1}</TableCell>
-                          <TableCell className="text-sm text-[#7f8c8d] align-top">{item.unit || '—'}</TableCell>
-                          <TableCell className="text-sm text-[#2c3e50] text-right align-top">{formatCurrency(Number(item.price))}</TableCell>
+                          <TableCell className="text-sm text-[#2c3e50] text-center align-top">
+                            {isFlatFee ? '—' : (item.quantity || 1)}
+                          </TableCell>
+                          <TableCell className="text-sm text-[#7f8c8d] align-top">
+                            {isFlatFee ? 'Flat Fee' : (item.unit || '—')}
+                          </TableCell>
+                          <TableCell className="text-sm text-[#2c3e50] text-right align-top">
+                            {isFlatFee ? '—' : formatCurrency(Number(item.price))}
+                          </TableCell>
                           <TableCell className="text-sm font-semibold text-[#2c3e50] text-right align-top">{formatCurrency(lineTotal)}</TableCell>
                         </TableRow>
                       );

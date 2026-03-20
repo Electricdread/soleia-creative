@@ -1,0 +1,1 @@
+ALTER TABLE public.proposal_items ADD COLUMN is_flat_fee boolean NOT NULL DEFAULT false;
