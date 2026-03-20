@@ -256,62 +256,86 @@ export default function AdminProposals() {
             {/* Line Items */}
             <h3 className="text-white font-medium mb-3">Line Items</h3>
             {itemsList.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-[1fr_2fr_auto_auto_auto] gap-2 mb-2 items-start">
-                <Input
-                  placeholder="Title"
-                  value={item.title}
-                  onChange={e => {
-                    const n = [...itemsList];
-                    n[idx].title = e.target.value;
-                    setItemsList(n);
-                  }}
-                  className="bg-zinc-800 border-zinc-700 text-white text-sm"
-                />
-                <Textarea
-                  placeholder="Description"
-                  value={item.description}
-                  onChange={e => {
-                    const n = [...itemsList];
-                    n[idx].description = e.target.value;
-                    setItemsList(n);
-                  }}
-                  className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[38px] resize-none"
-                  rows={1}
-                />
-                <Input
-                  placeholder="Qty"
-                  type="number"
-                  value={item.quantity}
-                  onChange={e => {
-                    const n = [...itemsList];
-                    n[idx].quantity = e.target.value;
-                    setItemsList(n);
-                  }}
-                  className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
-                  min="1"
-                />
-                <Input
-                  placeholder="Price"
-                  type="number"
-                  value={item.price}
-                  onChange={e => {
-                    const n = [...itemsList];
-                    n[idx].price = e.target.value;
-                    setItemsList(n);
-                  }}
-                  className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setItemsList(itemsList.filter((_, i) => i !== idx))}
-                  className="text-zinc-500 hover:text-red-400 h-9 w-9"
-                  disabled={itemsList.length === 1}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+              <div key={idx} className="bg-zinc-800/50 rounded-lg p-3 mb-2 space-y-2">
+                <div className="grid grid-cols-[1fr_1fr] gap-2">
+                  <Input
+                    placeholder="Category (e.g. Immersive LED Environments)"
+                    value={item.category}
+                    onChange={e => {
+                      const n = [...itemsList];
+                      n[idx].category = e.target.value;
+                      setItemsList(n);
+                    }}
+                    className="bg-zinc-800 border-zinc-700 text-white text-sm"
+                  />
+                  <Input
+                    placeholder="Line Item Title"
+                    value={item.title}
+                    onChange={e => {
+                      const n = [...itemsList];
+                      n[idx].title = e.target.value;
+                      setItemsList(n);
+                    }}
+                    className="bg-zinc-800 border-zinc-700 text-white text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center">
+                  <Textarea
+                    placeholder="Description"
+                    value={item.description}
+                    onChange={e => {
+                      const n = [...itemsList];
+                      n[idx].description = e.target.value;
+                      setItemsList(n);
+                    }}
+                    className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[38px] resize-none"
+                    rows={1}
+                  />
+                  <Input
+                    placeholder="Qty"
+                    type="number"
+                    value={item.quantity}
+                    onChange={e => {
+                      const n = [...itemsList];
+                      n[idx].quantity = e.target.value;
+                      setItemsList(n);
+                    }}
+                    className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
+                    min="1"
+                  />
+                  <Input
+                    placeholder="Unit"
+                    value={item.unit}
+                    onChange={e => {
+                      const n = [...itemsList];
+                      n[idx].unit = e.target.value;
+                      setItemsList(n);
+                    }}
+                    className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
+                  />
+                  <Input
+                    placeholder="Rate"
+                    type="number"
+                    value={item.price}
+                    onChange={e => {
+                      const n = [...itemsList];
+                      n[idx].price = e.target.value;
+                      setItemsList(n);
+                    }}
+                    className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setItemsList(itemsList.filter((_, i) => i !== idx))}
+                    className="text-zinc-500 hover:text-red-400 h-9 w-9"
+                    disabled={itemsList.length === 1}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            ))}
+            ))
             <div className="flex gap-2 mb-6">
               <Button
                 variant="ghost"
