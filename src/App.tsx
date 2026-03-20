@@ -13,6 +13,7 @@ import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import CreativeSession from "./pages/CreativeSession";
 import DeliveryGuide from "./pages/DeliveryGuide";
 import TailgateDeliveryGuide from "./pages/TailgateDeliveryGuide";
+import SessionDeliveryGuide from "./pages/SessionDeliveryGuide";
 import AdminLogin from "./pages/AdminLogin";
 import AdminPortal from "./pages/AdminPortal";
 import AdminCreative from "./pages/AdminCreative";
