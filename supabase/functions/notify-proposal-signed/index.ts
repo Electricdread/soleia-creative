@@ -45,7 +45,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'onboarding@resend.dev',
-        to: ['luisdreams@soleia-creativeteam.com'],
+        to: ['luisdreamslv@gmail.com'],
         subject: `Proposal Signed: ${event_name} — ${client_name}`,
         html,
       }),
