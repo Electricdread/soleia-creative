@@ -513,6 +513,7 @@ export type Database = {
       }
       proposal_items: {
         Row: {
+          category: string | null
           created_at: string
           description: string | null
           id: string
@@ -521,8 +522,10 @@ export type Database = {
           quantity: number
           sort_order: number | null
           title: string
+          unit: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -531,8 +534,10 @@ export type Database = {
           quantity?: number
           sort_order?: number | null
           title: string
+          unit?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -541,6 +546,7 @@ export type Database = {
           quantity?: number
           sort_order?: number | null
           title?: string
+          unit?: string | null
         }
         Relationships: [
           {
