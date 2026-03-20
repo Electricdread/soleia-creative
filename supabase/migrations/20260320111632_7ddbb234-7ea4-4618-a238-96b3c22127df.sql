@@ -1,0 +1,1 @@
+ALTER TABLE public.creative_sessions ADD COLUMN IF NOT EXISTS dropbox_url text;
