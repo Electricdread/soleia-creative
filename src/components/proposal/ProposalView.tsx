@@ -376,6 +376,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                       quantity: '1',
                       category: t.category || '',
                       unit: '',
+                      is_flat_fee: false,
                       proposal_id: proposal.id,
                       sort_order: editItems.length,
                     }]);
