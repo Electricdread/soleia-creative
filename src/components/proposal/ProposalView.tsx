@@ -38,7 +38,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     venue_name: proposal.venue_name || '',
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
-    contact_email: proposal.contact_email || 'info@soleia-creative.com',
+    contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
   });
   const [editingItems, setEditingItems] = useState(false);
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
