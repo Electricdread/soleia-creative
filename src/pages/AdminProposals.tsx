@@ -183,7 +183,7 @@ export default function AdminProposals() {
             <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain" />
             <h1 className="text-white text-lg font-semibold">Client Proposals</h1>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -200,7 +200,6 @@ export default function AdminProposals() {
             >
               <Library className="w-3.5 h-3.5" /> Item Library
             </Button>
-          <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-zinc-400 hover:text-white hover:bg-zinc-800">
               <Settings className="w-4 h-4" />
             </Button>
