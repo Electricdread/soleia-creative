@@ -89,6 +89,7 @@ export default function CreativeSession() {
       fetchItems();
       fetchReactions();
       fetchComments();
+      fetchScenes();
       const cleanup = setupRealtime();
       return cleanup;
     }
