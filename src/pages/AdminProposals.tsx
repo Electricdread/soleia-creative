@@ -52,7 +52,7 @@ export default function AdminProposals() {
   const [venueName, setVenueName] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [validityDays, setValidityDays] = useState('7');
-  const [contactEmail, setContactEmail] = useState('info@soleia-creative.com');
+  const [contactEmail, setContactEmail] = useState('luisdreamslv@gmail.com');
   const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
   const [saving, setSaving] = useState(false);
 
