@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Plus, Trash2, Palette, FileText, Link2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, Palette, FileText, Link2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Association {
@@ -10,6 +10,7 @@ interface Association {
   entity_type: string;
   entity_id: string;
   label?: string;
+  href?: string;
 }
 
 export function EventLinkedItems({ eventUid }: { eventUid: string }) {
@@ -29,21 +30,21 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
 
     if (!data) { setLoading(false); return; }
 
-    // Resolve labels
     const resolved: Association[] = [];
     for (const a of data as any[]) {
       let label = a.entity_id;
+      let href = '';
       if (a.entity_type === 'creative_session') {
-        const { data: s } = await supabase.from('creative_sessions').select('project_name, client_name').eq('id', a.entity_id).maybeSingle();
-        if (s) label = `${s.project_name} – ${s.client_name}`;
+        const { data: s } = await supabase.from('creative_sessions').select('project_name, client_name, token').eq('id', a.entity_id).maybeSingle();
+        if (s) { label = `${s.project_name} – ${s.client_name}`; href = `/creative/${s.token}`; }
       } else if (a.entity_type === 'proposal') {
-        const { data: p } = await supabase.from('proposals').select('event_name, client_name').eq('id', a.entity_id).maybeSingle();
-        if (p) label = `${p.event_name} – ${p.client_name}`;
+        const { data: p } = await supabase.from('proposals').select('event_name, client_name, token').eq('id', a.entity_id).maybeSingle();
+        if (p) { label = `${p.event_name} – ${p.client_name}`; href = `/proposal/${p.token}`; }
       } else if (a.entity_type === 'client_link') {
-        const { data: l } = await supabase.from('client_links').select('event_name, client_name').eq('id', a.entity_id).maybeSingle();
-        if (l) label = `${l.event_name} – ${l.client_name}`;
+        const { data: l } = await supabase.from('client_links').select('event_name, client_name, token').eq('id', a.entity_id).maybeSingle();
+        if (l) { label = `${l.event_name} – ${l.client_name}`; href = `/session/${l.token}`; }
       }
-      resolved.push({ ...a, label });
+      resolved.push({ ...a, label, href });
     }
     setAssociations(resolved);
     setLoading(false);
@@ -140,9 +141,20 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
           <div key={a.id} className="flex items-center gap-2.5 bg-[#faf8f5] border border-[#e8e2d8] rounded-lg px-3 py-2 group">
             {typeIcon(a.entity_type)}
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-[#3d3629] truncate">{a.label}</p>
+              {a.href ? (
+                <a href={a.href} target="_blank" rel="noopener noreferrer" className="text-sm text-[#3d3629] hover:text-[#c49a3c] hover:underline truncate block">
+                  {a.label}
+                </a>
+              ) : (
+                <p className="text-sm text-[#3d3629] truncate">{a.label}</p>
+              )}
               <p className="text-[10px] text-[#b5ab9a]">{typeLabel(a.entity_type)}</p>
             </div>
+            {a.href && (
+              <a href={a.href} target="_blank" rel="noopener noreferrer" className="text-[#c49a3c] hover:text-[#b08a30] shrink-0">
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
             <button onClick={() => removeAssociation(a.id)} className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
