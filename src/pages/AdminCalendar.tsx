@@ -58,6 +58,7 @@ export default function AdminCalendar() {
     if (!authLoading && isAdmin) {
       fetchEvents();
       fetchMetadata();
+      fetchProposalAssociations();
     }
   }, [authLoading, isAdmin]);
 
