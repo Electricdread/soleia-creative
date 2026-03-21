@@ -852,6 +852,7 @@ export type Database = {
           is_active: boolean
           notes: string | null
           quote_date: string
+          session_id: string | null
           signed_at: string | null
           status: string
           token: string
@@ -871,6 +872,7 @@ export type Database = {
           is_active?: boolean
           notes?: string | null
           quote_date?: string
+          session_id?: string | null
           signed_at?: string | null
           status?: string
           token: string
@@ -890,6 +892,7 @@ export type Database = {
           is_active?: boolean
           notes?: string | null
           quote_date?: string
+          session_id?: string | null
           signed_at?: string | null
           status?: string
           token?: string
@@ -897,7 +900,15 @@ export type Database = {
           validity_days?: number
           venue_name?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "proposals_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "creative_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       session_scenes: {
         Row: {
