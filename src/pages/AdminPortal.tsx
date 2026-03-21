@@ -50,7 +50,7 @@ const portals: PortalCard[] = [
   {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
-    icon: <Users className="w-6 h-6 text-zinc-400" />,
+    icon: <Users className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/users',
   },
   {
