@@ -234,6 +234,19 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <label className="text-xs text-[#95a5a6] font-semibold">Contact Email</label>
                 <Input value={editFields.contact_email} onChange={e => setEditFields({ ...editFields, contact_email: e.target.value })} />
               </div>
+              <div className="col-span-2">
+                <label className="text-xs text-[#95a5a6] font-semibold">Link Creative Session</label>
+                <select
+                  value={editFields.session_id}
+                  onChange={e => setEditFields({ ...editFields, session_id: e.target.value })}
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">— None —</option>
+                  {sessions.map(s => (
+                    <option key={s.id} value={s.id}>{s.project_name} ({s.client_name})</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button size="sm" onClick={saveHeader} className="bg-[#2c3e50] text-white hover:bg-[#34495e]">
