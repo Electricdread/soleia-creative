@@ -5,6 +5,30 @@
 /* Soleia Lookbook - Luxury Sun Goddess Design System */
 /* Inspired by Wynn Resort & MGM Casino Premium Aesthetics */
 
+/* Global iOS touch compatibility */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  min-height: -webkit-fill-available;
+  touch-action: manipulation;
+}
+
+body {
+  min-height: -webkit-fill-available;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Prevent iOS zoom on input focus - must be 16px+ */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+/* Global touch-friendly buttons */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 @layer base {
   :root {
     /* Bright elegant white foundation */
