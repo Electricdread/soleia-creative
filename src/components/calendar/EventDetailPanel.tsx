@@ -37,7 +37,7 @@ interface EventDetailPanelProps {
   proposalStatuses?: ProposalStatusInfo[];
 }
 
-export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange }: EventDetailPanelProps) {
+export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses }: EventDetailPanelProps) {
   const displayStatus = statusOverride || mapIcalStatus(event.status);
 
   let startFormatted = '';
