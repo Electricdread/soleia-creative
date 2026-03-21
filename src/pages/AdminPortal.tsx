@@ -56,7 +56,7 @@ const portals: PortalCard[] = [
   {
     title: 'Event Calendar',
     description: 'View upcoming events synced from Triple Seat',
-    icon: <Calendar className="w-6 h-6 text-zinc-400" />,
+    icon: <Calendar className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/calendar',
   },
   {
