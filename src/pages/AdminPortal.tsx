@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
@@ -38,31 +38,31 @@ const portals: PortalCard[] = [
   {
     title: 'Content Previz',
     description: 'Per-client video previews for content review and approval',
-    icon: <Video className="w-6 h-6 text-zinc-400" />,
+    icon: <Video className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/looks',
   },
   {
     title: 'Client Proposals',
     description: 'Create and manage interactive service agreements and quotes',
-    icon: <FileText className="w-6 h-6 text-zinc-400" />,
+    icon: <FileText className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/proposals',
   },
   {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
-    icon: <Users className="w-6 h-6 text-zinc-400" />,
+    icon: <Users className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/users',
   },
   {
     title: 'Event Calendar',
     description: 'View upcoming events synced from Triple Seat',
-    icon: <Calendar className="w-6 h-6 text-zinc-400" />,
+    icon: <Calendar className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/calendar',
   },
   {
     title: 'Delivery Guides',
     description: 'Session-based content delivery guides with asset upload links',
-    icon: <Send className="w-6 h-6 text-zinc-400" />,
+    icon: <Send className="w-6 h-6 text-[#c49a3c]" />,
     href: '/delivery-guide',
   },
 ];
