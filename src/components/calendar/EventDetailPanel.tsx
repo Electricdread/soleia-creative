@@ -109,7 +109,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                   </span>
                 ))}
               </div>
-            )
+            )}
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-[#8a7d6b] hover:text-[#3d3629] shrink-0 h-7 w-7">
             <X className="w-4 h-4" />
