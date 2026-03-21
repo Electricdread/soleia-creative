@@ -4,11 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen, MapPin, ArrowRight } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
 import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
+import { format, parseISO, startOfWeek, endOfWeek, isWithinInterval, isSameDay, isToday } from 'date-fns';
+import { getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
 
 
 const OPERATOR_EMAIL = 'luisdreams@me.com';
@@ -71,6 +73,9 @@ export default function AdminPortal() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading, signOut } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
+  const [weekEvents, setWeekEvents] = useState<{ uid: string; summary: string; dtstart: string; dtend: string; location: string; status: string }[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -100,6 +105,57 @@ export default function AdminPortal() {
       fetchPending();
     }
   }, [isLoading, isAdmin]);
+
+  // Fetch this week's calendar events
+  useEffect(() => {
+    if (!isLoading && isAdmin) {
+      const fetchWeekEvents = async () => {
+        setEventsLoading(true);
+        try {
+          const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+          const res = await fetch(`https://${projectId}.supabase.co/functions/v1/fetch-ical`, {
+            headers: {
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          const data = await res.json();
+          if (data.events) {
+            const now = new Date();
+            const weekStart = startOfWeek(now);
+            const weekEnd = endOfWeek(now);
+            const thisWeek = data.events.filter((e: any) => {
+              try {
+                const d = parseISO(e.dtstart);
+                return isWithinInterval(d, { start: weekStart, end: weekEnd });
+              } catch { return false; }
+            }).sort((a: any, b: any) => new Date(a.dtstart).getTime() - new Date(b.dtstart).getTime());
+            setWeekEvents(thisWeek);
+          }
+          // Fetch status overrides
+          const { data: meta } = await supabase.from('calendar_event_metadata').select('event_uid, status_override');
+          if (meta) {
+            const map: Record<string, EventStatus> = {};
+            meta.forEach((m) => { if (m.status_override) map[m.event_uid] = m.status_override as EventStatus; });
+            setStatusOverrides(map);
+          }
+        } catch (e) {
+          console.error('Failed to fetch week events:', e);
+        }
+        setEventsLoading(false);
+      };
+      fetchWeekEvents();
+    }
+  }, [isLoading, isAdmin]);
+
+  const getEventStatus = (event: { uid: string; status: string }): EventStatus => {
+    if (statusOverrides[event.uid]) return statusOverrides[event.uid];
+    const s = event.status.toLowerCase();
+    if (s.includes('confirm') || s.includes('definite')) return 'definite';
+    if (s.includes('tentative')) return 'tentative';
+    if (s.includes('cancel')) return 'cancelled';
+    return 'prospect';
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -318,6 +374,105 @@ export default function AdminPortal() {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* This Week's Events Dashboard */}
+        <div className="max-w-5xl mx-auto mt-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#c49a3c]" />
+              <h2 className="text-xl font-semibold text-white">This Week</h2>
+              <span className="text-sm text-zinc-500">
+                {format(startOfWeek(new Date()), 'MMM d')} – {format(endOfWeek(new Date()), 'MMM d')}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/admin/calendar')}
+              className="text-[#c49a3c] hover:text-[#d4aa4c] hover:bg-zinc-800 gap-1"
+            >
+              View Calendar
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+
+          {eventsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+            </div>
+          ) : weekEvents.length === 0 ? (
+            <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-6 text-center">
+              <p className="text-zinc-500 text-sm">No events this week</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {weekEvents.map((event) => {
+                const status = getEventStatus(event);
+                const statusColors = getStatusBarColor(status);
+                const eventDate = parseISO(event.dtstart);
+                const today = isToday(eventDate);
+
+                return (
+                  <button
+                    key={event.uid}
+                    onClick={() => navigate('/admin/calendar')}
+                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl border transition-all text-left hover:scale-[1.01] ${
+                      today
+                        ? 'bg-[#c49a3c]/10 border-[#c49a3c]/30 hover:border-[#c49a3c]/50'
+                        : 'bg-zinc-900/80 border-zinc-800 hover:border-zinc-600'
+                    }`}
+                  >
+                    {/* Date badge */}
+                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex flex-col items-center justify-center ${
+                      today ? 'bg-[#c49a3c]/20' : 'bg-zinc-800'
+                    }`}>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${today ? 'text-[#c49a3c]' : 'text-zinc-500'}`}>
+                        {format(eventDate, 'EEE')}
+                      </span>
+                      <span className={`text-lg font-bold leading-none ${today ? 'text-[#c49a3c]' : 'text-white'}`}>
+                        {format(eventDate, 'd')}
+                      </span>
+                    </div>
+
+                    {/* Status bar */}
+                    <div className={`w-1 h-10 rounded-full flex-shrink-0 ${statusColors.bg.replace('/60', '')}`}
+                      style={{
+                        backgroundColor:
+                          status === 'definite' ? '#7b8a3e' :
+                          status === 'prospect' ? '#c49a3c' :
+                          status === 'tentative' ? '#5a8fb4' :
+                          status === 'cancelled' ? '#b05a5a' : '#8a7d6b'
+                      }}
+                    />
+
+                    {/* Event info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{event.summary}</p>
+                      {event.location && (
+                        <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5 truncate">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          {event.location}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Time */}
+                    <div className="flex-shrink-0 text-right">
+                      <span className="text-xs text-zinc-400">
+                        {format(eventDate, 'h:mm a')}
+                      </span>
+                      {today && (
+                        <Badge className="ml-2 bg-[#c49a3c] text-black text-[9px] font-bold px-1.5 py-0">
+                          TODAY
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Client Templates Section */}
