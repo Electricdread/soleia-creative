@@ -22,6 +22,12 @@ interface CalendarEvent {
   status: string;
 }
 
+interface ProposalInfo {
+  status: string;
+  event_name: string;
+  client_name: string;
+}
+
 export default function AdminCalendar() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading: authLoading } = useAuth();
