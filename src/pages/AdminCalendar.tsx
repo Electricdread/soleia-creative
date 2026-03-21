@@ -273,5 +273,9 @@ export default function AdminCalendar() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
