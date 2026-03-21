@@ -93,6 +93,23 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                 </span>
               )}
             </div>
+            {proposalStatuses && proposalStatuses.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {proposalStatuses.map((p, i) => (
+                  <span
+                    key={i}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                      p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                      'bg-zinc-100 text-zinc-500 border border-zinc-200'
+                    }`}
+                  >
+                    <FileText className="w-3 h-3" />
+                    {p.status === 'signed' ? '✓ Signed' : p.status === 'sent' ? 'Proposal Sent' : `Proposal: ${p.status}`}
+                  </span>
+                ))}
+              </div>
+            )
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-[#8a7d6b] hover:text-[#3d3629] shrink-0 h-7 w-7">
             <X className="w-4 h-4" />
