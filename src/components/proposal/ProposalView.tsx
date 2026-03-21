@@ -531,6 +531,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           </div>
         ) : null}
 
+        {/* Approved Creative Selections */}
+        {proposal.session_id && (
+          <ProposalApprovedClips sessionId={proposal.session_id} />
+        )}
+
         {/* Gallery */}
         <ProposalGallery gallery={gallery} />
 
