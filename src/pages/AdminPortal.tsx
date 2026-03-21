@@ -24,7 +24,7 @@ interface PortalCard {
 
 const portals: PortalCard[] = [
   {
-    title: 'Soleia Creative',
+    title: 'Creative Looks',
     description: 'Internal creative sessions, mood boards, and team collaboration',
     iconSrc: soleiaIcon,
     href: '/admin/creative',
