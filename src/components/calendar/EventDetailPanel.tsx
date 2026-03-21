@@ -115,6 +115,11 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
             <X className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Linked Items - relocated to header */}
+        <div className="mt-3 pt-3 border-t border-[#e8e2d8]">
+          <EventLinkedItems eventUid={event.uid} />
+        </div>
       </div>
 
       {/* Tabs */}
@@ -130,7 +135,6 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                 { value: 'delivery', label: 'Delivery' },
                 { value: 'client', label: 'Client' },
                 { value: 'docs', label: 'Docs' },
-                { value: 'linked', label: 'Linked' },
               ].map((tab) => (
                 <TabsTrigger
                   key={tab.value}
@@ -166,9 +170,6 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
           </TabsContent>
           <TabsContent value="docs" className="p-4 mt-0">
             <EventAttachments eventUid={event.uid} />
-          </TabsContent>
-          <TabsContent value="linked" className="p-4 mt-0">
-            <EventLinkedItems eventUid={event.uid} />
           </TabsContent>
         </div>
       </Tabs>
