@@ -429,7 +429,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 </button>
               </div>
             )}
-            <div className="bg-white rounded-lg border border-[#ecf0f1] overflow-hidden">
+            {/* Desktop Table - hidden on mobile */}
+            <div className="hidden sm:block bg-white rounded-lg border border-[#ecf0f1] overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#f8f9fa] border-b border-[#ecf0f1]">
@@ -489,6 +490,65 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                   })()}
                 </TableBody>
               </Table>
+            </div>
+
+            {/* Mobile Card Layout - shown only on mobile */}
+            <div className="sm:hidden space-y-3">
+              {(() => {
+                let lastCategory = '';
+                return items.map(item => {
+                  const showCategory = item.category && item.category !== lastCategory;
+                  if (item.category) lastCategory = item.category;
+                  const lineTotal = calcLineTotal(item);
+                  const isFlatFee = !!item.is_flat_fee;
+                  return (
+                    <div key={item.id}>
+                      {showCategory && (
+                        <div className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold mt-4 mb-2 px-1">
+                          {item.category}
+                        </div>
+                      )}
+                      <div
+                        className={`bg-white rounded-xl border p-4 transition-colors touch-manipulation active:scale-[0.98] ${
+                          selectedIds.has(item.id) ? 'border-[#c49a3c] bg-[#c49a3c]/5' : 'border-[#ecf0f1]'
+                        }`}
+                        onClick={() => !signed && !isAdmin && toggleItem(item.id)}
+                      >
+                        <div className="flex items-start gap-3">
+                          {!signed && !isAdmin && (
+                            <div className="pt-0.5">
+                              <Checkbox
+                                checked={selectedIds.has(item.id)}
+                                onCheckedChange={() => toggleItem(item.id)}
+                                className="w-5 h-5"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-[15px] font-semibold text-[#2c3e50] leading-snug">{item.title}</h3>
+                            {item.description && (
+                              <p className="text-[13px] text-[#95a5a6] mt-1.5 whitespace-pre-line leading-relaxed">{item.description}</p>
+                            )}
+                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#f0f3f5]">
+                              <div className="flex items-center gap-3 text-[12px] text-[#7f8c8d]">
+                                {!isFlatFee && (
+                                  <>
+                                    <span>Qty: <span className="text-[#2c3e50] font-medium">{item.quantity || 1}</span></span>
+                                    {item.unit && <span>• {item.unit}</span>}
+                                    <span>@ {formatCurrency(Number(item.price))}</span>
+                                  </>
+                                )}
+                                {isFlatFee && <span className="text-[#7f8c8d]">Flat Fee</span>}
+                              </div>
+                              <span className="text-[15px] font-bold text-[#2c3e50]">{formatCurrency(lineTotal)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         )}
