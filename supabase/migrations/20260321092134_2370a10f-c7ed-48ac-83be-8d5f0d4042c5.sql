@@ -1,0 +1,1 @@
+ALTER TABLE public.proposals ADD COLUMN session_id uuid REFERENCES public.creative_sessions(id) ON DELETE SET NULL;

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import ProposalGallery from './ProposalGallery';
 import ProposalTimeline from './ProposalTimeline';
 import ProposalTerms from './ProposalTerms';
+import ProposalApprovedClips from './ProposalApprovedClips';
 
 interface ProposalViewProps {
   proposal: any;
@@ -39,10 +40,19 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
     contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
+    session_id: proposal.session_id || '',
   });
   const [editingItems, setEditingItems] = useState(false);
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
+  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string }[]>([]);
+
+  // Fetch available creative sessions for admin linking
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.from('creative_sessions').select('id, project_name, client_name').eq('is_active', true).order('created_at', { ascending: false })
+      .then(({ data }) => setSessions(data || []));
+  }, [isAdmin]);
 
   const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1);
 
@@ -124,7 +134,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           event_date: editFields.event_date || null,
           validity_days: parseInt(editFields.validity_days) || 7,
           contact_email: editFields.contact_email,
-        })
+          session_id: editFields.session_id || null,
+        } as any)
         .eq('id', proposal.id);
       if (error) throw error;
       setEditingHeader(false);
@@ -222,6 +233,19 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               <div>
                 <label className="text-xs text-[#95a5a6] font-semibold">Contact Email</label>
                 <Input value={editFields.contact_email} onChange={e => setEditFields({ ...editFields, contact_email: e.target.value })} />
+              </div>
+              <div className="col-span-2">
+                <label className="text-xs text-[#95a5a6] font-semibold">Link Creative Session</label>
+                <select
+                  value={editFields.session_id}
+                  onChange={e => setEditFields({ ...editFields, session_id: e.target.value })}
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">— None —</option>
+                  {sessions.map(s => (
+                    <option key={s.id} value={s.id}>{s.project_name} ({s.client_name})</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="flex gap-2">
@@ -506,6 +530,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             )}
           </div>
         ) : null}
+
+        {/* Approved Creative Selections */}
+        {proposal.session_id && (
+          <ProposalApprovedClips sessionId={proposal.session_id} />
+        )}
 
         {/* Gallery */}
         <ProposalGallery gallery={gallery} />
