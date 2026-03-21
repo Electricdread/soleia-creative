@@ -4,11 +4,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen, MapPin, ArrowRight } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
 import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
+import { format, parseISO, startOfWeek, endOfWeek, isWithinInterval, isSameDay, isToday } from 'date-fns';
+import { getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
 
 
 const OPERATOR_EMAIL = 'luisdreams@me.com';
