@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import ProposalGallery from './ProposalGallery';
 import ProposalTimeline from './ProposalTimeline';
 import ProposalTerms from './ProposalTerms';
+import ProposalApprovedClips from './ProposalApprovedClips';
 
 interface ProposalViewProps {
   proposal: any;
