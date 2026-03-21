@@ -134,7 +134,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           event_date: editFields.event_date || null,
           validity_days: parseInt(editFields.validity_days) || 7,
           contact_email: editFields.contact_email,
-        })
+          session_id: editFields.session_id || null,
+        } as any)
         .eq('id', proposal.id);
       if (error) throw error;
       setEditingHeader(false);
