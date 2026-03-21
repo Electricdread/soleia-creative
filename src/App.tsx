@@ -12,7 +12,7 @@ import CreativeGuide from "./pages/CreativeGuide";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import CreativeSession from "./pages/CreativeSession";
 import DeliveryGuide from "./pages/DeliveryGuide";
-import TailgateDeliveryGuide from "./pages/TailgateDeliveryGuide";
+
 import SessionDeliveryGuide from "./pages/SessionDeliveryGuide";
 import AdminLogin from "./pages/AdminLogin";
 import AdminPortal from "./pages/AdminPortal";
@@ -42,7 +42,7 @@ const App = () => (
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/tutorial" element={<Tutorial />} />
               <Route path="/delivery-guide" element={<DeliveryGuide />} />
-              <Route path="/tailgate-delivery-guide" element={<TailgateDeliveryGuide />} />
+              
               <Route path="/delivery/:token" element={<SessionDeliveryGuide />} />
               
               {/* Root redirects to Admin Portal */}
