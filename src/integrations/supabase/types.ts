@@ -62,6 +62,126 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_event_attachments: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_uid: string
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_uid: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_uid?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      calendar_event_metadata: {
+        Row: {
+          color_label: string | null
+          custom_notes: string | null
+          event_uid: string
+          id: string
+          status_override: string | null
+          updated_at: string
+        }
+        Insert: {
+          color_label?: string | null
+          custom_notes?: string | null
+          event_uid: string
+          id?: string
+          status_override?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color_label?: string | null
+          custom_notes?: string | null
+          event_uid?: string
+          id?: string
+          status_override?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      calendar_event_notes: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          event_uid: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          event_uid: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          event_uid?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      calendar_event_tasks: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_uid: string
+          id: string
+          is_completed: boolean
+          sort_order: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_uid: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_uid?: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       client_links: {
         Row: {
           client_name: string
