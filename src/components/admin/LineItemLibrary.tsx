@@ -190,38 +190,38 @@ export default function LineItemLibrary({ onSelect, compact }: LineItemLibraryPr
           filtered.map(t => (
             <div
               key={t.id}
-              className={`rounded-lg p-3 flex items-center justify-between gap-3 border transition-colors ${
+              className={`rounded-lg p-3 border transition-colors touch-manipulation active:scale-[0.98] ${
                 onSelect
                   ? 'border-zinc-700 hover:border-zinc-500 cursor-pointer bg-zinc-800/40 hover:bg-zinc-800'
                   : 'border-zinc-800 bg-zinc-900/60'
               }`}
               onClick={() => onSelect?.(t)}
             >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-white text-sm font-medium truncate">{t.title}</span>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
                   {t.category && (
-                    <Badge variant="outline" className="text-[10px] border-zinc-700 text-zinc-500 flex-shrink-0">
+                    <Badge variant="outline" className="text-[10px] border-zinc-700 text-zinc-500 mb-1">
                       {t.category}
                     </Badge>
                   )}
+                  <p className="text-white text-sm font-medium leading-snug">{t.title}</p>
+                  {t.description && (
+                    <p className="text-zinc-500 text-xs mt-0.5 line-clamp-2">{t.description}</p>
+                  )}
                 </div>
-                {t.description && (
-                  <p className="text-zinc-500 text-xs truncate mt-0.5">{t.description}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <span className="text-zinc-300 text-sm font-medium mr-1">{formatCurrency(t.price)}</span>
-                {!compact && !onSelect && (
-                  <>
-                    <Button variant="ghost" size="icon" onClick={() => startEdit(t)} className="text-zinc-500 hover:text-white h-7 w-7">
-                      <Pencil className="w-3 h-3" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(t.id)} className="text-zinc-500 hover:text-red-400 h-7 w-7">
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </>
-                )}
+                <div className="flex items-center gap-1 flex-shrink-0 pt-0.5">
+                  <span className="text-zinc-300 text-sm font-semibold">{formatCurrency(t.price)}</span>
+                  {!compact && !onSelect && (
+                    <>
+                      <Button variant="ghost" size="icon" onClick={() => startEdit(t)} className="text-zinc-500 hover:text-white h-8 w-8">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(t.id)} className="text-zinc-500 hover:text-red-400 h-8 w-8">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))
