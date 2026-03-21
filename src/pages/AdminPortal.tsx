@@ -376,6 +376,105 @@ export default function AdminPortal() {
           ))}
         </div>
 
+        {/* This Week's Events Dashboard */}
+        <div className="max-w-5xl mx-auto mt-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#c49a3c]" />
+              <h2 className="text-xl font-semibold text-white">This Week</h2>
+              <span className="text-sm text-zinc-500">
+                {format(startOfWeek(new Date()), 'MMM d')} – {format(endOfWeek(new Date()), 'MMM d')}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/admin/calendar')}
+              className="text-[#c49a3c] hover:text-[#d4aa4c] hover:bg-zinc-800 gap-1"
+            >
+              View Calendar
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+
+          {eventsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+            </div>
+          ) : weekEvents.length === 0 ? (
+            <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-6 text-center">
+              <p className="text-zinc-500 text-sm">No events this week</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {weekEvents.map((event) => {
+                const status = getEventStatus(event);
+                const statusColors = getStatusBarColor(status);
+                const eventDate = parseISO(event.dtstart);
+                const today = isToday(eventDate);
+
+                return (
+                  <button
+                    key={event.uid}
+                    onClick={() => navigate('/admin/calendar')}
+                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl border transition-all text-left hover:scale-[1.01] ${
+                      today
+                        ? 'bg-[#c49a3c]/10 border-[#c49a3c]/30 hover:border-[#c49a3c]/50'
+                        : 'bg-zinc-900/80 border-zinc-800 hover:border-zinc-600'
+                    }`}
+                  >
+                    {/* Date badge */}
+                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex flex-col items-center justify-center ${
+                      today ? 'bg-[#c49a3c]/20' : 'bg-zinc-800'
+                    }`}>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${today ? 'text-[#c49a3c]' : 'text-zinc-500'}`}>
+                        {format(eventDate, 'EEE')}
+                      </span>
+                      <span className={`text-lg font-bold leading-none ${today ? 'text-[#c49a3c]' : 'text-white'}`}>
+                        {format(eventDate, 'd')}
+                      </span>
+                    </div>
+
+                    {/* Status bar */}
+                    <div className={`w-1 h-10 rounded-full flex-shrink-0 ${statusColors.bg.replace('/60', '')}`}
+                      style={{
+                        backgroundColor:
+                          status === 'definite' ? '#7b8a3e' :
+                          status === 'prospect' ? '#c49a3c' :
+                          status === 'tentative' ? '#5a8fb4' :
+                          status === 'cancelled' ? '#b05a5a' : '#8a7d6b'
+                      }}
+                    />
+
+                    {/* Event info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{event.summary}</p>
+                      {event.location && (
+                        <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5 truncate">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          {event.location}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Time */}
+                    <div className="flex-shrink-0 text-right">
+                      <span className="text-xs text-zinc-400">
+                        {format(eventDate, 'h:mm a')}
+                      </span>
+                      {today && (
+                        <Badge className="ml-2 bg-[#c49a3c] text-black text-[9px] font-bold px-1.5 py-0">
+                          TODAY
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         {/* Client Templates Section */}
         <div className="max-w-5xl mx-auto mt-10 space-y-6">
           <h2 className="text-xl font-semibold text-white mb-4">Client Templates</h2>
