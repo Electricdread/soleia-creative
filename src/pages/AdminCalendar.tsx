@@ -22,6 +22,12 @@ interface CalendarEvent {
   status: string;
 }
 
+interface ProposalInfo {
+  status: string;
+  event_name: string;
+  client_name: string;
+}
+
 export default function AdminCalendar() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading: authLoading } = useAuth();
@@ -34,6 +40,7 @@ export default function AdminCalendar() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
+  const [proposalsByEvent, setProposalsByEvent] = useState<Record<string, ProposalInfo[]>>({});
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
@@ -51,6 +58,7 @@ export default function AdminCalendar() {
     if (!authLoading && isAdmin) {
       fetchEvents();
       fetchMetadata();
+      fetchProposalAssociations();
     }
   }, [authLoading, isAdmin]);
 
@@ -80,6 +88,32 @@ export default function AdminCalendar() {
       data.forEach((m) => { if (m.status_override) map[m.event_uid] = m.status_override as EventStatus; });
       setStatusOverrides(map);
     }
+  };
+
+  const fetchProposalAssociations = async () => {
+    const { data: assocs } = await supabase
+      .from('calendar_event_associations')
+      .select('event_uid, entity_id')
+      .eq('entity_type', 'proposal');
+    if (!assocs || assocs.length === 0) return;
+
+    const proposalIds = [...new Set(assocs.map((a) => a.entity_id))];
+    const { data: proposals } = await supabase
+      .from('proposals')
+      .select('id, status, event_name, client_name')
+      .in('id', proposalIds);
+
+    if (!proposals) return;
+    const proposalMap = new Map(proposals.map((p) => [p.id, p]));
+    const result: Record<string, ProposalInfo[]> = {};
+    for (const a of assocs) {
+      const p = proposalMap.get(a.entity_id);
+      if (p) {
+        if (!result[a.event_uid]) result[a.event_uid] = [];
+        result[a.event_uid].push({ status: p.status, event_name: p.event_name, client_name: p.client_name });
+      }
+    }
+    setProposalsByEvent(result);
   };
 
   const handleStatusChange = async (uid: string, status: EventStatus) => {
@@ -234,17 +268,31 @@ export default function AdminCalendar() {
                             {dayEvents.slice(0, 3).map((event) => {
                               const status = getEventStatus(event);
                               const colors = getStatusBarColor(status);
+                              const proposals = proposalsByEvent[event.uid];
                               return (
                                 <button
                                   key={event.uid}
                                   onClick={() => setSelectedEvent(event)}
-                                  className={`${colors.bg} border ${colors.border} rounded px-1 sm:px-1.5 py-1 sm:py-0.5 truncate text-left active:scale-[0.97] transition-transform min-h-[28px] sm:min-h-0`}
+                                  className={`${colors.bg} border ${colors.border} rounded px-1 sm:px-1.5 py-1 sm:py-0.5 text-left active:scale-[0.97] transition-transform min-h-[28px] sm:min-h-0 flex items-center gap-1`}
                                   title={event.summary}
                                 >
-                                  <span className={`text-[10px] sm:text-[11px] font-medium ${colors.text} leading-tight`}>
+                                  <span className={`text-[10px] sm:text-[11px] font-medium ${colors.text} leading-tight truncate`}>
                                     {(() => { try { return format(parseISO(event.dtstart), 'h:mma').toLowerCase(); } catch { return ''; } })()}{' '}
                                     {event.summary}
                                   </span>
+                                  {proposals && proposals.map((p, i) => (
+                                    <span
+                                      key={i}
+                                      className={`shrink-0 hidden sm:inline-flex items-center rounded-full px-1.5 py-0 text-[8px] font-semibold leading-tight ${
+                                        p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                                        p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                        'bg-zinc-100 text-zinc-500 border border-zinc-200'
+                                      }`}
+                                      title={`Proposal: ${p.status}`}
+                                    >
+                                      {p.status === 'signed' ? '✓ Signed' : p.status === 'sent' ? '📩 Sent' : p.status}
+                                    </span>
+                                  ))}
                                 </button>
                               );
                             })}
@@ -269,6 +317,7 @@ export default function AdminCalendar() {
                     statusOverride={statusOverrides[selectedEvent.uid]}
                     onClose={() => setSelectedEvent(null)}
                     onStatusChange={handleStatusChange}
+                    proposalStatuses={proposalsByEvent[selectedEvent.uid]}
                   />
                 </div>
               </div>
