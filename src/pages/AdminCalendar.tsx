@@ -317,6 +317,7 @@ export default function AdminCalendar() {
                     statusOverride={statusOverrides[selectedEvent.uid]}
                     onClose={() => setSelectedEvent(null)}
                     onStatusChange={handleStatusChange}
+                    proposalStatuses={proposalsByEvent[selectedEvent.uid]}
                   />
                 </div>
               </div>
