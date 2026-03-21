@@ -14,12 +14,12 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Source Sans 3', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['DM Serif Display', 'Georgia', 'serif'],
         logo: ['Montserrat', 'ui-sans-serif', 'sans-serif'],
         'logo-alt': ['Montserrat', 'ui-sans-serif', 'sans-serif'],
-        mono: ['Source Code Pro', 'ui-monospace', 'monospace'],
-        tech: ['Source Code Pro', 'ui-monospace', 'monospace'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        tech: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
