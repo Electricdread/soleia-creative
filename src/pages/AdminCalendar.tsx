@@ -5,10 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, ArrowLeft, Calendar as CalendarIcon, MapPin, Clock, Save, ChevronLeft, ChevronRight, Settings2 } from 'lucide-react';
+import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Settings2, Save, MapPin, Clock, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay, parseISO } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, getDay, parseISO, startOfWeek, endOfWeek } from 'date-fns';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 interface CalendarEvent {
@@ -31,12 +30,12 @@ export default function AdminCalendar() {
   const [showSettings, setShowSettings] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
   }, [user, authLoading, navigate]);
 
-  // Load saved iCal URL
   useEffect(() => {
     if (!authLoading && isAdmin) {
       supabase
@@ -50,7 +49,6 @@ export default function AdminCalendar() {
     }
   }, [authLoading, isAdmin]);
 
-  // Fetch events
   useEffect(() => {
     if (!authLoading && isAdmin) fetchEvents();
   }, [authLoading, isAdmin]);
@@ -70,9 +68,7 @@ export default function AdminCalendar() {
       );
       const data = await res.json();
       if (data.events) setEvents(data.events);
-      if (data.error && data.events?.length === 0) {
-        setShowSettings(true);
-      }
+      if (data.error && data.events?.length === 0) setShowSettings(true);
     } catch (e) {
       console.error('Failed to fetch events:', e);
     }
@@ -84,7 +80,6 @@ export default function AdminCalendar() {
     const { error } = await supabase
       .from('site_settings')
       .upsert({ key: 'tripleseat_ical_url', value: icalUrl }, { onConflict: 'key' });
-
     if (error) {
       toast.error('Failed to save iCal URL');
     } else {
@@ -95,27 +90,32 @@ export default function AdminCalendar() {
     setSavingUrl(false);
   };
 
-  // Calendar grid helpers
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  const startDayOfWeek = getDay(monthStart); // 0=Sun
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const getEventsForDate = (date: Date) =>
     events.filter((e) => {
-      try {
-        return isSameDay(parseISO(e.dtstart), date);
-      } catch {
-        return false;
-      }
+      try { return isSameDay(parseISO(e.dtstart), date); } catch { return false; }
     });
 
   const selectedEvents = selectedDate ? getEventsForDate(selectedDate) : [];
 
+  const goToToday = () => {
+    setCurrentMonth(new Date());
+    setSelectedDate(new Date());
+  };
+
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const currentYear = currentMonth.getFullYear();
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -123,56 +123,41 @@ export default function AdminCalendar() {
   if (!user || !isAdmin) return null;
 
   return (
-    <div className="relative min-h-screen bg-black">
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-zinc-900 to-black z-0" />
-      <div
-        className="fixed inset-0 z-[1] opacity-5 pointer-events-none"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '50px 50px',
-        }}
-      />
-
+    <div className="min-h-screen bg-[#f9f7f4] font-sans">
       {/* Header */}
-      <header className="relative z-10 border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="border-b border-[#e0d8cc] bg-white">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-zinc-400 hover:text-white">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-[#8a7d6b] hover:text-[#5a4f3f] hover:bg-[#f0ebe3]">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
               </Button>
-              <img src={soleiaLogo} alt="Soleia" className="h-8 w-auto object-contain hidden sm:block" />
+              <div className="h-5 w-px bg-[#d6cfc3]" />
+              <img src={soleiaLogo} alt="Soleia" className="h-7 w-auto object-contain hidden sm:block" />
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)} className="text-zinc-400 hover:text-white">
+            <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)} className="text-[#8a7d6b] hover:text-[#5a4f3f] hover:bg-[#f0ebe3]">
               <Settings2 className="w-4 h-4 mr-2" /> Settings
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 flex items-center gap-3">
-          <CalendarIcon className="w-7 h-7 text-amber-400" />
-          Event Calendar
-        </h1>
-
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Settings Panel */}
         {showSettings && (
-          <Card className="mb-6 bg-zinc-900/80 border-zinc-700">
+          <Card className="mb-6 bg-white border-[#e0d8cc]">
             <CardHeader>
-              <CardTitle className="text-white text-lg">Triple Seat iCal Feed</CardTitle>
-              <CardDescription className="text-zinc-400">
-                Paste your Triple Seat calendar export URL to sync events
-              </CardDescription>
+              <CardTitle className="text-[#3d3629] text-lg font-semibold">Triple Seat iCal Feed</CardTitle>
+              <CardDescription className="text-[#8a7d6b]">Paste your Triple Seat calendar export URL to sync events</CardDescription>
             </CardHeader>
             <CardContent className="flex gap-3">
               <Input
                 value={icalUrl}
                 onChange={(e) => setIcalUrl(e.target.value)}
                 placeholder="https://app.tripleseat.com/calendar/feed/..."
-                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 flex-1"
+                className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] placeholder:text-[#b5ab9a] flex-1"
               />
-              <Button onClick={saveIcalUrl} disabled={savingUrl} className="gap-2">
+              <Button onClick={saveIcalUrl} disabled={savingUrl} className="gap-2 bg-[#c49a3c] hover:bg-[#b08a30] text-white">
                 {savingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Save
               </Button>
@@ -182,101 +167,146 @@ export default function AdminCalendar() {
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#c49a3c]" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Calendar Grid */}
-            <div className="lg:col-span-2">
-              <Card className="bg-zinc-900/80 border-zinc-700">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="text-zinc-400 hover:text-white">
-                      <ChevronLeft className="w-5 h-5" />
-                    </Button>
-                    <h2 className="text-lg font-semibold text-white">
-                      {format(currentMonth, 'MMMM yyyy')}
-                    </h2>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="text-zinc-400 hover:text-white">
-                      <ChevronRight className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {/* Day headers */}
-                  <div className="grid grid-cols-7 gap-1 mb-2">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-                      <div key={d} className="text-center text-xs font-medium text-zinc-500 py-2">{d}</div>
-                    ))}
-                  </div>
+          <div className="flex flex-col gap-6">
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} variant="outline" className="border-[#d6cfc3] text-[#5a4f3f] hover:bg-[#f0ebe3] text-sm">
+                  <ChevronLeft className="w-4 h-4 mr-1" /> Previous Month
+                </Button>
+              </div>
 
-                  {/* Day cells */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {/* Empty cells for offset */}
-                    {Array.from({ length: startDayOfWeek }).map((_, i) => (
-                      <div key={`empty-${i}`} className="aspect-square" />
-                    ))}
-                    {daysInMonth.map((day) => {
-                      const dayEvents = getEventsForDate(day);
-                      const isToday = isSameDay(day, new Date());
-                      const isSelected = selectedDate && isSameDay(day, selectedDate);
+              <div className="flex items-center gap-2">
+                <select
+                  value={currentMonth.getMonth()}
+                  onChange={(e) => setCurrentMonth(new Date(currentMonth.getFullYear(), parseInt(e.target.value), 1))}
+                  className="border border-[#d6cfc3] rounded-md px-3 py-1.5 text-sm text-[#3d3629] bg-white focus:outline-none focus:ring-2 focus:ring-[#c49a3c]/30"
+                >
+                  {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                </select>
+                <select
+                  value={currentMonth.getFullYear()}
+                  onChange={(e) => setCurrentMonth(new Date(parseInt(e.target.value), currentMonth.getMonth(), 1))}
+                  className="border border-[#d6cfc3] rounded-md px-3 py-1.5 text-sm text-[#3d3629] bg-white focus:outline-none focus:ring-2 focus:ring-[#c49a3c]/30"
+                >
+                  {years.map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
+                <Button size="sm" onClick={goToToday} className="bg-[#c49a3c] hover:bg-[#b08a30] text-white text-sm px-4">
+                  Today
+                </Button>
+              </div>
 
-                      return (
-                        <button
-                          key={day.toISOString()}
-                          onClick={() => setSelectedDate(day)}
-                          className={`aspect-square rounded-lg p-1 text-sm flex flex-col items-center justify-start transition-colors relative
-                            ${isToday ? 'ring-1 ring-amber-500/50' : ''}
-                            ${isSelected ? 'bg-amber-500/20 border border-amber-500/40' : 'hover:bg-zinc-800/60'}
-                          `}
-                        >
-                          <span className={`text-xs font-medium ${isToday ? 'text-amber-400' : 'text-zinc-300'}`}>
-                            {format(day, 'd')}
-                          </span>
-                          {dayEvents.length > 0 && (
-                            <div className="flex gap-0.5 mt-1 flex-wrap justify-center">
-                              {dayEvents.slice(0, 3).map((_, i) => (
-                                <div key={i} className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                              ))}
-                              {dayEvents.length > 3 && (
-                                <span className="text-[10px] text-amber-400">+{dayEvents.length - 3}</span>
-                              )}
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} variant="outline" className="border-[#d6cfc3] text-[#5a4f3f] hover:bg-[#f0ebe3] text-sm">
+                  Next Month <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
             </div>
 
-            {/* Event Detail Sidebar */}
-            <div className="space-y-4">
-              <Card className="bg-zinc-900/80 border-zinc-700">
+            {/* Search */}
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b5ab9a]" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by Name..."
+                  className="pl-9 bg-white border-[#d6cfc3] text-[#3d3629] placeholder:text-[#b5ab9a] text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="bg-white border border-[#d6cfc3] rounded-lg overflow-hidden">
+              {/* Day headers */}
+              <div className="grid grid-cols-7 border-b border-[#d6cfc3]">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+                  <div key={d} className="text-center text-sm font-semibold text-[#5a4f3f] py-2.5 border-r border-[#e8e2d8] last:border-r-0 bg-[#faf8f5]">
+                    {d}
+                  </div>
+                ))}
+              </div>
+
+              {/* Day cells */}
+              <div className="grid grid-cols-7">
+                {calendarDays.map((day, idx) => {
+                  const dayEvents = getEventsForDate(day).filter(
+                    (e) => !searchQuery || e.summary.toLowerCase().includes(searchQuery.toLowerCase())
+                  );
+                  const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+                  const isToday = isSameDay(day, new Date());
+                  const isSelected = selectedDate && isSameDay(day, selectedDate);
+                  const row = Math.floor(idx / 7);
+                  const isLastRow = row === Math.floor((calendarDays.length - 1) / 7);
+
+                  return (
+                    <button
+                      key={day.toISOString()}
+                      onClick={() => setSelectedDate(day)}
+                      className={`min-h-[100px] border-r border-b border-[#e8e2d8] last:border-r-0 p-1.5 text-left transition-colors flex flex-col
+                        ${isLastRow ? 'border-b-0' : ''}
+                        ${idx % 7 === 6 ? 'border-r-0' : ''}
+                        ${!isCurrentMonth ? 'bg-[#faf8f5]' : 'bg-white'}
+                        ${isSelected ? 'bg-[#f5efe5] ring-1 ring-inset ring-[#c49a3c]/40' : 'hover:bg-[#faf8f5]'}
+                      `}
+                    >
+                      {/* Date number + dot */}
+                      <div className="flex items-center justify-between w-full mb-1">
+                        <div className={`w-2 h-2 rounded-full ${dayEvents.length > 0 ? 'bg-[#d4a843]' : 'bg-[#d6cfc3]/60'}`} />
+                        <span className={`text-sm font-medium ${isToday ? 'bg-[#c49a3c] text-white w-6 h-6 rounded-full flex items-center justify-center' : !isCurrentMonth ? 'text-[#c4bba8]' : 'text-[#5a4f3f]'}`}>
+                          {format(day, 'd')}
+                        </span>
+                      </div>
+
+                      {/* Event bars */}
+                      <div className="flex flex-col gap-0.5 w-full overflow-hidden flex-1">
+                        {dayEvents.slice(0, 3).map((event) => (
+                          <div
+                            key={event.uid}
+                            className="bg-[#d5d6a8]/60 border border-[#c4c590]/50 rounded px-1.5 py-0.5 truncate"
+                            title={event.summary}
+                          >
+                            <span className="text-[11px] font-medium text-[#4a4b2e] leading-tight">
+                              {(() => {
+                                try { return format(parseISO(event.dtstart), 'h:mma').toLowerCase(); } catch { return ''; }
+                              })()}{' '}
+                              {event.summary}
+                            </span>
+                          </div>
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <span className="text-[10px] text-[#8a7d6b] pl-1">+{dayEvents.length - 3} more</span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selected date detail */}
+            {selectedDate && selectedEvents.length > 0 && (
+              <Card className="bg-white border-[#e0d8cc]">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-white text-base">
-                    {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}
+                  <CardTitle className="text-[#3d3629] text-base font-semibold">
+                    {format(selectedDate, 'EEEE, MMMM d, yyyy')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {!selectedDate && (
-                    <p className="text-zinc-500 text-sm">Click a date to see events</p>
-                  )}
-                  {selectedDate && selectedEvents.length === 0 && (
-                    <p className="text-zinc-500 text-sm">No events on this day</p>
-                  )}
                   {selectedEvents.map((event) => (
-                    <div key={event.uid} className="bg-zinc-800/60 border border-zinc-700 rounded-lg p-4 space-y-2">
-                      <h3 className="text-white font-medium text-sm">{event.summary}</h3>
+                    <div key={event.uid} className="bg-[#faf8f5] border border-[#e8e2d8] rounded-lg p-4 space-y-2">
+                      <h3 className="text-[#3d3629] font-semibold text-sm">{event.summary}</h3>
                       {event.location && (
-                        <div className="flex items-center gap-2 text-zinc-400 text-xs">
+                        <div className="flex items-center gap-2 text-[#8a7d6b] text-xs">
                           <MapPin className="w-3.5 h-3.5 shrink-0" />
                           <span>{event.location}</span>
                         </div>
                       )}
                       {event.dtstart && (
-                        <div className="flex items-center gap-2 text-zinc-400 text-xs">
+                        <div className="flex items-center gap-2 text-[#8a7d6b] text-xs">
                           <Clock className="w-3.5 h-3.5 shrink-0" />
                           <span>
                             {(() => {
@@ -284,67 +314,19 @@ export default function AdminCalendar() {
                                 const start = parseISO(event.dtstart);
                                 const end = event.dtend ? parseISO(event.dtend) : null;
                                 return `${format(start, 'h:mm a')}${end ? ` – ${format(end, 'h:mm a')}` : ''}`;
-                              } catch {
-                                return event.dtstart;
-                              }
+                              } catch { return event.dtstart; }
                             })()}
                           </span>
                         </div>
                       )}
-                      {event.status && (
-                        <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
-                          {event.status}
-                        </Badge>
-                      )}
                       {event.description && (
-                        <p className="text-zinc-500 text-xs whitespace-pre-line line-clamp-4 mt-1">
-                          {event.description}
-                        </p>
+                        <p className="text-[#8a7d6b] text-xs whitespace-pre-line line-clamp-4 mt-1">{event.description}</p>
                       )}
                     </div>
                   ))}
                 </CardContent>
               </Card>
-
-              {/* Upcoming Events */}
-              <Card className="bg-zinc-900/80 border-zinc-700">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-white text-base">Upcoming Events</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {events
-                    .filter((e) => {
-                      try { return parseISO(e.dtstart) >= new Date(); } catch { return false; }
-                    })
-                    .slice(0, 5)
-                    .map((event) => (
-                      <button
-                        key={event.uid}
-                        onClick={() => {
-                          try {
-                            const d = parseISO(event.dtstart);
-                            setCurrentMonth(d);
-                            setSelectedDate(d);
-                          } catch {}
-                        }}
-                        className="w-full text-left bg-zinc-800/40 hover:bg-zinc-800/80 rounded-lg p-3 transition-colors"
-                      >
-                        <p className="text-white text-sm font-medium truncate">{event.summary}</p>
-                        <p className="text-zinc-500 text-xs mt-0.5">
-                          {(() => {
-                            try { return format(parseISO(event.dtstart), 'MMM d, h:mm a'); } catch { return event.dtstart; }
-                          })()}
-                        </p>
-                      </button>
-                    ))}
-                  {events.filter((e) => {
-                    try { return parseISO(e.dtstart) >= new Date(); } catch { return false; }
-                  }).length === 0 && (
-                    <p className="text-zinc-500 text-sm">No upcoming events</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+            )}
           </div>
         )}
       </main>
