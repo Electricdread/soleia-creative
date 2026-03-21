@@ -23,11 +23,18 @@ interface CalendarEvent {
   status: string;
 }
 
+interface ProposalStatusInfo {
+  status: string;
+  event_name: string;
+  client_name: string;
+}
+
 interface EventDetailPanelProps {
   event: CalendarEvent;
   statusOverride?: EventStatus;
   onClose: () => void;
   onStatusChange: (uid: string, status: EventStatus) => void;
+  proposalStatuses?: ProposalStatusInfo[];
 }
 
 export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange }: EventDetailPanelProps) {
