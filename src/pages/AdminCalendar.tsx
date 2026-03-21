@@ -40,6 +40,7 @@ export default function AdminCalendar() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
+  const [proposalsByEvent, setProposalsByEvent] = useState<Record<string, ProposalInfo[]>>({});
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
