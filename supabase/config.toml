@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.notify-proposal-signed]
 verify_jwt = false
+
+[functions.fetch-ical]
+verify_jwt = false

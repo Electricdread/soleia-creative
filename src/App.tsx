@@ -20,6 +20,7 @@ import AdminCreative from "./pages/AdminCreative";
 import AdminLooks from "./pages/AdminLooks";
 import AdminUsers from "./pages/AdminUsers";
 import AdminProposals from "./pages/AdminProposals";
+import AdminCalendar from "./pages/AdminCalendar";
 import ClientProposal from "./pages/ClientProposal";
 import OfficePortal from "./pages/OfficePortal";
 import Tutorial from "./pages/Tutorial";
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/admin/looks" element={<ProtectedRoute requireAdmin><AdminLooks /></ProtectedRoute>} />
               <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
               <Route path="/admin/proposals" element={<ProtectedRoute requireAdmin><AdminProposals /></ProtectedRoute>} />
+              <Route path="/admin/calendar" element={<ProtectedRoute requireAdmin><AdminCalendar /></ProtectedRoute>} />
               
               {/* Public Proposal Page */}
               <Route path="/proposal/:token" element={<ClientProposal />} />
