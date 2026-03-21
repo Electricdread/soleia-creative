@@ -90,6 +90,32 @@ export default function AdminCalendar() {
     }
   };
 
+  const fetchProposalAssociations = async () => {
+    const { data: assocs } = await supabase
+      .from('calendar_event_associations')
+      .select('event_uid, entity_id')
+      .eq('entity_type', 'proposal');
+    if (!assocs || assocs.length === 0) return;
+
+    const proposalIds = [...new Set(assocs.map((a) => a.entity_id))];
+    const { data: proposals } = await supabase
+      .from('proposals')
+      .select('id, status, event_name, client_name')
+      .in('id', proposalIds);
+
+    if (!proposals) return;
+    const proposalMap = new Map(proposals.map((p) => [p.id, p]));
+    const result: Record<string, ProposalInfo[]> = {};
+    for (const a of assocs) {
+      const p = proposalMap.get(a.entity_id);
+      if (p) {
+        if (!result[a.event_uid]) result[a.event_uid] = [];
+        result[a.event_uid].push({ status: p.status, event_name: p.event_name, client_name: p.client_name });
+      }
+    }
+    setProposalsByEvent(result);
+  };
+
   const handleStatusChange = async (uid: string, status: EventStatus) => {
     setStatusOverrides((prev) => ({ ...prev, [uid]: status }));
     const { error } = await supabase.from('calendar_event_metadata').upsert(
