@@ -308,14 +308,106 @@ export default function AdminPortal() {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-            Admin Portal
-          </h1>
-          <p className="text-zinc-400 text-lg">
-            Select a platform to manage
-          </p>
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+        {/* This Week's Events Dashboard — Hero Header */}
+        <div className="max-w-5xl mx-auto mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#c49a3c]" />
+              <h1 className="text-xl sm:text-2xl font-bold text-white">This Week</h1>
+              <span className="text-sm text-zinc-500 hidden sm:inline">
+                {format(startOfWeek(new Date()), 'MMM d')} – {format(endOfWeek(new Date()), 'MMM d')}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/admin/calendar')}
+              className="text-[#c49a3c] hover:text-[#d4aa4c] hover:bg-zinc-800 gap-1"
+            >
+              View Calendar
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+
+          {eventsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+            </div>
+          ) : weekEvents.length === 0 ? (
+            <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-6 text-center">
+              <p className="text-zinc-500 text-sm">No events this week</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {weekEvents.map((event) => {
+                const status = getEventStatus(event);
+                const statusColors = getStatusBarColor(status);
+                const eventDate = parseISO(event.dtstart);
+                const today = isToday(eventDate);
+
+                return (
+                  <button
+                    key={event.uid}
+                    onClick={() => navigate('/admin/calendar')}
+                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl border transition-all text-left hover:scale-[1.01] touch-manipulation ${
+                      today
+                        ? 'bg-[#c49a3c]/10 border-[#c49a3c]/30 hover:border-[#c49a3c]/50'
+                        : 'bg-zinc-900/80 border-zinc-800 hover:border-zinc-600'
+                    }`}
+                  >
+                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex flex-col items-center justify-center ${
+                      today ? 'bg-[#c49a3c]/20' : 'bg-zinc-800'
+                    }`}>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${today ? 'text-[#c49a3c]' : 'text-zinc-500'}`}>
+                        {format(eventDate, 'EEE')}
+                      </span>
+                      <span className={`text-lg font-bold leading-none ${today ? 'text-[#c49a3c]' : 'text-white'}`}>
+                        {format(eventDate, 'd')}
+                      </span>
+                    </div>
+                    <div className="w-1 h-10 rounded-full flex-shrink-0"
+                      style={{
+                        backgroundColor:
+                          status === 'definite' ? '#7b8a3e' :
+                          status === 'prospect' ? '#c49a3c' :
+                          status === 'tentative' ? '#5a8fb4' :
+                          status === 'cancelled' ? '#b05a5a' : '#8a7d6b'
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{event.summary}</p>
+                      {event.location && (
+                        <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5 truncate">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          {event.location}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <span className="text-xs text-zinc-400">
+                        {format(eventDate, 'h:mm a')}
+                      </span>
+                      {today && (
+                        <Badge className="ml-2 bg-[#c49a3c] text-black text-[9px] font-bold px-1.5 py-0">
+                          TODAY
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Section divider */}
+        <div className="max-w-5xl mx-auto mb-6">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-zinc-400">Platforms</h2>
+            <div className="flex-1 h-px bg-zinc-800" />
+          </div>
         </div>
 
         {/* Portal Cards Grid */}
