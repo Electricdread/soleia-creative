@@ -73,6 +73,9 @@ export default function AdminPortal() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading, signOut } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
+  const [weekEvents, setWeekEvents] = useState<{ uid: string; summary: string; dtstart: string; dtend: string; location: string; status: string }[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -102,6 +105,57 @@ export default function AdminPortal() {
       fetchPending();
     }
   }, [isLoading, isAdmin]);
+
+  // Fetch this week's calendar events
+  useEffect(() => {
+    if (!isLoading && isAdmin) {
+      const fetchWeekEvents = async () => {
+        setEventsLoading(true);
+        try {
+          const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+          const res = await fetch(`https://${projectId}.supabase.co/functions/v1/fetch-ical`, {
+            headers: {
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          const data = await res.json();
+          if (data.events) {
+            const now = new Date();
+            const weekStart = startOfWeek(now);
+            const weekEnd = endOfWeek(now);
+            const thisWeek = data.events.filter((e: any) => {
+              try {
+                const d = parseISO(e.dtstart);
+                return isWithinInterval(d, { start: weekStart, end: weekEnd });
+              } catch { return false; }
+            }).sort((a: any, b: any) => new Date(a.dtstart).getTime() - new Date(b.dtstart).getTime());
+            setWeekEvents(thisWeek);
+          }
+          // Fetch status overrides
+          const { data: meta } = await supabase.from('calendar_event_metadata').select('event_uid, status_override');
+          if (meta) {
+            const map: Record<string, EventStatus> = {};
+            meta.forEach((m) => { if (m.status_override) map[m.event_uid] = m.status_override as EventStatus; });
+            setStatusOverrides(map);
+          }
+        } catch (e) {
+          console.error('Failed to fetch week events:', e);
+        }
+        setEventsLoading(false);
+      };
+      fetchWeekEvents();
+    }
+  }, [isLoading, isAdmin]);
+
+  const getEventStatus = (event: { uid: string; status: string }): EventStatus => {
+    if (statusOverrides[event.uid]) return statusOverrides[event.uid];
+    const s = event.status.toLowerCase();
+    if (s.includes('confirm') || s.includes('definite')) return 'definite';
+    if (s.includes('tentative')) return 'tentative';
+    if (s.includes('cancel')) return 'cancelled';
+    return 'prospect';
+  };
 
   const handleSignOut = async () => {
     await signOut();
