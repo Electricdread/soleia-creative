@@ -62,6 +62,30 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_event_associations: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          event_uid: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          event_uid: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          event_uid?: string
+          id?: string
+        }
+        Relationships: []
+      }
       calendar_event_attachments: {
         Row: {
           created_at: string
@@ -92,6 +116,99 @@ export type Database = {
           file_type?: string
           file_url?: string
           id?: string
+        }
+        Relationships: []
+      }
+      calendar_event_circleback: {
+        Row: {
+          circleback_summary: string | null
+          circleback_url: string | null
+          created_at: string
+          event_uid: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          circleback_summary?: string | null
+          circleback_url?: string | null
+          created_at?: string
+          event_uid: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          circleback_summary?: string | null
+          circleback_url?: string | null
+          created_at?: string
+          event_uid?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      calendar_event_client_info: {
+        Row: {
+          client_contact_email: string | null
+          client_contact_name: string | null
+          client_contact_phone: string | null
+          content_deadline: string | null
+          created_at: string
+          deadline_notes: string | null
+          event_uid: string
+          id: string
+          loading_fee_notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_contact_email?: string | null
+          client_contact_name?: string | null
+          client_contact_phone?: string | null
+          content_deadline?: string | null
+          created_at?: string
+          deadline_notes?: string | null
+          event_uid: string
+          id?: string
+          loading_fee_notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_contact_email?: string | null
+          client_contact_name?: string | null
+          client_contact_phone?: string | null
+          content_deadline?: string | null
+          created_at?: string
+          deadline_notes?: string | null
+          event_uid?: string
+          id?: string
+          loading_fee_notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      calendar_event_meeting_links: {
+        Row: {
+          created_at: string
+          event_uid: string
+          id: string
+          label: string
+          link_type: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          event_uid: string
+          id?: string
+          label: string
+          link_type?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          event_uid?: string
+          id?: string
+          label?: string
+          link_type?: string
+          url?: string
         }
         Relationships: []
       }
