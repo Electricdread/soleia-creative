@@ -1,5 +1,5 @@
 import { format, parseISO } from 'date-fns';
-import { X, MapPin, Clock, Calendar as CalendarIcon } from 'lucide-react';
+import { X, MapPin, Clock, Calendar as CalendarIcon, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
