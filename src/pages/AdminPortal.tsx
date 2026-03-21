@@ -54,6 +54,12 @@ const portals: PortalCard[] = [
     href: '/admin/users',
   },
   {
+    title: 'Event Calendar',
+    description: 'View upcoming events synced from Triple Seat',
+    icon: <Calendar className="w-6 h-6 text-zinc-400" />,
+    href: '/admin/calendar',
+  },
+  {
     title: 'Delivery Guides',
     description: 'Session-based content delivery guides with asset upload links',
     icon: <Send className="w-6 h-6 text-zinc-400" />,
