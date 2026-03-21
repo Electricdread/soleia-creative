@@ -38,7 +38,7 @@ const portals: PortalCard[] = [
   {
     title: 'Content Previz',
     description: 'Per-client video previews for content review and approval',
-    icon: <Video className="w-6 h-6 text-zinc-400" />,
+    icon: <Video className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/looks',
   },
   {
