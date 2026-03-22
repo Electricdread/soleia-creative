@@ -16,10 +16,6 @@ interface ScrapedEventData {
   venue_phone: string;
   managers: { name: string; email: string }[];
   recent_activity: { description: string; time_ago: string; by: string }[];
-  signed_documents: { title: string; signed_on: string }[];
-  payments: { amount: string; due: string; status: string; method: string; title: string }[];
-  grand_total: string;
-  total_outstanding: string;
 }
 
 function parseEventPage(markdown: string): ScrapedEventData {
