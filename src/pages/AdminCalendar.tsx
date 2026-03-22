@@ -313,6 +313,7 @@ export default function AdminCalendar() {
               <div className="lg:w-[420px] shrink-0">
                 <div className="lg:sticky lg:top-6">
                   <EventDetailPanel
+                    key={selectedEvent.uid}
                     event={selectedEvent}
                     statusOverride={statusOverrides[selectedEvent.uid]}
                     onClose={() => setSelectedEvent(null)}
