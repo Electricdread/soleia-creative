@@ -56,6 +56,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [editCreativeNotes, setEditCreativeNotes] = useState(session.creative_notes || '');
   const [editTechnicalNotes, setEditTechnicalNotes] = useState(session.technical_notes || '');
   const [editDropboxUrl, setEditDropboxUrl] = useState((session as any).dropbox_url || '');
+  const [editEventDate, setEditEventDate] = useState(session.event_date || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePublicToggle = async (checked: boolean) => {
