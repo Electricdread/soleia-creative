@@ -341,6 +341,15 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                 </div>
               </div>
               <div className="space-y-1.5">
+                <Label className="text-xs">Event Date</Label>
+                <Input
+                  type="date"
+                  value={editEventDate}
+                  onChange={(e) => setEditEventDate(e.target.value)}
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
                 <Label className="text-xs">Creative Notes</Label>
                 <Textarea
                   value={editCreativeNotes}
