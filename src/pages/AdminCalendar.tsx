@@ -41,6 +41,7 @@ export default function AdminCalendar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
   const [proposalsByEvent, setProposalsByEvent] = useState<Record<string, ProposalInfo[]>>({});
+  const [deadlinesByEvent, setDeadlinesByEvent] = useState<Record<string, { content_deadline: string; reminder_days: number }>>({});
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
