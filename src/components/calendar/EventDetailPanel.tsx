@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EventNotes } from './EventNotes';
+import { EventTripleseatDetails } from './EventTripleseatDetails';
 import { EventTasks } from './EventTasks';
 import { EventAttachments } from './EventAttachments';
 import { EventMeetingLinks } from './EventMeetingLinks';
