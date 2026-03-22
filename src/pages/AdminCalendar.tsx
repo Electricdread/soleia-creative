@@ -60,6 +60,7 @@ export default function AdminCalendar() {
       fetchEvents();
       fetchMetadata();
       fetchProposalAssociations();
+      fetchDeadlines();
     }
   }, [authLoading, isAdmin]);
 
