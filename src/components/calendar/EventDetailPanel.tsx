@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { X, MapPin, Clock, Calendar as CalendarIcon, FileText, User, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -36,10 +36,12 @@ interface EventDetailPanelProps {
   onClose: () => void;
   onStatusChange: (uid: string, status: EventStatus) => void;
   proposalStatuses?: ProposalStatusInfo[];
+  deadlineInfo?: { content_deadline: string; reminder_days: number } | null;
 }
 
-export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses }: EventDetailPanelProps) {
+export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses, deadlineInfo }: EventDetailPanelProps) {
   const displayStatus = statusOverride || mapIcalStatus(event.status);
+  const daysUntilDeadline = deadlineInfo ? differenceInCalendarDays(new Date(deadlineInfo.content_deadline), new Date()) : null;
 
   let startFormatted = '';
   let endFormatted = '';
@@ -74,6 +76,16 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
               </select>
             </div>
             <h2 className="text-lg font-semibold text-[#3d3629] truncate">{event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '')}</h2>
+            {daysUntilDeadline !== null && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold mt-1 w-fit ${
+                daysUntilDeadline < 0 ? 'bg-red-100 text-red-700 border border-red-200' :
+                daysUntilDeadline <= 3 ? 'bg-red-50 text-red-600 border border-red-200' :
+                daysUntilDeadline <= 7 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                'bg-[#f0f5e8] text-[#5a6b30] border border-[#c8d8a8]'
+              }`}>
+                {daysUntilDeadline < 0 ? '⚠️' : '📅'} Content deadline: {daysUntilDeadline < 0 ? `${Math.abs(daysUntilDeadline)}d overdue` : daysUntilDeadline === 0 ? 'Due today' : `${daysUntilDeadline}d left`}
+              </span>
+            )}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-[#8a7d6b]">
               {dateFormatted && (
                 <span className="flex items-center gap-1">
