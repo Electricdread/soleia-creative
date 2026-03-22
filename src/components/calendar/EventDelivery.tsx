@@ -27,6 +27,14 @@ export function EventDelivery({ eventUid }: { eventUid: string }) {
 
   useEffect(() => {
     const fetch_ = async () => {
+      // Fetch deadline info
+      const { data: clientInfo } = await supabase
+        .from('calendar_event_client_info')
+        .select('content_deadline, reminder_days, deadline_notes')
+        .eq('event_uid', eventUid)
+        .maybeSingle();
+      if (clientInfo) setDeadlineInfo(clientInfo as any);
+
       // Get associations for delivery-related types
       const { data: assocs } = await supabase
         .from('calendar_event_associations')
