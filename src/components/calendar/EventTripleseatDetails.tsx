@@ -17,9 +17,6 @@ interface ScrapedEventData {
   managers: { name: string; email: string }[];
   recent_activity: { description: string; time_ago: string; by: string }[];
   signed_documents: { title: string; signed_on: string }[];
-  payments: { amount: string; due: string; status: string; method: string; title: string }[];
-  grand_total: string;
-  total_outstanding: string;
 }
 
 export function EventTripleseatDetails({ description, eventUid }: { description: string; eventUid: string }) {
