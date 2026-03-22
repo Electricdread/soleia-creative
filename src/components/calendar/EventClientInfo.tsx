@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, Clock, AlertTriangle } from 'lucide-react';
+import { Loader2, Save, Clock, AlertTriangle, Bell } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, format } from 'date-fns';
 
