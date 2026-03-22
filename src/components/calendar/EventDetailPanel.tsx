@@ -180,6 +180,9 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          <TabsContent value="details" className="p-4 mt-0">
+            <EventTripleseatDetails description={event.description} />
+          </TabsContent>
           <TabsContent value="notes" className="p-4 mt-0">
             <EventNotes eventUid={event.uid} />
           </TabsContent>
