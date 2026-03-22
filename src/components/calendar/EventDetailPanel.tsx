@@ -158,6 +158,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
           <ScrollArea className="w-full">
             <TabsList className="inline-flex h-10 w-max gap-0 bg-transparent p-0">
               {[
+                { value: 'details', label: 'Details' },
                 { value: 'notes', label: 'Notes' },
                 { value: 'tasks', label: 'Tasks' },
                 { value: 'meetings', label: 'Meetings' },
