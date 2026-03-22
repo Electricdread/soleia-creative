@@ -153,7 +153,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="notes" className="flex-1 flex flex-col min-h-0">
+      <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
         <div className="border-b border-[#e8e2d8] bg-[#faf8f5] shrink-0 px-1">
           <ScrollArea className="w-full">
             <TabsList className="inline-flex h-10 w-max gap-0 bg-transparent p-0">
