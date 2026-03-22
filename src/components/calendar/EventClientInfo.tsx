@@ -49,6 +49,7 @@ export function EventClientInfo({ eventUid }: { eventUid: string }) {
           loading_fee_notes: (data as any).loading_fee_notes || '',
           content_deadline: (data as any).content_deadline ? (data as any).content_deadline.slice(0, 10) : '',
           deadline_notes: (data as any).deadline_notes || '',
+          reminder_days: (data as any).reminder_days ?? 7,
         });
       }
 
