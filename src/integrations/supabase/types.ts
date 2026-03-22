@@ -302,33 +302,6 @@ export type Database = {
         }
         Relationships: []
       }
-      calendar_event_tripleseat_cache: {
-        Row: {
-          created_at: string
-          event_uid: string
-          id: string
-          scraped_at: string
-          scraped_data: Json
-          tripleseat_url: string
-        }
-        Insert: {
-          created_at?: string
-          event_uid: string
-          id?: string
-          scraped_at?: string
-          scraped_data?: Json
-          tripleseat_url: string
-        }
-        Update: {
-          created_at?: string
-          event_uid?: string
-          id?: string
-          scraped_at?: string
-          scraped_data?: Json
-          tripleseat_url?: string
-        }
-        Relationships: []
-      }
       client_links: {
         Row: {
           client_name: string
