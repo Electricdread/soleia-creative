@@ -296,9 +296,9 @@ export default function AdminCalendar() {
                                >
                                  <div className="flex flex-col gap-0.5 min-w-0">
                                    <span className={`text-[10px] ${colors.text} opacity-75 font-medium`}>{timeStr}</span>
-                                   <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug line-clamp-2`}>
-                                     {event.summary}
-                                   </span>
+                                    <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug line-clamp-2`}>
+                                      {stripTripleseatPrefix(event.summary)}
+                                    </span>
                                  </div>
                                  {proposals && proposals.length > 0 && (
                                    <div className="flex gap-1 mt-1 flex-wrap">
