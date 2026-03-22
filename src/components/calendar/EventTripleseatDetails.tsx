@@ -268,49 +268,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
         </div>
       )}
 
-      {/* Financials */}
-      {(data.grand_total || hasPayments) && (
-        <div>
-          <div className="flex items-center gap-1.5 mb-2">
-            <DollarSign className="w-3.5 h-3.5 text-[#c49a3c]" />
-            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Financials</span>
-          </div>
-          {data.grand_total && (
-            <div className="bg-[#faf8f5] rounded-lg p-3 border border-[#e8e2d8] mb-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-[#8a7d6b]">Grand Total</span>
-                <span className="text-sm font-bold text-[#3d3629]">{data.grand_total}</span>
-              </div>
-              {data.total_outstanding && (
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-xs text-[#8a7d6b]">Outstanding</span>
-                  <span className={`text-sm font-bold ${data.total_outstanding === '$0.00' ? 'text-emerald-600' : 'text-red-600'}`}>
-                    {data.total_outstanding}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-          {hasPayments && (
-            <div className="space-y-1">
-              {data.payments.map((p, i) => (
-                <div key={i} className="flex items-center justify-between text-[11px] py-1 border-b border-[#f0ebe3] last:border-b-0">
-                  <span className="text-[#3d3629] truncate flex-1 mr-2">{p.title || p.method || 'Payment'}</span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className={`font-medium ${p.status === 'Paid' ? 'text-emerald-600' : 'text-[#3d3629]'}`}>{p.amount}</span>
-                    {p.status && (
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                        p.status === 'Paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-                      }`}>{p.status}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Signed Documents */}
       {hasDocuments && (
         <div>
