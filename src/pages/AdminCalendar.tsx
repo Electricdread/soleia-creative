@@ -369,6 +369,7 @@ export default function AdminCalendar() {
                     onClose={() => setSelectedEvent(null)}
                     onStatusChange={handleStatusChange}
                     proposalStatuses={proposalsByEvent[selectedEvent.uid]}
+                    deadlineInfo={deadlinesByEvent[selectedEvent.uid] || null}
                   />
                 </div>
               </div>
