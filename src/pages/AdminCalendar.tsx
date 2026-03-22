@@ -300,41 +300,51 @@ export default function AdminCalendar() {
                              </span>
                            </div>
                            {dayEvents.length > 0 && (() => {
-                             const event = dayEvents[0];
-                             const status = getEventStatus(event);
-                             const colors = getStatusBarColor(status);
-                             const proposals = proposalsByEvent[event.uid];
-                             const timeStr = (() => { try { return format(parseISO(event.dtstart), 'h:mma').toLowerCase(); } catch { return ''; } })();
-                             return (
-                               <div
-                                 className={`flex-1 mx-1 mb-1 mt-0.5 rounded-md px-1.5 py-1 border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between overflow-hidden`}
-                                 onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
-                               >
-                                 <div className="flex flex-col gap-0.5 min-w-0">
-                                   <span className={`text-[10px] ${colors.text} opacity-75 font-medium`}>{timeStr}</span>
-                                    <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug line-clamp-2`}>
-                                      {stripTripleseatPrefix(event.summary)}
-                                    </span>
-                                 </div>
-                                 {proposals && proposals.length > 0 && (
-                                   <div className="flex gap-1 mt-1 flex-wrap">
-                                     {proposals.map((p, i) => (
-                                       <span
-                                         key={i}
-                                         className={`inline-flex items-center rounded-full px-1.5 py-0 text-[8px] font-semibold leading-tight ${
-                                           p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
-                                           p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                           'bg-zinc-100 text-zinc-500 border border-zinc-200'
-                                         }`}
-                                       >
-                                         {p.status === 'signed' ? '✓ Signed' : p.status === 'sent' ? '📩 Sent' : p.status}
-                                       </span>
-                                     ))}
-                                   </div>
-                                 )}
-                               </div>
-                             );
-                           })()}
+                              const event = dayEvents[0];
+                              const status = getEventStatus(event);
+                              const colors = getStatusBarColor(status);
+                              const proposals = proposalsByEvent[event.uid];
+                              const deadline = deadlinesByEvent[event.uid];
+                              const daysUntilDeadline = deadline ? differenceInCalendarDays(new Date(deadline.content_deadline), new Date()) : null;
+                              const timeStr = (() => { try { return format(parseISO(event.dtstart), 'h:mma').toLowerCase(); } catch { return ''; } })();
+                              return (
+                                <div
+                                  className={`flex-1 mx-1 mb-1 mt-0.5 rounded-md px-1.5 py-1 border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between overflow-hidden`}
+                                  onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
+                                >
+                                  <div className="flex flex-col gap-0.5 min-w-0">
+                                    <span className={`text-[10px] ${colors.text} opacity-75 font-medium`}>{timeStr}</span>
+                                     <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug line-clamp-2`}>
+                                       {stripTripleseatPrefix(event.summary)}
+                                     </span>
+                                  </div>
+                                  <div className="flex gap-1 mt-1 flex-wrap">
+                                    {proposals && proposals.length > 0 && proposals.map((p, i) => (
+                                      <span
+                                        key={i}
+                                        className={`inline-flex items-center rounded-full px-1.5 py-0 text-[8px] font-semibold leading-tight ${
+                                          p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                                          p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                          'bg-zinc-100 text-zinc-500 border border-zinc-200'
+                                        }`}
+                                      >
+                                        {p.status === 'signed' ? '✓ Signed' : p.status === 'sent' ? '📩 Sent' : p.status}
+                                      </span>
+                                    ))}
+                                    {daysUntilDeadline !== null && (
+                                      <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0 text-[8px] font-semibold leading-tight ${
+                                        daysUntilDeadline < 0 ? 'bg-red-100 text-red-700 border border-red-200' :
+                                        daysUntilDeadline <= 3 ? 'bg-red-50 text-red-600 border border-red-200' :
+                                        daysUntilDeadline <= 7 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                        'bg-[#f0f5e8] text-[#5a6b30] border border-[#c8d8a8]'
+                                      }`}>
+                                        {daysUntilDeadline < 0 ? '⚠️' : '📅'} {daysUntilDeadline < 0 ? `${Math.abs(daysUntilDeadline)}d overdue` : daysUntilDeadline === 0 ? 'Due today' : `${daysUntilDeadline}d left`}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                            {dayEvents.length > 1 && (
                              <div className="px-1.5 pb-1">
                                <span className="text-[10px] text-[#8a7d6b]">+{dayEvents.length - 1} more</span>
