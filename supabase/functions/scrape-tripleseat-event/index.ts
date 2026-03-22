@@ -31,9 +31,6 @@ function parseEventPage(markdown: string): ScrapedEventData {
     managers: [],
     recent_activity: [],
     signed_documents: [],
-    payments: [],
-    grand_total: '',
-    total_outstanding: '',
   };
 
   const lines = markdown.split('\n').map(l => l.trim());
