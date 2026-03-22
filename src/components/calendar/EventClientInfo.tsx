@@ -25,6 +25,7 @@ const empty: ClientInfo = {
   loading_fee_notes: '',
   content_deadline: '',
   deadline_notes: '',
+  reminder_days: 7,
 };
 
 export function EventClientInfo({ eventUid }: { eventUid: string }) {
