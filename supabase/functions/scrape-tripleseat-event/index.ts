@@ -16,10 +16,6 @@ interface ScrapedEventData {
   venue_phone: string;
   managers: { name: string; email: string }[];
   recent_activity: { description: string; time_ago: string; by: string }[];
-  signed_documents: { title: string; signed_on: string }[];
-  payments: { amount: string; due: string; status: string; method: string; title: string }[];
-  grand_total: string;
-  total_outstanding: string;
 }
 
 function parseEventPage(markdown: string): ScrapedEventData {
@@ -35,9 +31,6 @@ function parseEventPage(markdown: string): ScrapedEventData {
     managers: [],
     recent_activity: [],
     signed_documents: [],
-    payments: [],
-    grand_total: '',
-    total_outstanding: '',
   };
 
   const lines = markdown.split('\n').map(l => l.trim());
@@ -110,27 +103,6 @@ function parseEventPage(markdown: string): ScrapedEventData {
   while ((sdMatch = signedDocRegex.exec(markdown)) !== null) {
     data.signed_documents.push({ title: sdMatch[1], signed_on: sdMatch[2].trim() });
   }
-
-  // Payments table
-  const paymentRowRegex = /\| \*\*\[Receipt\].+?\*\* \| (-?\$[\d,.]+) \| ([^|]*) \| ([^|]*) \| ([^|]*) \| ([^|]*) \|/g;
-  let pMatch;
-  while ((pMatch = paymentRowRegex.exec(markdown)) !== null) {
-    data.payments.push({
-      amount: pMatch[1].trim(),
-      due: pMatch[2].trim(),
-      status: pMatch[3].trim(),
-      method: pMatch[4].trim(),
-      title: pMatch[5].trim(),
-    });
-  }
-
-  // Grand total
-  const grandTotalMatch = markdown.match(/\*\*Grand Total\*\* \| \*\*(\$[\d,.]+)\*\*/);
-  if (grandTotalMatch) data.grand_total = grandTotalMatch[1];
-
-  // Outstanding
-  const outstandingMatch = markdown.match(/Total Outstanding\*? \| (\$[\d,.]+)/);
-  if (outstandingMatch) data.total_outstanding = outstandingMatch[1];
 
   return data;
 }
@@ -220,11 +192,8 @@ Deno.serve(async (req) => {
       venue_phone: '',
       managers: [],
       recent_activity: [],
-      signed_documents: [],
-      payments: [],
-      grand_total: '',
-      total_outstanding: '',
-    };
+    signed_documents: [],
+  };
 
     // Extract from HTML directly for better accuracy
     // Event name from title
@@ -267,25 +236,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Payments from table
-    const paymentRows = html.matchAll(/class="payment-row"[^>]*>[\s\S]*?<td[^>]*>([-$\d,.]+)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>/gi);
-    for (const pr of paymentRows) {
-      scrapedData.payments.push({
-        amount: pr[1].trim(),
-        due: pr[2].trim(),
-        status: pr[3].trim(),
-        method: '',
-        title: '',
-      });
-    }
 
-    // Grand total
-    const grandTotalHtml = html.match(/Grand Total[\s\S]*?\$([\d,.]+)/i);
-    if (grandTotalHtml) scrapedData.grand_total = `$${grandTotalHtml[1]}`;
 
-    // Outstanding
-    const outstandingHtml = html.match(/Total Outstanding[\s\S]*?\$([\d,.]+)/i);
-    if (outstandingHtml) scrapedData.total_outstanding = `$${outstandingHtml[1]}`;
 
     // Signed documents
     const signedDocs = html.matchAll(/signed_doc[^"]*"[^>]*>([^<]+)<\/a>[\s\S]*?Signed on ([^<]+)/gi);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, Users, UserCircle, DollarSign, FileCheck, Activity, ExternalLink, RefreshCw, Loader2, Mail, Phone, MapPin, Link2 } from 'lucide-react';
+import { Building2, Users, UserCircle, FileCheck, Activity, ExternalLink, RefreshCw, Loader2, Mail, Phone, MapPin, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,9 +17,6 @@ interface ScrapedEventData {
   managers: { name: string; email: string }[];
   recent_activity: { description: string; time_ago: string; by: string }[];
   signed_documents: { title: string; signed_on: string }[];
-  payments: { amount: string; due: string; status: string; method: string; title: string }[];
-  grand_total: string;
-  total_outstanding: string;
 }
 
 export function EventTripleseatDetails({ description, eventUid }: { description: string; eventUid: string }) {
@@ -150,7 +147,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
 
   const hasGuests = data.guaranteed_guests || data.expected_guests;
   const hasManagers = data.managers && data.managers.length > 0;
-  const hasPayments = data.payments && data.payments.length > 0;
   const hasDocuments = data.signed_documents && data.signed_documents.length > 0;
   const hasActivity = data.recent_activity && data.recent_activity.length > 0;
 
@@ -269,49 +265,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
               </a>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Financials */}
-      {(data.grand_total || hasPayments) && (
-        <div>
-          <div className="flex items-center gap-1.5 mb-2">
-            <DollarSign className="w-3.5 h-3.5 text-[#c49a3c]" />
-            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Financials</span>
-          </div>
-          {data.grand_total && (
-            <div className="bg-[#faf8f5] rounded-lg p-3 border border-[#e8e2d8] mb-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-[#8a7d6b]">Grand Total</span>
-                <span className="text-sm font-bold text-[#3d3629]">{data.grand_total}</span>
-              </div>
-              {data.total_outstanding && (
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-xs text-[#8a7d6b]">Outstanding</span>
-                  <span className={`text-sm font-bold ${data.total_outstanding === '$0.00' ? 'text-emerald-600' : 'text-red-600'}`}>
-                    {data.total_outstanding}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-          {hasPayments && (
-            <div className="space-y-1">
-              {data.payments.map((p, i) => (
-                <div key={i} className="flex items-center justify-between text-[11px] py-1 border-b border-[#f0ebe3] last:border-b-0">
-                  <span className="text-[#3d3629] truncate flex-1 mr-2">{p.title || p.method || 'Payment'}</span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className={`font-medium ${p.status === 'Paid' ? 'text-emerald-600' : 'text-[#3d3629]'}`}>{p.amount}</span>
-                    {p.status && (
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                        p.status === 'Paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-                      }`}>{p.status}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
 
