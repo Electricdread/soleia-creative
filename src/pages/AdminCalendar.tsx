@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Settings2, Save, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, startOfWeek, endOfWeek, differenceInCalendarDays } from 'date-fns';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import { EventDetailPanel } from '@/components/calendar/EventDetailPanel';
 import { EventStatusBadge, getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
