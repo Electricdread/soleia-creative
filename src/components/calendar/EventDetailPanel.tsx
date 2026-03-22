@@ -36,6 +36,7 @@ interface EventDetailPanelProps {
   onClose: () => void;
   onStatusChange: (uid: string, status: EventStatus) => void;
   proposalStatuses?: ProposalStatusInfo[];
+  deadlineInfo?: { content_deadline: string; reminder_days: number } | null;
 }
 
 export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses }: EventDetailPanelProps) {
