@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, ExternalLink, FolderOpen, Link2 } from 'lucide-react';
+import { Loader2, ExternalLink, FolderOpen, Link2, Bell, AlertTriangle, Clock } from 'lucide-react';
+import { differenceInCalendarDays, format } from 'date-fns';
 
 interface LinkedSession {
   id: string;
