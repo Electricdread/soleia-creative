@@ -252,58 +252,65 @@ export default function AdminCalendar() {
                       const row = Math.floor(idx / 7);
                       const isLastRow = row === Math.floor((calendarDays.length - 1) / 7);
 
-                      return (
-                        <div
-                          key={day.toISOString()}
-                          className={`min-h-[80px] sm:min-h-[100px] border-r border-b border-[#e8e2d8] p-1 sm:p-1.5 text-left flex flex-col
-                            ${isLastRow ? 'border-b-0' : ''} ${idx % 7 === 6 ? 'border-r-0' : ''}
-                            ${!isCurrentMonth ? 'bg-[#faf8f5]' : 'bg-white'}`}
-                        >
-                          <div className="flex items-center justify-end w-full mb-0.5 sm:mb-1">
-                            <span className={`text-xs sm:text-sm font-medium ${isToday ? 'bg-[#c49a3c] text-white w-6 h-6 rounded-full flex items-center justify-center' : !isCurrentMonth ? 'text-[#c4bba8]' : 'text-[#5a4f3f]'}`}>
-                              {format(day, 'd')}
-                            </span>
-                          </div>
-                          <div className="flex flex-col gap-0.5 w-full overflow-hidden flex-1">
-                            {dayEvents.slice(0, 3).map((event) => {
-                              const status = getEventStatus(event);
-                              const colors = getStatusBarColor(status);
-                              const proposals = proposalsByEvent[event.uid];
-                              return (
-                                <button
-                                  key={event.uid}
-                                  onClick={() => setSelectedEvent(event)}
-                                  className={`${colors.bg} border ${colors.border} rounded px-1 sm:px-1.5 py-1 sm:py-0.5 text-left active:scale-[0.97] transition-transform min-h-[28px] sm:min-h-0 flex items-center gap-1`}
-                                  title={event.summary}
-                                >
-                                  <span className={`text-[10px] sm:text-[11px] font-medium ${colors.text} leading-tight truncate`}>
-                                    {(() => { try { return format(parseISO(event.dtstart), 'h:mma').toLowerCase(); } catch { return ''; } })()}{' '}
-                                    {event.summary}
-                                  </span>
-                                  {proposals && proposals.map((p, i) => (
-                                    <span
-                                      key={i}
-                                      className={`shrink-0 hidden sm:inline-flex items-center rounded-full px-1.5 py-0 text-[8px] font-semibold leading-tight ${
-                                        p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
-                                        p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                        'bg-zinc-100 text-zinc-500 border border-zinc-200'
-                                      }`}
-                                      title={`Proposal: ${p.status}`}
-                                    >
-                                      {p.status === 'signed' ? '✓ Signed' : p.status === 'sent' ? '📩 Sent' : p.status}
-                                    </span>
-                                  ))}
-                                </button>
-                              );
-                            })}
-                            {dayEvents.length > 3 && (
-                              <span className="text-[10px] text-[#8a7d6b] pl-1">+{dayEvents.length - 3} more</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        return (
+                         <div
+                           key={day.toISOString()}
+                           className={`min-h-[80px] sm:min-h-[110px] border-r border-b border-[#e8e2d8] text-left flex flex-col
+                             ${isLastRow ? 'border-b-0' : ''} ${idx % 7 === 6 ? 'border-r-0' : ''}
+                             ${!isCurrentMonth ? 'bg-[#faf8f5]' : 'bg-white'}
+                             ${dayEvents.length > 0 ? 'cursor-pointer hover:bg-[#fdfcfa] transition-colors' : ''}`}
+                           onClick={() => { if (dayEvents.length === 1) setSelectedEvent(dayEvents[0]); }}
+                         >
+                           <div className="flex items-center justify-end w-full px-1.5 pt-1">
+                             <span className={`text-xs sm:text-sm font-medium ${isToday ? 'bg-[#c49a3c] text-white w-6 h-6 rounded-full flex items-center justify-center' : !isCurrentMonth ? 'text-[#c4bba8]' : 'text-[#5a4f3f]'}`}>
+                               {format(day, 'd')}
+                             </span>
+                           </div>
+                           {dayEvents.length > 0 && (() => {
+                             const event = dayEvents[0];
+                             const status = getEventStatus(event);
+                             const colors = getStatusBarColor(status);
+                             const proposals = proposalsByEvent[event.uid];
+                             const timeStr = (() => { try { return format(parseISO(event.dtstart), 'h:mma').toLowerCase(); } catch { return ''; } })();
+                             return (
+                               <div
+                                 className={`flex-1 mx-1 mb-1 mt-0.5 rounded-md px-1.5 py-1 border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between overflow-hidden`}
+                                 onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
+                               >
+                                 <div className="flex flex-col gap-0.5 min-w-0">
+                                   <span className={`text-[10px] ${colors.text} opacity-75 font-medium`}>{timeStr}</span>
+                                   <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug line-clamp-2`}>
+                                     {event.summary}
+                                   </span>
+                                 </div>
+                                 {proposals && proposals.length > 0 && (
+                                   <div className="flex gap-1 mt-1 flex-wrap">
+                                     {proposals.map((p, i) => (
+                                       <span
+                                         key={i}
+                                         className={`inline-flex items-center rounded-full px-1.5 py-0 text-[8px] font-semibold leading-tight ${
+                                           p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                                           p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                           'bg-zinc-100 text-zinc-500 border border-zinc-200'
+                                         }`}
+                                       >
+                                         {p.status === 'signed' ? '✓ Signed' : p.status === 'sent' ? '📩 Sent' : p.status}
+                                       </span>
+                                     ))}
+                                   </div>
+                                 )}
+                               </div>
+                             );
+                           })()}
+                           {dayEvents.length > 1 && (
+                             <div className="px-1.5 pb-1">
+                               <span className="text-[10px] text-[#8a7d6b]">+{dayEvents.length - 1} more</span>
+                             </div>
+                           )}
+                         </div>
+                       );
+                     })}
+                   </div>
                 </div>
               </div>
             </div>
