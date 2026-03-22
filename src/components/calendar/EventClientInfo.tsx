@@ -15,6 +15,7 @@ interface ClientInfo {
   loading_fee_notes: string;
   content_deadline: string;
   deadline_notes: string;
+  reminder_days: number;
 }
 
 const empty: ClientInfo = {
