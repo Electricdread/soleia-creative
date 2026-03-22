@@ -236,25 +236,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Payments from table
-    const paymentRows = html.matchAll(/class="payment-row"[^>]*>[\s\S]*?<td[^>]*>([-$\d,.]+)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>[\s\S]*?<td[^>]*>([^<]*)<\/td>/gi);
-    for (const pr of paymentRows) {
-      scrapedData.payments.push({
-        amount: pr[1].trim(),
-        due: pr[2].trim(),
-        status: pr[3].trim(),
-        method: '',
-        title: '',
-      });
-    }
 
-    // Grand total
-    const grandTotalHtml = html.match(/Grand Total[\s\S]*?\$([\d,.]+)/i);
-    if (grandTotalHtml) scrapedData.grand_total = `$${grandTotalHtml[1]}`;
 
-    // Outstanding
-    const outstandingHtml = html.match(/Total Outstanding[\s\S]*?\$([\d,.]+)/i);
-    if (outstandingHtml) scrapedData.total_outstanding = `$${outstandingHtml[1]}`;
 
     // Signed documents
     const signedDocs = html.matchAll(/signed_doc[^"]*"[^>]*>([^<]+)<\/a>[\s\S]*?Signed on ([^<]+)/gi);
