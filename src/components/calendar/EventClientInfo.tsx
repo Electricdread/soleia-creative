@@ -123,6 +123,28 @@ export function EventClientInfo({ eventUid }: { eventUid: string }) {
         <h4 className="text-xs font-semibold text-[#5a4f3f] uppercase tracking-wider">Content Deadline</h4>
         <Input type="date" value={info.content_deadline} onChange={(e) => setInfo({ ...info, content_deadline: e.target.value })} className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm" />
         <Input value={info.deadline_notes} onChange={(e) => setInfo({ ...info, deadline_notes: e.target.value })} placeholder="Deadline notes" className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm placeholder:text-[#b5ab9a]" />
+        
+        {/* Reminder Days */}
+        <div className="flex items-center gap-2">
+          <Bell className="w-3.5 h-3.5 text-[#c49a3c]" />
+          <span className="text-xs text-[#5a4f3f]">Remind me</span>
+          <Select value={String(info.reminder_days)} onValueChange={(v) => setInfo({ ...info, reminder_days: Number(v) })}>
+            <SelectTrigger className="w-[100px] h-7 bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 day</SelectItem>
+              <SelectItem value="3">3 days</SelectItem>
+              <SelectItem value="5">5 days</SelectItem>
+              <SelectItem value="7">7 days</SelectItem>
+              <SelectItem value="10">10 days</SelectItem>
+              <SelectItem value="14">14 days</SelectItem>
+              <SelectItem value="21">21 days</SelectItem>
+              <SelectItem value="30">30 days</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-[#5a4f3f]">before deadline</span>
+        </div>
       </div>
 
       {/* Loading Fee */}
