@@ -31,6 +31,7 @@ interface CreativeSession {
   cover_images?: CoverImage[] | null;
   creative_notes?: string | null;
   technical_notes?: string | null;
+  event_date?: string | null;
 }
 
 interface CreativeSessionCardProps {
@@ -55,6 +56,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [editCreativeNotes, setEditCreativeNotes] = useState(session.creative_notes || '');
   const [editTechnicalNotes, setEditTechnicalNotes] = useState(session.technical_notes || '');
   const [editDropboxUrl, setEditDropboxUrl] = useState((session as any).dropbox_url || '');
+  const [editEventDate, setEditEventDate] = useState(session.event_date || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePublicToggle = async (checked: boolean) => {
@@ -133,6 +135,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     setEditCreativeNotes(session.creative_notes || '');
     setEditTechnicalNotes(session.technical_notes || '');
     setEditDropboxUrl((session as any).dropbox_url || '');
+    setEditEventDate(session.event_date || '');
     setEditOpen(true);
   };
 
@@ -150,6 +153,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
         creative_notes: editCreativeNotes.trim() || null,
         technical_notes: editTechnicalNotes.trim() || null,
         dropbox_url: editDropboxUrl.trim() || null,
+        event_date: editEventDate || null,
       })
       .eq('id', session.id);
 
@@ -335,6 +339,15 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                     className="h-9 text-sm"
                   />
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Event Date</Label>
+                <Input
+                  type="date"
+                  value={editEventDate}
+                  onChange={(e) => setEditEventDate(e.target.value)}
+                  className="h-9 text-sm"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Creative Notes</Label>

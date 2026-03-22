@@ -1,0 +1,1 @@
+ALTER TABLE public.creative_sessions ADD COLUMN event_date date NULL;
