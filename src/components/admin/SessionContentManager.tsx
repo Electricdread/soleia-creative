@@ -72,25 +72,25 @@ function SortableContentRow({ item, onDelete, deleting, onEdit, scenes }: {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 p-2 rounded-lg bg-secondary/30 border border-border/50 group"
+      className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30 border border-border/50"
     >
-      <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-manipulation p-1">
+      <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-manipulation p-1 flex-shrink-0">
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </button>
 
       {thumbSrc && /\.(jpg|jpeg|png|gif|webp|svg)/i.test(thumbSrc) ? (
-        <img src={thumbSrc} alt="" className="w-12 h-12 object-cover rounded-md flex-shrink-0" />
+        <img src={thumbSrc} alt="" className="w-10 h-10 object-cover rounded-md flex-shrink-0" />
       ) : thumbSrc && item.item_type === 'video' ? (
-        <div className="w-12 h-12 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
-          <Film className="w-5 h-5 text-muted-foreground" />
+        <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
+          <Film className="w-4 h-4 text-muted-foreground" />
         </div>
       ) : (
-        <div className="w-12 h-12 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
           {typeIcon}
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 overflow-hidden">
         <p className="text-sm font-medium truncate">{item.title || 'Untitled'}</p>
         <div className="flex items-center gap-2">
           <p className="text-xs text-muted-foreground capitalize">{item.item_type}</p>
@@ -102,24 +102,26 @@ function SortableContentRow({ item, onDelete, deleting, onEdit, scenes }: {
         </div>
       </div>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation"
-        onClick={() => onEdit(item)}
-      >
-        <Pencil className="w-3.5 h-3.5" />
-      </Button>
+      <div className="flex items-center gap-1 flex-shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground touch-manipulation"
+          onClick={() => onEdit(item)}
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </Button>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation"
-        onClick={() => onDelete(item.id)}
-        disabled={deleting === item.id}
-      >
-        {deleting === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-      </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:bg-destructive/10 touch-manipulation"
+          onClick={() => onDelete(item.id)}
+          disabled={deleting === item.id}
+        >
+          {deleting === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+        </Button>
+      </div>
     </div>
   );
 }
