@@ -79,6 +79,7 @@ export function EventClientInfo({ eventUid }: { eventUid: string }) {
       loading_fee_notes: info.loading_fee_notes || null,
       content_deadline: info.content_deadline || null,
       deadline_notes: info.deadline_notes || null,
+      reminder_days: info.reminder_days,
     };
     const { error } = await supabase.from('calendar_event_client_info').upsert(payload, { onConflict: 'event_uid' });
     if (error) toast.error('Failed to save client info');
