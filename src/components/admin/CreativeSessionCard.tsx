@@ -135,6 +135,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     setEditCreativeNotes(session.creative_notes || '');
     setEditTechnicalNotes(session.technical_notes || '');
     setEditDropboxUrl((session as any).dropbox_url || '');
+    setEditEventDate(session.event_date || '');
     setEditOpen(true);
   };
 
