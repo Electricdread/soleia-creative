@@ -148,8 +148,27 @@ export default function AdminPortal() {
     }
   }, [isLoading, isAdmin]);
 
-  const getEventStatus = (event: { uid: string; status: string }): EventStatus => {
+  const stripTripleseatPrefix = (summary: string): string => {
+    return summary.replace(/^\[(D|T|P|C)\]\s*/i, '');
+  };
+
+  const detectStatusFromPrefix = (summary: string): EventStatus | null => {
+    const match = summary.match(/^\[(D|T|P|C)\]/i);
+    if (!match) return null;
+    const code = match[1].toUpperCase();
+    if (code === 'D') return 'definite';
+    if (code === 'T') return 'tentative';
+    if (code === 'P') return 'prospect';
+    if (code === 'C') return 'cancelled';
+    return null;
+  };
+
+  const getEventStatus = (event: { uid: string; status: string; summary?: string }): EventStatus => {
     if (statusOverrides[event.uid]) return statusOverrides[event.uid];
+    if (event.summary) {
+      const fromPrefix = detectStatusFromPrefix(event.summary);
+      if (fromPrefix) return fromPrefix;
+    }
     const s = event.status.toLowerCase();
     if (s.includes('confirm') || s.includes('definite')) return 'definite';
     if (s.includes('tentative')) return 'tentative';
