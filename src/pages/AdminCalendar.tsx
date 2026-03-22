@@ -339,7 +339,7 @@ export default function AdminCalendar() {
                   <EventDetailPanel
                     key={selectedEvent.uid}
                     event={selectedEvent}
-                    statusOverride={statusOverrides[selectedEvent.uid]}
+                    statusOverride={getEventStatus(selectedEvent)}
                     onClose={() => setSelectedEvent(null)}
                     onStatusChange={handleStatusChange}
                     proposalStatuses={proposalsByEvent[selectedEvent.uid]}
