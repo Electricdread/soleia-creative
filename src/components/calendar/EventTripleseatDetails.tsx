@@ -147,7 +147,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
 
   const hasGuests = data.guaranteed_guests || data.expected_guests;
   const hasManagers = data.managers && data.managers.length > 0;
-  const hasPayments = data.payments && data.payments.length > 0;
   const hasDocuments = data.signed_documents && data.signed_documents.length > 0;
   const hasActivity = data.recent_activity && data.recent_activity.length > 0;
 
