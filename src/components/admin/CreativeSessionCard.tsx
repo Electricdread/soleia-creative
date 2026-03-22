@@ -31,6 +31,7 @@ interface CreativeSession {
   cover_images?: CoverImage[] | null;
   creative_notes?: string | null;
   technical_notes?: string | null;
+  event_date?: string | null;
 }
 
 interface CreativeSessionCardProps {
