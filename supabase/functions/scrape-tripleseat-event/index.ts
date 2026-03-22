@@ -192,11 +192,8 @@ Deno.serve(async (req) => {
       venue_phone: '',
       managers: [],
       recent_activity: [],
-      signed_documents: [],
-      payments: [],
-      grand_total: '',
-      total_outstanding: '',
-    };
+    signed_documents: [],
+  };
 
     // Extract from HTML directly for better accuracy
     // Event name from title
