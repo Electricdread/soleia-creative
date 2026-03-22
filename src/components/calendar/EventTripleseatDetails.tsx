@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Building2, Users, UserCircle, DollarSign, FileCheck, Activity, ExternalLink, RefreshCw, Loader2, Mail, Phone, MapPin } from 'lucide-react';
+import { Building2, Users, UserCircle, DollarSign, FileCheck, Activity, ExternalLink, RefreshCw, Loader2, Mail, Phone, MapPin, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -21,29 +22,56 @@ interface ScrapedEventData {
   total_outstanding: string;
 }
 
-function extractTripleseatUrl(description: string): string | null {
-  if (!description) return null;
-  const match = description.match(/https?:\/\/[^\s]*tripleseat\.com[^\s]*/i);
-  return match ? match[0] : null;
-}
-
 export function EventTripleseatDetails({ description, eventUid }: { description: string; eventUid: string }) {
-  const tripleseatUrl = extractTripleseatUrl(description);
+  const [savedUrl, setSavedUrl] = useState('');
+  const [urlInput, setUrlInput] = useState('');
   const [data, setData] = useState<ScrapedEventData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingUrl, setLoadingUrl] = useState(true);
   const [cached, setCached] = useState(false);
 
+  // Load saved URL from cache table
+  useEffect(() => {
+    const loadSavedUrl = async () => {
+      setLoadingUrl(true);
+      const { data: cacheRow } = await supabase
+        .from('calendar_event_tripleseat_cache')
+        .select('tripleseat_url')
+        .eq('event_uid', eventUid)
+        .maybeSingle();
+      if (cacheRow?.tripleseat_url) {
+        setSavedUrl(cacheRow.tripleseat_url);
+        setUrlInput(cacheRow.tripleseat_url);
+      } else {
+        // Try to extract from description as fallback
+        const match = description?.match(/https?:\/\/[^\s]*tripleseat\.com[^\s]*/i);
+        if (match) {
+          setUrlInput(match[0]);
+        }
+      }
+      setLoadingUrl(false);
+    };
+    loadSavedUrl();
+  }, [eventUid, description]);
+
+  // Auto-fetch when we have a saved URL
+  useEffect(() => {
+    if (savedUrl) fetchDetails();
+  }, [savedUrl]);
+
   const fetchDetails = async (forceRefresh = false) => {
-    if (!tripleseatUrl) return;
+    const url = savedUrl || urlInput.trim();
+    if (!url) return;
     setLoading(true);
     try {
       const { data: result, error } = await supabase.functions.invoke('scrape-tripleseat-event', {
-        body: { tripleseat_url: tripleseatUrl, event_uid: eventUid, force_refresh: forceRefresh },
+        body: { tripleseat_url: url, event_uid: eventUid, force_refresh: forceRefresh },
       });
       if (error) throw error;
       if (result?.success && result.data) {
         setData(result.data);
         setCached(result.cached);
+        if (!savedUrl) setSavedUrl(url);
       }
     } catch (e) {
       console.error('Failed to fetch Triple Seat details:', e);
@@ -52,13 +80,51 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
     setLoading(false);
   };
 
-  useEffect(() => {
-    if (tripleseatUrl) fetchDetails();
-  }, [tripleseatUrl, eventUid]);
+  const handleFetchUrl = () => {
+    const url = urlInput.trim();
+    if (!url) return;
+    if (!url.includes('tripleseat.com')) {
+      toast.error('Please enter a valid Triple Seat URL');
+      return;
+    }
+    setSavedUrl(url);
+    fetchDetails(true);
+  };
 
-  if (!tripleseatUrl) {
+  if (loadingUrl) {
     return (
-      <p className="text-xs text-[#8a7d6b] italic">No Triple Seat link found in event description.</p>
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="w-5 h-5 animate-spin text-[#c49a3c]" />
+      </div>
+    );
+  }
+
+  // No saved URL — show input field
+  if (!savedUrl && !data) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-1.5">
+          <Link2 className="w-3.5 h-3.5 text-[#c49a3c]" />
+          <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Triple Seat Guest Link</span>
+        </div>
+        <p className="text-[11px] text-[#8a7d6b]">Paste the public guest link URL for this event to fetch details.</p>
+        <div className="flex gap-2">
+          <Input
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="https://portal.tripleseat.com/public_profile/events/..."
+            className="text-xs bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] placeholder:text-[#b5ab9a] flex-1 min-h-[36px] h-9"
+          />
+          <Button
+            size="sm"
+            onClick={handleFetchUrl}
+            disabled={loading || !urlInput.trim()}
+            className="bg-[#c49a3c] hover:bg-[#b08a30] text-white text-xs h-9 px-3"
+          >
+            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Fetch'}
+          </Button>
+        </div>
+      </div>
     );
   }
 
@@ -111,12 +177,32 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
             variant="outline"
             size="sm"
             className="h-6 text-[10px] gap-1 border-[#d6cfc3] text-[#5a4f3f] hover:bg-[#f0ece4]"
-            onClick={() => window.open(tripleseatUrl, '_blank')}
+            onClick={() => window.open(savedUrl, '_blank')}
           >
             <ExternalLink className="w-3 h-3" />
             Open
           </Button>
         </div>
+      </div>
+
+      {/* Editable URL */}
+      <div className="flex gap-2 items-center">
+        <Input
+          value={urlInput}
+          onChange={(e) => setUrlInput(e.target.value)}
+          placeholder="Triple Seat guest link URL"
+          className="text-[10px] bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] placeholder:text-[#b5ab9a] flex-1 min-h-[28px] h-7 px-2"
+        />
+        {urlInput !== savedUrl && (
+          <Button
+            size="sm"
+            onClick={handleFetchUrl}
+            disabled={loading}
+            className="bg-[#c49a3c] hover:bg-[#b08a30] text-white text-[10px] h-7 px-2"
+          >
+            Update
+          </Button>
+        )}
       </div>
 
       {/* Guest Counts */}
