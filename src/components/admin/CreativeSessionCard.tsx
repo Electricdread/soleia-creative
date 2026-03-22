@@ -169,134 +169,104 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
   return (
     <>
-      <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50">
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-foreground truncate">
-            {session.project_name}
-          </h4>
-          <p className="text-sm text-muted-foreground truncate">
-            {session.client_name}
-            {' • '}
-            {format(new Date(session.created_at), 'MMM d, yyyy')}
-          </p>
+      <div className="rounded-xl bg-secondary/30 border border-border/50 overflow-hidden">
+        {/* Cover thumbnail row */}
+        {coverImage && (
+          <div className="relative h-24 w-full">
+            <img src={coverImage.url} alt="Cover" className="w-full h-full object-cover" />
+            <div className="absolute top-1.5 right-1.5 flex gap-1">
+              <Button
+                variant="secondary"
+                size="icon"
+                className="h-6 w-6 bg-black/60 hover:bg-black/80 text-white"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon"
+                className="h-6 w-6"
+                onClick={removeCover}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="p-3 space-y-2">
+          {/* Title & meta */}
+          <div>
+            <h4 className="font-medium text-foreground truncate text-sm">
+              {session.project_name}
+            </h4>
+            <p className="text-xs text-muted-foreground truncate">
+              {session.client_name}
+              {session.event_date && (
+                <> • {format(new Date(session.event_date + 'T00:00:00'), 'MMM d, yyyy')}</>
+              )}
+            </p>
+          </div>
+
           {session.creative_notes && (
-            <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-1 italic">
+            <p className="text-xs text-muted-foreground/70 line-clamp-1 italic">
               {session.creative_notes}
             </p>
           )}
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+
+          {/* Badges */}
+          <div className="flex items-center gap-1.5 flex-wrap">
             <span className={cn(
-              "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
+              "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
               isPublic
                 ? "bg-emerald-500/10 text-emerald-500"
                 : "bg-amber-500/10 text-amber-500"
             )}>
-              {isPublic ? (
-                <><Globe className="w-3 h-3" /> Public</>
-              ) : (
-                <><Lock className="w-3 h-3" /> Private</>
-              )}
+              {isPublic ? <><Globe className="w-2.5 h-2.5" /> Public</> : <><Lock className="w-2.5 h-2.5" /> Private</>}
             </span>
-            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-              <Users className="w-3 h-3" />
-              {session.client_name}
-            </span>
-            {coverImage && (
-              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
-                <ImageIcon className="w-3 h-3" />
-                Cover
-              </span>
-            )}
-          </div>
-
-          {/* Inline cover management */}
-          <div className="mt-2">
-            {coverImage ? (
-              <div className="relative rounded-lg overflow-hidden max-w-xs">
-                <img src={coverImage.url} alt="Cover" className="w-full h-20 object-cover rounded-lg" />
-                <div className="absolute top-1 right-1 flex gap-1">
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="h-6 w-6 bg-black/60 hover:bg-black/80 text-white"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={removeCover}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            ) : (
+            {!coverImage && (
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Upload className="w-3 h-3" />
-                {uploading ? 'Uploading...' : 'Add cover image'}
+                <Upload className="w-2.5 h-2.5" />
+                {uploading ? 'Uploading...' : 'Cover'}
               </button>
             )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleCoverUpload}
-            />
           </div>
-        </div>
 
-        <div className="flex items-center gap-2 ml-4">
-          <div className="flex items-center gap-1.5">
+          {/* Actions row */}
+          <div className="flex items-center gap-1.5 pt-1 border-t border-border/30">
             <Switch
               checked={isPublic}
               onCheckedChange={handlePublicToggle}
-              className="scale-90"
+              className="scale-75"
             />
+            <div className="flex-1" />
+            <Button size="sm" variant="outline" onClick={openEditDialog} className="h-7 text-xs gap-1 px-2">
+              <Pencil className="w-3 h-3" /> Edit
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => onCopyLink(session.token)} className="h-7 text-xs gap-1 px-2">
+              <Copy className="w-3 h-3" /> Copy
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => onOpen(session.token)} className="h-7 w-7 p-0">
+              <ExternalLink className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => onDelete(session.id)} className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10">
+              <Trash2 className="w-3 h-3" />
+            </Button>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={openEditDialog}
-            className="gap-1.5"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onCopyLink(session.token)}
-            className="gap-1.5"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            Copy
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onOpen(session.token)}
-            className="gap-1.5"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Open
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onDelete(session.id)}
-            className="text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
         </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleCoverUpload}
+        />
       </div>
 
       {/* Edit Dialog */}
