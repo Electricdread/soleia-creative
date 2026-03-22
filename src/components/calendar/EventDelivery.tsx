@@ -23,6 +23,7 @@ interface LinkedSession {
 export function EventDelivery({ eventUid }: { eventUid: string }) {
   const [items, setItems] = useState<LinkedSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deadlineInfo, setDeadlineInfo] = useState<{ content_deadline: string | null; reminder_days: number; deadline_notes: string | null } | null>(null);
 
   useEffect(() => {
     const fetch_ = async () => {
