@@ -391,6 +391,7 @@ export type Database = {
           created_by: string | null
           creative_notes: string | null
           dropbox_url: string | null
+          event_date: string | null
           featured_images: Json | null
           id: string
           is_active: boolean
@@ -411,6 +412,7 @@ export type Database = {
           created_by?: string | null
           creative_notes?: string | null
           dropbox_url?: string | null
+          event_date?: string | null
           featured_images?: Json | null
           id?: string
           is_active?: boolean
@@ -431,6 +433,7 @@ export type Database = {
           created_by?: string | null
           creative_notes?: string | null
           dropbox_url?: string | null
+          event_date?: string | null
           featured_images?: Json | null
           id?: string
           is_active?: boolean
