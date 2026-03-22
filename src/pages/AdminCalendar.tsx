@@ -118,6 +118,20 @@ export default function AdminCalendar() {
     setProposalsByEvent(result);
   };
 
+  const fetchDeadlines = async () => {
+    const { data } = await supabase
+      .from('calendar_event_client_info')
+      .select('event_uid, content_deadline, reminder_days')
+      .not('content_deadline', 'is', null);
+    if (data) {
+      const map: Record<string, { content_deadline: string; reminder_days: number }> = {};
+      (data as any[]).forEach((d) => {
+        if (d.content_deadline) map[d.event_uid] = { content_deadline: d.content_deadline, reminder_days: d.reminder_days ?? 7 };
+      });
+      setDeadlinesByEvent(map);
+    }
+  };
+
   const handleStatusChange = async (uid: string, status: EventStatus) => {
     setStatusOverrides((prev) => ({ ...prev, [uid]: status }));
     const { error } = await supabase.from('calendar_event_metadata').upsert(
