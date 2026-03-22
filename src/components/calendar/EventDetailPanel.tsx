@@ -39,8 +39,9 @@ interface EventDetailPanelProps {
   deadlineInfo?: { content_deadline: string; reminder_days: number } | null;
 }
 
-export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses }: EventDetailPanelProps) {
+export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses, deadlineInfo }: EventDetailPanelProps) {
   const displayStatus = statusOverride || mapIcalStatus(event.status);
+  const daysUntilDeadline = deadlineInfo ? differenceInCalendarDays(new Date(deadlineInfo.content_deadline), new Date()) : null;
 
   let startFormatted = '';
   let endFormatted = '';
