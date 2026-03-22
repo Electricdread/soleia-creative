@@ -396,7 +396,7 @@ export default function AdminPortal() {
                       }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{event.summary}</p>
+                      <p className="text-sm font-medium text-white truncate">{stripTripleseatPrefix(event.summary)}</p>
                       {event.location && (
                         <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5 truncate">
                           <MapPin className="w-3 h-3 flex-shrink-0" />
