@@ -1,8 +1,9 @@
 import { format, parseISO } from 'date-fns';
-import { X, MapPin, Clock, Calendar as CalendarIcon, FileText } from 'lucide-react';
+import { X, MapPin, Clock, Calendar as CalendarIcon, FileText, User, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EventNotes } from './EventNotes';
 import { EventTasks } from './EventTasks';
 import { EventAttachments } from './EventAttachments';
@@ -116,9 +117,25 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
           </Button>
         </div>
 
-        {/* Linked Items - relocated to header */}
-        <div className="mt-3 pt-3 border-t border-[#e8e2d8]">
-          <EventLinkedItems eventUid={event.uid} />
+        {/* Linked Items & Client dropdown */}
+        <div className="mt-3 pt-3 border-t border-[#e8e2d8] flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <EventLinkedItems eventUid={event.uid} />
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="shrink-0 h-7 gap-1 text-[10px] border-[#d6cfc3] text-[#5a4f3f] hover:bg-[#f0ece4]">
+                <User className="w-3 h-3" />
+                Client
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[340px] p-3 bg-white border-[#d6cfc3]" align="end" side="bottom">
+              <ScrollArea className="max-h-[50vh]">
+                <EventClientInfo eventUid={event.uid} />
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -133,7 +150,6 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                 { value: 'meetings', label: 'Meetings' },
                 { value: 'circleback', label: 'Call Notes' },
                 { value: 'delivery', label: 'Delivery' },
-                { value: 'client', label: 'Client' },
                 { value: 'docs', label: 'Docs' },
               ].map((tab) => (
                 <TabsTrigger
@@ -164,9 +180,6 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
           </TabsContent>
           <TabsContent value="delivery" className="p-4 mt-0">
             <EventDelivery eventUid={event.uid} />
-          </TabsContent>
-          <TabsContent value="client" className="p-4 mt-0">
-            <EventClientInfo eventUid={event.uid} />
           </TabsContent>
           <TabsContent value="docs" className="p-4 mt-0">
             <EventAttachments eventUid={event.uid} />
