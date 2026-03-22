@@ -153,6 +153,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
         creative_notes: editCreativeNotes.trim() || null,
         technical_notes: editTechnicalNotes.trim() || null,
         dropbox_url: editDropboxUrl.trim() || null,
+        event_date: editEventDate || null,
       })
       .eq('id', session.id);
 
