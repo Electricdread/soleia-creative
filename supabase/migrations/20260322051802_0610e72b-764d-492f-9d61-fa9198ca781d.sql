@@ -1,0 +1,1 @@
+ALTER TABLE public.calendar_event_client_info ADD COLUMN reminder_days integer DEFAULT 7;

@@ -157,6 +157,7 @@ export type Database = {
           event_uid: string
           id: string
           loading_fee_notes: string | null
+          reminder_days: number | null
           updated_at: string
         }
         Insert: {
@@ -169,6 +170,7 @@ export type Database = {
           event_uid: string
           id?: string
           loading_fee_notes?: string | null
+          reminder_days?: number | null
           updated_at?: string
         }
         Update: {
@@ -181,6 +183,7 @@ export type Database = {
           event_uid?: string
           id?: string
           loading_fee_notes?: string | null
+          reminder_days?: number | null
           updated_at?: string
         }
         Relationships: []

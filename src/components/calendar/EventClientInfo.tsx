@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, Clock, AlertTriangle } from 'lucide-react';
+import { Loader2, Save, Clock, AlertTriangle, Bell } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { differenceInCalendarDays, format } from 'date-fns';
 
@@ -14,6 +15,7 @@ interface ClientInfo {
   loading_fee_notes: string;
   content_deadline: string;
   deadline_notes: string;
+  reminder_days: number;
 }
 
 const empty: ClientInfo = {
@@ -23,6 +25,7 @@ const empty: ClientInfo = {
   loading_fee_notes: '',
   content_deadline: '',
   deadline_notes: '',
+  reminder_days: 7,
 };
 
 export function EventClientInfo({ eventUid }: { eventUid: string }) {
@@ -46,6 +49,7 @@ export function EventClientInfo({ eventUid }: { eventUid: string }) {
           loading_fee_notes: (data as any).loading_fee_notes || '',
           content_deadline: (data as any).content_deadline ? (data as any).content_deadline.slice(0, 10) : '',
           deadline_notes: (data as any).deadline_notes || '',
+          reminder_days: (data as any).reminder_days ?? 7,
         });
       }
 
@@ -75,6 +79,7 @@ export function EventClientInfo({ eventUid }: { eventUid: string }) {
       loading_fee_notes: info.loading_fee_notes || null,
       content_deadline: info.content_deadline || null,
       deadline_notes: info.deadline_notes || null,
+      reminder_days: info.reminder_days,
     };
     const { error } = await supabase.from('calendar_event_client_info').upsert(payload, { onConflict: 'event_uid' });
     if (error) toast.error('Failed to save client info');
@@ -118,6 +123,28 @@ export function EventClientInfo({ eventUid }: { eventUid: string }) {
         <h4 className="text-xs font-semibold text-[#5a4f3f] uppercase tracking-wider">Content Deadline</h4>
         <Input type="date" value={info.content_deadline} onChange={(e) => setInfo({ ...info, content_deadline: e.target.value })} className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm" />
         <Input value={info.deadline_notes} onChange={(e) => setInfo({ ...info, deadline_notes: e.target.value })} placeholder="Deadline notes" className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm placeholder:text-[#b5ab9a]" />
+        
+        {/* Reminder Days */}
+        <div className="flex items-center gap-2">
+          <Bell className="w-3.5 h-3.5 text-[#c49a3c]" />
+          <span className="text-xs text-[#5a4f3f]">Remind me</span>
+          <Select value={String(info.reminder_days)} onValueChange={(v) => setInfo({ ...info, reminder_days: Number(v) })}>
+            <SelectTrigger className="w-[100px] h-7 bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 day</SelectItem>
+              <SelectItem value="3">3 days</SelectItem>
+              <SelectItem value="5">5 days</SelectItem>
+              <SelectItem value="7">7 days</SelectItem>
+              <SelectItem value="10">10 days</SelectItem>
+              <SelectItem value="14">14 days</SelectItem>
+              <SelectItem value="21">21 days</SelectItem>
+              <SelectItem value="30">30 days</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-[#5a4f3f]">before deadline</span>
+        </div>
       </div>
 
       {/* Loading Fee */}
