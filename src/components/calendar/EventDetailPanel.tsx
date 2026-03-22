@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EventNotes } from './EventNotes';
+import { EventTripleseatDetails } from './EventTripleseatDetails';
 import { EventTasks } from './EventTasks';
 import { EventAttachments } from './EventAttachments';
 import { EventMeetingLinks } from './EventMeetingLinks';
@@ -152,11 +153,12 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="notes" className="flex-1 flex flex-col min-h-0">
+      <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
         <div className="border-b border-[#e8e2d8] bg-[#faf8f5] shrink-0 px-1">
           <ScrollArea className="w-full">
             <TabsList className="inline-flex h-10 w-max gap-0 bg-transparent p-0">
               {[
+                { value: 'details', label: 'Details' },
                 { value: 'notes', label: 'Notes' },
                 { value: 'tasks', label: 'Tasks' },
                 { value: 'meetings', label: 'Meetings' },
@@ -178,6 +180,9 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          <TabsContent value="details" className="p-4 mt-0">
+            <EventTripleseatDetails description={event.description} />
+          </TabsContent>
           <TabsContent value="notes" className="p-4 mt-0">
             <EventNotes eventUid={event.uid} />
           </TabsContent>
