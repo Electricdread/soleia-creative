@@ -73,7 +73,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                 <option value="closed">Closed</option>
               </select>
             </div>
-            <h2 className="text-lg font-semibold text-[#3d3629] truncate">{event.summary}</h2>
+            <h2 className="text-lg font-semibold text-[#3d3629] truncate">{event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '')}</h2>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-[#8a7d6b]">
               {dateFormatted && (
                 <span className="flex items-center gap-1">
