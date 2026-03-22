@@ -104,27 +104,6 @@ function parseEventPage(markdown: string): ScrapedEventData {
     data.signed_documents.push({ title: sdMatch[1], signed_on: sdMatch[2].trim() });
   }
 
-  // Payments table
-  const paymentRowRegex = /\| \*\*\[Receipt\].+?\*\* \| (-?\$[\d,.]+) \| ([^|]*) \| ([^|]*) \| ([^|]*) \| ([^|]*) \|/g;
-  let pMatch;
-  while ((pMatch = paymentRowRegex.exec(markdown)) !== null) {
-    data.payments.push({
-      amount: pMatch[1].trim(),
-      due: pMatch[2].trim(),
-      status: pMatch[3].trim(),
-      method: pMatch[4].trim(),
-      title: pMatch[5].trim(),
-    });
-  }
-
-  // Grand total
-  const grandTotalMatch = markdown.match(/\*\*Grand Total\*\* \| \*\*(\$[\d,.]+)\*\*/);
-  if (grandTotalMatch) data.grand_total = grandTotalMatch[1];
-
-  // Outstanding
-  const outstandingMatch = markdown.match(/Total Outstanding\*? \| (\$[\d,.]+)/);
-  if (outstandingMatch) data.total_outstanding = outstandingMatch[1];
-
   return data;
 }
 
