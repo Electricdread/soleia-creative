@@ -181,25 +181,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
         </div>
       </div>
 
-      {/* Editable URL */}
-      <div className="flex gap-2 items-center">
-        <Input
-          value={urlInput}
-          onChange={(e) => setUrlInput(e.target.value)}
-          placeholder="Triple Seat guest link URL"
-          className="text-[10px] bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] placeholder:text-[#b5ab9a] flex-1 min-h-[28px] h-7 px-2"
-        />
-        {urlInput !== savedUrl && (
-          <Button
-            size="sm"
-            onClick={handleFetchUrl}
-            disabled={loading}
-            className="bg-[#c49a3c] hover:bg-[#b08a30] text-white text-[10px] h-7 px-2"
-          >
-            Update
-          </Button>
-        )}
-      </div>
 
       {/* Guest Counts */}
       {hasGuests && (
