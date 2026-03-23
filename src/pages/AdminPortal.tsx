@@ -250,21 +250,12 @@ export default function AdminPortal() {
   }
 
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
+    <div className="relative min-h-screen bg-background overflow-hidden">
       {/* Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-zinc-900 to-black z-0" />
-      
-      {/* Subtle grid pattern overlay */}
-      <div 
-        className="fixed inset-0 z-[1] opacity-5 pointer-events-none"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }}
-      />
+      <div className="fixed inset-0 bg-gradient-to-br from-background via-muted/30 to-background z-0" />
 
       {/* Header */}
-      <header className="relative z-10 border-b border-zinc-800">
+      <header className="relative z-10 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -272,41 +263,40 @@ export default function AdminPortal() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800 min-h-[44px] min-w-[44px]"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] min-w-[44px]"
               >
                 {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
-              <img 
-                src={soleiaLogo} 
-                alt="Soleia" 
-                className="h-10 w-auto object-contain"
-              />
+              <img src={soleiaLogo} alt="Soleia" className="h-10 w-auto object-contain" />
             </div>
             
             <div className="flex items-center gap-4">
-              <span className="text-sm text-zinc-400 hidden sm:block">
-                {user.email}
-              </span>
+              <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+
+              {/* Theme Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] min-w-[44px]"
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5 text-primary" /> : <Moon className="w-5 h-5 text-primary" />}
+              </Button>
               
-              {/* Operator Console Link - Only visible to operator */}
               {user.email?.toLowerCase() === OPERATOR_EMAIL.toLowerCase() && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/office')}
-                  className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50"
+                  className="border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50"
                 >
                   <Command className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Operator Console</span>
                 </Button>
               )}
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
-              >
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground hover:bg-muted">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
@@ -318,19 +308,19 @@ export default function AdminPortal() {
       {/* Sidebar Overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40" onClick={() => setSidebarOpen(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
         </div>
       )}
 
       {/* Sidebar Drawer */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-zinc-950 border-r border-zinc-800 transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-card border-r border-border transition-transform duration-300 ease-in-out flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-800">
-          <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Platforms</span>
-          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="text-zinc-500 hover:text-white hover:bg-zinc-800 h-8 w-8">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Platforms</span>
+          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8">
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -339,20 +329,20 @@ export default function AdminPortal() {
             <button
               key={portal.title}
               onClick={() => { handlePortalClick(portal); setSidebarOpen(false); }}
-              className="group w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-150 hover:bg-zinc-800/80"
+              className="group w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-150 hover:bg-muted"
             >
-              <div className="w-8 h-8 rounded-md bg-white/5 border border-zinc-700/50 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-colors overflow-hidden">
+              <div className="w-8 h-8 rounded-md bg-primary/5 border border-border flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors overflow-hidden">
                 {portal.iconSrc ? (
                   <img src={portal.iconSrc} alt={portal.title} className="w-5 h-5 object-contain" />
                 ) : portal.icon ? (
                   <div className="scale-75">{portal.icon}</div>
                 ) : null}
               </div>
-              <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors flex items-center gap-1.5">
+              <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors flex items-center gap-1.5">
                 {portal.title}
-                {portal.external && <ExternalLink className="w-3 h-3 text-zinc-500" />}
+                {portal.external && <ExternalLink className="w-3 h-3 text-muted-foreground/50" />}
                 {portal.title === 'User Management' && pendingCount > 0 && (
-                  <Badge className="bg-amber-500 text-black text-[9px] font-bold px-1 py-0 rounded-full leading-none">
+                  <Badge className="bg-primary text-primary-foreground text-[9px] font-bold px-1 py-0 rounded-full leading-none">
                     {pendingCount}
                   </Badge>
                 )}
@@ -360,18 +350,26 @@ export default function AdminPortal() {
             </button>
           ))}
         </nav>
-        <div className="border-t border-zinc-800 px-4 py-3">
-          <p className="text-[10px] text-zinc-600 text-center">Soleia Creative Management</p>
+        <div className="border-t border-border px-4 py-3 flex items-center justify-between">
+          <p className="text-[10px] text-muted-foreground/60">Soleia Creative Management</p>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="text-muted-foreground hover:text-foreground h-8 w-8"
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </Button>
         </div>
       </aside>
 
-      {/* Main Content — Full Width */}
+      {/* Main Content */}
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[#c49a3c]" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white">This Week</h1>
-            <span className="text-sm text-zinc-500 hidden sm:inline">
+            <Calendar className="w-5 h-5 text-primary" />
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">This Week</h1>
+            <span className="text-sm text-muted-foreground hidden sm:inline">
               {format(startOfWeek(new Date()), 'MMM d')} – {format(endOfWeek(new Date()), 'MMM d')}
             </span>
           </div>
@@ -379,7 +377,7 @@ export default function AdminPortal() {
             variant="ghost"
             size="sm"
             onClick={() => navigate('/admin/calendar')}
-            className="text-[#c49a3c] hover:text-[#d4aa4c] hover:bg-zinc-800 gap-1"
+            className="text-primary hover:text-primary hover:bg-primary/10 gap-1"
           >
             View Calendar
             <ArrowRight className="w-3.5 h-3.5" />
@@ -407,14 +405,14 @@ export default function AdminPortal() {
                 }}
                 className={`flex flex-col items-center py-2 px-1 rounded-lg border transition-all hover:scale-[1.03] ${
                   today
-                    ? 'bg-[#c49a3c]/15 border-[#c49a3c]/40'
-                    : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-600'
+                    ? 'bg-primary/15 border-primary/40'
+                    : 'bg-card/60 border-border hover:border-muted-foreground/30'
                 }`}
               >
-                <span className={`text-[10px] font-semibold uppercase tracking-wider ${today ? 'text-[#c49a3c]' : 'text-zinc-500'}`}>
+                <span className={`text-[10px] font-semibold uppercase tracking-wider ${today ? 'text-primary' : 'text-muted-foreground'}`}>
                   {format(day, 'EEE')}
                 </span>
-                <span className={`text-lg font-bold leading-tight ${today ? 'text-[#c49a3c]' : 'text-white'}`}>
+                <span className={`text-lg font-bold leading-tight ${today ? 'text-primary' : 'text-foreground'}`}>
                   {format(day, 'd')}
                 </span>
                 {dayEvents.length > 0 && (
@@ -444,11 +442,11 @@ export default function AdminPortal() {
 
         {eventsLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           </div>
         ) : weekEvents.length === 0 ? (
-          <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-6 text-center">
-            <p className="text-zinc-500 text-sm">No events this week</p>
+          <div className="bg-card border border-border rounded-xl p-6 text-center">
+            <p className="text-muted-foreground text-sm">No events this week</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -464,17 +462,17 @@ export default function AdminPortal() {
                   onClick={() => navigate(`/admin/calendar?event=${encodeURIComponent(event.uid)}`)}
                   className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl border transition-all text-left hover:scale-[1.01] touch-manipulation ${
                     today
-                      ? 'bg-[#c49a3c]/10 border-[#c49a3c]/30 hover:border-[#c49a3c]/50'
-                      : 'bg-zinc-900/80 border-zinc-800 hover:border-zinc-600'
+                      ? 'bg-primary/10 border-primary/30 hover:border-primary/50'
+                      : 'bg-card border-border hover:border-muted-foreground/30'
                   }`}
                 >
                   <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex flex-col items-center justify-center ${
-                    today ? 'bg-[#c49a3c]/20' : 'bg-zinc-800'
+                    today ? 'bg-primary/20' : 'bg-muted'
                   }`}>
-                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${today ? 'text-[#c49a3c]' : 'text-zinc-500'}`}>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${today ? 'text-primary' : 'text-muted-foreground'}`}>
                       {format(eventDate, 'EEE')}
                     </span>
-                    <span className={`text-lg font-bold leading-none ${today ? 'text-[#c49a3c]' : 'text-white'}`}>
+                    <span className={`text-lg font-bold leading-none ${today ? 'text-primary' : 'text-foreground'}`}>
                       {format(eventDate, 'd')}
                     </span>
                   </div>
@@ -488,20 +486,20 @@ export default function AdminPortal() {
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{stripTripleseatPrefix(event.summary)}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{stripTripleseatPrefix(event.summary)}</p>
                     {event.location && (
-                      <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5 truncate">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
                         <MapPin className="w-3 h-3 flex-shrink-0" />
                         {event.location}
                       </p>
                     )}
                   </div>
                   <div className="flex-shrink-0 text-right">
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-xs text-muted-foreground">
                       {format(eventDate, 'h:mm a')}
                     </span>
                     {today && (
-                      <Badge className="ml-2 bg-[#c49a3c] text-black text-[9px] font-bold px-1.5 py-0">
+                      <Badge className="ml-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0">
                         TODAY
                       </Badge>
                     )}
@@ -514,16 +512,16 @@ export default function AdminPortal() {
 
         {/* Client Templates Section */}
         <div className="mt-10 space-y-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Client Templates</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Client Templates</h2>
           <EmailTemplateCard />
           <DropboxLinkManager />
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-zinc-800">
+      <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-zinc-600 text-sm">
+          <p className="text-center text-muted-foreground/60 text-sm">
             © {new Date().getFullYear()} Soleia Creative Management System
           </p>
         </div>
