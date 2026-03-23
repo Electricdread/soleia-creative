@@ -466,7 +466,7 @@ export default function AdminPortal() {
                   return (
                     <button
                       key={event.uid}
-                      onClick={() => navigate('/admin/calendar')}
+                      onClick={() => navigate(`/admin/calendar?event=${encodeURIComponent(event.uid)}`)}
                       className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl border transition-all text-left hover:scale-[1.01] touch-manipulation ${
                         today
                           ? 'bg-[#c49a3c]/10 border-[#c49a3c]/30 hover:border-[#c49a3c]/50'

@@ -76,7 +76,18 @@ export default function AdminCalendar() {
         },
       });
       const data = await res.json();
-      if (data.events) setEvents(data.events);
+      if (data.events) {
+        setEvents(data.events);
+        // Auto-select event from URL param
+        const eventUid = searchParams.get('event');
+        if (eventUid) {
+          const match = data.events.find((e: CalendarEvent) => e.uid === eventUid);
+          if (match) {
+            setSelectedEvent(match);
+            setCurrentMonth(parseISO(match.dtstart));
+          }
+        }
+      }
       if (data.error && data.events?.length === 0) setShowSettings(true);
     } catch (e) {
       console.error('Failed to fetch events:', e);
