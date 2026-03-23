@@ -223,13 +223,14 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
       )}
 
       {/* Venue Info */}
-      {(data.venue_address || data.venue_phone) && (
+      {true && (
         <div>
           <div className="flex items-center gap-1.5 mb-2">
             <MapPin className="w-3.5 h-3.5 text-[#c49a3c]" />
             <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Venue</span>
           </div>
           <div className="space-y-1 text-xs text-[#3d3629]">
+            <p className="font-semibold">Soleia Las Vegas</p>
             {data.venue_address && <p>{data.venue_address}</p>}
             {data.venue_phone && (
               <a href={`tel:${data.venue_phone}`} className="flex items-center gap-1 text-[#8a7d6b] hover:text-[#c49a3c]">
