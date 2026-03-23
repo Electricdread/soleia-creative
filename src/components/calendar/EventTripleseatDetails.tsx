@@ -169,15 +169,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
           >
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-6 text-[10px] gap-1 border-[#d6cfc3] text-[#5a4f3f] hover:bg-[#f0ece4]"
-            onClick={() => window.open(savedUrl, '_blank')}
-          >
-            <ExternalLink className="w-3 h-3" />
-            Open
-          </Button>
         </div>
       </div>
 
