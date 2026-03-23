@@ -47,25 +47,25 @@ export function DropboxLinkManager() {
   if (loading) return null;
 
   return (
-    <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-6 space-y-5">
+    <div className="bg-card/80 border border-border rounded-lg p-6 space-y-5">
       <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 rounded-lg bg-blue-500/20">
-          <ExternalLink className="w-5 h-5 text-blue-400" />
+        <div className="p-2 rounded-lg bg-primary/10">
+          <ExternalLink className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-white font-semibold">Dropbox File Request Link</h3>
-          <p className="text-xs text-zinc-400">Paste Dropbox file request URL for the delivery guide. Clients will see an upload button.</p>
+          <h3 className="text-foreground font-semibold">Dropbox File Request Link</h3>
+          <p className="text-xs text-muted-foreground">Paste Dropbox file request URL for the delivery guide. Clients will see an upload button.</p>
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-zinc-300 text-sm">Soleia Delivery Guide</Label>
+          <Label className="text-foreground/80 text-sm">Soleia Delivery Guide</Label>
           <Input
             value={soleiaUrl}
             onChange={e => setSoleiaUrl(e.target.value)}
             placeholder="https://www.dropbox.com/request/..."
-            className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-blue-500"
+            className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary"
           />
         </div>
       </div>
@@ -73,7 +73,7 @@ export function DropboxLinkManager() {
       <Button
         onClick={handleSave}
         disabled={saving}
-        className="bg-white text-black hover:bg-zinc-200 font-medium"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
       >
         {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
         Save Link
