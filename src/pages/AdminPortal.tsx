@@ -534,7 +534,7 @@ export default function AdminPortal() {
         )}
 
         {/* Client Templates Section */}
-        <div className="max-w-6xl mx-auto mt-10 space-y-6">
+        <div className="mt-10 space-y-6">
           <h2 className="text-xl font-semibold text-white mb-4">Client Templates</h2>
           <EmailTemplateCard />
           <DropboxLinkManager />
