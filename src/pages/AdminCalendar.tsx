@@ -30,6 +30,7 @@ interface ProposalInfo {
 
 export default function AdminCalendar() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
