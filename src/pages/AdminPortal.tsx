@@ -9,7 +9,7 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
 import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
-import { format, parseISO, startOfWeek, endOfWeek, isWithinInterval, isSameDay, isToday } from 'date-fns';
+import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval, isSameDay, isToday } from 'date-fns';
 import { getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
 
 
