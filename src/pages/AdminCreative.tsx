@@ -32,14 +32,14 @@ export default function AdminCreative() {
             </div>
 
             <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-white">
+              <h1 className="text-lg font-semibold text-foreground">
                 Soleia Creative
               </h1>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/admin')}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 w-8"
+                className="text-muted-foreground hover:text-foreground h-8 w-8"
                 aria-label="Go to admin portal"
               >
                 <Settings className="w-4 h-4" />
