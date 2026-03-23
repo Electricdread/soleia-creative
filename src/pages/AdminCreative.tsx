@@ -8,12 +8,9 @@ export default function AdminCreative() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
-
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="relative z-10 border-b border-zinc-800">
+      <header className="relative z-10 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -21,7 +18,7 @@ export default function AdminCreative() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/admin')}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
