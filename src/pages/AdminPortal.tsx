@@ -75,6 +75,7 @@ export default function AdminPortal() {
   const [weekEvents, setWeekEvents] = useState<{ uid: string; summary: string; dtstart: string; dtend: string; location: string; status: string }[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
