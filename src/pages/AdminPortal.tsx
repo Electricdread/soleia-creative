@@ -369,7 +369,6 @@ export default function AdminPortal() {
               ))}
             </div>
           </div>
-          </div>
 
           {/* Right Column — This Week's Events */}
           <div>
