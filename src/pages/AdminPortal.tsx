@@ -26,10 +26,10 @@ interface PortalCard {
 
 const portals: PortalCard[] = [
   {
-    title: 'Creative Sessions',
-    description: 'Internal creative sessions, mood boards, and team collaboration',
-    iconSrc: soleiaIcon,
-    href: '/admin/creative',
+    title: 'Event Calendar',
+    description: 'View upcoming events synced from Triple Seat',
+    icon: <Calendar className="w-6 h-6 text-[#c49a3c]" />,
+    href: '/admin/calendar',
   },
   {
     title: 'Soleia Creative Guide',
@@ -38,10 +38,10 @@ const portals: PortalCard[] = [
     href: '/creative-guide',
   },
   {
-    title: 'Content Previz',
-    description: 'Per-client video previews for content review and approval',
-    icon: <Video className="w-6 h-6 text-[#c49a3c]" />,
-    href: '/admin/looks',
+    title: 'Delivery Guides',
+    description: 'Session-based content delivery guides with asset upload links',
+    icon: <Send className="w-6 h-6 text-[#c49a3c]" />,
+    href: '/delivery-guide',
   },
   {
     title: 'Client Proposals',
@@ -50,25 +50,24 @@ const portals: PortalCard[] = [
     href: '/admin/proposals',
   },
   {
+    title: 'Creative Sessions',
+    description: 'Internal creative sessions, mood boards, and team collaboration',
+    iconSrc: soleiaIcon,
+    href: '/admin/creative',
+  },
+  {
+    title: 'Content Previz',
+    description: 'Per-client video previews for content review and approval',
+    icon: <Video className="w-6 h-6 text-[#c49a3c]" />,
+    href: '/admin/looks',
+  },
+  {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
     icon: <Users className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/users',
   },
-  {
-    title: 'Event Calendar',
-    description: 'View upcoming events synced from Triple Seat',
-    icon: <Calendar className="w-6 h-6 text-[#c49a3c]" />,
-    href: '/admin/calendar',
-  },
-  {
-    title: 'Delivery Guides',
-    description: 'Session-based content delivery guides with asset upload links',
-    icon: <Send className="w-6 h-6 text-[#c49a3c]" />,
-    href: '/delivery-guide',
-  },
 ];
-
 export default function AdminPortal() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading, signOut } = useAuth();
