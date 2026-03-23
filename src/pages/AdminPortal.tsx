@@ -72,6 +72,7 @@ const portals: PortalCard[] = [
 export default function AdminPortal() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [pendingCount, setPendingCount] = useState(0);
   const [weekEvents, setWeekEvents] = useState<{ uid: string; summary: string; dtstart: string; dtend: string; location: string; status: string }[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
