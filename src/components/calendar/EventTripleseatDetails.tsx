@@ -232,15 +232,20 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
       )}
 
       {/* Venue Info */}
-      {data.venue_phone && (
+      {(data.venue_address || data.venue_phone) && (
         <div>
           <div className="flex items-center gap-1.5 mb-2">
-            <Phone className="w-3.5 h-3.5 text-[#c49a3c]" />
-            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Venue Contact</span>
+            <MapPin className="w-3.5 h-3.5 text-[#c49a3c]" />
+            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Venue</span>
           </div>
-          <a href={`tel:${data.venue_phone}`} className="flex items-center gap-1 text-xs text-[#8a7d6b] hover:text-[#c49a3c]">
-            <Phone className="w-3 h-3" /> {data.venue_phone}
-          </a>
+          <div className="space-y-1 text-xs text-[#3d3629]">
+            {data.venue_address && <p>{data.venue_address}</p>}
+            {data.venue_phone && (
+              <a href={`tel:${data.venue_phone}`} className="flex items-center gap-1 text-[#8a7d6b] hover:text-[#c49a3c]">
+                <Phone className="w-3 h-3" /> {data.venue_phone}
+              </a>
+            )}
+          </div>
         </div>
       )}
 
