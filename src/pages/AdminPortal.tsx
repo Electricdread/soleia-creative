@@ -329,57 +329,46 @@ export default function AdminPortal() {
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
 
         {/* Two-column layout: Platforms left, Events right */}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
           
           {/* Left Column — Platforms */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-lg font-semibold text-zinc-400">Platforms</h2>
+            <div className="flex items-center gap-3 mb-3">
+              <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Platforms</h2>
               <div className="flex-1 h-px bg-zinc-800" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+            <div className="flex flex-row flex-wrap sm:flex-nowrap lg:flex-col gap-1.5">
               {portals.map((portal) => (
                 <button
                   key={portal.title}
                   onClick={() => handlePortalClick(portal)}
-                  className="group relative bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 text-left transition-all duration-300 hover:border-zinc-600 hover:bg-zinc-800/80 hover:scale-[1.01] flex items-center gap-4"
+                  className="group relative bg-zinc-900/60 border border-zinc-800/80 rounded-lg px-3 py-2.5 text-left transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800/80 flex items-center gap-3 flex-1 lg:flex-none min-w-[140px]"
                 >
-                  {/* Icon */}
-                  <div className="w-11 h-11 rounded-lg bg-white/5 border border-zinc-700 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 group-hover:border-zinc-600 transition-colors overflow-hidden">
+                  <div className="w-8 h-8 rounded-md bg-white/5 border border-zinc-700/50 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-colors overflow-hidden">
                     {portal.iconSrc ? (
                       <img 
                         src={portal.iconSrc} 
                         alt={portal.title} 
-                        className="w-7 h-7 object-contain group-hover:scale-110 transition-transform"
+                        className="w-5 h-5 object-contain"
                       />
                     ) : portal.icon ? (
-                      <div className="group-hover:scale-110 transition-transform">
-                        {portal.icon}
-                      </div>
+                      <div className="scale-75">{portal.icon}</div>
                     ) : null}
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                      {portal.title}
-                      {portal.external && (
-                        <ExternalLink className="w-3.5 h-3.5 text-zinc-500" />
-                      )}
-                      {portal.title === 'User Management' && pendingCount > 0 && (
-                        <Badge className="bg-amber-500 text-black text-[10px] font-bold px-1.5 py-0 rounded-full">
-                          {pendingCount}
-                        </Badge>
-                      )}
-                    </h3>
-                    <p className="text-zinc-500 text-xs leading-relaxed mt-0.5 truncate">
-                      {portal.description}
-                    </p>
-                  </div>
-
-                  <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 flex-shrink-0 transition-colors" />
+                  <span className="text-xs font-medium text-zinc-300 group-hover:text-white transition-colors flex items-center gap-1.5 truncate">
+                    {portal.title}
+                    {portal.external && <ExternalLink className="w-3 h-3 text-zinc-500" />}
+                    {portal.title === 'User Management' && pendingCount > 0 && (
+                      <Badge className="bg-amber-500 text-black text-[9px] font-bold px-1 py-0 rounded-full leading-none">
+                        {pendingCount}
+                      </Badge>
+                    )}
+                  </span>
                 </button>
               ))}
             </div>
+          </div>
           </div>
 
           {/* Right Column — This Week's Events */}
