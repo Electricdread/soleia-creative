@@ -206,33 +206,14 @@ export default function AdminPortal() {
   // Show pending approval message for non-admin users
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-black flex flex-col">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
-        <div 
-          className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-            backgroundSize: '50px 50px'
-          }}
-        />
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-muted to-background" />
 
-        {/* Header */}
-        <header className="relative z-10 border-b border-zinc-800">
+        <header className="relative z-10 border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
-              <img 
-                src={soleiaLogo} 
-                alt="Soleia" 
-                className="h-10 w-auto object-contain"
-              />
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
-              >
+              <img src={soleiaLogo} alt="Soleia" className="h-10 w-auto object-contain" />
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground hover:bg-muted">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
@@ -240,30 +221,26 @@ export default function AdminPortal() {
           </div>
         </header>
 
-        {/* Pending Approval Content */}
         <main className="relative z-10 flex-1 flex items-center justify-center px-4">
           <div className="max-w-md w-full text-center">
-            <div className="w-20 h-20 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-6">
-              <Clock className="w-10 h-10 text-amber-500" />
+            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
+              <Clock className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-3">
-              Pending Approval
-            </h1>
-            <p className="text-zinc-400 mb-6 leading-relaxed">
-              Your registration is currently under review. An administrator will approve your access shortly. You'll receive a notification once your account has been approved.
+            <h1 className="text-2xl font-bold text-foreground mb-3">Pending Approval</h1>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Your registration is currently under review. An administrator will approve your access shortly.
             </p>
-            <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-4">
-              <p className="text-sm text-zinc-500">
-                Signed in as: <span className="text-zinc-300">{user.email}</span>
+            <div className="bg-card border border-border rounded-lg p-4">
+              <p className="text-sm text-muted-foreground">
+                Signed in as: <span className="text-foreground">{user.email}</span>
               </p>
             </div>
           </div>
         </main>
 
-        {/* Footer */}
-        <footer className="relative z-10 border-t border-zinc-800">
+        <footer className="relative z-10 border-t border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <p className="text-center text-zinc-600 text-sm">
+            <p className="text-center text-muted-foreground/60 text-sm">
               © {new Date().getFullYear()} Soleia Creative Management System
             </p>
           </div>
