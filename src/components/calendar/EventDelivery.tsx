@@ -27,7 +27,6 @@ export function EventDelivery({ eventUid }: { eventUid: string }) {
 
   useEffect(() => {
     const fetch_ = async () => {
-      // Fetch deadline info
       const { data: clientInfo } = await supabase
         .from('calendar_event_client_info')
         .select('content_deadline, reminder_days, deadline_notes')
@@ -35,7 +34,6 @@ export function EventDelivery({ eventUid }: { eventUid: string }) {
         .maybeSingle();
       if (clientInfo) setDeadlineInfo(clientInfo as any);
 
-      // Get associations for delivery-related types
       const { data: assocs } = await supabase
         .from('calendar_event_associations')
         .select('*')
@@ -73,14 +71,14 @@ export function EventDelivery({ eventUid }: { eventUid: string }) {
     fetch_();
   }, [eventUid]);
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-[#c49a3c]" /></div>;
+  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-primary" /></div>;
 
   if (items.length === 0) {
     return (
       <div className="text-center py-6">
-        <FolderOpen className="w-8 h-8 text-[#d6cfc3] mx-auto mb-2" />
-        <p className="text-xs text-[#b5ab9a]">No delivery guides or Dropbox links linked yet.</p>
-        <p className="text-[10px] text-[#c4bba8] mt-1">Link sessions via the "Linked Items" tab to see them here.</p>
+        <FolderOpen className="w-8 h-8 text-border mx-auto mb-2" />
+        <p className="text-xs text-muted-foreground/60">No delivery guides or Dropbox links linked yet.</p>
+        <p className="text-[10px] text-muted-foreground/40 mt-1">Link sessions via the "Linked Items" tab to see them here.</p>
       </div>
     );
   }
@@ -93,43 +91,41 @@ export function EventDelivery({ eventUid }: { eventUid: string }) {
 
   return (
     <div className="space-y-3">
-      {/* Deadline Reminder Alert */}
       {showAlert && daysUntilDeadline !== null && (
         <div className={`flex items-start gap-2 p-3 rounded-lg border ${
-          daysUntilDeadline <= 0 ? 'bg-red-50 border-red-300' : daysUntilDeadline <= 3 ? 'bg-red-50 border-red-200' : daysUntilDeadline <= 7 ? 'bg-amber-50 border-amber-200' : 'bg-[#fdf8eb] border-[#e8d9a8]'
+          daysUntilDeadline <= 0 ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-800' : daysUntilDeadline <= 3 ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : daysUntilDeadline <= 7 ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800' : 'bg-primary/5 border-primary/20'
         }`}>
           <div className="mt-0.5">
-            {daysUntilDeadline <= 3 ? <AlertTriangle className="w-4 h-4 text-red-500" /> : <Bell className="w-4 h-4 text-[#c49a3c]" />}
+            {daysUntilDeadline <= 3 ? <AlertTriangle className="w-4 h-4 text-red-500" /> : <Bell className="w-4 h-4 text-primary" />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-semibold ${daysUntilDeadline <= 0 ? 'text-red-700' : daysUntilDeadline <= 3 ? 'text-red-600' : 'text-[#8a6d2b]'}`}>
+            <p className={`text-sm font-semibold ${daysUntilDeadline <= 0 ? 'text-red-700 dark:text-red-400' : daysUntilDeadline <= 3 ? 'text-red-600 dark:text-red-400' : 'text-primary'}`}>
               {daysUntilDeadline < 0 ? `⚠️ Content ${Math.abs(daysUntilDeadline)} days overdue!` : daysUntilDeadline === 0 ? '🔴 Content deadline is TODAY!' : `📅 ${daysUntilDeadline} day${daysUntilDeadline !== 1 ? 's' : ''} until content deadline`}
             </p>
-            <p className="text-xs text-[#8a7d6b] mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Due: {format(new Date(deadlineInfo!.content_deadline!), 'EEEE, MMMM d, yyyy')}
             </p>
             {deadlineInfo?.deadline_notes && (
-              <p className="text-xs text-[#5a4f3f] mt-1 italic">{deadlineInfo.deadline_notes}</p>
+              <p className="text-xs text-foreground/70 mt-1 italic">{deadlineInfo.deadline_notes}</p>
             )}
           </div>
         </div>
       )}
 
-      {/* No deadline set hint */}
       {!deadlineInfo?.content_deadline && items.length > 0 && (
-        <div className="flex items-center gap-2 p-2 rounded-lg bg-[#faf8f5] border border-dashed border-[#d6cfc3]">
-          <Clock className="w-3.5 h-3.5 text-[#b5ab9a]" />
-          <p className="text-[11px] text-[#b5ab9a]">Set a content deadline in the Client tab to get reminders here.</p>
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 border border-dashed border-border">
+          <Clock className="w-3.5 h-3.5 text-muted-foreground/60" />
+          <p className="text-[11px] text-muted-foreground/60">Set a content deadline in the Client tab to get reminders here.</p>
         </div>
       )}
       {items.map((item) => (
-        <div key={item.id} className="bg-[#faf8f5] border border-[#e8e2d8] rounded-lg p-3">
+        <div key={item.id} className="bg-muted/50 border border-border rounded-lg p-3">
           {item.session && (
             <>
-              <p className="text-sm font-medium text-[#3d3629]">{item.session.project_name}</p>
-              <p className="text-[11px] text-[#8a7d6b]">{item.session.client_name}</p>
+              <p className="text-sm font-medium text-foreground">{item.session.project_name}</p>
+              <p className="text-[11px] text-muted-foreground">{item.session.client_name}</p>
               <div className="flex flex-wrap gap-2 mt-2">
-                <a href={`/delivery/${item.session.token}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-[#c49a3c] hover:underline">
+                <a href={`/delivery/${item.session.token}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline">
                   <Link2 className="w-3 h-3" /> Delivery Guide
                 </a>
                 {item.session.dropbox_url && (
@@ -142,9 +138,9 @@ export function EventDelivery({ eventUid }: { eventUid: string }) {
           )}
           {item.link && (
             <>
-              <p className="text-sm font-medium text-[#3d3629]">{item.link.event_name}</p>
-              <p className="text-[11px] text-[#8a7d6b]">{item.link.client_name}</p>
-              <a href={`/session/${item.link.token}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-[#c49a3c] hover:underline mt-2">
+              <p className="text-sm font-medium text-foreground">{item.link.event_name}</p>
+              <p className="text-[11px] text-muted-foreground">{item.link.client_name}</p>
+              <a href={`/session/${item.link.token}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary hover:underline mt-2">
                 <Link2 className="w-3 h-3" /> Client Session
               </a>
             </>

@@ -49,15 +49,15 @@ export function EventTasks({ eventUid }: { eventUid: string }) {
     fetchTasks();
   };
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-[#c49a3c]" /></div>;
+  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-primary" /></div>;
 
   const completed = tasks.filter(t => t.is_completed).length;
 
   return (
     <div className="space-y-3">
       {tasks.length > 0 && (
-        <div className="flex items-center gap-2 text-xs text-[#8a7d6b]">
-          <div className="h-1.5 flex-1 bg-[#e8e2d8] rounded-full overflow-hidden">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="h-1.5 flex-1 bg-border rounded-full overflow-hidden">
             <div className="h-full bg-[#7b8a3e] rounded-full transition-all" style={{ width: `${(completed / tasks.length) * 100}%` }} />
           </div>
           <span>{completed}/{tasks.length}</span>
@@ -70,25 +70,25 @@ export function EventTasks({ eventUid }: { eventUid: string }) {
           onChange={(e) => setNewTask(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addTask()}
           placeholder="Add a task..."
-          className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm placeholder:text-[#b5ab9a]"
+          className="bg-muted/50 border-border text-foreground text-sm placeholder:text-muted-foreground/60"
         />
-        <Button size="sm" onClick={addTask} disabled={saving || !newTask.trim()} className="bg-[#c49a3c] hover:bg-[#b08a30] text-white shrink-0">
+        <Button size="sm" onClick={addTask} disabled={saving || !newTask.trim()} className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0">
           {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
         </Button>
       </div>
 
-      {tasks.length === 0 && <p className="text-xs text-[#b5ab9a] italic">No tasks yet</p>}
+      {tasks.length === 0 && <p className="text-xs text-muted-foreground/60 italic">No tasks yet</p>}
 
       <div className="space-y-1">
         {tasks.map((t) => (
-          <div key={t.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded hover:bg-[#faf8f5] group">
+          <div key={t.id} className="flex items-center gap-2.5 py-1.5 px-2 rounded hover:bg-muted/50 group">
             <Checkbox
               checked={t.is_completed}
               onCheckedChange={() => toggleTask(t.id, t.is_completed)}
-              className="border-[#d6cfc3] data-[state=checked]:bg-[#7b8a3e] data-[state=checked]:border-[#7b8a3e]"
+              className="border-border data-[state=checked]:bg-[#7b8a3e] data-[state=checked]:border-[#7b8a3e]"
             />
-            <span className={`text-sm flex-1 ${t.is_completed ? 'line-through text-[#b5ab9a]' : 'text-[#3d3629]'}`}>{t.title}</span>
-            <button onClick={() => deleteTask(t.id)} className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
+            <span className={`text-sm flex-1 ${t.is_completed ? 'line-through text-muted-foreground/60' : 'text-foreground'}`}>{t.title}</span>
+            <button onClick={() => deleteTask(t.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
