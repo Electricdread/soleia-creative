@@ -9,7 +9,7 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
 import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
-import { format, parseISO, startOfWeek, endOfWeek, isWithinInterval, isSameDay, isToday } from 'date-fns';
+import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval, isSameDay, isToday } from 'date-fns';
 import { getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
 
 
@@ -401,6 +401,55 @@ export default function AdminPortal() {
                 View Calendar
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
+            </div>
+
+            {/* Weekly Calendar Strip */}
+            <div className="grid grid-cols-7 gap-1.5 mb-4">
+              {eachDayOfInterval({
+                start: startOfWeek(new Date()),
+                end: endOfWeek(new Date()),
+              }).map((day) => {
+                const dayEvents = weekEvents.filter((e) => isSameDay(parseISO(e.dtstart), day));
+                const today = isToday(day);
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => navigate('/admin/calendar')}
+                    className={`flex flex-col items-center py-2 px-1 rounded-lg border transition-all hover:scale-[1.03] ${
+                      today
+                        ? 'bg-[#c49a3c]/15 border-[#c49a3c]/40'
+                        : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-600'
+                    }`}
+                  >
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${today ? 'text-[#c49a3c]' : 'text-zinc-500'}`}>
+                      {format(day, 'EEE')}
+                    </span>
+                    <span className={`text-lg font-bold leading-tight ${today ? 'text-[#c49a3c]' : 'text-white'}`}>
+                      {format(day, 'd')}
+                    </span>
+                    {dayEvents.length > 0 && (
+                      <div className="flex gap-0.5 mt-1">
+                        {dayEvents.slice(0, 3).map((ev) => {
+                          const status = getEventStatus(ev);
+                          return (
+                            <div
+                              key={ev.uid}
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{
+                                backgroundColor:
+                                  status === 'definite' ? '#7b8a3e' :
+                                  status === 'prospect' ? '#c49a3c' :
+                                  status === 'tentative' ? '#5a8fb4' :
+                                  status === 'cancelled' ? '#b05a5a' : '#8a7d6b'
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {eventsLoading ? (
