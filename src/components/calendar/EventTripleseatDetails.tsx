@@ -223,7 +223,7 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
       )}
 
       {/* Venue Info */}
-      {(data.venue_address || data.venue_phone) && (
+      {true && (
         <div>
           <div className="flex items-center gap-1.5 mb-2">
             <MapPin className="w-3.5 h-3.5 text-[#c49a3c]" />
