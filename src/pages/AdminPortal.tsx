@@ -402,7 +402,14 @@ export default function AdminPortal() {
                 return (
                   <button
                     key={day.toISOString()}
-                    onClick={() => navigate('/admin/calendar')}
+                    onClick={() => {
+                      const firstEvent = dayEvents[0];
+                      if (firstEvent) {
+                        navigate(`/admin/calendar?event=${encodeURIComponent(firstEvent.uid)}`);
+                      } else {
+                        navigate('/admin/calendar');
+                      }
+                    }}
                     className={`flex flex-col items-center py-2 px-1 rounded-lg border transition-all hover:scale-[1.03] ${
                       today
                         ? 'bg-[#c49a3c]/15 border-[#c49a3c]/40'
@@ -459,7 +466,7 @@ export default function AdminPortal() {
                   return (
                     <button
                       key={event.uid}
-                      onClick={() => navigate('/admin/calendar')}
+                      onClick={() => navigate(`/admin/calendar?event=${encodeURIComponent(event.uid)}`)}
                       className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl border transition-all text-left hover:scale-[1.01] touch-manipulation ${
                         today
                           ? 'bg-[#c49a3c]/10 border-[#c49a3c]/30 hover:border-[#c49a3c]/50'

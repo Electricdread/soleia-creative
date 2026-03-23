@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ interface ProposalInfo {
 
 export default function AdminCalendar() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +76,18 @@ export default function AdminCalendar() {
         },
       });
       const data = await res.json();
-      if (data.events) setEvents(data.events);
+      if (data.events) {
+        setEvents(data.events);
+        // Auto-select event from URL param
+        const eventUid = searchParams.get('event');
+        if (eventUid) {
+          const match = data.events.find((e: CalendarEvent) => e.uid === eventUid);
+          if (match) {
+            setSelectedEvent(match);
+            setCurrentMonth(parseISO(match.dtstart));
+          }
+        }
+      }
       if (data.error && data.events?.length === 0) setShowSettings(true);
     } catch (e) {
       console.error('Failed to fetch events:', e);
