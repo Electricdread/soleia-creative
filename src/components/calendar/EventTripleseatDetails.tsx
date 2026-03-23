@@ -27,7 +27,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
   const [loadingUrl, setLoadingUrl] = useState(true);
   const [cached, setCached] = useState(false);
 
-  // Load saved URL from cache table
   useEffect(() => {
     const loadSavedUrl = async () => {
       setLoadingUrl(true);
@@ -40,7 +39,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
         setSavedUrl(cacheRow.tripleseat_url);
         setUrlInput(cacheRow.tripleseat_url);
       } else {
-        // Try to extract from description as fallback
         const match = description?.match(/https?:\/\/[^\s]*tripleseat\.com[^\s]*/i);
         if (match) {
           setUrlInput(match[0]);
@@ -51,7 +49,6 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
     loadSavedUrl();
   }, [eventUid, description]);
 
-  // Auto-fetch when we have a saved URL
   useEffect(() => {
     if (savedUrl) fetchDetails();
   }, [savedUrl]);
@@ -91,32 +88,31 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
   if (loadingUrl) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-5 h-5 animate-spin text-[#c49a3c]" />
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
       </div>
     );
   }
 
-  // No saved URL — show input field
   if (!savedUrl && !data) {
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-1.5">
-          <Link2 className="w-3.5 h-3.5 text-[#c49a3c]" />
-          <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Triple Seat Guest Link</span>
+          <Link2 className="w-3.5 h-3.5 text-primary" />
+          <span className="text-[10px] font-semibold text-foreground/70 uppercase tracking-wider">Triple Seat Guest Link</span>
         </div>
-        <p className="text-[11px] text-[#8a7d6b]">Paste the public guest link URL for this event to fetch details.</p>
+        <p className="text-[11px] text-muted-foreground">Paste the public guest link URL for this event to fetch details.</p>
         <div className="flex gap-2">
           <Input
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder="https://portal.tripleseat.com/public_profile/events/..."
-            className="text-xs bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] placeholder:text-[#b5ab9a] flex-1 min-h-[36px] h-9"
+            className="text-xs bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/60 flex-1 min-h-[36px] h-9"
           />
           <Button
             size="sm"
             onClick={handleFetchUrl}
             disabled={loading || !urlInput.trim()}
-            className="bg-[#c49a3c] hover:bg-[#b08a30] text-white text-xs h-9 px-3"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-9 px-3"
           >
             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Fetch'}
           </Button>
@@ -128,8 +124,8 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-5 h-5 animate-spin text-[#c49a3c]" />
-        <span className="ml-2 text-xs text-[#8a7d6b]">Loading event details...</span>
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        <span className="ml-2 text-xs text-muted-foreground">Loading event details...</span>
       </div>
     );
   }
@@ -137,8 +133,8 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
   if (!data) {
     return (
       <div className="text-center py-6 space-y-2">
-        <p className="text-xs text-[#8a7d6b]">Could not load event details.</p>
-        <Button variant="outline" size="sm" onClick={() => fetchDetails(true)} className="text-xs border-[#d6cfc3]">
+        <p className="text-xs text-muted-foreground">Could not load event details.</p>
+        <Button variant="outline" size="sm" onClick={() => fetchDetails(true)} className="text-xs border-border">
           Try Again
         </Button>
       </div>
@@ -152,18 +148,17 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <h4 className="text-xs font-semibold text-[#5a4f3f] uppercase tracking-wider flex items-center gap-1.5">
-          <Building2 className="w-3.5 h-3.5 text-[#c49a3c]" />
+        <h4 className="text-xs font-semibold text-foreground/70 uppercase tracking-wider flex items-center gap-1.5">
+          <Building2 className="w-3.5 h-3.5 text-primary" />
           Event Details
         </h4>
         <div className="flex items-center gap-1.5">
-          {cached && <span className="text-[9px] text-[#b5ab9a]">cached</span>}
+          {cached && <span className="text-[9px] text-muted-foreground/60">cached</span>}
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 text-[#8a7d6b] hover:text-[#5a4f3f]"
+            className="h-6 w-6 text-muted-foreground hover:text-foreground"
             onClick={() => fetchDetails(true)}
             disabled={loading}
           >
@@ -172,47 +167,44 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
         </div>
       </div>
 
-
-      {/* Guest Counts */}
       {hasGuests && (
-        <div className="bg-[#faf8f5] rounded-lg p-3 border border-[#e8e2d8]">
+        <div className="bg-muted/50 rounded-lg p-3 border border-border">
           <div className="flex items-center gap-1.5 mb-2">
-            <Users className="w-3.5 h-3.5 text-[#c49a3c]" />
-            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Guests</span>
+            <Users className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-semibold text-foreground/70 uppercase tracking-wider">Guests</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {data.guaranteed_guests && (
               <div>
-                <span className="text-lg font-bold text-[#3d3629]">{data.guaranteed_guests}</span>
-                <span className="text-[10px] text-[#8a7d6b] block">Guaranteed</span>
+                <span className="text-lg font-bold text-foreground">{data.guaranteed_guests}</span>
+                <span className="text-[10px] text-muted-foreground block">Guaranteed</span>
               </div>
             )}
             {data.expected_guests && (
               <div>
-                <span className="text-lg font-bold text-[#3d3629]">{data.expected_guests}</span>
-                <span className="text-[10px] text-[#8a7d6b] block">Expected</span>
+                <span className="text-lg font-bold text-foreground">{data.expected_guests}</span>
+                <span className="text-[10px] text-muted-foreground block">Expected</span>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Event Managers */}
       {hasManagers && (
         <div>
           <div className="flex items-center gap-1.5 mb-2">
-            <UserCircle className="w-3.5 h-3.5 text-[#c49a3c]" />
-            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Event Managers</span>
+            <UserCircle className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-semibold text-foreground/70 uppercase tracking-wider">Event Managers</span>
           </div>
           <div className="space-y-2">
             {data.managers.map((m, i) => (
-              <div key={i} className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-[#faf8f5] border border-[#e8e2d8]">
-                <div className="w-7 h-7 rounded-full bg-[#c49a3c]/10 flex items-center justify-center text-[10px] font-semibold text-[#c49a3c]">
+              <div key={i} className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-muted/50 border border-border">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary">
                   {m.name.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="text-xs font-medium text-[#3d3629] block truncate">{m.name}</span>
-                  <a href={`mailto:${m.email}`} className="text-[10px] text-[#c49a3c] hover:underline flex items-center gap-0.5 truncate">
+                  <span className="text-xs font-medium text-foreground block truncate">{m.name}</span>
+                  <a href={`mailto:${m.email}`} className="text-[10px] text-primary hover:underline flex items-center gap-0.5 truncate">
                     <Mail className="w-2.5 h-2.5 shrink-0" /> {m.email}
                   </a>
                 </div>
@@ -222,18 +214,17 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
         </div>
       )}
 
-      {/* Venue Info */}
       {true && (
         <div>
           <div className="flex items-center gap-1.5 mb-2">
-            <MapPin className="w-3.5 h-3.5 text-[#c49a3c]" />
-            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Venue</span>
+            <MapPin className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-semibold text-foreground/70 uppercase tracking-wider">Venue</span>
           </div>
-          <div className="space-y-1 text-xs text-[#3d3629]">
+          <div className="space-y-1 text-xs text-foreground">
             <p className="font-semibold">Soleia Las Vegas</p>
             {data.venue_address && <p>{data.venue_address}</p>}
             {data.venue_phone && (
-              <a href={`tel:${data.venue_phone}`} className="flex items-center gap-1 text-[#8a7d6b] hover:text-[#c49a3c]">
+              <a href={`tel:${data.venue_phone}`} className="flex items-center gap-1 text-muted-foreground hover:text-primary">
                 <Phone className="w-3 h-3" /> {data.venue_phone}
               </a>
             )}
@@ -241,38 +232,36 @@ export function EventTripleseatDetails({ description, eventUid }: { description:
         </div>
       )}
 
-      {/* Signed Documents */}
       {hasDocuments && (
         <div>
           <div className="flex items-center gap-1.5 mb-2">
-            <FileCheck className="w-3.5 h-3.5 text-[#c49a3c]" />
-            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Signed Documents</span>
+            <FileCheck className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-semibold text-foreground/70 uppercase tracking-wider">Signed Documents</span>
           </div>
           <div className="space-y-1.5">
             {data.signed_documents.map((doc, i) => (
-              <div key={i} className="py-1.5 px-2 rounded-md bg-emerald-50 border border-emerald-100">
-                <span className="text-xs font-medium text-emerald-800 block">{doc.title}</span>
-                <span className="text-[10px] text-emerald-600">{doc.signed_on}</span>
+              <div key={i} className="py-1.5 px-2 rounded-md bg-emerald-50 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800">
+                <span className="text-xs font-medium text-emerald-800 dark:text-emerald-400 block">{doc.title}</span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-500">{doc.signed_on}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Recent Activity */}
       {hasActivity && (
         <div>
           <div className="flex items-center gap-1.5 mb-2">
-            <Activity className="w-3.5 h-3.5 text-[#c49a3c]" />
-            <span className="text-[10px] font-semibold text-[#5a4f3f] uppercase tracking-wider">Recent Activity</span>
+            <Activity className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-semibold text-foreground/70 uppercase tracking-wider">Recent Activity</span>
           </div>
           <div className="space-y-2">
             {data.recent_activity.slice(0, 5).map((a, i) => (
-              <div key={i} className="flex gap-2 py-1 border-b border-[#f0ebe3] last:border-b-0">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#c49a3c] mt-1.5 shrink-0" />
+              <div key={i} className="flex gap-2 py-1 border-b border-border/50 last:border-b-0">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                 <div className="min-w-0">
-                  <span className="text-[11px] text-[#3d3629] block">{a.description}</span>
-                  <span className="text-[10px] text-[#8a7d6b]">{a.time_ago} · {a.by}</span>
+                  <span className="text-[11px] text-foreground block">{a.description}</span>
+                  <span className="text-[10px] text-muted-foreground">{a.time_ago} · {a.by}</span>
                 </div>
               </div>
             ))}

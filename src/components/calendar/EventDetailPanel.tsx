@@ -57,9 +57,9 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
   } catch { /* fallback */ }
 
   return (
-    <div className="bg-white border border-[#d6cfc3] rounded-lg overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col max-h-[85vh]">
       {/* Header */}
-      <div className="bg-[#faf8f5] border-b border-[#e0d8cc] p-4 shrink-0">
+      <div className="bg-muted/50 border-b border-border p-4 shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
@@ -67,7 +67,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
               <select
                 value={displayStatus}
                 onChange={(e) => onStatusChange(event.uid, e.target.value as EventStatus)}
-                className="border border-[#d6cfc3] rounded px-2 py-0.5 text-[10px] bg-white text-[#3d3629] focus:outline-none focus:ring-1 focus:ring-[#c49a3c]/40"
+                className="border border-border rounded px-2 py-0.5 text-[10px] bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-ring/40"
               >
                 <option value="definite">Definite</option>
                 <option value="prospect">Prospect</option>
@@ -76,18 +76,18 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                 <option value="closed">Closed</option>
               </select>
             </div>
-            <h2 className="text-lg font-semibold text-[#3d3629] truncate">{event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '')}</h2>
+            <h2 className="text-lg font-semibold text-foreground truncate">{event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '')}</h2>
             {daysUntilDeadline !== null && (
               <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold mt-1 w-fit ${
-                daysUntilDeadline < 0 ? 'bg-red-100 text-red-700 border border-red-200' :
-                daysUntilDeadline <= 3 ? 'bg-red-50 text-red-600 border border-red-200' :
-                daysUntilDeadline <= 7 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                'bg-[#f0f5e8] text-[#5a6b30] border border-[#c8d8a8]'
+                daysUntilDeadline < 0 ? 'bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800' :
+                daysUntilDeadline <= 3 ? 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' :
+                daysUntilDeadline <= 7 ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' :
+                'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
               }`}>
                 {daysUntilDeadline < 0 ? '⚠️' : '📅'} Content deadline: {daysUntilDeadline < 0 ? `${Math.abs(daysUntilDeadline)}d overdue` : daysUntilDeadline === 0 ? 'Due today' : `${daysUntilDeadline}d left`}
               </span>
             )}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-[#8a7d6b]">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-muted-foreground">
               {dateFormatted && (
                 <span className="flex items-center gap-1">
                   <CalendarIcon className="w-3 h-3" />
@@ -113,9 +113,9 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                   <span
                     key={i}
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                      p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
-                      p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                      'bg-zinc-100 text-zinc-500 border border-zinc-200'
+                      p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' :
+                      p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' :
+                      'bg-muted text-muted-foreground border border-border'
                     }`}
                   >
                     <FileText className="w-3 h-3" />
@@ -125,25 +125,25 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
               </div>
             )}
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-[#8a7d6b] hover:text-[#3d3629] shrink-0 h-7 w-7">
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0 h-7 w-7">
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Linked Items & Client dropdown */}
-        <div className="mt-3 pt-3 border-t border-[#e8e2d8] flex items-start justify-between gap-2">
+        <div className="mt-3 pt-3 border-t border-border flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <EventLinkedItems eventUid={event.uid} />
           </div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="shrink-0 h-7 gap-1 text-[10px] border-[#d6cfc3] text-[#5a4f3f] hover:bg-[#f0ece4]">
+              <Button variant="outline" size="sm" className="shrink-0 h-7 gap-1 text-[10px] border-border text-foreground/70 hover:bg-muted">
                 <User className="w-3 h-3" />
                 Client
                 <ChevronDown className="w-3 h-3" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[340px] p-3 bg-white border-[#d6cfc3]" align="end" side="bottom">
+            <PopoverContent className="w-[340px] p-3 bg-card border-border" align="end" side="bottom">
               <ScrollArea className="max-h-[50vh]">
                 <EventClientInfo eventUid={event.uid} />
               </ScrollArea>
@@ -154,7 +154,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
 
       {/* Tabs */}
       <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
-        <div className="border-b border-[#e8e2d8] bg-[#faf8f5] shrink-0 px-1">
+        <div className="border-b border-border bg-muted/50 shrink-0 px-1">
           <ScrollArea className="w-full">
             <TabsList className="inline-flex h-10 w-max gap-0 bg-transparent p-0">
               {[
@@ -169,7 +169,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#c49a3c] data-[state=active]:bg-transparent data-[state=active]:text-[#3d3629] text-[#8a7d6b] px-3 py-2 text-xs font-medium whitespace-nowrap min-h-0 h-auto"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground text-muted-foreground px-3 py-2 text-xs font-medium whitespace-nowrap min-h-0 h-auto"
                 >
                   {tab.label}
                 </TabsTrigger>

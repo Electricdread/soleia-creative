@@ -91,7 +91,7 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
   };
 
   const typeIcon = (t: string) => {
-    if (t === 'creative_session') return <Palette className="w-3.5 h-3.5 text-[#c49a3c]" />;
+    if (t === 'creative_session') return <Palette className="w-3.5 h-3.5 text-primary" />;
     if (t === 'proposal') return <FileText className="w-3.5 h-3.5 text-[#5a8fb4]" />;
     return <Link2 className="w-3.5 h-3.5 text-[#7b8a3e]" />;
   };
@@ -102,14 +102,14 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
     return 'Client Session';
   };
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-[#c49a3c]" /></div>;
+  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-primary" /></div>;
 
   return (
     <div className="space-y-3">
       <div className="space-y-2">
         <div className="flex gap-2">
           <Select value={entityType} onValueChange={setEntityType}>
-            <SelectTrigger className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm w-[140px]">
+            <SelectTrigger className="bg-muted/50 border-border text-foreground text-sm w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -119,7 +119,7 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
             </SelectContent>
           </Select>
           <Select value={selectedId} onValueChange={setSelectedId}>
-            <SelectTrigger className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm flex-1">
+            <SelectTrigger className="bg-muted/50 border-border text-foreground text-sm flex-1">
               <SelectValue placeholder="Select..." />
             </SelectTrigger>
             <SelectContent>
@@ -128,34 +128,34 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
               ))}
             </SelectContent>
           </Select>
-          <Button size="sm" onClick={addAssociation} disabled={saving || !selectedId} className="bg-[#c49a3c] hover:bg-[#b08a30] text-white shrink-0">
+          <Button size="sm" onClick={addAssociation} disabled={saving || !selectedId} className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0">
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
           </Button>
         </div>
       </div>
 
-      {associations.length === 0 && <p className="text-xs text-[#b5ab9a] italic">No items linked to this event yet</p>}
+      {associations.length === 0 && <p className="text-xs text-muted-foreground/60 italic">No items linked to this event yet</p>}
 
       <div className="space-y-1.5">
         {associations.map((a) => (
-          <div key={a.id} className="flex items-center gap-2.5 bg-[#faf8f5] border border-[#e8e2d8] rounded-lg px-3 py-2 group">
+          <div key={a.id} className="flex items-center gap-2.5 bg-muted/50 border border-border rounded-lg px-3 py-2 group">
             {typeIcon(a.entity_type)}
             <div className="flex-1 min-w-0">
               {a.href ? (
-                <a href={a.href} target="_blank" rel="noopener noreferrer" className="text-sm text-[#3d3629] hover:text-[#c49a3c] hover:underline truncate block">
+                <a href={a.href} target="_blank" rel="noopener noreferrer" className="text-sm text-foreground hover:text-primary hover:underline truncate block">
                   {a.label}
                 </a>
               ) : (
-                <p className="text-sm text-[#3d3629] truncate">{a.label}</p>
+                <p className="text-sm text-foreground truncate">{a.label}</p>
               )}
-              <p className="text-[10px] text-[#b5ab9a]">{typeLabel(a.entity_type)}</p>
+              <p className="text-[10px] text-muted-foreground/60">{typeLabel(a.entity_type)}</p>
             </div>
             {a.href && (
-              <a href={a.href} target="_blank" rel="noopener noreferrer" className="text-[#c49a3c] hover:text-[#b08a30] shrink-0">
+              <a href={a.href} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 shrink-0">
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             )}
-            <button onClick={() => removeAssociation(a.id)} className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
+            <button onClick={() => removeAssociation(a.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>

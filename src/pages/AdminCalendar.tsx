@@ -78,7 +78,6 @@ export default function AdminCalendar() {
       const data = await res.json();
       if (data.events) {
         setEvents(data.events);
-        // Auto-select event from URL param
         const eventUid = searchParams.get('event');
         if (eventUid) {
           const match = data.events.find((e: CalendarEvent) => e.uid === eventUid);
@@ -206,19 +205,19 @@ export default function AdminCalendar() {
   if (!user || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[#f9f7f4] font-sans touch-manipulation safe-area-top">
+    <div className="min-h-screen bg-background font-sans touch-manipulation safe-area-top">
       {/* Header */}
-      <header className="border-b border-[#e0d8cc] bg-white">
+      <header className="border-b border-border bg-card">
         <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-[#8a7d6b] hover:text-[#5a4f3f] hover:bg-[#f0ebe3] min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
                 <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Back</span>
               </Button>
-              <div className="h-5 w-px bg-[#d6cfc3] hidden sm:block" />
+              <div className="h-5 w-px bg-border hidden sm:block" />
               <img src={soleiaLogo} alt="Soleia" className="h-7 w-auto object-contain hidden sm:block" />
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)} className="text-[#8a7d6b] hover:text-[#5a4f3f] hover:bg-[#f0ebe3] min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
+            <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)} className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
               <Settings2 className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Settings</span>
             </Button>
           </div>
@@ -227,14 +226,14 @@ export default function AdminCalendar() {
 
       <main className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 safe-area-bottom">
         {showSettings && (
-          <Card className="mb-6 bg-white border-[#e0d8cc]">
+          <Card className="mb-6 bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-[#3d3629] text-lg font-semibold">Triple Seat iCal Feed</CardTitle>
-              <CardDescription className="text-[#8a7d6b]">Paste your Triple Seat calendar export URL to sync events</CardDescription>
+              <CardTitle className="text-foreground text-lg font-semibold">Triple Seat iCal Feed</CardTitle>
+              <CardDescription className="text-muted-foreground">Paste your Triple Seat calendar export URL to sync events</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-3">
-              <Input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://app.tripleseat.com/calendar/feed/..." className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] placeholder:text-[#b5ab9a] flex-1 min-h-[44px]" />
-              <Button onClick={saveIcalUrl} disabled={savingUrl} className="gap-2 bg-[#c49a3c] hover:bg-[#b08a30] text-white min-h-[44px] active:scale-95 transition-transform">
+              <Input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://app.tripleseat.com/calendar/feed/..." className="bg-muted border-border text-foreground placeholder:text-muted-foreground/60 flex-1 min-h-[44px]" />
+              <Button onClick={saveIcalUrl} disabled={savingUrl} className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground min-h-[44px] active:scale-95 transition-transform">
                 {savingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
               </Button>
             </CardContent>
@@ -242,7 +241,7 @@ export default function AdminCalendar() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-[#c49a3c]" /></div>
+          <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
             {/* Calendar Column */}
@@ -250,23 +249,23 @@ export default function AdminCalendar() {
               {/* Toolbar */}
               <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <Button size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} variant="outline" className="border-[#d6cfc3] text-[#5a4f3f] hover:bg-[#f0ebe3] text-sm min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
+                  <Button size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} variant="outline" className="border-border text-foreground hover:bg-muted text-sm min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <select value={currentMonth.getMonth()} onChange={(e) => setCurrentMonth(new Date(currentMonth.getFullYear(), parseInt(e.target.value), 1))} className="border border-[#d6cfc3] rounded-md px-2 sm:px-3 py-1.5 text-sm text-[#3d3629] bg-white focus:outline-none focus:ring-2 focus:ring-[#c49a3c]/30 min-h-[44px]">
+                  <select value={currentMonth.getMonth()} onChange={(e) => setCurrentMonth(new Date(currentMonth.getFullYear(), parseInt(e.target.value), 1))} className="border border-border rounded-md px-2 sm:px-3 py-1.5 text-sm text-foreground bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 min-h-[44px]">
                     {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
                   </select>
-                  <select value={currentMonth.getFullYear()} onChange={(e) => setCurrentMonth(new Date(parseInt(e.target.value), currentMonth.getMonth(), 1))} className="border border-[#d6cfc3] rounded-md px-2 sm:px-3 py-1.5 text-sm text-[#3d3629] bg-white focus:outline-none focus:ring-2 focus:ring-[#c49a3c]/30 min-h-[44px]">
+                  <select value={currentMonth.getFullYear()} onChange={(e) => setCurrentMonth(new Date(parseInt(e.target.value), currentMonth.getMonth(), 1))} className="border border-border rounded-md px-2 sm:px-3 py-1.5 text-sm text-foreground bg-card focus:outline-none focus:ring-2 focus:ring-ring/30 min-h-[44px]">
                     {years.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
-                  <Button size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} variant="outline" className="border-[#d6cfc3] text-[#5a4f3f] hover:bg-[#f0ebe3] text-sm min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
+                  <Button size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} variant="outline" className="border-border text-foreground hover:bg-muted text-sm min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
                     <ChevronRight className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" onClick={goToToday} className="bg-[#c49a3c] hover:bg-[#b08a30] text-white text-sm px-3 sm:px-4 min-h-[44px] active:scale-95 transition-transform">Today</Button>
+                  <Button size="sm" onClick={goToToday} className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-3 sm:px-4 min-h-[44px] active:scale-95 transition-transform">Today</Button>
                 </div>
                 <div className="relative w-full sm:max-w-xs">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#b5ab9a]" />
-                  <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search events..." className="pl-9 bg-white border-[#d6cfc3] text-[#3d3629] placeholder:text-[#b5ab9a] text-sm min-h-[44px]" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
+                  <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search events..." className="pl-9 bg-card border-border text-foreground placeholder:text-muted-foreground/60 text-sm min-h-[44px]" />
                 </div>
               </div>
 
@@ -280,11 +279,11 @@ export default function AdminCalendar() {
               </div>
 
               {/* Calendar Grid */}
-              <div className="bg-white border border-[#d6cfc3] rounded-lg overflow-x-auto scroll-touch-x">
+              <div className="bg-card border border-border rounded-lg overflow-x-auto scroll-touch-x">
                 <div className="min-w-[560px]">
-                  <div className="grid grid-cols-7 border-b border-[#d6cfc3]">
+                  <div className="grid grid-cols-7 border-b border-border">
                     {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => (
-                      <div key={d} className="text-center text-xs sm:text-sm font-semibold text-[#5a4f3f] py-2 sm:py-2.5 border-r border-[#e8e2d8] last:border-r-0 bg-[#faf8f5]">{d}</div>
+                      <div key={d} className="text-center text-xs sm:text-sm font-semibold text-foreground/80 py-2 sm:py-2.5 border-r border-border/60 last:border-r-0 bg-muted/50">{d}</div>
                     ))}
                   </div>
                   <div className="grid grid-cols-7">
@@ -300,14 +299,14 @@ export default function AdminCalendar() {
                         return (
                          <div
                            key={day.toISOString()}
-                           className={`min-h-[80px] sm:min-h-[110px] border-r border-b border-[#e8e2d8] text-left flex flex-col
+                           className={`min-h-[80px] sm:min-h-[110px] border-r border-b border-border/60 text-left flex flex-col
                              ${isLastRow ? 'border-b-0' : ''} ${idx % 7 === 6 ? 'border-r-0' : ''}
-                             ${!isCurrentMonth ? 'bg-[#faf8f5]' : 'bg-white'}
-                             ${dayEvents.length > 0 ? 'cursor-pointer hover:bg-[#fdfcfa] transition-colors' : ''}`}
+                             ${!isCurrentMonth ? 'bg-muted/30' : 'bg-card'}
+                             ${dayEvents.length > 0 ? 'cursor-pointer hover:bg-muted/40 transition-colors' : ''}`}
                            onClick={() => { if (dayEvents.length === 1) setSelectedEvent(dayEvents[0]); }}
                          >
                            <div className="flex items-center justify-end w-full px-1.5 pt-1">
-                             <span className={`text-xs sm:text-sm font-medium ${isToday ? 'bg-[#c49a3c] text-white w-6 h-6 rounded-full flex items-center justify-center' : !isCurrentMonth ? 'text-[#c4bba8]' : 'text-[#5a4f3f]'}`}>
+                             <span className={`text-xs sm:text-sm font-medium ${isToday ? 'bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center' : !isCurrentMonth ? 'text-muted-foreground/40' : 'text-foreground/80'}`}>
                                {format(day, 'd')}
                              </span>
                            </div>
@@ -335,9 +334,9 @@ export default function AdminCalendar() {
                                       <span
                                         key={i}
                                         className={`inline-flex items-center rounded-full px-1.5 py-0 text-[8px] font-semibold leading-tight ${
-                                          p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
-                                          p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                          'bg-zinc-100 text-zinc-500 border border-zinc-200'
+                                          p.status === 'signed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' :
+                                          p.status === 'sent' ? 'bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' :
+                                          'bg-muted text-muted-foreground border border-border'
                                         }`}
                                       >
                                         {p.status === 'signed' ? '✓ Signed' : p.status === 'sent' ? '📩 Sent' : p.status}
@@ -345,10 +344,10 @@ export default function AdminCalendar() {
                                     ))}
                                     {daysUntilDeadline !== null && (
                                       <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0 text-[8px] font-semibold leading-tight ${
-                                        daysUntilDeadline < 0 ? 'bg-red-100 text-red-700 border border-red-200' :
-                                        daysUntilDeadline <= 3 ? 'bg-red-50 text-red-600 border border-red-200' :
-                                        daysUntilDeadline <= 7 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                                        'bg-[#f0f5e8] text-[#5a6b30] border border-[#c8d8a8]'
+                                        daysUntilDeadline < 0 ? 'bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800' :
+                                        daysUntilDeadline <= 3 ? 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' :
+                                        daysUntilDeadline <= 7 ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' :
+                                        'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
                                       }`}>
                                         {daysUntilDeadline < 0 ? '⚠️' : '📅'} {daysUntilDeadline < 0 ? `${Math.abs(daysUntilDeadline)}d overdue` : daysUntilDeadline === 0 ? 'Due today' : `${daysUntilDeadline}d left`}
                                       </span>
@@ -359,7 +358,7 @@ export default function AdminCalendar() {
                             })()}
                            {dayEvents.length > 1 && (
                              <div className="px-1.5 pb-1">
-                               <span className="text-[10px] text-[#8a7d6b]">+{dayEvents.length - 1} more</span>
+                               <span className="text-[10px] text-muted-foreground">+{dayEvents.length - 1} more</span>
                              </div>
                            )}
                          </div>

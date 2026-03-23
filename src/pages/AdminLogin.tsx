@@ -136,12 +136,12 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted to-background" />
       <div 
-        className="absolute inset-0 opacity-5"
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
         style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px)',
           backgroundSize: '50px 50px'
         }}
       />
@@ -154,18 +154,18 @@ export default function AdminLogin() {
             alt="Soleia" 
             className="h-20 w-20 object-contain mb-4"
           />
-          <span className="text-2xl font-bold tracking-wide text-white">SOLEIA</span>
+          <span className="text-2xl font-bold tracking-wide text-foreground">SOLEIA</span>
         </div>
 
         {/* Login/Signup Card */}
-        <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-lg p-8 shadow-2xl">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-lg p-8 shadow-2xl">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'signin' | 'signup')}>
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-zinc-800">
-              <TabsTrigger value="signin" className="data-[state=active]:bg-white data-[state=active]:text-black">
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted">
+              <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Lock className="w-4 h-4 mr-2" />
                 Sign In
               </TabsTrigger>
-              <TabsTrigger value="signup" className="data-[state=active]:bg-white data-[state=active]:text-black">
+              <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <UserPlus className="w-4 h-4 mr-2" />
                 Sign Up
               </TabsTrigger>
@@ -173,13 +173,13 @@ export default function AdminLogin() {
 
             <TabsContent value="signin">
               <div className="mb-6">
-                <h1 className="text-xl font-semibold text-white">Admin Login</h1>
-                <p className="text-sm text-zinc-400">Sign in to access the portal</p>
+                <h1 className="text-xl font-semibold text-foreground">Admin Login</h1>
+                <p className="text-sm text-muted-foreground">Sign in to access the portal</p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email" className="text-zinc-300">Email</Label>
+                  <Label htmlFor="signin-email" className="text-foreground/80">Email</Label>
                   <Input
                     id="signin-email"
                     type="email"
@@ -187,12 +187,12 @@ export default function AdminLogin() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
+                    className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password" className="text-zinc-300">Password</Label>
+                  <Label htmlFor="signin-password" className="text-foreground/80">Password</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -200,13 +200,13 @@ export default function AdminLogin() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
+                    className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
                   />
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-white text-black hover:bg-zinc-200 font-medium h-11"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium h-11"
                   disabled={isLoading || authLoading}
                 >
                   {isLoading ? (
@@ -223,13 +223,13 @@ export default function AdminLogin() {
 
             <TabsContent value="signup">
               <div className="mb-6">
-                <h1 className="text-xl font-semibold text-white">Request Access</h1>
-                <p className="text-sm text-zinc-400">Submit your registration for approval</p>
+                <h1 className="text-xl font-semibold text-foreground">Request Access</h1>
+                <p className="text-sm text-muted-foreground">Submit your registration for approval</p>
               </div>
 
               <form onSubmit={handleSignUp} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email" className="text-zinc-300">Email</Label>
+                  <Label htmlFor="signup-email" className="text-foreground/80">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -237,12 +237,12 @@ export default function AdminLogin() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
+                    className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password" className="text-zinc-300">Password</Label>
+                  <Label htmlFor="signup-password" className="text-foreground/80">Password</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -251,12 +251,12 @@ export default function AdminLogin() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
+                    className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-confirm" className="text-zinc-300">Confirm Password</Label>
+                  <Label htmlFor="signup-confirm" className="text-foreground/80">Confirm Password</Label>
                   <Input
                     id="signup-confirm"
                     type="password"
@@ -265,13 +265,13 @@ export default function AdminLogin() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="bg-black/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-white/20"
+                    className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary/20"
                   />
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-white text-black hover:bg-zinc-200 font-medium h-11"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium h-11"
                   disabled={isLoading || authLoading}
                 >
                   {isLoading ? (
@@ -285,14 +285,14 @@ export default function AdminLogin() {
                 </Button>
               </form>
 
-              <p className="text-xs text-zinc-500 text-center mt-4">
+              <p className="text-xs text-muted-foreground text-center mt-4">
                 Your registration stays pending until an administrator approves it in the Admin Users portal.
               </p>
             </TabsContent>
           </Tabs>
         </div>
 
-        <p className="text-center text-zinc-600 text-sm mt-6">
+        <p className="text-center text-muted-foreground/60 text-sm mt-6">
           Soleia Creative Management System
         </p>
       </div>

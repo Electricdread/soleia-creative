@@ -66,15 +66,15 @@ export function EmailTemplateCard() {
   };
 
   return (
-    <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-xl p-6 space-y-4">
+    <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/5 border border-zinc-700 flex items-center justify-center">
-            <Mail className="w-5 h-5 text-zinc-400" />
+          <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center">
+            <Mail className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Content Delivery Email</h3>
-            <p className="text-sm text-zinc-500">Pre-formatted template for client delivery instructions</p>
+            <h3 className="text-lg font-semibold text-foreground">Content Delivery Email</h3>
+            <p className="text-sm text-muted-foreground">Pre-formatted template for client delivery instructions</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -82,14 +82,14 @@ export function EmailTemplateCard() {
             size="sm"
             variant="outline"
             onClick={() => setExpanded(!expanded)}
-            className="border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-800"
+            className="border-border text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
           <Button
             size="sm"
             onClick={handleCopy}
-            className="gap-2 bg-zinc-700 hover:bg-zinc-600 text-white"
+            className="gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             {copied ? 'Copied' : 'Copy Template'}
@@ -98,7 +98,7 @@ export function EmailTemplateCard() {
       </div>
       
       {expanded && (
-        <pre className="text-xs text-zinc-400 bg-zinc-950 border border-zinc-800 rounded-lg p-4 max-h-64 overflow-y-auto whitespace-pre-wrap font-mono">
+        <pre className="text-xs text-muted-foreground bg-muted border border-border rounded-lg p-4 max-h-64 overflow-y-auto whitespace-pre-wrap font-mono">
           {DELIVERY_EMAIL_TEMPLATE}
         </pre>
       )}

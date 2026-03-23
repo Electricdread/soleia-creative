@@ -51,7 +51,7 @@ export function EventCircleback({ eventUid }: { eventUid: string }) {
     fetch_();
   };
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-[#c49a3c]" /></div>;
+  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-primary" /></div>;
 
   return (
     <div className="space-y-3">
@@ -60,40 +60,40 @@ export function EventCircleback({ eventUid }: { eventUid: string }) {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Circleback URL"
-          className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm placeholder:text-[#b5ab9a]"
+          className="bg-muted/50 border-border text-foreground text-sm placeholder:text-muted-foreground/60"
         />
         <Textarea
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
           placeholder="Paste or type meeting notes summary..."
-          className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm min-h-[80px] placeholder:text-[#b5ab9a]"
+          className="bg-muted/50 border-border text-foreground text-sm min-h-[80px] placeholder:text-muted-foreground/60"
         />
-        <Button size="sm" onClick={add} disabled={saving || (!url.trim() && !summary.trim())} className="bg-[#c49a3c] hover:bg-[#b08a30] text-white text-xs gap-1.5">
+        <Button size="sm" onClick={add} disabled={saving || (!url.trim() && !summary.trim())} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5">
           {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />} Add Notes
         </Button>
       </div>
 
-      {entries.length === 0 && <p className="text-xs text-[#b5ab9a] italic">No Circleback notes yet</p>}
+      {entries.length === 0 && <p className="text-xs text-muted-foreground/60 italic">No Circleback notes yet</p>}
 
       <div className="space-y-2">
         {entries.map((e) => (
-          <div key={e.id} className="bg-[#faf8f5] border border-[#e8e2d8] rounded-lg p-3 group">
+          <div key={e.id} className="bg-muted/50 border border-border rounded-lg p-3 group">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 {e.circleback_url && (
-                  <a href={e.circleback_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-[#c49a3c] hover:underline mb-1">
+                  <a href={e.circleback_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline mb-1">
                     <FileText className="w-3.5 h-3.5" /> View in Circleback <ExternalLink className="w-3 h-3" />
                   </a>
                 )}
                 {e.circleback_summary && (
-                  <p className="text-sm text-[#3d3629] whitespace-pre-line line-clamp-6">{e.circleback_summary}</p>
+                  <p className="text-sm text-foreground whitespace-pre-line line-clamp-6">{e.circleback_summary}</p>
                 )}
               </div>
-              <button onClick={() => remove(e.id)} className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity shrink-0">
+              <button onClick={() => remove(e.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity shrink-0">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
-            <span className="text-[10px] text-[#b5ab9a] mt-1 block">{format(new Date(e.created_at), 'MMM d, h:mm a')}</span>
+            <span className="text-[10px] text-muted-foreground/60 mt-1 block">{format(new Date(e.created_at), 'MMM d, h:mm a')}</span>
           </div>
         ))}
       </div>
