@@ -78,6 +78,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     });
   };
 
+  const setItemSelected = (id: string, isSelected: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (isSelected) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
   const handleItemRowClick = (event: MouseEvent<HTMLElement>, id: string) => {
     if (signed || isAdmin) return;
 
@@ -87,9 +96,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     toggleItem(id);
   };
 
-  const handleCheckboxClick = (event: MouseEvent<HTMLElement>, id: string) => {
+  const handleCheckboxClick = (event: MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    toggleItem(id);
   };
 
   const quoteDate = proposal.quote_date ? new Date(proposal.quote_date) : new Date();
@@ -476,7 +484,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               <Checkbox
                                 checked={selectedIds.has(item.id)}
                                 aria-label={`Select ${item.title}`}
-                                onClick={(event) => handleCheckboxClick(event, item.id)}
+                                onCheckedChange={(checked) => setItemSelected(item.id, checked === true)}
+                                onClick={handleCheckboxClick}
                                 onPointerDown={(event) => event.stopPropagation()}
                               />
                             </TableCell>
@@ -536,7 +545,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               <Checkbox
                                 checked={selectedIds.has(item.id)}
                                 aria-label={`Select ${item.title}`}
-                                onClick={(event) => handleCheckboxClick(event, item.id)}
+                                onCheckedChange={(checked) => setItemSelected(item.id, checked === true)}
+                                onClick={handleCheckboxClick}
                                 onPointerDown={(event) => event.stopPropagation()}
                                 className="w-5 h-5"
                               />
