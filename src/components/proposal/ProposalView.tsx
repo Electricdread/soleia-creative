@@ -458,7 +458,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                           onClick={() => !signed && !isAdmin && toggleItem(item.id)}
                         >
                           {!signed && !isAdmin && (
-                            <TableCell className="pr-0">
+                            <TableCell className="pr-0" onClick={e => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedIds.has(item.id)}
                                 onCheckedChange={() => toggleItem(item.id)}
@@ -516,7 +516,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                       >
                         <div className="flex items-start gap-3">
                           {!signed && !isAdmin && (
-                            <div className="pt-0.5">
+                            <div className="pt-0.5" onClick={e => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedIds.has(item.id)}
                                 onCheckedChange={() => toggleItem(item.id)}
