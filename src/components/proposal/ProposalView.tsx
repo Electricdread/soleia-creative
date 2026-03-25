@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, type MouseEvent } from 'react';
 import { format, addDays } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -76,6 +76,20 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       else next.add(id);
       return next;
     });
+  };
+
+  const handleItemRowClick = (event: MouseEvent<HTMLElement>, id: string) => {
+    if (signed || isAdmin) return;
+
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('button, a, input, textarea, select, label, [role="checkbox"]')) return;
+
+    toggleItem(id);
+  };
+
+  const handleCheckboxClick = (event: MouseEvent<HTMLElement>, id: string) => {
+    event.stopPropagation();
+    toggleItem(id);
   };
 
   const quoteDate = proposal.quote_date ? new Date(proposal.quote_date) : new Date();
@@ -455,13 +469,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                         <TableRow
                           key={item.id}
                           className="border-b border-[#f0f3f5] hover:bg-[#fafbfc] cursor-pointer transition-colors"
-                          onClick={() => !signed && !isAdmin && toggleItem(item.id)}
+                          onClick={(event) => handleItemRowClick(event, item.id)}
                         >
                           {!signed && !isAdmin && (
                             <TableCell className="pr-0" onClick={e => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedIds.has(item.id)}
-                                onCheckedChange={() => toggleItem(item.id)}
+                                aria-label={`Select ${item.title}`}
+                                onClick={(event) => handleCheckboxClick(event, item.id)}
+                                onPointerDown={(event) => event.stopPropagation()}
                               />
                             </TableCell>
                           )}
@@ -512,14 +528,16 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                         className={`bg-white rounded-xl border p-4 transition-colors touch-manipulation active:scale-[0.98] ${
                           selectedIds.has(item.id) ? 'border-[#c49a3c] bg-[#c49a3c]/5' : 'border-[#ecf0f1]'
                         }`}
-                        onClick={() => !signed && !isAdmin && toggleItem(item.id)}
+                        onClick={(event) => handleItemRowClick(event, item.id)}
                       >
                         <div className="flex items-start gap-3">
                           {!signed && !isAdmin && (
                             <div className="pt-0.5" onClick={e => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedIds.has(item.id)}
-                                onCheckedChange={() => toggleItem(item.id)}
+                                aria-label={`Select ${item.title}`}
+                                onClick={(event) => handleCheckboxClick(event, item.id)}
+                                onPointerDown={(event) => event.stopPropagation()}
                                 className="w-5 h-5"
                               />
                             </div>
