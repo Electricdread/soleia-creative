@@ -516,7 +516,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                       >
                         <div className="flex items-start gap-3">
                           {!signed && !isAdmin && (
-                            <div className="pt-0.5">
+                            <div className="pt-0.5" onClick={e => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedIds.has(item.id)}
                                 onCheckedChange={() => toggleItem(item.id)}
