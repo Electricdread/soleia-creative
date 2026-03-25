@@ -458,7 +458,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                           onClick={() => !signed && !isAdmin && toggleItem(item.id)}
                         >
                           {!signed && !isAdmin && (
-                            <TableCell className="pr-0">
+                            <TableCell className="pr-0" onClick={e => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedIds.has(item.id)}
                                 onCheckedChange={() => toggleItem(item.id)}
