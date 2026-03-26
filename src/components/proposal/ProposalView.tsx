@@ -69,6 +69,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [items]);
 
+  const displayedTotal = isAdmin || signed ? grandTotal : total;
+
   const toggleItem = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -584,7 +586,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         {/* Total */}
         <div className="bg-white rounded-lg p-5 border border-[#ecf0f1] mb-4 flex items-center justify-between">
           <span className="text-[#7f8c8d] font-medium">{isAdmin ? 'Total' : 'Quote Total'}</span>
-          <span className="text-2xl font-bold text-[#2c3e50]">{formatCurrency(isAdmin ? grandTotal : total)}</span>
+          <span className="text-2xl font-bold text-[#2c3e50]">{formatCurrency(displayedTotal)}</span>
         </div>
 
         {/* Sign Section */}
