@@ -703,3 +703,32 @@ button, a, [role="button"] {
     animation: shimmer-gold 6s ease-in-out infinite;
   }
 }
+
+/* Print styles for proposal PDF */
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: white !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Remove shadows and simplify for print */
+  * {
+    box-shadow: none !important;
+  }
+
+  /* Ensure page breaks work well */
+  .bg-white {
+    break-inside: avoid;
+  }
+
+  /* Hide sign section input when printing */
+  input[placeholder="Your full name"],
+  button:has(.lucide-printer) {
+    display: none !important;
+  }
+}
