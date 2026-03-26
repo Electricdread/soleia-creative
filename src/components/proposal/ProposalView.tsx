@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Pencil, Check, X, Plus, Trash2, Library } from 'lucide-react';
+import { Pencil, Check, X, Plus, Trash2, Library, Printer } from 'lucide-react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
@@ -225,9 +225,20 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         {/* Header */}
         <header className="flex items-center justify-between mb-10">
           <img src={soleiaLogo} alt="Soleia" className="h-10 object-contain" />
-          <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase">
-            Soleia Creative Team
-          </span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase print:hidden">
+              Soleia Creative Team
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="print:hidden gap-2 text-[#7f8c8d] border-[#ecf0f1] hover:bg-[#f8f9fa]"
+            >
+              <Printer className="w-4 h-4" />
+              Print PDF
+            </Button>
+          </div>
         </header>
 
         {/* Event Title & Info */}
