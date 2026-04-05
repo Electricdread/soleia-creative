@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.fetch-ical]
 verify_jwt = false
+
+[functions.generate-session-email]
+verify_jwt = false
