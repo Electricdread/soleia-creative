@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck, Share2, Link2 } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck, Share2, Link2, Mail } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SessionContentManager } from './SessionContentManager';
 import { copyOgShareLink } from '@/lib/ogShare';
@@ -51,6 +51,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     (session.cover_images as CoverImage[])?.[0] || null
   );
   const [uploading, setUploading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editProjectName, setEditProjectName] = useState(session.project_name);
@@ -247,6 +248,46 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
               className="scale-75"
             />
             <div className="flex-1" />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={emailLoading}
+                    onClick={async () => {
+                      setEmailLoading(true);
+                      try {
+                        const { data, error } = await supabase.functions.invoke('generate-session-email', {
+                          body: null,
+                          method: 'GET',
+                        });
+                        // Use fetch directly since invoke doesn't support query params well
+                        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                        const res = await fetch(`${supabaseUrl}/functions/v1/generate-session-email?token=${session.token}&type=creative`);
+                        const result = await res.json();
+                        if (result.html) {
+                          const blob = new Blob([result.html], { type: 'text/html' });
+                          const item = new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([result.html], { type: 'text/plain' }) });
+                          await navigator.clipboard.write([item]);
+                          toast.success('Email template copied — paste into your email client');
+                        } else {
+                          toast.error('Failed to generate email');
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        toast.error('Failed to generate email template');
+                      }
+                      setEmailLoading(false);
+                    }}
+                    className="h-7 w-7 p-0"
+                  >
+                    {emailLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">Copy branded email template to clipboard</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button size="sm" variant="outline" onClick={openEditDialog} className="h-7 text-xs gap-1 px-2">
               <Pencil className="w-3 h-3" /> Edit
             </Button>
