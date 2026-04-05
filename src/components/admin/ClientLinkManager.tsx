@@ -10,7 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard } from 'lucide-react';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard, Share2 } from 'lucide-react';
+import { copyOgShareLink } from '@/lib/ogShare';
 import { ClipSelector } from './ClipSelector';
 import { SessionUploadsViewer } from './SessionUploadsViewer';
 import { ContentPrevizManager } from './ContentPrevizManager';
@@ -423,8 +424,19 @@ export function ClientLinkManager() {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => copyOgShareLink(link.token, 'session')}
+                      className="gap-1.5"
+                      title="Copy social share link"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      Share
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => copyLink(link.token)}
                       className="gap-1.5"
+                      title="Copy direct link"
                     >
                       <Copy className="w-3.5 h-3.5" />
                       Copy

@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Share2 } from 'lucide-react';
+import { copyOgShareLink } from '@/lib/ogShare';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import { format } from 'date-fns';
@@ -445,7 +446,10 @@ export default function AdminProposals() {
                   <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} className="text-zinc-400 hover:text-white">
                     <Pencil className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => copyLink(p.token)} className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => copyOgShareLink(p.token, 'proposal')} title="Copy social share link" className="text-zinc-400 hover:text-white">
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => copyLink(p.token)} title="Copy direct link" className="text-zinc-400 hover:text-white">
                     <Copy className="w-4 h-4" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => window.open(`/proposal/${p.token}`, '_blank')} className="text-zinc-400 hover:text-white">
