@@ -446,7 +446,10 @@ export default function AdminProposals() {
                   <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} className="text-zinc-400 hover:text-white">
                     <Pencil className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => copyLink(p.token)} className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => copyOgShareLink(p.token, 'proposal')} title="Copy social share link" className="text-zinc-400 hover:text-white">
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => copyLink(p.token)} title="Copy direct link" className="text-zinc-400 hover:text-white">
                     <Copy className="w-4 h-4" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => window.open(`/proposal/${p.token}`, '_blank')} className="text-zinc-400 hover:text-white">
