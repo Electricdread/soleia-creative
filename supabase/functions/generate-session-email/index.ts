@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     eventDate = data.event_date || ''
     const covers = data.cover_images as any[]
     coverUrl = covers?.[0]?.url || ''
-    pageUrl = `${siteUrl}/session/${token}`
+    pageUrl = `${siteUrl}/creative/${token}`
   } else if (type === 'proposal') {
     const { data } = await supabase
       .from('proposals')
