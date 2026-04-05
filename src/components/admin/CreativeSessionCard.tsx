@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck, Share2, Link2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SessionContentManager } from './SessionContentManager';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -248,8 +249,22 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             <Button size="sm" variant="outline" onClick={openEditDialog} className="h-7 text-xs gap-1 px-2">
               <Pencil className="w-3 h-3" /> Edit
             </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-preview?token=${session.token}&type=creative`;
+                    navigator.clipboard.writeText(ogUrl);
+                    toast.success('Social-friendly link copied! Shows rich preview on social media & messaging.');
+                  }} className="h-7 text-xs gap-1 px-2">
+                    <Share2 className="w-3 h-3" /> Share
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">Copy link with rich preview for social media</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button size="sm" variant="outline" onClick={() => onCopyLink(session.token)} className="h-7 text-xs gap-1 px-2">
-              <Copy className="w-3 h-3" /> Copy
+              <Link2 className="w-3 h-3" /> Link
             </Button>
             <Button size="sm" variant="outline" onClick={() => onOpen(session.token)} className="h-7 w-7 p-0">
               <ExternalLink className="w-3 h-3" />
