@@ -22,7 +22,7 @@ export default function ProposalSessionLinker({ open, onOpenChange, proposalId, 
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    supabase.from('creative_sessions').select('id, project_name, client_name').eq('is_active', true).order('created_at', { ascending: false })
+    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images').eq('is_active', true).order('created_at', { ascending: false })
       .then(({ data }) => { setSessions(data || []); setLoading(false); });
   }, [open]);
 
