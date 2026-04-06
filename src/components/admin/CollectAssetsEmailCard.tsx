@@ -6,10 +6,10 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
+  const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
   return `<div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
-  <div style="background:linear-gradient(135deg,#B8860B 0%,#DAA520 50%,#FFD700 100%);padding:32px 24px;text-align:center;">
-    <h1 style="margin:0;font-size:28px;font-weight:700;color:#ffffff;letter-spacing:6px;text-transform:uppercase;">SOLEIA</h1>
-    <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,0.85);letter-spacing:2px;text-transform:uppercase;">Creative Team</p>
+  <div style="background:linear-gradient(160deg,#0a0a0a 0%,#1a1a1a 40%,#252525 70%,#1a1a1a 100%);padding:40px 24px;text-align:center;">
+    <img src="${logoUrl}" alt="Soleia Las Vegas" style="height:60px;width:auto;margin:0 auto;display:block;" />
   </div>
 
   <div style="padding:32px 28px;">
