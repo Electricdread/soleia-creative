@@ -58,6 +58,7 @@ export default function AdminCreative() {
         <EmailTemplateCard />
         <CollectAssetsEmailCard />
         <MediaDownloadEmailCard />
+        <ClientAssetCollectEmailCard />
         <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl overflow-hidden p-6">
           <CreativeSessionManager />
         </div>
