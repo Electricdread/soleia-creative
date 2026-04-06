@@ -14,27 +14,11 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
 
   <div style="padding:32px 28px;">
     <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
-      We are pleased to provide you with a dedicated project folder for <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong> containing the following assets:
-    </p>
-
-    <div style="background:#faf8f3;border-left:3px solid #DAA520;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
-      <ul style="margin:0;padding:0 0 0 18px;font-size:14px;line-height:2;color:#444444;">
-        <li>LED Pixel Map template</li>
-        <li>After Effects project file</li>
-        <li>Content Delivery Guide PDF</li>
-      </ul>
-    </div>
-
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
-      To achieve the most immersive experience, please ensure all screens display their rendered content.
+      We are pleased to provide you with a dedicated project folder for <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong>.
     </p>
 
     <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
-      The consulting load fee for the LEDs will be assessed and communicated upon delivery of the test file.
-    </p>
-
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
-      Please note that the elevator and ticker displays are available at an additional cost, should your client wish to utilize them. Instructions and specifications for these elements are included in the <strong>Content Delivery Guide PDF</strong> located in the cloud link folder.
+      Please use the button below to access your folder. You may upload your company's asset files — including logos, branding guidelines, fonts, and any additional materials — directly into the labeled folder.
     </p>
 
     <div style="text-align:center;margin:28px 0;">
@@ -45,7 +29,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
 
     <div style="background:#f9f9f9;border-radius:8px;padding:16px 20px;margin:0 0 24px;">
       <p style="font-size:14px;line-height:1.7;color:#555555;margin:0;">
-        Use the link above to <strong>download</strong> all provided files and <strong>upload</strong> your company's asset files into the <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong> labeled folder.
+        <strong>Tip:</strong> For the best results, please organize files into labeled subfolders (e.g., "Logos," "Fonts," "Guidelines") within the <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong> folder.
       </p>
     </div>
 
