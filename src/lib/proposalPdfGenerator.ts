@@ -138,11 +138,17 @@ async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageU
   }
 }
 
+interface GalleryImage {
+  image_url: string;
+  caption?: string | null;
+}
+
 export async function generateProposalPdf(
   proposal: ProposalData,
   items: ProposalItem[],
   timeline: TimelinePhase[],
-  coverImageUrl?: string | null
+  coverImageUrl?: string | null,
+  galleryImages?: GalleryImage[]
 ) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   let y = 0;
