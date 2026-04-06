@@ -1,27 +1,30 @@
 
 
-## Plan: Media Download Link Email Template
+## Plan: Client Asset Collect Email Template
 
 ### What We're Building
-A new `MediaDownloadEmailCard` component — similar in structure to the existing `CollectAssetsEmailCard` — that generates a branded HTML email for sharing media download links with clients. The admin enters a **Project Name**, **Client Name**, and **Download Link** (Dropbox/Google Drive/etc.), clicks "Copy Email", and gets rich HTML copied to clipboard.
+A new `ClientAssetCollectEmailCard` component — following the same pattern as the existing Content Delivery and Media Download email cards — that generates a branded HTML email for requesting clients to upload their company assets (logos, branding guidelines, etc.) via a cloud link.
 
 ### Email Template Design
-- Dark textured gradient header with Soleia logo (same as Content Delivery Email)
-- Clean body with greeting using client name
-- Brief message: "Your media files for [Project Name] are ready for download"
-- Gold gradient CTA button: "Download Media"
-- Instruction note about the download link
+- Dark textured gradient header with Soleia logo (matching existing templates)
+- Polished, polite body copy requesting the client to upload their company assets:
+  - Company logo (all formats/variations)
+  - Brand guidelines and color palette
+  - Typography/font files
+  - Any additional branding materials
+- Gold gradient CTA button: "Upload Your Assets"
+- Helpful note about accepted file formats and organization
 - Dark footer with Soleia logo, "Creative Team", and contact email
 
 ### UI Component
-- Card with `Download` icon, title "Media Download Email", subtitle "Share media download links with clients"
-- Three input fields: **Project Name**, **Client Name**, **Download Link**
+- Card with `Upload` icon, title **"Client Asset Collect"**, subtitle "Request client branding and company assets"
+- Two input fields: **Client Name**, **Cloud Link** (Dropbox/Google Drive upload URL)
 - Expand/collapse preview + "Copy Email" button
-- Same rich clipboard copy pattern (`ClipboardItem` with `text/html`)
+- Same rich clipboard copy pattern as existing cards
 
 ### Files to Create
-- `src/components/admin/MediaDownloadEmailCard.tsx`
+- `src/components/admin/ClientAssetCollectEmailCard.tsx`
 
 ### Files to Edit
-- `src/pages/AdminCreative.tsx` — import and render `MediaDownloadEmailCard` alongside the other email cards
+- `src/pages/AdminCreative.tsx` — import and render `ClientAssetCollectEmailCard` alongside the other email cards
 
