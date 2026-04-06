@@ -101,8 +101,8 @@ export function CollectAssetsEmailCard() {
             <FolderUp className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-foreground">Collect Assets Email</h3>
-            <p className="text-sm text-muted-foreground">Branded template for requesting client files</p>
+            <h3 className="text-lg font-semibold text-foreground">Content Delivery Email</h3>
+            <p className="text-sm text-muted-foreground">Branded template for content delivery instructions</p>
           </div>
         </div>
         <Button
