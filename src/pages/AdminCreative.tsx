@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CreativeSessionManager } from '@/components/admin/CreativeSessionManager';
+import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
+import { CollectAssetsEmailCard } from '@/components/admin/CollectAssetsEmailCard';
 import { ArrowLeft, Settings } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
