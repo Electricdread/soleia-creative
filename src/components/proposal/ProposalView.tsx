@@ -46,12 +46,12 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const [editingItems, setEditingItems] = useState(false);
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
-  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string }[]>([]);
+  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
 
   // Fetch available creative sessions for admin linking
   useEffect(() => {
     if (!isAdmin) return;
-    supabase.from('creative_sessions').select('id, project_name, client_name').eq('is_active', true).order('created_at', { ascending: false })
+    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images').eq('is_active', true).order('created_at', { ascending: false })
       .then(({ data }) => setSessions(data || []));
   }, [isAdmin]);
 
@@ -150,6 +150,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const saveHeader = async () => {
     try {
+      const newSessionId = editFields.session_id || null;
+      const oldSessionId = proposal.session_id || null;
+
       const { error } = await supabase
         .from('proposals')
         .update({
@@ -159,10 +162,39 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           event_date: editFields.event_date || null,
           validity_days: parseInt(editFields.validity_days) || 7,
           contact_email: editFields.contact_email,
-          session_id: editFields.session_id || null,
+          session_id: newSessionId,
         } as any)
         .eq('id', proposal.id);
       if (error) throw error;
+
+      // Auto-pull cover image when linking a new session
+      if (newSessionId && newSessionId !== oldSessionId) {
+        const session = sessions.find(s => s.id === newSessionId);
+        const coverImages = session?.cover_images as any[] | null;
+        if (coverImages?.length) {
+          const coverUrl = coverImages[0]?.url || coverImages[0];
+          if (typeof coverUrl === 'string' && coverUrl.startsWith('http')) {
+            // Check if this cover image already exists in gallery
+            const { data: existing } = await supabase
+              .from('proposal_gallery')
+              .select('id')
+              .eq('proposal_id', proposal.id)
+              .eq('image_url', coverUrl)
+              .maybeSingle();
+
+            if (!existing) {
+              await supabase.from('proposal_gallery').insert({
+                proposal_id: proposal.id,
+                image_url: coverUrl,
+                caption: 'Session Cover',
+                sort_order: 0,
+              });
+              toast({ title: 'Cover image added to gallery' });
+            }
+          }
+        }
+      }
+
       setEditingHeader(false);
       toast({ title: 'Proposal updated' });
       onRefresh?.();

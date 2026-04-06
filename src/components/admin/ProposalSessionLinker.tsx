@@ -15,28 +15,55 @@ interface ProposalSessionLinkerProps {
 
 export default function ProposalSessionLinker({ open, onOpenChange, proposalId, currentSessionId, onLinked }: ProposalSessionLinkerProps) {
   const { toast } = useToast();
-  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string }[]>([]);
+  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    supabase.from('creative_sessions').select('id, project_name, client_name').eq('is_active', true).order('created_at', { ascending: false })
+    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images').eq('is_active', true).order('created_at', { ascending: false })
       .then(({ data }) => { setSessions(data || []); setLoading(false); });
   }, [open]);
 
   const linkSession = async (sessionId: string | null) => {
     setSaving(true);
     const { error } = await supabase.from('proposals').update({ session_id: sessionId } as any).eq('id', proposalId);
-    setSaving(false);
     if (error) {
+      setSaving(false);
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: sessionId ? 'Session linked' : 'Session unlinked' });
-      onLinked();
-      onOpenChange(false);
+      return;
     }
+
+    // Auto-pull cover image when linking
+    if (sessionId) {
+      const session = sessions.find(s => s.id === sessionId);
+      const coverImages = session?.cover_images as any[] | null;
+      if (coverImages?.length) {
+        const coverUrl = coverImages[0]?.url || coverImages[0];
+        if (typeof coverUrl === 'string' && coverUrl.startsWith('http')) {
+          const { data: existing } = await supabase
+            .from('proposal_gallery')
+            .select('id')
+            .eq('proposal_id', proposalId)
+            .eq('image_url', coverUrl)
+            .maybeSingle();
+          if (!existing) {
+            await supabase.from('proposal_gallery').insert({
+              proposal_id: proposalId,
+              image_url: coverUrl,
+              caption: 'Session Cover',
+              sort_order: 0,
+            });
+          }
+        }
+      }
+    }
+
+    setSaving(false);
+    toast({ title: sessionId ? 'Session linked (cover image added)' : 'Session unlinked' });
+    onLinked();
+    onOpenChange(false);
   };
 
   return (
