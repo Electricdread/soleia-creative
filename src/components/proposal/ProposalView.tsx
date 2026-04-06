@@ -267,7 +267,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               size="sm"
               onClick={() => {
                 const coverImageUrl = gallery?.[0]?.image_url || null;
-                generateProposalPdf(proposal, items, timeline, coverImageUrl);
+                generateProposalPdf(proposal, items, timeline, coverImageUrl, gallery);
               }}
               className="print:hidden gap-2 text-[#7f8c8d] border-[#ecf0f1] hover:bg-[#f8f9fa]"
             >
