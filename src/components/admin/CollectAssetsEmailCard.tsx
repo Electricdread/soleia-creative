@@ -20,6 +20,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
     <div style="background:#faf8f3;border-left:3px solid #DAA520;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
       <ul style="margin:0;padding:0 0 0 18px;font-size:14px;line-height:2;color:#444444;">
         <li>LED Pixel Map template</li>
+        <li>After Effects project file</li>
         <li>Content Delivery Guide PDF</li>
       </ul>
     </div>
