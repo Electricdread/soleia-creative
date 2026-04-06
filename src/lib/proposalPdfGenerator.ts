@@ -375,13 +375,97 @@ export async function generateProposalPdf(
     doc.text(`Signed on ${formatDate(proposal.signed_at.split('T')[0])}`, MARGIN + 10, y + 24);
   }
 
-  // === FOOTER ===
-  const footerY = PAGE_H - 25;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(LIGHT_GRAY);
-  doc.text('Soleia Creative Team', PAGE_W / 2, footerY, { align: 'center' });
-  doc.text(proposal.contact_email || 'luisdreamslv@gmail.com', PAGE_W / 2, footerY + 10, { align: 'center' });
+  // === REFERENCE IMAGES GRID PAGE ===
+  const images = galleryImages?.filter(g => g.image_url) || [];
+  if (images.length > 0) {
+    doc.addPage();
+
+    // Dark header band
+    doc.setFillColor(DARK);
+    doc.rect(0, 0, PAGE_W, 50, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor('#ffffff');
+    doc.text('REFERENCE IMAGES', MARGIN, 32);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(LIGHT_GRAY);
+    doc.text('Creative direction references — final designs are rebuilt for production', PAGE_W - MARGIN, 32, { align: 'right' });
+
+    let gridY = 65;
+    const cols = 2;
+    const gap = 12;
+    const cellW = (CONTENT_W - gap * (cols - 1)) / cols;
+    const cellH = 180;
+    const captionH = 18;
+
+    // Load all images in parallel
+    const imageDataArr = await Promise.all(images.map(img => loadImageAsBase64(img.image_url)));
+
+    for (let i = 0; i < images.length; i++) {
+      const col = i % cols;
+      const x = MARGIN + col * (cellW + gap);
+
+      // Page break check
+      if (col === 0 && gridY + cellH + captionH > PAGE_H - 40) {
+        doc.addPage();
+        gridY = MARGIN;
+      }
+
+      const imgData = imageDataArr[i];
+
+      // Image container with rounded corners
+      doc.setFillColor('#f8f9fa');
+      doc.roundedRect(x, gridY, cellW, cellH, 4, 4, 'F');
+
+      if (imgData) {
+        try {
+          doc.addImage(imgData, 'JPEG', x + 2, gridY + 2, cellW - 4, cellH - 4);
+        } catch {
+          // Show placeholder
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(LIGHT_GRAY);
+          doc.text('Image unavailable', x + cellW / 2, gridY + cellH / 2, { align: 'center' });
+        }
+      }
+
+      // Border
+      doc.setDrawColor('#ecf0f1');
+      doc.setLineWidth(0.5);
+      doc.roundedRect(x, gridY, cellW, cellH, 4, 4, 'S');
+
+      // Caption
+      if (images[i].caption) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(GRAY);
+        doc.text(images[i].caption!, x + 4, gridY + cellH + 11, { maxWidth: cellW - 8 });
+      }
+
+      // Advance Y after every 2 images
+      if (col === cols - 1) {
+        gridY += cellH + captionH + gap;
+      }
+    }
+
+    // Handle odd last row
+    if (images.length % cols !== 0) {
+      gridY += cellH + captionH + gap;
+    }
+  }
+
+  // === FOOTER on all pages ===
+  const pageCount = doc.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    const footerY = PAGE_H - 25;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(LIGHT_GRAY);
+    doc.text('Soleia Creative Team', PAGE_W / 2, footerY, { align: 'center' });
+    doc.text(proposal.contact_email || 'luisdreamslv@gmail.com', PAGE_W / 2, footerY + 10, { align: 'center' });
+  }
 
   // Set metadata
   doc.setProperties({
