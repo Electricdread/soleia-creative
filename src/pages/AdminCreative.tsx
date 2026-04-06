@@ -4,6 +4,7 @@ import { CreativeSessionManager } from '@/components/admin/CreativeSessionManage
 import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
 import { CollectAssetsEmailCard } from '@/components/admin/CollectAssetsEmailCard';
 import { MediaDownloadEmailCard } from '@/components/admin/MediaDownloadEmailCard';
+import { ClientAssetCollectEmailCard } from '@/components/admin/ClientAssetCollectEmailCard';
 import { ArrowLeft, Settings } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
