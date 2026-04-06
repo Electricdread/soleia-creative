@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Share2 } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Share2, Mail, Link2 } from 'lucide-react';
 import { copyOgShareLink } from '@/lib/ogShare';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
+import ProposalSessionLinker from '@/components/admin/ProposalSessionLinker';
 import { format } from 'date-fns';
 
 type ViewTab = 'proposals' | 'library';
@@ -36,6 +37,7 @@ interface ProposalRow {
   signed_at: string | null;
   client_signature: string | null;
   created_at: string;
+  session_id: string | null;
 }
 
 export default function AdminProposals() {
@@ -56,6 +58,8 @@ export default function AdminProposals() {
   const [contactEmail, setContactEmail] = useState('luisdreamslv@gmail.com');
   const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
   const [saving, setSaving] = useState(false);
+  const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
+  const [emailCopying, setEmailCopying] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !user) navigate('/admin/login');
@@ -164,6 +168,23 @@ export default function AdminProposals() {
     await supabase.from('proposals').update({ status: 'sent' }).eq('id', id);
     fetchProposals();
     toast({ title: 'Proposal marked as sent' });
+  };
+
+  const copyEmailTemplate = async (token: string) => {
+    setEmailCopying(token);
+    try {
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-session-email?token=${token}&type=proposal`;
+      const res = await fetch(url);
+      const { html, subject } = await res.json();
+      if (!html) throw new Error('No HTML returned');
+      const blob = new Blob([html], { type: 'text/html' });
+      await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([subject], { type: 'text/plain' }) })]);
+      toast({ title: 'Email template copied!', description: 'Paste into your email client' });
+    } catch (e: any) {
+      toast({ title: 'Error copying email', description: e.message, variant: 'destructive' });
+    } finally {
+      setEmailCopying(null);
+    }
   };
 
   const statusColor = (s: string) => {
@@ -443,8 +464,14 @@ export default function AdminProposals() {
                       Mark Sent
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} title="Edit proposal" className="text-zinc-400 hover:text-white">
                     <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setLinkerProposal(p)} title="Link creative session" className="text-zinc-400 hover:text-white">
+                    <Link2 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => copyEmailTemplate(p.token)} title="Copy email template" className="text-zinc-400 hover:text-white" disabled={emailCopying === p.token}>
+                    {emailCopying === p.token ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => copyOgShareLink(p.token, 'proposal')} title="Copy social share link" className="text-zinc-400 hover:text-white">
                     <Share2 className="w-4 h-4" />
@@ -466,6 +493,16 @@ export default function AdminProposals() {
         </>
         )}
       </main>
+
+      {linkerProposal && (
+        <ProposalSessionLinker
+          open={!!linkerProposal}
+          onOpenChange={(open) => { if (!open) setLinkerProposal(null); }}
+          proposalId={linkerProposal.id}
+          currentSessionId={(linkerProposal as any).session_id || null}
+          onLinked={fetchProposals}
+        />
+      )}
     </div>
   );
 }
