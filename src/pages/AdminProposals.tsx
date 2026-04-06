@@ -463,8 +463,14 @@ export default function AdminProposals() {
                       Mark Sent
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} title="Edit proposal" className="text-zinc-400 hover:text-white">
                     <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setLinkerProposal(p)} title="Link creative session" className="text-zinc-400 hover:text-white">
+                    <Link2 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => copyEmailTemplate(p.token)} title="Copy email template" className="text-zinc-400 hover:text-white" disabled={emailCopying === p.token}>
+                    {emailCopying === p.token ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => copyOgShareLink(p.token, 'proposal')} title="Copy social share link" className="text-zinc-400 hover:text-white">
                     <Share2 className="w-4 h-4" />
