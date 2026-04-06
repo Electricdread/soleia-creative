@@ -492,6 +492,16 @@ export default function AdminProposals() {
         </>
         )}
       </main>
+
+      {linkerProposal && (
+        <ProposalSessionLinker
+          open={!!linkerProposal}
+          onOpenChange={(open) => { if (!open) setLinkerProposal(null); }}
+          proposalId={linkerProposal.id}
+          currentSessionId={(linkerProposal as any).session_id || null}
+          onLinked={fetchProposals}
+        />
+      )}
     </div>
   );
 }
