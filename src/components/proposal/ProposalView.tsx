@@ -46,12 +46,12 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const [editingItems, setEditingItems] = useState(false);
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
-  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string }[]>([]);
+  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
 
   // Fetch available creative sessions for admin linking
   useEffect(() => {
     if (!isAdmin) return;
-    supabase.from('creative_sessions').select('id, project_name, client_name').eq('is_active', true).order('created_at', { ascending: false })
+    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images').eq('is_active', true).order('created_at', { ascending: false })
       .then(({ data }) => setSessions(data || []));
   }, [isAdmin]);
 
