@@ -1,49 +1,36 @@
 
 
-## Plan: Proposal Admin Actions + Redesigned PDF Generator
+## Plan: Collect Assets Email Template Component
 
 ### What We're Building
-1. **Edit button** (pencil icon) on proposal cards — navigates to `/proposal/:token` with `?edit=true` (already exists)
-2. **Link Creative Session button** (link icon) on proposal cards — opens a dialog to associate/unlink a creative session
-3. **Copy Email Template button** (mail icon) on proposal cards — calls `generate-session-email` edge function with `type=proposal` and copies rich HTML to clipboard
-4. **Redesigned Proposal PDF** — new `proposalPdfGenerator.ts` using jsPDF with optional cinematic cover page and compact single-page content layout
+A new `CollectAssetsEmailCard` component that generates a branded, rich HTML email template for requesting creative assets from clients. The admin enters a **Project Name** and **Cloud Link URL** (Dropbox/Google Drive), clicks "Copy Email", and gets a fully formatted HTML email copied to the clipboard — ready to paste into any email client.
 
-### Technical Details
+### Email Template Design
+- Gold gradient header bar + "SOLEIA" logo text + "Creative Team" subtitle (matching existing email style)
+- Polished body with the user's provided verbiage:
+  - Intro about the attached folder (pixel map, AE project, Delivery Guide PDF)
+  - Note about immersive screen rendering
+  - Consulting load fee notice for LEDs
+  - Elevator/ticker availability at additional cost
+  - Reference to Content Delivery Guide PDF
+  - Cloud link CTA button styled with gold gradient
+  - "Download & Upload" instructions referencing the `[Project Name]` labeled folder
+- Footer with Soleia Creative Team branding and contact email
 
-**1. AdminProposals.tsx — Add Mail + Link icons to proposal cards**
-- Add `Mail` icon button that fetches `generate-session-email?token=X&type=proposal` and copies the returned HTML to clipboard as rich text (same pattern as CreativeSessionCard)
-- Add `Link2` icon button that opens a new `ProposalSessionLinker` dialog showing available creative sessions with link/unlink capability
-- The edge function already supports `type=proposal` — no backend changes needed
-
-**2. New component: `ProposalSessionLinker.tsx`**
-- Dialog/sheet that shows available creative sessions from the database
-- Displays current linked session if any, with an "Unlink" option
-- On select, updates `proposals.session_id` and refreshes
-
-**3. New file: `src/lib/proposalPdfGenerator.ts`**
-- Uses jsPDF (already in project dependencies)
-- **Cover page** (conditional — only if `gallery[0]` exists):
-  - Dark background (#1a1a1a)
-  - Soleia logo centered at top
-  - Full-bleed gallery image
-  - Event title, client name, venue, date overlaid in white text
-- **Content page** (always present):
-  - Dark header band with Soleia logo + "PROPOSAL" badge
-  - Compact scope table: Item / Type / Price columns
-  - Timeline row with dot indicators (horizontal compact layout)
-  - Terms in 2-column layout
-  - Grand total prominently displayed
-  - Signature block if signed
-
-**4. ProposalView.tsx — Replace `window.print()` with PDF generator**
-- Import and call `generateProposalPdf()` passing proposal data, items, timeline, and first gallery image
-- Remove the `window.print()` call
+### UI Component
+- Card with input fields for **Project Name** and **Cloud Link URL**
+- Expand/collapse preview of the generated HTML
+- "Copy Email" button that copies rich HTML to clipboard (using `ClipboardItem` with `text/html` mime type for rich paste)
+- Matches existing `EmailTemplateCard` styling patterns
 
 ### Files to Create
-- `src/lib/proposalPdfGenerator.ts`
-- `src/components/admin/ProposalSessionLinker.tsx`
+- `src/components/admin/CollectAssetsEmailCard.tsx` — new component with input fields + HTML generator
 
 ### Files to Edit
-- `src/pages/AdminProposals.tsx` — add Mail and Link2 icon buttons to each proposal card
-- `src/components/proposal/ProposalView.tsx` — replace print with PDF generator
+- `src/components/admin/CreativeSessionManager.tsx` or relevant admin page — import and render the new card alongside the existing `EmailTemplateCard`
+
+### Technical Notes
+- Rich HTML clipboard copy using `navigator.clipboard.write([new ClipboardItem(...)])` so it pastes formatted in email clients
+- Dynamic interpolation of project name and cloud link URL into the HTML template
+- Same branded email structure as `generate-session-email` (gold header bar, logo, CTA button)
 
