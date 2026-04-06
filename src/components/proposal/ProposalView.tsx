@@ -642,7 +642,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         )}
 
         {/* Gallery */}
-        <ProposalGallery gallery={gallery} />
+        <ProposalGallery gallery={gallery} isAdmin={isAdmin} proposalId={proposal.id} onRefresh={onRefresh} />
 
         {/* Timeline */}
         <ProposalTimeline timeline={timeline} />

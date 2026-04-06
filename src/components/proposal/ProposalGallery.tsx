@@ -1,31 +1,159 @@
+import { useState, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Upload, Trash2, Loader2, ImagePlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
 interface ProposalGalleryProps {
   gallery: any[];
+  isAdmin?: boolean;
+  proposalId?: string;
+  onRefresh?: () => void;
 }
 
-export default function ProposalGallery({ gallery }: ProposalGalleryProps) {
-  if (gallery.length === 0) return null;
+export default function ProposalGallery({ gallery, isAdmin, proposalId, onRefresh }: ProposalGalleryProps) {
+  const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [editingCaption, setEditingCaption] = useState<string | null>(null);
+  const [captionText, setCaptionText] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !proposalId) return;
+    setUploading(true);
+
+    for (const file of Array.from(files)) {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      const path = `proposals/${proposalId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage.from('creative-uploads').upload(path, file);
+      if (uploadErr) { toast.error(`Failed to upload ${file.name}`); continue; }
+
+      const { data: urlData } = supabase.storage.from('creative-uploads').getPublicUrl(path);
+
+      const { error: insertErr } = await supabase.from('proposal_gallery').insert({
+        proposal_id: proposalId,
+        image_url: urlData.publicUrl,
+        caption: file.name.replace(/\.[^/.]+$/, ''),
+        sort_order: gallery.length,
+      });
+      if (insertErr) toast.error(`Failed to save ${file.name}`);
+    }
+
+    toast.success(`${files.length} image(s) uploaded`);
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    onRefresh?.();
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeleting(id);
+    await supabase.from('proposal_gallery').delete().eq('id', id);
+    toast.success('Image removed');
+    setDeleting(null);
+    onRefresh?.();
+  };
+
+  const saveCaption = async (id: string) => {
+    await supabase.from('proposal_gallery').update({ caption: captionText || null }).eq('id', id);
+    setEditingCaption(null);
+    toast.success('Caption updated');
+    onRefresh?.();
+  };
+
+  if (gallery.length === 0 && !isAdmin) return null;
 
   return (
     <section className="mb-12">
-      <h2 className="text-xl font-semibold text-[#2c3e50] mb-6 border-b border-[#ecf0f1] pb-2">Gallery</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {gallery.map(img => (
-          <div key={img.id} className="bg-white rounded-lg overflow-hidden border border-[#ecf0f1] shadow-sm">
-            <img
-              src={img.image_url}
-              alt={img.caption || ''}
-              className="w-full h-48 object-cover"
-              loading="lazy"
-            />
-            {img.caption && (
-              <p className="p-3 text-sm text-[#7f8c8d]">{img.caption}</p>
-            )}
-          </div>
-        ))}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-[#2c3e50] border-b border-[#ecf0f1] pb-2 flex-1">Gallery</h2>
+        {isAdmin && proposalId && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 ml-4"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
+            {uploading ? 'Uploading...' : 'Add Images'}
+          </Button>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*"
+          className="hidden"
+          onChange={handleUpload}
+        />
       </div>
-      <p className="text-xs text-[#95a5a6] mt-4 italic">
-        These mockups are references for creative direction. The final design is rebuilt and realized for production.
-      </p>
+
+      {gallery.length === 0 && isAdmin && (
+        <div
+          className="border-2 border-dashed border-[#ecf0f1] rounded-lg p-10 text-center cursor-pointer hover:border-[#3498db] transition-colors"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Upload className="w-8 h-8 text-[#bdc3c7] mx-auto mb-2" />
+          <p className="text-sm text-[#95a5a6]">Click to upload gallery images</p>
+          <p className="text-xs text-[#bdc3c7] mt-1">The first image will be used as the PDF cover</p>
+        </div>
+      )}
+
+      {gallery.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {gallery.map(img => (
+            <div key={img.id} className="bg-white rounded-lg overflow-hidden border border-[#ecf0f1] shadow-sm relative group">
+              <img
+                src={img.image_url}
+                alt={img.caption || ''}
+                className="w-full h-48 object-cover"
+                loading="lazy"
+              />
+              {isAdmin && (
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => handleDelete(img.id)}
+                    disabled={deleting === img.id}
+                  >
+                    {deleting === img.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                  </Button>
+                </div>
+              )}
+              {editingCaption === img.id ? (
+                <div className="p-2 flex gap-1">
+                  <Input
+                    value={captionText}
+                    onChange={e => setCaptionText(e.target.value)}
+                    className="h-8 text-sm"
+                    autoFocus
+                    onKeyDown={e => e.key === 'Enter' && saveCaption(img.id)}
+                  />
+                  <Button size="sm" className="h-8" onClick={() => saveCaption(img.id)}>Save</Button>
+                </div>
+              ) : (
+                <div
+                  className={`p-3 ${isAdmin ? 'cursor-pointer hover:bg-[#f8f9fa]' : ''}`}
+                  onClick={() => { if (isAdmin) { setEditingCaption(img.id); setCaptionText(img.caption || ''); } }}
+                >
+                  <p className="text-sm text-[#7f8c8d]">{img.caption || (isAdmin ? 'Click to add caption...' : '')}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {gallery.length > 0 && !isAdmin && (
+        <p className="text-xs text-[#95a5a6] mt-4 italic">
+          These mockups are references for creative direction. The final design is rebuilt and realized for production.
+        </p>
+      )}
     </section>
   );
 }
