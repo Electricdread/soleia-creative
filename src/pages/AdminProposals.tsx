@@ -37,6 +37,7 @@ interface ProposalRow {
   signed_at: string | null;
   client_signature: string | null;
   created_at: string;
+  session_id: string | null;
 }
 
 export default function AdminProposals() {
