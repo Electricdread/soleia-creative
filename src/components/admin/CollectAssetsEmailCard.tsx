@@ -54,8 +54,9 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
     </p>
   </div>
 
-  <div style="background:#1a1a1a;padding:24px;text-align:center;">
-    <p style="margin:0 0 4px;font-size:13px;color:#DAA520;letter-spacing:1px;">DSX SOLEIA Creative Team</p>
+  <div style="background:linear-gradient(160deg,#0a0a0a 0%,#1a1a1a 40%,#252525 70%,#1a1a1a 100%);padding:24px;text-align:center;">
+    <img src="${logoUrl}" alt="Soleia" style="height:28px;width:auto;margin:0 auto 8px;display:block;opacity:0.85;" />
+    <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
     <p style="margin:0;font-size:12px;color:#888888;">
       <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
     </p>
