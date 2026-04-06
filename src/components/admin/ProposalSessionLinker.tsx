@@ -15,7 +15,7 @@ interface ProposalSessionLinkerProps {
 
 export default function ProposalSessionLinker({ open, onOpenChange, proposalId, currentSessionId, onLinked }: ProposalSessionLinkerProps) {
   const { toast } = useToast();
-  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string }[]>([]);
+  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
