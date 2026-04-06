@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CreativeSessionManager } from '@/components/admin/CreativeSessionManager';
+import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
+import { CollectAssetsEmailCard } from '@/components/admin/CollectAssetsEmailCard';
 import { ArrowLeft, Settings } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
@@ -50,7 +52,9 @@ export default function AdminCreative() {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <EmailTemplateCard />
+        <CollectAssetsEmailCard />
         <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl overflow-hidden p-6">
           <CreativeSessionManager />
         </div>
