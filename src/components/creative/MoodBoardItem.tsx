@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2 } from 'lucide-react';
+import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -78,11 +78,20 @@ export function MoodBoardItem({
 
   const likeCount = reactions.filter((r) => r.reaction_type === 'love').length;
   const hasLiked = reactions.some((r) => r.reaction_type === 'love' && r.reactor_name === userName);
+  const declineCount = reactions.filter((r) => r.reaction_type === 'decline').length;
+  const hasDeclined = reactions.some((r) => r.reaction_type === 'decline' && r.reactor_name === userName);
 
   const toggleLike = async () => {
     if (!userName) {
       toast.error('Please enter your name first');
       return;
+    }
+    // Remove existing decline if any (mutual exclusivity)
+    const existingDecline = reactions.find(
+      (r) => r.reaction_type === 'decline' && r.reactor_name === userName
+    );
+    if (existingDecline) {
+      await supabase.from('mood_board_reactions').delete().eq('id', existingDecline.id);
     }
     const existing = reactions.find(
       (r) => r.reaction_type === 'love' && r.reactor_name === userName
@@ -93,6 +102,33 @@ export function MoodBoardItem({
       await supabase.from('mood_board_reactions').insert({
         item_id: item.id,
         reaction_type: 'love',
+        reactor_name: userName,
+      });
+    }
+    onReactionChange();
+  };
+
+  const toggleDecline = async () => {
+    if (!userName) {
+      toast.error('Please enter your name first');
+      return;
+    }
+    // Remove existing approval if any (mutual exclusivity)
+    const existingLove = reactions.find(
+      (r) => r.reaction_type === 'love' && r.reactor_name === userName
+    );
+    if (existingLove) {
+      await supabase.from('mood_board_reactions').delete().eq('id', existingLove.id);
+    }
+    const existing = reactions.find(
+      (r) => r.reaction_type === 'decline' && r.reactor_name === userName
+    );
+    if (existing) {
+      await supabase.from('mood_board_reactions').delete().eq('id', existing.id);
+    } else {
+      await supabase.from('mood_board_reactions').insert({
+        item_id: item.id,
+        reaction_type: 'decline',
         reactor_name: userName,
       });
     }
@@ -202,7 +238,7 @@ export function MoodBoardItem({
       style={style}
       className={`overflow-hidden group border-2 transition-shadow ${
         isDragging ? 'shadow-lg ring-2 ring-primary/50' : ''
-      } ${hasLiked ? 'border-primary/50 bg-primary/5' : 'border-border/50 bg-card'}`}
+      } ${hasDeclined ? 'border-destructive/50 bg-destructive/5' : hasLiked ? 'border-primary/50 bg-primary/5' : 'border-border/50 bg-card'}`}
     >
       <div className="relative">
         {renderMedia()}
@@ -244,8 +280,8 @@ export function MoodBoardItem({
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{item.description}</p>
         )}
 
-        {/* Approve Button */}
-        <div className="flex items-center gap-3 pt-1 border-t border-border/50">
+        {/* Approve & Decline Buttons */}
+        <div className="flex items-center gap-2 pt-1 border-t border-border/50 flex-wrap">
           <Button
             variant="ghost"
             size="sm"
@@ -255,8 +291,20 @@ export function MoodBoardItem({
             <CheckCircle2 className={`h-4 w-4 ${hasLiked ? 'fill-primary text-primary-foreground' : ''}`} />
             <span className="text-xs">{hasLiked ? 'Approved' : 'Approve'}</span>
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 px-3 gap-1.5 ${hasDeclined ? 'text-destructive' : 'text-muted-foreground'}`}
+            onClick={toggleDecline}
+          >
+            <XCircle className={`h-4 w-4 ${hasDeclined ? 'fill-destructive text-destructive-foreground' : ''}`} />
+            <span className="text-xs">{hasDeclined ? 'Declined' : 'Decline'}</span>
+          </Button>
           {likeCount > 0 && (
             <span className="text-[10px] text-primary font-medium">{likeCount} approved</span>
+          )}
+          {declineCount > 0 && (
+            <span className="text-[10px] text-destructive font-medium">{declineCount} declined</span>
           )}
           <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto">
             <MessageCircle className="h-3 w-3" />
