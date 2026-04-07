@@ -238,7 +238,7 @@ export function MoodBoardItem({
       style={style}
       className={`overflow-hidden group border-2 transition-shadow ${
         isDragging ? 'shadow-lg ring-2 ring-primary/50' : ''
-      } ${hasLiked ? 'border-primary/50 bg-primary/5' : 'border-border/50 bg-card'}`}
+      } ${hasDeclined ? 'border-destructive/50 bg-destructive/5' : hasLiked ? 'border-primary/50 bg-primary/5' : 'border-border/50 bg-card'}`}
     >
       <div className="relative">
         {renderMedia()}
