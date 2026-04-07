@@ -1,36 +1,23 @@
 
 
-## Plan: Add Asset Due Date to Client Asset Collect Email
+## Plan: Restore Content Delivery Email Template
 
-### What Changes
+### Problem
+The `CollectAssetsEmailCard.tsx` ("Content Delivery Email") was over-cleaned and now has generic asset-upload copy that duplicates the Client Asset Collect template. It should contain the **technical content delivery instructions** — After Effects project files, DXV3 encoding steps, LED Pixel Map specs, TV display specs, Resolume Alley, etc.
 
-**Add a "Due Date" input field** to the card UI and render a prominent deadline callout in the email body — positioned right after the greeting and before the asset checklist so it's the first thing the client sees.
+### What to Do
 
-### UI Changes (`ClientAssetCollectEmailCard.tsx`)
+**Restore the email HTML body in `CollectAssetsEmailCard.tsx`** to contain the original content delivery guide content (from `EmailTemplateCard.tsx`), formatted as branded rich HTML with the Soleia dark header/footer and gold CTA styling:
 
-1. Add a new `dueDate` state (string, date input)
-2. Add a third input field labeled **"Asset Due Date"** using `<Input type="date" />` in the form grid (switch to 3-column on sm)
-3. Pass `dueDate` into `buildAssetCollectEmailHtml`
+1. **Opening paragraph**: "We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping..."
+2. **Step 1–5**: Prepare Your Video, Download Resolume Alley, Encode to DXV3, Check Specs, Submit Content
+3. **Specs table**: TV Displays (1920x1080 / 3840x2160) and LED Pixel Map (3840x2160, alpha, 60fps)
+4. **Tips section**: ProRes first, darker tones, white logos, alpha channel
+5. **CTA button**: "Access Project Folder" linking to the cloud link field
+6. **Footer**: Soleia logo + Creative Team
 
-### Email Template Changes
-
-Insert a bold deadline banner immediately after the "Hi [Client]" greeting, before the asset checklist:
-
-- Gold-bordered box with a calendar icon (emoji), bold formatted date, and urgent but polite language
-- Example rendering:
-
-```text
-┌─────────────────────────────────────────────┐
-│  📅  Assets Due By: Friday, July 18, 2025   │
-│  To keep your project on schedule, please    │
-│  submit all materials by this date.          │
-└─────────────────────────────────────────────┘
-```
-
-- Styled with `background:#fdf6e3; border:2px solid #DAA520; border-radius:8px; text-align:center`
-- Date formatted as a readable string (e.g. "Friday, July 18, 2025")
-- If no due date is entered, the banner is omitted from the email
+Keep the existing UI fields (Project Name, Cloud Link) and the rich HTML clipboard copy behavior.
 
 ### File to Edit
-- `src/components/admin/ClientAssetCollectEmailCard.tsx`
+- `src/components/admin/CollectAssetsEmailCard.tsx` — replace `buildAssetsEmailHtml` body with the full content delivery guide content
 
