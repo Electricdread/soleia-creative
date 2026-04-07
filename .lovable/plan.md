@@ -1,22 +1,36 @@
 
 
-## Plan: Add Decline Button to Creative Session Items
+## Plan: Add Asset Due Date to Client Asset Collect Email
 
-### What We're Building
-A "Decline" button next to the existing "Approve" button on each mood board item. Uses the existing `mood_board_reactions` table with a new `reaction_type` of `'decline'` — no database changes needed.
+### What Changes
 
-### Behavior
-- Clicking "Decline" inserts a reaction with `reaction_type: 'decline'` (togglable, same as approve)
-- Approving removes any existing decline, and vice versa — they are mutually exclusive
-- Declined items show a red-tinted border (`border-destructive/50`) instead of the green/primary border for approved
-- Decline count shown next to the button (e.g. "2 declined")
+**Add a "Due Date" input field** to the card UI and render a prominent deadline callout in the email body — positioned right after the greeting and before the asset checklist so it's the first thing the client sees.
 
-### Changes to `src/components/creative/MoodBoardItem.tsx`
+### UI Changes (`ClientAssetCollectEmailCard.tsx`)
 
-1. **Add `XCircle` to lucide imports** for the decline icon
-2. **Add decline state logic** — derive `hasDeclined` and `declineCount` from reactions with `reaction_type === 'decline'`
-3. **Add `toggleDecline` function** — mirrors `toggleLike` but uses `'decline'` reaction type; also removes any existing `'love'` reaction by the same user (mutual exclusivity)
-4. **Update `toggleLike`** — also remove any existing `'decline'` reaction when approving
-5. **Update card border class** — add declined state: `hasDeclined ? 'border-destructive/50 bg-destructive/5' : ...`
-6. **Add Decline button** in the action row next to Approve, styled with `text-destructive` when active
+1. Add a new `dueDate` state (string, date input)
+2. Add a third input field labeled **"Asset Due Date"** using `<Input type="date" />` in the form grid (switch to 3-column on sm)
+3. Pass `dueDate` into `buildAssetCollectEmailHtml`
+
+### Email Template Changes
+
+Insert a bold deadline banner immediately after the "Hi [Client]" greeting, before the asset checklist:
+
+- Gold-bordered box with a calendar icon (emoji), bold formatted date, and urgent but polite language
+- Example rendering:
+
+```text
+┌─────────────────────────────────────────────┐
+│  📅  Assets Due By: Friday, July 18, 2025   │
+│  To keep your project on schedule, please    │
+│  submit all materials by this date.          │
+└─────────────────────────────────────────────┘
+```
+
+- Styled with `background:#fdf6e3; border:2px solid #DAA520; border-radius:8px; text-align:center`
+- Date formatted as a readable string (e.g. "Friday, July 18, 2025")
+- If no due date is entered, the banner is omitted from the email
+
+### File to Edit
+- `src/components/admin/ClientAssetCollectEmailCard.tsx`
 
