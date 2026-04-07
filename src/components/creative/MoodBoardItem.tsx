@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2, XCircle } from 'lucide-react';
+import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2, XCircle, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
