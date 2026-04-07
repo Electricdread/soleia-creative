@@ -78,11 +78,20 @@ export function MoodBoardItem({
 
   const likeCount = reactions.filter((r) => r.reaction_type === 'love').length;
   const hasLiked = reactions.some((r) => r.reaction_type === 'love' && r.reactor_name === userName);
+  const declineCount = reactions.filter((r) => r.reaction_type === 'decline').length;
+  const hasDeclined = reactions.some((r) => r.reaction_type === 'decline' && r.reactor_name === userName);
 
   const toggleLike = async () => {
     if (!userName) {
       toast.error('Please enter your name first');
       return;
+    }
+    // Remove existing decline if any (mutual exclusivity)
+    const existingDecline = reactions.find(
+      (r) => r.reaction_type === 'decline' && r.reactor_name === userName
+    );
+    if (existingDecline) {
+      await supabase.from('mood_board_reactions').delete().eq('id', existingDecline.id);
     }
     const existing = reactions.find(
       (r) => r.reaction_type === 'love' && r.reactor_name === userName
@@ -93,6 +102,33 @@ export function MoodBoardItem({
       await supabase.from('mood_board_reactions').insert({
         item_id: item.id,
         reaction_type: 'love',
+        reactor_name: userName,
+      });
+    }
+    onReactionChange();
+  };
+
+  const toggleDecline = async () => {
+    if (!userName) {
+      toast.error('Please enter your name first');
+      return;
+    }
+    // Remove existing approval if any (mutual exclusivity)
+    const existingLove = reactions.find(
+      (r) => r.reaction_type === 'love' && r.reactor_name === userName
+    );
+    if (existingLove) {
+      await supabase.from('mood_board_reactions').delete().eq('id', existingLove.id);
+    }
+    const existing = reactions.find(
+      (r) => r.reaction_type === 'decline' && r.reactor_name === userName
+    );
+    if (existing) {
+      await supabase.from('mood_board_reactions').delete().eq('id', existing.id);
+    } else {
+      await supabase.from('mood_board_reactions').insert({
+        item_id: item.id,
+        reaction_type: 'decline',
         reactor_name: userName,
       });
     }
