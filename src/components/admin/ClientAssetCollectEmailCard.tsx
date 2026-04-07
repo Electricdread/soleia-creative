@@ -27,6 +27,8 @@ function buildAssetCollectEmailHtml(clientName: string, cloudLink: string, dueDa
       Hi${clientName ? ` <strong>${clientName}</strong>` : ''},
     </p>
 
+    ${dueDateBanner}
+
     <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
       We're excited to begin bringing your vision to life! To ensure a seamless and elevated experience, we kindly ask that you upload the following brand assets to your dedicated project folder:
     </p>
