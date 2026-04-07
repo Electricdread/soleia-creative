@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2, XCircle } from 'lucide-react';
+import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2, XCircle, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -59,6 +59,24 @@ export function MoodBoardItem({
 }: MoodBoardItemProps) {
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const handleDownload = async (url: string, title: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${title}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success('Download started');
+    } catch {
+      toast.error('Download failed');
+    }
+  };
 
   const {
     attributes,
@@ -195,7 +213,7 @@ export function MoodBoardItem({
 
     if (item.item_type === 'video' && mediaUrl) {
       return (
-        <div className="cursor-pointer relative" onClick={() => onMediaClick(item.id)}>
+        <div className="cursor-pointer relative group/video" onClick={() => onMediaClick(item.id)}>
           <video
             src={mediaUrl}
             poster={thumbnailUrl || undefined}
@@ -205,6 +223,17 @@ export function MoodBoardItem({
             muted
             playsInline
           />
+          <Button
+            variant="secondary"
+            size="icon"
+            className="absolute bottom-2 right-2 h-8 w-8 opacity-0 group-hover/video:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm hover:bg-background"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDownload(mediaUrl, item.title || 'video');
+            }}
+          >
+            <Download className="h-4 w-4" />
+          </Button>
         </div>
       );
     }
