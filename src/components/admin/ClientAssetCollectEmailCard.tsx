@@ -76,11 +76,12 @@ function buildAssetCollectEmailHtml(clientName: string, cloudLink: string, dueDa
 export function ClientAssetCollectEmailCard() {
   const [clientName, setClientName] = useState('');
   const [cloudLink, setCloudLink] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const handleCopy = async () => {
-    const html = buildAssetCollectEmailHtml(clientName.trim(), cloudLink.trim());
+    const html = buildAssetCollectEmailHtml(clientName.trim(), cloudLink.trim(), dueDate);
     try {
       await navigator.clipboard.write([
         new ClipboardItem({
@@ -121,7 +122,7 @@ export function ClientAssetCollectEmailCard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">Client Name</Label>
           <Input
@@ -136,6 +137,14 @@ export function ClientAssetCollectEmailCard() {
             placeholder="https://www.dropbox.com/..."
             value={cloudLink}
             onChange={(e) => setCloudLink(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Asset Due Date</Label>
+          <Input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
           />
         </div>
       </div>
@@ -154,7 +163,7 @@ export function ClientAssetCollectEmailCard() {
       {expanded && (
         <div
           className="border border-border rounded-lg p-4 max-h-72 overflow-y-auto bg-muted"
-          dangerouslySetInnerHTML={{ __html: buildAssetCollectEmailHtml(clientName || '[Client]', cloudLink || '#') }}
+          dangerouslySetInnerHTML={{ __html: buildAssetCollectEmailHtml(clientName || '[Client]', cloudLink || '#', dueDate) }}
         />
       )}
     </div>
