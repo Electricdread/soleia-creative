@@ -5,7 +5,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
-function buildAssetCollectEmailHtml(clientName: string, cloudLink: string) {
+function buildAssetCollectEmailHtml(clientName: string, cloudLink: string, dueDate: string) {
+  const dueDateBanner = dueDate
+    ? (() => {
+        const d = new Date(dueDate + 'T00:00:00');
+        const formatted = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        return `<div style="background:#fdf6e3;border:2px solid #DAA520;border-radius:8px;padding:18px 20px;text-align:center;margin:0 0 24px;">
+          <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1a1a1a;">📅 Assets Due By: ${formatted}</p>
+          <p style="margin:0;font-size:14px;color:#555555;">To keep your project on schedule, please submit all materials by this date.</p>
+        </div>`;
+      })()
+    : '';
   const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
   return `<div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
   <div style="background:linear-gradient(160deg,#0a0a0a 0%,#1a1a1a 40%,#252525 70%,#1a1a1a 100%);padding:40px 24px;text-align:center;">
