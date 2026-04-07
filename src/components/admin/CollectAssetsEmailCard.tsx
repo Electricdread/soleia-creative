@@ -14,12 +14,47 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
 
   <div style="padding:32px 28px;">
     <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
-      We are pleased to provide you with a dedicated project folder for <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong>.
+      We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping for <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong>. This template is pre-built to match our venue's exact screen layout, so you can drop in your content and export with confidence.
     </p>
 
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
-      Please use the button below to access your folder. You may upload your company's asset files — including logos, branding guidelines, fonts, and any additional materials — directly into the labeled folder.
+    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 24px;">
+      Below is a quick step-by-step guide to deliver your custom content for our venue screens.
     </p>
+
+    <div style="background:#faf8f3;border-left:3px solid #DAA520;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 20px;">
+      <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 1: PREPARE YOUR VIDEO</p>
+      <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.</p>
+    </div>
+
+    <div style="background:#faf8f3;border-left:3px solid #DAA520;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 20px;">
+      <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 2: DOWNLOAD RESOLUME ALLEY (FREE)</p>
+      <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder here: <a href="https://resolume.com/software/alley" style="color:#B8860B;text-decoration:underline;">resolume.com/software/alley</a></p>
+    </div>
+
+    <div style="background:#faf8f3;border-left:3px solid #DAA520;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 20px;">
+      <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 3: ENCODE TO DXV3</p>
+      <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select "DXV3 Alpha."</p>
+    </div>
+
+    <div style="background:#faf8f3;border-left:3px solid #DAA520;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 20px;">
+      <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 4: CHECK SPECS</p>
+      <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Make sure your files match these requirements:</p>
+      <table style="width:100%;border-collapse:collapse;margin:10px 0 0;font-size:13px;">
+        <tr style="border-bottom:1px solid #e5e5e5;">
+          <td style="padding:6px 8px;font-weight:600;color:#333;">TV Displays</td>
+          <td style="padding:6px 8px;color:#555;">1920×1080 or 3840×2160 · MOV · DXV3 · Max 8GB</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 8px;font-weight:600;color:#333;">LED Pixel Map</td>
+          <td style="padding:6px 8px;color:#555;">3840×2160 · MOV w/ Alpha · DXV3 · 60fps · Max 30GB</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="background:#faf8f3;border-left:3px solid #DAA520;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
+      <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 5: SUBMIT CONTENT</p>
+      <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Please submit your encoded files at least 21 business days before your event so we can test and approve playback.</p>
+    </div>
 
     <div style="text-align:center;margin:28px 0;">
       <a href="${cloudLink || '#'}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#DAA520);color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 36px;border-radius:8px;letter-spacing:0.5px;">
@@ -28,13 +63,17 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
     </div>
 
     <div style="background:#f9f9f9;border-radius:8px;padding:16px 20px;margin:0 0 24px;">
-      <p style="font-size:14px;line-height:1.7;color:#555555;margin:0;">
-        <strong>Tip:</strong> For the best results, please organize files into labeled subfolders (e.g., "Logos," "Fonts," "Guidelines") within the <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong> folder.
-      </p>
+      <p style="font-size:14px;font-weight:700;color:#333;margin:0 0 8px;">Tips for Best Results</p>
+      <ul style="margin:0;padding:0 0 0 18px;font-size:13px;line-height:2;color:#555555;">
+        <li>Export in ProRes first for best quality before DXV3 encoding</li>
+        <li>Use darker tones — LED screens are very bright</li>
+        <li>Use white or light logo versions for best visibility</li>
+        <li>Include alpha channel for transparent overlays</li>
+      </ul>
     </div>
 
     <p style="font-size:15px;line-height:1.7;color:#333333;margin:0;">
-      If you have any questions, please don't hesitate to reach out.
+      If you have any questions, don't hesitate to reach out. We're here to help make your event look stunning!
     </p>
   </div>
 
