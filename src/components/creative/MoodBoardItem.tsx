@@ -280,8 +280,8 @@ export function MoodBoardItem({
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{item.description}</p>
         )}
 
-        {/* Approve Button */}
-        <div className="flex items-center gap-3 pt-1 border-t border-border/50">
+        {/* Approve & Decline Buttons */}
+        <div className="flex items-center gap-2 pt-1 border-t border-border/50 flex-wrap">
           <Button
             variant="ghost"
             size="sm"
@@ -291,8 +291,20 @@ export function MoodBoardItem({
             <CheckCircle2 className={`h-4 w-4 ${hasLiked ? 'fill-primary text-primary-foreground' : ''}`} />
             <span className="text-xs">{hasLiked ? 'Approved' : 'Approve'}</span>
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 px-3 gap-1.5 ${hasDeclined ? 'text-destructive' : 'text-muted-foreground'}`}
+            onClick={toggleDecline}
+          >
+            <XCircle className={`h-4 w-4 ${hasDeclined ? 'fill-destructive text-destructive-foreground' : ''}`} />
+            <span className="text-xs">{hasDeclined ? 'Declined' : 'Decline'}</span>
+          </Button>
           {likeCount > 0 && (
             <span className="text-[10px] text-primary font-medium">{likeCount} approved</span>
+          )}
+          {declineCount > 0 && (
+            <span className="text-[10px] text-destructive font-medium">{declineCount} declined</span>
           )}
           <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto">
             <MessageCircle className="h-3 w-3" />
