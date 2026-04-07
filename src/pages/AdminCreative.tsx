@@ -5,6 +5,7 @@ import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
 import { CollectAssetsEmailCard } from '@/components/admin/CollectAssetsEmailCard';
 import { MediaDownloadEmailCard } from '@/components/admin/MediaDownloadEmailCard';
 import { ClientAssetCollectEmailCard } from '@/components/admin/ClientAssetCollectEmailCard';
+import { CreativeSessionEmailCard } from '@/components/admin/CreativeSessionEmailCard';
 import { ArrowLeft, Settings } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
@@ -55,6 +56,7 @@ export default function AdminCreative() {
 
       {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <CreativeSessionEmailCard />
         <EmailTemplateCard />
         <CollectAssetsEmailCard />
         <MediaDownloadEmailCard />
