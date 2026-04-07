@@ -148,14 +148,22 @@ export function FullscreenMediaViewer({
         )}
       </div>
 
-      {/* Title + counter */}
-      <div className="absolute bottom-6 left-0 right-0 text-center">
+      {/* Title + counter + download hint */}
+      <div className="absolute bottom-6 left-0 right-0 text-center space-y-1">
         {current.title && (
-          <p className="text-white/80 text-sm mb-1">{current.title}</p>
+          <p className="text-white/80 text-sm">{current.title}</p>
         )}
         <p className="text-white/40 text-xs">
           {currentIndex + 1} / {items.length}
         </p>
+        {(current.item_type === 'video' || current.item_type === 'image') && (
+          <button
+            onClick={handleDownload}
+            className="text-white/40 hover:text-white/70 text-[10px] inline-flex items-center gap-1 transition-colors mt-1"
+          >
+            <Download className="h-3 w-3" /> Tap to download
+          </button>
+        )}
       </div>
     </div>
   );
