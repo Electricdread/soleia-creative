@@ -7,12 +7,7 @@ import { toast } from 'sonner';
 
 function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
   const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
-  return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f5f5f5"><tr><td align="center" style="padding:20px 0;">
-
-<table width="600" border="0" cellspacing="0" cellpadding="0" style="background:#ffffff;border:1px solid #e5e5e5;">
+  return `<table width="600" border="0" cellspacing="0" cellpadding="0" align="center" style="background-color:#ffffff;border:1px solid #e5e5e5;font-family:'Helvetica Neue',Arial,sans-serif;">
   <!-- HEADER -->
   <tr><td bgcolor="#111111" style="padding:40px 24px;text-align:center;">
     <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="height:60px;width:auto;display:block;margin:0 auto;" />
