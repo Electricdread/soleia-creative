@@ -8,7 +8,7 @@ import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, 
 import { useTheme } from 'next-themes';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
-import { EmailTemplateCard } from '@/components/admin/EmailTemplateCard';
+
 import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
 import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval, isSameDay, isToday } from 'date-fns';
 import { getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
@@ -513,7 +513,7 @@ export default function AdminPortal() {
         {/* Client Templates Section */}
         <div className="mt-10 space-y-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">Client Templates</h2>
-          <EmailTemplateCard />
+          
           <DropboxLinkManager />
         </div>
       </main>
