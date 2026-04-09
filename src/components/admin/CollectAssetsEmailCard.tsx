@@ -9,7 +9,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
   const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
   return `<table width="600" border="0" cellspacing="0" cellpadding="0" align="center" style="background-color:#ffffff;border:1px solid #e5e5e5;font-family:'Helvetica Neue',Arial,sans-serif;">
   <!-- HEADER -->
-  <tr><td bgcolor="#111111" style="padding:40px 24px;text-align:center;">
+  <tr><td style="background-color:#111111;padding:40px 24px;text-align:center;">
     <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="height:60px;width:auto;display:block;margin:0 auto;" />
   </td></tr>
 
