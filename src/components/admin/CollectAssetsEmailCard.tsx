@@ -113,10 +113,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
       <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
     </p>
   </td></tr>
-</table>
-
-</td></tr></table>
-</body></html>`;
+</table>`;
 }
 
 export function CollectAssetsEmailCard() {
