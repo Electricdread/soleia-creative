@@ -5,115 +5,154 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
+function buildInstructionBlock(title: string, content: string) {
+  return `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+    <tr>
+      <td width="3" style="width:3px;background-color:#DAA520;font-size:0;line-height:0;">&nbsp;</td>
+      <td style="background-color:#faf8f3;padding:16px 20px;">
+        <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">${title}</p>
+        ${content}
+      </td>
+    </tr>
+  </table>`;
+}
+
 function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
   const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
-  return `<table width="600" border="0" cellspacing="0" cellpadding="0" align="center" style="background-color:#ffffff;border:1px solid #e5e5e5;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <!-- HEADER -->
-  <tr><td style="background-color:#111111;padding:40px 24px;text-align:center;">
-    <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="height:60px;width:auto;display:block;margin:0 auto;" />
-  </td></tr>
+  return `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;min-width:100%;border-collapse:collapse;background-color:#f3f1eb;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <tr>
+    <td align="center" style="padding:0;background-color:#f3f1eb;">
+      <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background-color:#ffffff;border:1px solid #e5e5e5;">
+        <tr>
+          <td style="background-color:#111111;padding:40px 24px;text-align:center;">
+            <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="display:block;height:60px;width:auto;margin:0 auto;border:0;outline:none;text-decoration:none;" />
+          </td>
+        </tr>
 
-  <!-- BODY -->
-  <tr><td style="padding:32px 28px;background:#ffffff;">
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
-      We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping for <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong>. This template is pre-built to match our venue's exact screen layout, so you can drop in your content and export with confidence.
-    </p>
+        <tr>
+          <td style="padding:32px 28px;background-color:#ffffff;">
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
+              We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping for <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong>. This template is pre-built to match our venue's exact screen layout, so you can drop in your content and export with confidence.
+            </p>
 
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 24px;">
-      Below is a quick step-by-step guide to deliver your custom content for our venue screens.
-    </p>
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 24px;">
+              Below is a quick step-by-step guide to deliver your custom content for our venue screens.
+            </p>
 
-    <!-- STEP 1 -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 20px;"><tr>
-      <td width="3" style="background-color:#DAA520;"></td>
-      <td style="background:#faf8f3;padding:16px 20px;">
-        <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 1: PREPARE YOUR VIDEO</p>
-        <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.</p>
-      </td>
-    </tr></table>
+            ${buildInstructionBlock(
+              'STEP 1: PREPARE YOUR VIDEO',
+              '<p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.</p>',
+            )}
 
-    <!-- STEP 2 -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 20px;"><tr>
-      <td width="3" style="background-color:#DAA520;"></td>
-      <td style="background:#faf8f3;padding:16px 20px;">
-        <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 2: DOWNLOAD RESOLUME ALLEY (FREE)</p>
-        <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder here: <a href="https://resolume.com/software/alley" style="color:#B8860B;text-decoration:underline;">resolume.com/software/alley</a></p>
-      </td>
-    </tr></table>
+            ${buildInstructionBlock(
+              'STEP 2: DOWNLOAD RESOLUME ALLEY (FREE)',
+              '<p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder here: <a href="https://resolume.com/software/alley" style="color:#B8860B;text-decoration:underline;">resolume.com/software/alley</a></p>',
+            )}
 
-    <!-- STEP 3 -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 20px;"><tr>
-      <td width="3" style="background-color:#DAA520;"></td>
-      <td style="background:#faf8f3;padding:16px 20px;">
-        <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 3: ENCODE TO DXV3</p>
-        <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select "DXV3 Alpha."</p>
-      </td>
-    </tr></table>
+            ${buildInstructionBlock(
+              'STEP 3: ENCODE TO DXV3',
+              '<p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select "DXV3 Alpha."</p>',
+            )}
 
-    <!-- STEP 4 -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 20px;"><tr>
-      <td width="3" style="background-color:#DAA520;"></td>
-      <td style="background:#faf8f3;padding:16px 20px;">
-        <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 4: CHECK SPECS</p>
-        <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Make sure your files match these requirements:</p>
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:10px 0 0;font-size:13px;">
-          <tr style="border-bottom:1px solid #e5e5e5;">
-            <td style="padding:6px 8px;font-weight:600;color:#333;">TV Displays</td>
-            <td style="padding:6px 8px;color:#555;">1920×1080 or 3840×2160 · MOV · DXV3 · Max 8GB</td>
-          </tr>
-          <tr>
-            <td style="padding:6px 8px;font-weight:600;color:#333;">LED Pixel Map</td>
-            <td style="padding:6px 8px;color:#555;">3840×2160 · MOV w/ Alpha · DXV3 · 60fps · Max 30GB</td>
-          </tr>
-        </table>
-      </td>
-    </tr></table>
+            ${buildInstructionBlock(
+              'STEP 4: CHECK SPECS',
+              `<p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Make sure your files match these requirements:</p>
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:10px 0 0;font-size:13px;background-color:#ffffff;">
+                <tr>
+                  <td style="padding:8px 10px;font-weight:600;color:#333333;border-bottom:1px solid #e5e5e5;border-right:1px solid #e5e5e5;">TV Displays</td>
+                  <td style="padding:8px 10px;color:#555555;border-bottom:1px solid #e5e5e5;">1920×1080 or 3840×2160 · MOV · DXV3 · Max 8GB</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 10px;font-weight:600;color:#333333;border-right:1px solid #e5e5e5;">LED Pixel Map</td>
+                  <td style="padding:8px 10px;color:#555555;">3840×2160 · MOV w/ Alpha · DXV3 · 60fps · Max 30GB</td>
+                </tr>
+              </table>`,
+            )}
 
-    <!-- STEP 5 -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 24px;"><tr>
-      <td width="3" style="background-color:#DAA520;"></td>
-      <td style="background:#faf8f3;padding:16px 20px;">
-        <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 5: SUBMIT CONTENT</p>
-        <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Please submit your encoded files at least 21 business days before your event so we can test and approve playback.</p>
-      </td>
-    </tr></table>
+            ${buildInstructionBlock(
+              'STEP 5: SUBMIT CONTENT',
+              '<p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Please submit your encoded files at least 21 business days before your event so we can test and approve playback.</p>',
+            )}
 
-    <!-- CTA BUTTON -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:28px 0;">
-      <table border="0" cellspacing="0" cellpadding="0"><tr>
-        <td style="background-color:#B8860B;border-radius:8px;padding:14px 36px;">
-          <a href="${cloudLink || '#'}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Access Project Folder</a>
-        </td>
-      </tr></table>
-    </td></tr></table>
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td align="center" style="padding:28px 0;">
+                  <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    <tr>
+                      <td style="background-color:#B8860B;border-radius:8px;padding:14px 36px;text-align:center;">
+                        <a href="${cloudLink || '#'}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Access Project Folder</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
 
-    <!-- TIPS -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 24px;"><tr>
-      <td style="background:#f9f9f9;padding:16px 20px;">
-        <p style="font-size:14px;font-weight:700;color:#333;margin:0 0 8px;">Tips for Best Results</p>
-        <ul style="margin:0;padding:0 0 0 18px;font-size:13px;line-height:2;color:#555555;">
-          <li>Export in ProRes first for best quality before DXV3 encoding</li>
-          <li>Use darker tones — LED screens are very bright</li>
-          <li>Use white or light logo versions for best visibility</li>
-          <li>Include alpha channel for transparent overlays</li>
-        </ul>
-      </td>
-    </tr></table>
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+              <tr>
+                <td style="background-color:#f9f9f9;padding:16px 20px;">
+                  <p style="font-size:14px;font-weight:700;color:#333333;margin:0 0 8px;">Tips for Best Results</p>
+                  <ul style="margin:0;padding:0 0 0 18px;font-size:13px;line-height:2;color:#555555;">
+                    <li>Export in ProRes first for best quality before DXV3 encoding</li>
+                    <li>Use darker tones — LED screens are very bright</li>
+                    <li>Use white or light logo versions for best visibility</li>
+                    <li>Include alpha channel for transparent overlays</li>
+                  </ul>
+                </td>
+              </tr>
+            </table>
 
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0;">
-      If you have any questions, don't hesitate to reach out. We're here to help make your event look stunning!
-    </p>
-  </td></tr>
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0;">
+              If you have any questions, don't hesitate to reach out. We're here to help make your event look stunning!
+            </p>
+          </td>
+        </tr>
 
-  <!-- FOOTER -->
-  <tr><td style="background-color:#111111;padding:24px;text-align:center;">
-    <img src="${logoUrl}" alt="Soleia" width="84" style="height:28px;width:auto;display:block;margin:0 auto 8px;opacity:0.85;" />
-    <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
-    <p style="margin:0;font-size:12px;color:#888888;">
-      <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
-    </p>
-  </td></tr>
+        <tr>
+          <td style="background-color:#111111;padding:24px;text-align:center;">
+            <img src="${logoUrl}" alt="Soleia" width="84" style="display:block;height:28px;width:auto;margin:0 auto 8px;border:0;opacity:0.85;outline:none;text-decoration:none;" />
+            <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
+            <p style="margin:0;font-size:12px;color:#888888;">
+              <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 </table>`;
+}
+
+function buildAssetsEmailText(projectName: string, cloudLink: string) {
+  return `Content Delivery Instructions — ${projectName || '[Project Name]'}
+
+We are providing you with an After Effects project file prepared specifically for our LED video configuration mapping for ${projectName || '[Project Name]'}. This template is pre-built to match our venue's exact screen layout, so you can drop in your content and export with confidence.
+
+STEP 1: PREPARE YOUR VIDEO
+Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.
+
+STEP 2: DOWNLOAD RESOLUME ALLEY (FREE)
+Download the free encoder here: https://resolume.com/software/alley
+
+STEP 3: ENCODE TO DXV3
+Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select DXV3 Alpha.
+
+STEP 4: CHECK SPECS
+TV Displays: 1920×1080 or 3840×2160 · MOV · DXV3 · Max 8GB
+LED Pixel Map: 3840×2160 · MOV w/ Alpha · DXV3 · 60fps · Max 30GB
+
+STEP 5: SUBMIT CONTENT
+Please submit your encoded files at least 21 business days before your event so we can test and approve playback.
+
+Access Project Folder: ${cloudLink || '[Project Folder Link]'}
+
+Tips for Best Results
+- Export in ProRes first for best quality before DXV3 encoding
+- Use darker tones — LED screens are very bright
+- Use white or light logo versions for best visibility
+- Include alpha channel for transparent overlays
+
+If you have any questions, don't hesitate to reach out. We're here to help make your event look stunning!`;
 }
 
 export function CollectAssetsEmailCard() {
@@ -127,12 +166,15 @@ export function CollectAssetsEmailCard() {
       toast.error('Please enter a project name');
       return;
     }
-    const html = buildAssetsEmailHtml(projectName.trim(), cloudLink.trim());
+    const trimmedProjectName = projectName.trim();
+    const trimmedCloudLink = cloudLink.trim();
+    const html = buildAssetsEmailHtml(trimmedProjectName, trimmedCloudLink);
+    const plainText = buildAssetsEmailText(trimmedProjectName, trimmedCloudLink);
     try {
       await navigator.clipboard.write([
         new ClipboardItem({
           'text/html': new Blob([html], { type: 'text/html' }),
-          'text/plain': new Blob([html], { type: 'text/plain' }),
+          'text/plain': new Blob([plainText], { type: 'text/plain' }),
         }),
       ]);
       setCopied(true);
