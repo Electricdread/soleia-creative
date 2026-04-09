@@ -7,14 +7,9 @@ import { toast } from 'sonner';
 
 function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
   const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
-  return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#f5f5f5"><tr><td align="center" style="padding:20px 0;">
-
-<table width="600" border="0" cellspacing="0" cellpadding="0" style="background:#ffffff;border:1px solid #e5e5e5;">
+  return `<table width="600" border="0" cellspacing="0" cellpadding="0" align="center" style="background-color:#ffffff;border:1px solid #e5e5e5;font-family:'Helvetica Neue',Arial,sans-serif;">
   <!-- HEADER -->
-  <tr><td bgcolor="#111111" style="padding:40px 24px;text-align:center;">
+  <tr><td style="background-color:#111111;padding:40px 24px;text-align:center;">
     <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="height:60px;width:auto;display:block;margin:0 auto;" />
   </td></tr>
 
@@ -30,7 +25,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
 
     <!-- STEP 1 -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 20px;"><tr>
-      <td width="3" bgcolor="#DAA520"></td>
+      <td width="3" style="background-color:#DAA520;"></td>
       <td style="background:#faf8f3;padding:16px 20px;">
         <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 1: PREPARE YOUR VIDEO</p>
         <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.</p>
@@ -39,7 +34,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
 
     <!-- STEP 2 -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 20px;"><tr>
-      <td width="3" bgcolor="#DAA520"></td>
+      <td width="3" style="background-color:#DAA520;"></td>
       <td style="background:#faf8f3;padding:16px 20px;">
         <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 2: DOWNLOAD RESOLUME ALLEY (FREE)</p>
         <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder here: <a href="https://resolume.com/software/alley" style="color:#B8860B;text-decoration:underline;">resolume.com/software/alley</a></p>
@@ -48,7 +43,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
 
     <!-- STEP 3 -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 20px;"><tr>
-      <td width="3" bgcolor="#DAA520"></td>
+      <td width="3" style="background-color:#DAA520;"></td>
       <td style="background:#faf8f3;padding:16px 20px;">
         <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 3: ENCODE TO DXV3</p>
         <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select "DXV3 Alpha."</p>
@@ -57,7 +52,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
 
     <!-- STEP 4 -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 20px;"><tr>
-      <td width="3" bgcolor="#DAA520"></td>
+      <td width="3" style="background-color:#DAA520;"></td>
       <td style="background:#faf8f3;padding:16px 20px;">
         <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 4: CHECK SPECS</p>
         <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Make sure your files match these requirements:</p>
@@ -76,7 +71,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
 
     <!-- STEP 5 -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0 0 24px;"><tr>
-      <td width="3" bgcolor="#DAA520"></td>
+      <td width="3" style="background-color:#DAA520;"></td>
       <td style="background:#faf8f3;padding:16px 20px;">
         <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#B8860B;">STEP 5: SUBMIT CONTENT</p>
         <p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Please submit your encoded files at least 21 business days before your event so we can test and approve playback.</p>
@@ -86,7 +81,7 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
     <!-- CTA BUTTON -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:28px 0;">
       <table border="0" cellspacing="0" cellpadding="0"><tr>
-        <td bgcolor="#B8860B" style="border-radius:8px;padding:14px 36px;">
+        <td style="background-color:#B8860B;border-radius:8px;padding:14px 36px;">
           <a href="${cloudLink || '#'}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Access Project Folder</a>
         </td>
       </tr></table>
@@ -111,17 +106,14 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
   </td></tr>
 
   <!-- FOOTER -->
-  <tr><td bgcolor="#111111" style="padding:24px;text-align:center;">
+  <tr><td style="background-color:#111111;padding:24px;text-align:center;">
     <img src="${logoUrl}" alt="Soleia" width="84" style="height:28px;width:auto;display:block;margin:0 auto 8px;opacity:0.85;" />
     <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
     <p style="margin:0;font-size:12px;color:#888888;">
       <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
     </p>
   </td></tr>
-</table>
-
-</td></tr></table>
-</body></html>`;
+</table>`;
 }
 
 export function CollectAssetsEmailCard() {
