@@ -6,71 +6,125 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 function buildAssetCollectEmailHtml(clientName: string, cloudLink: string, dueDate: string) {
+  const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
   const dueDateBanner = dueDate
     ? (() => {
         const d = new Date(dueDate + 'T00:00:00');
         const formatted = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-        return `<div style="background:#fdf6e3;border:2px solid #DAA520;border-radius:8px;padding:18px 20px;text-align:center;margin:0 0 24px;">
-          <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1a1a1a;">📅 Assets Due By: ${formatted}</p>
-          <p style="margin:0;font-size:14px;color:#555555;">To keep your project on schedule, please submit all materials by this date.</p>
-        </div>`;
+        return `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+          <tr>
+            <td style="background-color:#fdf6e3;border:2px solid #DAA520;padding:18px 20px;text-align:center;">
+              <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1a1a1a;">&#128197; Assets Due By: ${formatted}</p>
+              <p style="margin:0;font-size:14px;color:#555555;">To keep your project on schedule, please submit all materials by this date.</p>
+            </td>
+          </tr>
+        </table>`;
       })()
     : '';
-  const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
-  return `<div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e5e5;">
-  <div style="background:linear-gradient(160deg,#0a0a0a 0%,#1a1a1a 40%,#252525 70%,#1a1a1a 100%);padding:40px 24px;text-align:center;">
-    <img src="${logoUrl}" alt="Soleia Las Vegas" style="height:60px;width:auto;margin:0 auto;display:block;" />
-  </div>
 
-  <div style="padding:32px 28px;">
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
-      Hi${clientName ? ` <strong>${clientName}</strong>` : ''},
-    </p>
+  return `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;min-width:100%;border-collapse:collapse;background-color:#f3f1eb;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <tr>
+    <td align="center" style="padding:0;background-color:#f3f1eb;">
+      <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background-color:#ffffff;border:1px solid #e5e5e5;">
+        <tr>
+          <td style="background-color:#111111;padding:40px 24px;text-align:center;">
+            <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="display:block;height:60px;width:auto;margin:0 auto;border:0;outline:none;text-decoration:none;" />
+          </td>
+        </tr>
 
-    ${dueDateBanner}
+        <tr>
+          <td style="padding:32px 28px;background-color:#ffffff;">
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
+              Hi${clientName ? ` <strong>${clientName}</strong>` : ''},
+            </p>
 
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
-      We're excited to begin bringing your vision to life! To ensure a seamless and elevated experience, we kindly ask that you upload the following brand assets to your dedicated project folder:
-    </p>
+            ${dueDateBanner}
 
-    <div style="background:#faf8f3;border-left:3px solid #DAA520;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
-      <ul style="margin:0;padding:0 0 0 18px;font-size:14px;line-height:2;color:#444444;">
-        <li><strong>Company logo</strong> — all formats and variations (PNG, SVG, AI, EPS)</li>
-        <li><strong>Brand guidelines</strong> — color palette, usage rules</li>
-        <li><strong>Typography / font files</strong> — any custom or licensed typefaces</li>
-        <li><strong>Additional branding materials</strong> — patterns, textures, imagery, or any assets you'd like incorporated</li>
-      </ul>
-    </div>
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
+              We're excited to begin bringing your vision to life! To ensure a seamless and elevated experience, we kindly ask that you upload the following brand assets to your dedicated project folder:
+            </p>
 
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
-      Please use the button below to access your secure upload folder. You may drag and drop files directly or use the upload option within the folder.
-    </p>
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+              <tr>
+                <td width="3" style="width:3px;background-color:#DAA520;font-size:0;line-height:0;">&nbsp;</td>
+                <td style="background-color:#faf8f3;padding:16px 20px;">
+                  <ul style="margin:0;padding:0 0 0 18px;font-size:14px;line-height:2;color:#444444;">
+                    <li><strong>Company logo</strong> — all formats and variations (PNG, SVG, AI, EPS)</li>
+                    <li><strong>Brand guidelines</strong> — color palette, usage rules</li>
+                    <li><strong>Typography / font files</strong> — any custom or licensed typefaces</li>
+                    <li><strong>Additional branding materials</strong> — patterns, textures, imagery, or any assets you'd like incorporated</li>
+                  </ul>
+                </td>
+              </tr>
+            </table>
 
-    <div style="text-align:center;margin:28px 0;">
-      <a href="${cloudLink || '#'}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#B8860B,#DAA520);color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 36px;border-radius:8px;letter-spacing:0.5px;">
-        Upload Your Assets
-      </a>
-    </div>
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
+              Please use the button below to access your secure upload folder. You may drag and drop files directly or use the upload option within the folder.
+            </p>
 
-    <div style="background:#f9f9f9;border-radius:8px;padding:16px 20px;margin:0 0 24px;">
-      <p style="font-size:14px;line-height:1.7;color:#555555;margin:0;">
-        <strong>Tip:</strong> For the best results, please provide logo files in vector format (SVG, AI, or EPS) whenever possible. Organizing files into labeled subfolders (e.g., "Logos," "Fonts," "Guidelines") is greatly appreciated.
-      </p>
-    </div>
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td align="center" style="padding:28px 0;">
+                  <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    <tr>
+                      <td style="background-color:#B8860B;border-radius:8px;padding:14px 36px;text-align:center;">
+                        <a href="${cloudLink || '#'}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Upload Your Assets</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
 
-    <p style="font-size:15px;line-height:1.7;color:#333333;margin:0;">
-      If you have any questions or need assistance, please don't hesitate to reach out. We look forward to working with you!
-    </p>
-  </div>
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+              <tr>
+                <td style="background-color:#f9f9f9;padding:16px 20px;">
+                  <p style="font-size:14px;line-height:1.7;color:#555555;margin:0;">
+                    <strong>Tip:</strong> For the best results, please provide logo files in vector format (SVG, AI, or EPS) whenever possible. Organizing files into labeled subfolders (e.g., "Logos," "Fonts," "Guidelines") is greatly appreciated.
+                  </p>
+                </td>
+              </tr>
+            </table>
 
-  <div style="background:linear-gradient(160deg,#0a0a0a 0%,#1a1a1a 40%,#252525 70%,#1a1a1a 100%);padding:24px;text-align:center;">
-    <img src="${logoUrl}" alt="Soleia" style="height:28px;width:auto;margin:0 auto 8px;display:block;opacity:0.85;" />
-    <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
-    <p style="margin:0;font-size:12px;color:#888888;">
-      <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
-    </p>
-  </div>
-</div>`;
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0;">
+              If you have any questions or need assistance, please don't hesitate to reach out. We look forward to working with you!
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background-color:#111111;padding:24px;text-align:center;">
+            <img src="${logoUrl}" alt="Soleia" width="84" style="display:block;height:28px;width:auto;margin:0 auto 8px;border:0;opacity:0.85;outline:none;text-decoration:none;" />
+            <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
+            <p style="margin:0;font-size:12px;color:#888888;">
+              <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+function buildAssetCollectEmailText(clientName: string, cloudLink: string, dueDate: string) {
+  const dueLine = dueDate
+    ? `Assets Due By: ${new Date(dueDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}\n\n`
+    : '';
+  return `Hi${clientName ? ` ${clientName}` : ''},
+
+${dueLine}We're excited to begin bringing your vision to life! Please upload the following brand assets:
+
+- Company logo — all formats and variations (PNG, SVG, AI, EPS)
+- Brand guidelines — color palette, usage rules
+- Typography / font files — any custom or licensed typefaces
+- Additional branding materials — patterns, textures, imagery
+
+Upload Your Assets: ${cloudLink || '[Upload Link]'}
+
+Tip: For the best results, please provide logo files in vector format (SVG, AI, or EPS) whenever possible.
+
+If you have any questions or need assistance, please don't hesitate to reach out. We look forward to working with you!`;
 }
 
 export function ClientAssetCollectEmailCard() {
@@ -82,11 +136,12 @@ export function ClientAssetCollectEmailCard() {
 
   const handleCopy = async () => {
     const html = buildAssetCollectEmailHtml(clientName.trim(), cloudLink.trim(), dueDate);
+    const plainText = buildAssetCollectEmailText(clientName.trim(), cloudLink.trim(), dueDate);
     try {
       await navigator.clipboard.write([
         new ClipboardItem({
           'text/html': new Blob([html], { type: 'text/html' }),
-          'text/plain': new Blob([html], { type: 'text/plain' }),
+          'text/plain': new Blob([plainText], { type: 'text/plain' }),
         }),
       ]);
       setCopied(true);
