@@ -132,7 +132,7 @@ export default function CreativeSession() {
       .select('*')
       .eq('session_id', session.id)
       .order('sort_order', { ascending: true, nullsFirst: false })
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: true });
     setItems(data || []);
   };
 

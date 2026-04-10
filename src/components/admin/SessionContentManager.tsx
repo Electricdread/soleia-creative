@@ -370,8 +370,26 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
 
       {/* Edit Item Panel */}
       {editingItem && (
-        <div className="bg-secondary/50 border border-border rounded-lg p-4 space-y-3">
+      <div className="bg-secondary/50 border border-border rounded-lg p-4 space-y-3">
           <h4 className="text-sm font-semibold">Edit Item</h4>
+          
+          {/* Thumbnail preview of current file */}
+          {(() => {
+            const previewSrc = editingItem.thumbnail_url || editingItem.file_url || editingItem.url;
+            if (!previewSrc) return null;
+            const isImage = /\.(jpg|jpeg|png|gif|webp|svg)/i.test(previewSrc);
+            const isVideo = editingItem.item_type === 'video';
+            if (isImage) {
+              return <img src={previewSrc} alt="" className="w-full max-h-40 object-contain rounded-md bg-muted" />;
+            }
+            if (isVideo && editingItem.file_url) {
+              return (
+                <video src={editingItem.file_url} className="w-full max-h-40 object-contain rounded-md bg-muted" muted playsInline preload="metadata" />
+              );
+            }
+            return null;
+          })()}
+
           <div>
             <label className="text-xs text-muted-foreground">Title</label>
             <Input

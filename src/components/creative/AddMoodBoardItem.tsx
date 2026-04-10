@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Link2, Image, Upload, Loader2 } from 'lucide-react';
+import { Plus, Link2, Upload, Loader2, X, Film, FileText, ImageIcon } from 'lucide-react';
 
 interface AddMoodBoardItemProps {
   sessionId: string;
@@ -17,7 +17,6 @@ interface AddMoodBoardItemProps {
 
 /**
  * Extract a thumbnail from a video file at ~25% of its duration.
- * Returns a Blob of the captured frame as JPEG, or null on failure.
  */
 function extractVideoThumbnail(file: File): Promise<Blob | null> {
   return new Promise((resolve) => {
@@ -30,7 +29,6 @@ function extractVideoThumbnail(file: File): Promise<Blob | null> {
     video.src = url;
 
     video.onloadedmetadata = () => {
-      // Seek to 25% of duration to skip black intro frames
       video.currentTime = Math.min(video.duration * 0.25, 5);
     };
 
@@ -57,7 +55,6 @@ function extractVideoThumbnail(file: File): Promise<Blob | null> {
       resolve(null);
     };
 
-    // Timeout fallback
     setTimeout(() => {
       URL.revokeObjectURL(url);
       resolve(null);
@@ -65,19 +62,43 @@ function extractVideoThumbnail(file: File): Promise<Blob | null> {
   });
 }
 
+async function getNextSortOrder(sessionId: string): Promise<number> {
+  const { data } = await supabase
+    .from('mood_board_items')
+    .select('sort_order')
+    .eq('session_id', sessionId)
+    .order('sort_order', { ascending: false, nullsFirst: false })
+    .limit(1);
+  const max = data?.[0]?.sort_order ?? -1;
+  return (max ?? -1) + 1;
+}
+
 export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBoardItemProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('url');
   
-  // URL form
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   
-  // File upload
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  // Generate preview URLs for selected files
+  const filePreviews = useMemo(() => {
+    return selectedFiles.map(file => {
+      if (file.type.startsWith('image/')) {
+        return URL.createObjectURL(file);
+      }
+      return null;
+    });
+  }, [selectedFiles]);
+
+  // Cleanup preview URLs when files change
+  const cleanupPreviews = () => {
+    filePreviews.forEach(url => url && URL.revokeObjectURL(url));
+  };
 
   const detectUrlType = (url: string): 'pinterest' | 'instagram' | 'link' => {
     if (url.includes('pinterest.com') || url.includes('pin.it')) return 'pinterest';
@@ -86,18 +107,12 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
   };
 
   const handleUrlSubmit = async () => {
-    if (!url.trim()) {
-      toast.error('Please enter a URL');
-      return;
-    }
-
-    if (!userName) {
-      toast.error('Please enter your name first');
-      return;
-    }
+    if (!url.trim()) { toast.error('Please enter a URL'); return; }
+    if (!userName) { toast.error('Please enter your name first'); return; }
 
     setLoading(true);
     const itemType = detectUrlType(url);
+    const sortOrder = await getNextSortOrder(sessionId);
 
     const { error } = await supabase.from('mood_board_items').insert({
       session_id: sessionId,
@@ -106,6 +121,7 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
       title: title.trim() || null,
       description: description.trim() || null,
       added_by: userName,
+      sort_order: sortOrder,
     });
 
     if (error) {
@@ -120,29 +136,21 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
   };
 
   const handleFileUpload = async () => {
-    if (selectedFiles.length === 0) {
-      toast.error('Please select files to upload');
-      return;
-    }
-
-    if (!userName) {
-      toast.error('Please enter your name first');
-      return;
-    }
+    if (selectedFiles.length === 0) { toast.error('Please select files to upload'); return; }
+    if (!userName) { toast.error('Please enter your name first'); return; }
 
     setLoading(true);
+    let sortOrder = await getNextSortOrder(sessionId);
 
     for (const file of selectedFiles) {
       const fileExt = file.name.split('.').pop()?.toLowerCase();
       const baseName = `${sessionId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
       const fileName = `${baseName}.${fileExt}`;
 
-      // Determine file type
       let itemType: 'image' | 'video' | 'pdf' = 'image';
       if (file.type.startsWith('video/')) itemType = 'video';
       else if (file.type === 'application/pdf') itemType = 'pdf';
 
-      // Upload main file
       const { error: uploadError } = await supabase.storage
         .from('creative-uploads')
         .upload(fileName, file);
@@ -157,7 +165,6 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
         .from('creative-uploads')
         .getPublicUrl(fileName);
 
-      // Extract and upload thumbnail for videos
       let thumbnailUrl: string | null = null;
       if (itemType === 'video') {
         const thumbBlob = await extractVideoThumbnail(file);
@@ -166,7 +173,6 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
           const { error: thumbErr } = await supabase.storage
             .from('creative-uploads')
             .upload(thumbPath, thumbBlob, { contentType: 'image/jpeg' });
-
           if (!thumbErr) {
             const { data: thumbData } = supabase.storage
               .from('creative-uploads')
@@ -176,7 +182,6 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
         }
       }
 
-      // Create mood board item
       const { error: insertError } = await supabase.from('mood_board_items').insert({
         session_id: sessionId,
         item_type: itemType,
@@ -184,12 +189,14 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
         thumbnail_url: thumbnailUrl,
         title: file.name,
         added_by: userName,
+        sort_order: sortOrder,
       });
 
       if (insertError) {
         toast.error(`Failed to save ${file.name}`);
         console.error(insertError);
       }
+      sortOrder++;
     }
 
     toast.success(`${selectedFiles.length} file(s) uploaded!`);
@@ -199,6 +206,7 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
   };
 
   const resetForm = () => {
+    cleanupPreviews();
     setUrl('');
     setTitle('');
     setDescription('');
@@ -208,19 +216,32 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
+      cleanupPreviews();
       setSelectedFiles(Array.from(e.target.files));
     }
   };
 
+  const removeFile = (index: number) => {
+    const preview = filePreviews[index];
+    if (preview) URL.revokeObjectURL(preview);
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith('video/')) return <Film className="h-5 w-5 text-zinc-400" />;
+    if (file.type === 'application/pdf') return <FileText className="h-5 w-5 text-zinc-400" />;
+    return <ImageIcon className="h-5 w-5 text-zinc-400" />;
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) cleanupPreviews(); setOpen(v); }}>
       <DialogTrigger asChild>
         <Button className="gap-2 h-12 sm:h-10 px-4 sm:px-6 font-tech uppercase tracking-wider text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 hover:text-cyan-300 touch-manipulation active:scale-95 transition-all">
           <Plus className="h-4 w-4" />
           Add Item
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-700 font-tech">
+      <DialogContent className="sm:max-w-lg lg:max-w-2xl bg-zinc-900 border-zinc-700 font-tech max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-cyan-400 uppercase tracking-widest text-sm">Add_To_Board</DialogTitle>
         </DialogHeader>
@@ -293,7 +314,7 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
 
           <TabsContent value="upload" className="space-y-4 mt-4">
             <div 
-              className="border-2 border-dashed border-zinc-700 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-cyan-500/50 transition-colors touch-manipulation active:scale-[0.98]"
+              className="border-2 border-dashed border-zinc-700 rounded-lg p-4 text-center cursor-pointer hover:border-cyan-500/50 transition-colors touch-manipulation active:scale-[0.98]"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -304,21 +325,40 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
                 className="hidden"
                 onChange={handleFileChange}
               />
-              <Image className="h-8 w-8 mx-auto mb-2 text-zinc-600" />
+              <Upload className="h-6 w-6 mx-auto mb-1.5 text-zinc-600" />
               <p className="text-xs font-tech uppercase tracking-wider text-zinc-400">Tap to select files</p>
-              <p className="text-[10px] text-zinc-600 font-tech mt-1 uppercase tracking-wider">
+              <p className="text-[10px] text-zinc-600 font-tech mt-0.5 uppercase tracking-wider">
                 Images, videos, and PDFs
               </p>
             </div>
 
             {selectedFiles.length > 0 && (
-              <div className="space-y-2 p-3 bg-zinc-800/30 rounded-lg">
-                <p className="text-[10px] font-tech uppercase tracking-widest text-cyan-400">Selected files:</p>
-                <ul className="text-xs text-zinc-400 space-y-1 font-tech">
+              <div className="space-y-2">
+                <p className="text-[10px] font-tech uppercase tracking-widest text-cyan-400">
+                  {selectedFiles.length} file{selectedFiles.length !== 1 ? 's' : ''} selected
+                </p>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {selectedFiles.map((file, i) => (
-                    <li key={i} className="truncate">• {file.name}</li>
+                    <div key={i} className="relative group aspect-square rounded-md overflow-hidden bg-zinc-800 border border-zinc-700">
+                      {filePreviews[i] ? (
+                        <img src={filePreviews[i]!} alt={file.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-1">
+                          {getFileIcon(file)}
+                          <span className="text-[9px] text-zinc-500 font-tech truncate w-full text-center px-1">
+                            {file.name.length > 12 ? file.name.slice(0, 10) + '…' : file.name}
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                        className="absolute top-0.5 right-0.5 bg-black/70 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
 
