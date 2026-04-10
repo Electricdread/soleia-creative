@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -231,14 +232,20 @@ export default function SessionFileUploader({ linkId, uploads, onUploadComplete 
                         {formatFileSize(upload.file_size)}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
-                      onClick={() => handleDelete(upload.id, upload.file_url)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <DeleteConfirmDialog
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      }
+                      title="Delete File?"
+                      description={`This will permanently delete "${upload.file_name}". This action cannot be undone.`}
+                      onConfirm={() => handleDelete(upload.id, upload.file_url)}
+                    />
                   </div>
                 );
               })}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,7 +93,6 @@ export default function LineItemLibrary({ onSelect, compact }: LineItemLibraryPr
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this template?')) return;
     await supabase.from('line_item_templates').delete().eq('id', id);
     fetch();
     toast({ title: 'Template deleted' });
@@ -216,9 +216,16 @@ export default function LineItemLibrary({ onSelect, compact }: LineItemLibraryPr
                       <Button variant="ghost" size="icon" onClick={() => startEdit(t)} className="text-zinc-500 hover:text-white h-8 w-8">
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(t.id)} className="text-zinc-500 hover:text-red-400 h-8 w-8">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                      <DeleteConfirmDialog
+                        trigger={
+                          <Button variant="ghost" size="icon" className="text-zinc-500 hover:text-red-400 h-8 w-8">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        }
+                        title="Delete Template?"
+                        description={`This will permanently delete "${t.title}". This action cannot be undone.`}
+                        onConfirm={() => handleDelete(t.id)}
+                      />
                     </>
                   )}
                 </div>

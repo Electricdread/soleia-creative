@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -307,9 +308,16 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             <Button size="sm" variant="outline" onClick={() => onOpen(session.token)} className="h-7 w-7 p-0">
               <ExternalLink className="w-3 h-3" />
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => onDelete(session.id)} className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10">
-              <Trash2 className="w-3 h-3" />
-            </Button>
+            <DeleteConfirmDialog
+              trigger={
+                <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10">
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              }
+              title="Delete Creative Session?"
+              description={`This will permanently delete "${session.project_name}" and all its mood board items, scenes, and uploaded files. This action cannot be undone.`}
+              onConfirm={() => onDelete(session.id)}
+            />
           </div>
         </div>
 
