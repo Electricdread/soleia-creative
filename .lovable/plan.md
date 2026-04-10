@@ -1,22 +1,59 @@
 
 
-## Plan: Fix Preview Thumbnails
+## Plan: Adapt Creative Session ↔ Proposal Linking (DSX-style)
 
-### Problem
-1. **Admin content list** (`SessionContentManager`): Video items show a generic Film icon instead of a visual thumbnail. The regex on line 82 checks for image extensions but video `thumbnail_url` values may be null (items uploaded before thumbnail extraction was added), and even when set, the Supabase storage URLs may not match the simple extension regex (e.g., URLs with query params).
-2. **Add Item dialog** (`AddMoodBoardItem`): Image previews work via `URL.createObjectURL`, but video files show only an icon — no frame preview is generated for the selection grid.
+### What changes
 
-### Changes
+The DSX project links creative sessions to proposals using a `proposal_id` column on the `creative_sessions` table, and shows a "View Proposal" card on the client-facing session page. The current Soleia project uses the inverse (`session_id` on `proposals`). This plan adapts the Soleia project to match the DSX approach.
 
-**File 1: `src/components/admin/SessionContentManager.tsx`**
-- Fix the thumbnail check on line 82: instead of regex-matching extensions, check if `item.thumbnail_url` exists first (always show it as an image), then fall back to checking `file_url` for image types, then show the type icon.
-- For video items without a `thumbnail_url`, render a small `<video>` element with `preload="metadata"` to show the first frame as a natural poster.
+### Database Migration
 
-**File 2: `src/components/creative/AddMoodBoardItem.tsx`**
-- Update `filePreviews` useMemo to also generate preview URLs for video files using `URL.createObjectURL`, then render them as `<video>` elements (muted, no controls) instead of only supporting images.
-- This gives users a visual preview of selected video files before uploading.
+Add a `proposal_id` column to `creative_sessions`:
+
+```sql
+ALTER TABLE public.creative_sessions
+  ADD COLUMN proposal_id uuid REFERENCES public.proposals(id) ON DELETE SET NULL;
+```
+
+Migrate existing links from `proposals.session_id` → `creative_sessions.proposal_id`, then drop the old column:
+
+```sql
+UPDATE public.creative_sessions cs
+SET proposal_id = p.id
+FROM public.proposals p
+WHERE p.session_id = cs.id;
+
+ALTER TABLE public.proposals DROP COLUMN session_id;
+```
+
+### Code Changes
+
+**1. `src/pages/CreativeSession.tsx`**
+- Add `proposal_id` to the `CreativeSessionData` interface
+- Fetch the linked proposal's token when `session.proposal_id` is set
+- Add a "View Proposal" link card at the bottom of the session (matching DSX: FileText icon, "Review and sign the project proposal" subtitle)
+
+**2. `src/components/admin/ProposalSessionLinker.tsx`**
+- Reverse the linking direction: instead of updating `proposals.session_id`, update `creative_sessions.proposal_id` with the selected proposal's ID
+- Adjust the query and UI labels accordingly (now selecting a proposal to link to a session, rather than a session to link to a proposal)
+
+**3. `src/components/admin/CreativeSessionCard.tsx`**
+- Add a "Link Proposal" button (Link2 icon) that opens a proposal picker dialog
+- Show linked proposal badge/indicator when `proposal_id` is set
+
+**4. `src/components/admin/CreativeSessionManager.tsx`**
+- Pass proposal linking capability down to session cards
+
+**5. `src/components/calendar/EventLinkedItems.tsx`**
+- Update any queries that reference `proposals.session_id` to use the new `creative_sessions.proposal_id` relationship
+
+**6. `src/components/proposal/ProposalApprovedClips.tsx`**
+- Update query to find linked session via `creative_sessions.proposal_id` instead of `proposals.session_id`
 
 ### Technical Details
-- Admin thumbnail logic becomes: `thumbnail_url` → render as `<img>` | video type → render `<video preload="metadata">` with `file_url` as src | image type → render `<img>` with `file_url` | fallback → type icon
-- Client preview grid: for video files, render `<video src={objectUrl} muted preload="metadata" className="w-full h-full object-cover" />` instead of the Film icon placeholder
+
+- The `proposal_id` foreign key uses `ON DELETE SET NULL` so deleting a proposal doesn't break the session
+- Existing linked data will be migrated automatically in the migration SQL
+- The client-facing "View Proposal" card only appears when `proposalToken` is resolved (proposal exists and is active)
+- Cover image auto-pull logic in the linker remains the same, just the direction of the FK update changes
 
