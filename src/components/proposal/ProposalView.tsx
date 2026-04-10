@@ -41,19 +41,25 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
     contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
-    session_id: proposal.session_id || '',
+    linked_session_id: '',
   });
+  const [linkedSessionId, setLinkedSessionId] = useState<string | null>(null);
   const [editingItems, setEditingItems] = useState(false);
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
   const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
 
-  // Fetch available creative sessions for admin linking
+  // Fetch available creative sessions for admin linking + find currently linked session
   useEffect(() => {
     if (!isAdmin) return;
-    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images').eq('is_active', true).order('created_at', { ascending: false })
-      .then(({ data }) => setSessions(data || []));
-  }, [isAdmin]);
+    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images, proposal_id').eq('is_active', true).order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setSessions(data || []);
+        const linked = (data || []).find((s: any) => s.proposal_id === proposal.id);
+        setLinkedSessionId(linked?.id || null);
+        setEditFields(prev => ({ ...prev, linked_session_id: linked?.id || '' }));
+      });
+  }, [isAdmin, proposal.id]);
 
   const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1);
 
@@ -150,8 +156,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const saveHeader = async () => {
     try {
-      const newSessionId = editFields.session_id || null;
-      const oldSessionId = proposal.session_id || null;
+      const newSessionId = editFields.linked_session_id || null;
+      const oldSessionId = linkedSessionId;
 
       const { error } = await supabase
         .from('proposals')
@@ -162,10 +168,22 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           event_date: editFields.event_date || null,
           validity_days: parseInt(editFields.validity_days) || 7,
           contact_email: editFields.contact_email,
-          session_id: newSessionId,
-        } as any)
+        })
         .eq('id', proposal.id);
       if (error) throw error;
+
+      // Update session linkage via creative_sessions.proposal_id
+      if (newSessionId !== oldSessionId) {
+        // Unlink old session
+        if (oldSessionId) {
+          await supabase.from('creative_sessions').update({ proposal_id: null } as any).eq('id', oldSessionId);
+        }
+        // Link new session
+        if (newSessionId) {
+          await supabase.from('creative_sessions').update({ proposal_id: proposal.id } as any).eq('id', newSessionId);
+        }
+        setLinkedSessionId(newSessionId);
+      }
 
       // Auto-pull cover image when linking a new session
       if (newSessionId && newSessionId !== oldSessionId) {
@@ -174,7 +192,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         if (coverImages?.length) {
           const coverUrl = coverImages[0]?.url || coverImages[0];
           if (typeof coverUrl === 'string' && coverUrl.startsWith('http')) {
-            // Check if this cover image already exists in gallery
             const { data: existing } = await supabase
               .from('proposal_gallery')
               .select('id')
@@ -308,8 +325,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               <div className="col-span-2">
                 <label className="text-xs text-[#95a5a6] font-semibold">Link Creative Session</label>
                 <select
-                  value={editFields.session_id}
-                  onChange={e => setEditFields({ ...editFields, session_id: e.target.value })}
+                  value={editFields.linked_session_id}
+                  onChange={e => setEditFields({ ...editFields, linked_session_id: e.target.value })}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
                   <option value="">— None —</option>
@@ -669,8 +686,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         ) : null}
 
         {/* Approved Creative Selections */}
-        {proposal.session_id && (
-          <ProposalApprovedClips sessionId={proposal.session_id} />
+        {linkedSessionId && (
+          <ProposalApprovedClips sessionId={linkedSessionId} />
         )}
 
         {/* Gallery */}

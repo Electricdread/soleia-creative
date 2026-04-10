@@ -424,6 +424,7 @@ export type Database = {
           is_active: boolean
           is_public: boolean
           project_name: string
+          proposal_id: string | null
           technical_notes: string | null
           token: string
           updated_at: string
@@ -445,6 +446,7 @@ export type Database = {
           is_active?: boolean
           is_public?: boolean
           project_name: string
+          proposal_id?: string | null
           technical_notes?: string | null
           token: string
           updated_at?: string
@@ -466,11 +468,20 @@ export type Database = {
           is_active?: boolean
           is_public?: boolean
           project_name?: string
+          proposal_id?: string | null
           technical_notes?: string | null
           token?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "creative_sessions_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       line_item_templates: {
         Row: {
@@ -885,7 +896,6 @@ export type Database = {
           is_active: boolean
           notes: string | null
           quote_date: string
-          session_id: string | null
           signed_at: string | null
           status: string
           token: string
@@ -905,7 +915,6 @@ export type Database = {
           is_active?: boolean
           notes?: string | null
           quote_date?: string
-          session_id?: string | null
           signed_at?: string | null
           status?: string
           token: string
@@ -925,7 +934,6 @@ export type Database = {
           is_active?: boolean
           notes?: string | null
           quote_date?: string
-          session_id?: string | null
           signed_at?: string | null
           status?: string
           token?: string
@@ -933,15 +941,7 @@ export type Database = {
           validity_days?: number
           venue_name?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "proposals_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "creative_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       session_scenes: {
         Row: {

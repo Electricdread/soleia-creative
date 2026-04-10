@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, User, ArrowRight } from 'lucide-react';
+import { Loader2, User, ArrowRight, FileText } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
@@ -26,6 +26,7 @@ interface CreativeSessionData {
   created_at: string;
   cover_images?: CoverImage[] | null;
   creative_notes?: string | null;
+  proposal_id?: string | null;
 }
 
 interface MoodBoardItemData {
@@ -72,6 +73,7 @@ export default function CreativeSession() {
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [scenes, setScenes] = useState<SceneData[]>([]);
+  const [proposalToken, setProposalToken] = useState<string | null>(null);
   const [userName, setUserName] = useState(() =>
     localStorage.getItem('creative_session_name') || ''
   );
@@ -121,7 +123,20 @@ export default function CreativeSession() {
       created_at: data.created_at,
       cover_images: data.cover_images as unknown as CoverImage[] | null,
       creative_notes: data.creative_notes,
+      proposal_id: (data as any).proposal_id,
     });
+
+    // Fetch linked proposal token
+    if ((data as any).proposal_id) {
+      const { data: prop } = await supabase
+        .from('proposals')
+        .select('token')
+        .eq('id', (data as any).proposal_id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (prop) setProposalToken(prop.token);
+    }
+
     setLoading(false);
   };
 
@@ -379,6 +394,29 @@ export default function CreativeSession() {
               />
             ))}
           </div>
+        )}
+
+        {/* View Proposal Card */}
+        {proposalToken && (
+          <a
+            href={`/proposal/${proposalToken}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <Card className="border border-border/50 hover:border-primary/30 transition-colors cursor-pointer">
+              <CardContent className="py-4 px-5 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <FileText className="w-5 h-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">View Proposal</p>
+                  <p className="text-xs text-muted-foreground">Review and sign the project proposal</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
+              </CardContent>
+            </Card>
+          </a>
         )}
 
         {/* Approval Cart */}
