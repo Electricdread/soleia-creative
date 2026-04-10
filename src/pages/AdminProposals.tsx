@@ -37,7 +37,6 @@ interface ProposalRow {
   signed_at: string | null;
   client_signature: string | null;
   created_at: string;
-  session_id: string | null;
 }
 
 export default function AdminProposals() {
@@ -499,7 +498,6 @@ export default function AdminProposals() {
           open={!!linkerProposal}
           onOpenChange={(open) => { if (!open) setLinkerProposal(null); }}
           proposalId={linkerProposal.id}
-          currentSessionId={(linkerProposal as any).session_id || null}
           onLinked={fetchProposals}
         />
       )}
