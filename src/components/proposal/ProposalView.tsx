@@ -686,8 +686,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         ) : null}
 
         {/* Approved Creative Selections */}
-        {proposal.session_id && (
-          <ProposalApprovedClips sessionId={proposal.session_id} />
+        {linkedSessionId && (
+          <ProposalApprovedClips sessionId={linkedSessionId} />
         )}
 
         {/* Gallery */}

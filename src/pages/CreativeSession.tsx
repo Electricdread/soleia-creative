@@ -26,6 +26,7 @@ interface CreativeSessionData {
   created_at: string;
   cover_images?: CoverImage[] | null;
   creative_notes?: string | null;
+  proposal_id?: string | null;
 }
 
 interface MoodBoardItemData {
