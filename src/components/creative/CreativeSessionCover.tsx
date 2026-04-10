@@ -1,6 +1,6 @@
 import { Card, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar } from 'lucide-react';
+import { Calendar, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
@@ -16,6 +16,7 @@ interface CreativeSessionCoverProps {
     client_name: string;
     created_at: string;
     cover_images?: CoverImage[] | null;
+    creative_notes?: string | null;
   };
 }
 
@@ -58,6 +59,22 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
           </div>
         </div>
       </CardHeader>
+
+      {session.creative_notes && (
+        <div className="px-4 sm:px-6 pb-5">
+          <div className="relative border-l-2 border-primary/30 pl-4 py-1">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary/70" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-primary/70">
+                Creative Director Notes
+              </span>
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground italic whitespace-pre-line">
+              {session.creative_notes}
+            </p>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
