@@ -325,8 +325,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               <div className="col-span-2">
                 <label className="text-xs text-[#95a5a6] font-semibold">Link Creative Session</label>
                 <select
-                  value={editFields.session_id}
-                  onChange={e => setEditFields({ ...editFields, session_id: e.target.value })}
+                  value={editFields.linked_session_id}
+                  onChange={e => setEditFields({ ...editFields, linked_session_id: e.target.value })}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
                   <option value="">— None —</option>
