@@ -9,34 +9,53 @@ interface ProposalSessionLinkerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   proposalId: string;
-  currentSessionId: string | null;
   onLinked: () => void;
 }
 
-export default function ProposalSessionLinker({ open, onOpenChange, proposalId, currentSessionId, onLinked }: ProposalSessionLinkerProps) {
+export default function ProposalSessionLinker({ open, onOpenChange, proposalId, onLinked }: ProposalSessionLinkerProps) {
   const { toast } = useToast();
-  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
+  const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any; proposal_id: string | null }[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // The currently linked session is the one whose proposal_id matches this proposal
+  const currentSessionId = sessions.find(s => s.proposal_id === proposalId)?.id || null;
 
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images').eq('is_active', true).order('created_at', { ascending: false })
-      .then(({ data }) => { setSessions(data || []); setLoading(false); });
+    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images, proposal_id').eq('is_active', true).order('created_at', { ascending: false })
+      .then(({ data }) => { setSessions((data as any[]) || []); setLoading(false); });
   }, [open]);
 
   const linkSession = async (sessionId: string | null) => {
     setSaving(true);
-    const { error } = await supabase.from('proposals').update({ session_id: sessionId } as any).eq('id', proposalId);
-    if (error) {
-      setSaving(false);
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-      return;
+
+    // If unlinking, clear proposal_id on the currently linked session
+    if (!sessionId && currentSessionId) {
+      const { error } = await supabase.from('creative_sessions').update({ proposal_id: null } as any).eq('id', currentSessionId);
+      if (error) {
+        setSaving(false);
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+        return;
+      }
     }
 
-    // Auto-pull cover image when linking
+    // If linking, set proposal_id on the selected session
     if (sessionId) {
+      // First unlink any session currently linked to this proposal
+      if (currentSessionId) {
+        await supabase.from('creative_sessions').update({ proposal_id: null } as any).eq('id', currentSessionId);
+      }
+
+      const { error } = await supabase.from('creative_sessions').update({ proposal_id: proposalId } as any).eq('id', sessionId);
+      if (error) {
+        setSaving(false);
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      // Auto-pull cover image when linking
       const session = sessions.find(s => s.id === sessionId);
       const coverImages = session?.cover_images as any[] | null;
       if (coverImages?.length) {
