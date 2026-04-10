@@ -73,6 +73,7 @@ export default function CreativeSession() {
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [scenes, setScenes] = useState<SceneData[]>([]);
+  const [proposalToken, setProposalToken] = useState<string | null>(null);
   const [userName, setUserName] = useState(() =>
     localStorage.getItem('creative_session_name') || ''
   );
