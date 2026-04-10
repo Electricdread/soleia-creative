@@ -123,7 +123,20 @@ export default function CreativeSession() {
       created_at: data.created_at,
       cover_images: data.cover_images as unknown as CoverImage[] | null,
       creative_notes: data.creative_notes,
+      proposal_id: (data as any).proposal_id,
     });
+
+    // Fetch linked proposal token
+    if ((data as any).proposal_id) {
+      const { data: prop } = await supabase
+        .from('proposals')
+        .select('token')
+        .eq('id', (data as any).proposal_id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (prop) setProposalToken(prop.token);
+    }
+
     setLoading(false);
   };
 
