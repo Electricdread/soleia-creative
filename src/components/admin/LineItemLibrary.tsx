@@ -92,7 +92,6 @@ export default function LineItemLibrary({ onSelect, compact }: LineItemLibraryPr
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this template?')) return;
     await supabase.from('line_item_templates').delete().eq('id', id);
     fetch();
     toast({ title: 'Template deleted' });

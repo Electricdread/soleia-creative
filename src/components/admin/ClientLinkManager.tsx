@@ -450,14 +450,20 @@ export function ClientLinkManager() {
                       <ExternalLink className="w-3.5 h-3.5" />
                       Open
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => deleteLink(link.id)}
-                      className="text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    <DeleteConfirmDialog
+                      trigger={
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      }
+                      title="Delete Session Link?"
+                      description={`This will permanently delete the link for "${link.client_name} — ${link.event_name}" and all associated selections. This action cannot be undone.`}
+                      onConfirm={() => deleteLink(link.id)}
+                    />
                   </div>
                 </div>
               ))}
