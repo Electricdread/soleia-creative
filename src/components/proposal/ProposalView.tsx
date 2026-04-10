@@ -41,19 +41,25 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
     contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
-    session_id: proposal.session_id || '',
+    linked_session_id: '',
   });
+  const [linkedSessionId, setLinkedSessionId] = useState<string | null>(null);
   const [editingItems, setEditingItems] = useState(false);
   const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
   const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
 
-  // Fetch available creative sessions for admin linking
+  // Fetch available creative sessions for admin linking + find currently linked session
   useEffect(() => {
     if (!isAdmin) return;
-    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images').eq('is_active', true).order('created_at', { ascending: false })
-      .then(({ data }) => setSessions(data || []));
-  }, [isAdmin]);
+    supabase.from('creative_sessions').select('id, project_name, client_name, cover_images, proposal_id').eq('is_active', true).order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setSessions(data || []);
+        const linked = (data || []).find((s: any) => s.proposal_id === proposal.id);
+        setLinkedSessionId(linked?.id || null);
+        setEditFields(prev => ({ ...prev, linked_session_id: linked?.id || '' }));
+      });
+  }, [isAdmin, proposal.id]);
 
   const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1);
 
