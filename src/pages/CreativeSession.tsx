@@ -25,6 +25,7 @@ interface CreativeSessionData {
   client_name: string;
   created_at: string;
   cover_images?: CoverImage[] | null;
+  creative_notes?: string | null;
 }
 
 interface MoodBoardItemData {
@@ -119,6 +120,7 @@ export default function CreativeSession() {
       client_name: data.client_name,
       created_at: data.created_at,
       cover_images: data.cover_images as unknown as CoverImage[] | null,
+      creative_notes: data.creative_notes,
     });
     setLoading(false);
   };
