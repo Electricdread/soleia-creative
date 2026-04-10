@@ -156,8 +156,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const saveHeader = async () => {
     try {
-      const newSessionId = editFields.session_id || null;
-      const oldSessionId = proposal.session_id || null;
+      const newSessionId = editFields.linked_session_id || null;
+      const oldSessionId = linkedSessionId;
 
       const { error } = await supabase
         .from('proposals')
@@ -168,10 +168,22 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           event_date: editFields.event_date || null,
           validity_days: parseInt(editFields.validity_days) || 7,
           contact_email: editFields.contact_email,
-          session_id: newSessionId,
-        } as any)
+        })
         .eq('id', proposal.id);
       if (error) throw error;
+
+      // Update session linkage via creative_sessions.proposal_id
+      if (newSessionId !== oldSessionId) {
+        // Unlink old session
+        if (oldSessionId) {
+          await supabase.from('creative_sessions').update({ proposal_id: null } as any).eq('id', oldSessionId);
+        }
+        // Link new session
+        if (newSessionId) {
+          await supabase.from('creative_sessions').update({ proposal_id: proposal.id } as any).eq('id', newSessionId);
+        }
+        setLinkedSessionId(newSessionId);
+      }
 
       // Auto-pull cover image when linking a new session
       if (newSessionId && newSessionId !== oldSessionId) {
@@ -180,7 +192,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         if (coverImages?.length) {
           const coverUrl = coverImages[0]?.url || coverImages[0];
           if (typeof coverUrl === 'string' && coverUrl.startsWith('http')) {
-            // Check if this cover image already exists in gallery
             const { data: existing } = await supabase
               .from('proposal_gallery')
               .select('id')
