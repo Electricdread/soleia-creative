@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, User, ArrowRight } from 'lucide-react';
+import { Loader2, User, ArrowRight, FileText } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
