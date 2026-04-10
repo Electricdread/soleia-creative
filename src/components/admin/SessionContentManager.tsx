@@ -79,12 +79,12 @@ function SortableContentRow({ item, onDelete, deleting, onEdit, scenes }: {
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </button>
 
-      {thumbSrc && /\.(jpg|jpeg|png|gif|webp|svg)/i.test(thumbSrc) ? (
-        <img src={thumbSrc} alt="" className="w-10 h-10 object-cover rounded-md flex-shrink-0" />
-      ) : thumbSrc && item.item_type === 'video' ? (
-        <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
-          <Film className="w-4 h-4 text-muted-foreground" />
-        </div>
+      {item.thumbnail_url ? (
+        <img src={item.thumbnail_url} alt="" className="w-10 h-10 object-cover rounded-md flex-shrink-0" />
+      ) : item.item_type === 'image' && item.file_url ? (
+        <img src={item.file_url} alt="" className="w-10 h-10 object-cover rounded-md flex-shrink-0" />
+      ) : item.item_type === 'video' && item.file_url ? (
+        <video src={item.file_url} muted preload="metadata" className="w-10 h-10 object-cover rounded-md flex-shrink-0" />
       ) : (
         <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center flex-shrink-0">
           {typeIcon}

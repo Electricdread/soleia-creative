@@ -88,7 +88,7 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
   // Generate preview URLs for selected files
   const filePreviews = useMemo(() => {
     return selectedFiles.map(file => {
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
         return URL.createObjectURL(file);
       }
       return null;
@@ -340,8 +340,10 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {selectedFiles.map((file, i) => (
                     <div key={i} className="relative group aspect-square rounded-md overflow-hidden bg-zinc-800 border border-zinc-700">
-                      {filePreviews[i] ? (
+                      {filePreviews[i] && file.type.startsWith('image/') ? (
                         <img src={filePreviews[i]!} alt={file.name} className="w-full h-full object-cover" />
+                      ) : filePreviews[i] && file.type.startsWith('video/') ? (
+                        <video src={filePreviews[i]!} muted preload="metadata" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-1">
                           {getFileIcon(file)}
