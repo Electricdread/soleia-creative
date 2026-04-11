@@ -125,7 +125,18 @@ function buildProposalEmailHtml(
                         <a href="${proposalLink}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">View Proposal &#8594;</a>
                       </td>
                     </tr>
-                  </table>
+                   </table>
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td style="padding:0 0 24px;text-align:center;">
+                  <p style="font-size:11px;color:#999999;margin:0 0 4px;">If the button above doesn't work, copy and paste this link into your browser:</p>
+                  <p style="font-size:11px;color:#B8860B;margin:0;word-break:break-all;">
+                    <a href="${proposalLink}" style="color:#B8860B;text-decoration:underline;">${proposalLink}</a>
+                  </p>
                 </td>
               </tr>
             </table>
