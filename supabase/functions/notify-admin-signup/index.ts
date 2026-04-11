@@ -37,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
     
     // Create approval URL - goes to the app management page
-    const managementUrl = `https://soleia-creative.lovable.app/admin/users?userId=${userId}&action=approve`;
+    const managementUrl = `https://soleiacreative.app/admin/users?userId=${userId}&action=approve`;
 
     const emailResponse = await resend.emails.send({
       from: "DSX Soleia <onboarding@resend.dev>",

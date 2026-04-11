@@ -522,7 +522,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
               </div>
               <div className="hidden print:block text-sm text-gray-500">
                 <ExternalLink className="w-4 h-4 inline mr-1" />
-                soleia-creative.lovable.app/creative-guide
+                soleiacreative.app/creative-guide
               </div>
             </div>
 
@@ -562,7 +562,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
             © {new Date().getFullYear()} Soleia Las Vegas. All rights reserved.
           </p>
           <p className="text-xs text-gray-400 mt-2">
-            For questions, contact your Soleia Creative Team representative or visit soleia-creative.lovable.app
+            For questions, contact your Soleia Creative Team representative or For questions, contact your Soleia Creative Team representative or visit soleiacreative.app
           </p>
         </footer>
       </div>
