@@ -1,0 +1,248 @@
+import { useState, useEffect } from 'react';
+import { Copy, Check, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface ProposalOption {
+  id: string;
+  token: string;
+  event_name: string;
+  client_name: string;
+  venue_name: string | null;
+  event_date: string | null;
+  status: string;
+}
+
+function buildProposalEmailHtml(
+  eventName: string,
+  clientName: string,
+  venueName: string | null,
+  eventDate: string | null,
+  proposalLink: string
+) {
+  const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
+  const formattedDate = eventDate
+    ? new Date(eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : null;
+
+  return `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;min-width:100%;border-collapse:collapse;background-color:#f3f1eb;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <tr>
+    <td align="center" style="padding:0;background-color:#f3f1eb;">
+      <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background-color:#ffffff;border:1px solid #e5e5e5;">
+        <tr>
+          <td style="background-color:#111111;padding:48px 24px;text-align:center;">
+            <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="display:block;height:60px;width:auto;margin:0 auto;border:0;outline:none;text-decoration:none;" />
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:32px 28px;background-color:#ffffff;">
+            <h2 style="font-size:22px;font-weight:700;color:#1a1a1a;margin:0 0 6px;">Your Project Proposal</h2>
+            ${formattedDate ? `<p style="font-size:13px;color:#B8860B;margin:0 0 20px;letter-spacing:0.5px;font-weight:600;">${formattedDate}</p>` : '<div style="height:14px;"></div>'}
+
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
+              Dear ${clientName || 'Valued Client'},
+            </p>
+
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
+              Thank you for your interest in <strong style="color:#B8860B;">${eventName || '[Event Name]'}</strong>${venueName ? ` at <strong>${venueName}</strong>` : ''}. We've prepared a detailed proposal outlining the scope of work, timeline, and pricing for your review.
+            </p>
+
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+              <tr>
+                <td style="background-color:#f9f9f9;padding:20px 24px;">
+                  <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 12px;">What You'll Find Inside:</p>
+                  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+                    <tr>
+                      <td width="36" style="padding:6px 12px 6px 0;vertical-align:top;font-size:20px;">&#128196;</td>
+                      <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;">
+                        <strong>Scope of Work</strong> — Detailed breakdown of services and deliverables
+                      </td>
+                    </tr>
+                    <tr>
+                      <td width="36" style="padding:6px 12px 6px 0;vertical-align:top;font-size:20px;">&#128197;</td>
+                      <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;">
+                        <strong>Timeline</strong> — Key milestones and production schedule
+                      </td>
+                    </tr>
+                    <tr>
+                      <td width="36" style="padding:6px 12px 6px 0;vertical-align:top;font-size:20px;">&#128176;</td>
+                      <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;">
+                        <strong>Pricing</strong> — Transparent cost breakdown with selectable line items
+                      </td>
+                    </tr>
+                    <tr>
+                      <td width="36" style="padding:6px 12px 6px 0;vertical-align:top;font-size:20px;">&#9997;&#65039;</td>
+                      <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;">
+                        <strong>Digital Signature</strong> — Accept the proposal online with a simple signature
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td align="center" style="padding:28px 0;">
+                  <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    <tr>
+                      <td style="background-color:#B8860B;border-radius:8px;padding:14px 36px;text-align:center;">
+                        <a href="${proposalLink}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">View Proposal &#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
+              Please review the proposal at your earliest convenience. If you have any questions or would like to discuss adjustments, we're happy to accommodate.
+            </p>
+
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0;">
+              We look forward to working together to make your event unforgettable.
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background-color:#111111;padding:24px;text-align:center;">
+            <img src="${logoUrl}" alt="Soleia" width="84" style="display:block;height:28px;width:auto;margin:0 auto 8px;border:0;opacity:0.85;outline:none;text-decoration:none;" />
+            <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
+            <p style="margin:0;font-size:12px;color:#888888;">
+              <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>`;
+}
+
+export function ProposalEmailCard() {
+  const [proposals, setProposals] = useState<ProposalOption[]>([]);
+  const [selectedId, setSelectedId] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const fetchProposals = async () => {
+      const { data } = await supabase
+        .from('proposals')
+        .select('id, token, event_name, client_name, venue_name, event_date, status')
+        .eq('is_active', true)
+        .order('event_date', { ascending: true, nullsFirst: false });
+      if (data) setProposals(data);
+    };
+    fetchProposals();
+  }, []);
+
+  const selected = proposals.find((p) => p.id === selectedId);
+  const proposalLink = selected
+    ? `${window.location.origin}/proposal/${selected.token}`
+    : '';
+
+  const htmlContent = selected
+    ? buildProposalEmailHtml(
+        selected.event_name,
+        selected.client_name,
+        selected.venue_name,
+        selected.event_date,
+        proposalLink
+      )
+    : '';
+
+  const handleCopy = async () => {
+    if (!selected) {
+      toast.error('Please select a proposal first');
+      return;
+    }
+    try {
+      const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+      const textBlob = new Blob(
+        [`Your proposal for ${selected.event_name} is ready for review. View it here: ${proposalLink}`],
+        { type: 'text/plain' }
+      );
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob }),
+      ]);
+      setCopied(true);
+      toast.success('Email copied — paste into your email client!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      await navigator.clipboard.writeText(htmlContent);
+      toast.success('Copied as HTML text');
+    }
+  };
+
+  return (
+    <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl overflow-hidden">
+      <div className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+              <FileText className="w-5 h-5 text-primary" />
+              Client Proposal Email
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Share proposals with clients for review & signature
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={handleCopy}
+            disabled={!selected}
+            className="gap-2"
+          >
+            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? 'Copied!' : 'Copy Email'}
+          </Button>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Select Proposal</label>
+          <Select value={selectedId} onValueChange={setSelectedId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose a proposal…" />
+            </SelectTrigger>
+            <SelectContent>
+              {proposals.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.event_name} — {p.client_name}
+                  {p.status === 'signed' ? ' ✓' : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {selected && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {expanded ? 'Hide Preview' : 'Show Preview'}
+          </button>
+        )}
+
+        {expanded && selected && (
+          <div
+            className="border border-border rounded-lg overflow-hidden bg-white"
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}

@@ -6,6 +6,7 @@ import { CollectAssetsEmailCard } from '@/components/admin/CollectAssetsEmailCar
 import { MediaDownloadEmailCard } from '@/components/admin/MediaDownloadEmailCard';
 import { ClientAssetCollectEmailCard } from '@/components/admin/ClientAssetCollectEmailCard';
 import { CreativeSessionEmailCard } from '@/components/admin/CreativeSessionEmailCard';
+import { ProposalEmailCard } from '@/components/admin/ProposalEmailCard';
 import { ArrowLeft, Settings } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
