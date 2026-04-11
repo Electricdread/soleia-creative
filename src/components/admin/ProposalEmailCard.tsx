@@ -56,6 +56,32 @@ function buildProposalEmailHtml(
               Thank you for your interest in <strong style="color:#B8860B;">${eventName || '[Event Name]'}</strong>${venueName ? ` at <strong>${venueName}</strong>` : ''}. We've prepared a detailed proposal outlining the scope of work, timeline, and pricing for your review.
             </p>
 
+            ${venueName || formattedDate ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+              <tr>
+                <td style="background-color:#faf8f4;border-left:3px solid #B8860B;padding:16px 20px;">
+                  <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 8px;">Event Details</p>
+                  <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    <tr>
+                      <td style="padding:3px 0;font-size:14px;color:#666666;width:90px;">Event:</td>
+                      <td style="padding:3px 0;font-size:14px;color:#333333;font-weight:600;">${eventName}</td>
+                    </tr>
+                    ${venueName ? `<tr>
+                      <td style="padding:3px 0;font-size:14px;color:#666666;width:90px;">Venue:</td>
+                      <td style="padding:3px 0;font-size:14px;color:#333333;font-weight:600;">${venueName}</td>
+                    </tr>` : ''}
+                    ${formattedDate ? `<tr>
+                      <td style="padding:3px 0;font-size:14px;color:#666666;width:90px;">Date:</td>
+                      <td style="padding:3px 0;font-size:14px;color:#333333;font-weight:600;">${formattedDate}</td>
+                    </tr>` : ''}
+                  </table>
+                </td>
+              </tr>
+            </table>` : ''}
+
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
+              Our team specializes in immersive visual experiences — from large-format LED installations and motion graphics to curated ambient content that transforms any space. Every project is tailored to your event's unique vision and venue requirements.
+            </p>
+
             <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
               <tr>
                 <td style="background-color:#f9f9f9;padding:20px 24px;">
