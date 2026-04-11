@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
   let imageUrl = "";
   let pageUrl = "";
 
-  const siteOrigin = "https://soleia-creative.lovable.app";
+  const siteOrigin = "https://soleiacreative.app";
 
   if (type === "creative") {
     const { data } = await supabase

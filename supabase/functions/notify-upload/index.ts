@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
       return "Document";
     };
 
-    const sessionUrl = `${req.headers.get("origin") || "https://soleia-creative.lovable.app"}/session/${linkData.token}`;
+    const sessionUrl = `${req.headers.get("origin") || "https://soleiacreative.app"}/session/${linkData.token}`;
 
     // Send notification email
     // Using hardcoded email for Resend trial domain verification
