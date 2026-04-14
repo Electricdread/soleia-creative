@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   )
 
   let title = '', clientName = '', coverUrl = '', eventDate = '', pageUrl = ''
-  const siteUrl = 'https://soleia-creativeteam.com'
+  const siteUrl = 'https://soleiacreative.app'
 
   if (type === 'creative') {
     const { data } = await supabase
