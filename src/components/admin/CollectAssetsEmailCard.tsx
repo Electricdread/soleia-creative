@@ -102,9 +102,27 @@ function buildAssetsEmailHtml(projectName: string, cloudLink: string) {
               </tr>
             </table>
 
+            ${buildInstructionBlock(
+              'PLEASE NOTIFY US',
+              '<p style="margin:0;font-size:14px;line-height:1.7;color:#444444;">Once you\'ve uploaded all files to the project folder, please send a confirmation email to <a href="mailto:luisdreamslv@gmail.com" style="color:#B8860B;text-decoration:underline;">luisdreamslv@gmail.com</a> so we can begin testing and approval.</p>',
+            )}
+
             <p style="font-size:15px;line-height:1.7;color:#333333;margin:0;">
               If you have any questions, don't hesitate to reach out. We're here to help make your event look stunning!
             </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;border:1px solid #DAA520;background-color:#fdf6e3;">
+              <tr>
+                <td style="padding:16px 24px;text-align:center;">
+                  <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#B8860B;">📅 21 BUSINESS DAYS REQUIRED</p>
+                  <p style="margin:0;font-size:13px;line-height:1.6;color:#555555;">All assets must be uploaded at least <strong>21 business days</strong> before your event to allow for proper testing and playback approval.</p>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
 
@@ -152,7 +170,14 @@ Tips for Best Results
 - Use white or light logo versions for best visibility
 - Include alpha channel for transparent overlays
 
-If you have any questions, don't hesitate to reach out. We're here to help make your event look stunning!`;
+PLEASE NOTIFY US
+Once you've uploaded all files to the project folder, please send a confirmation email to luisdreamslv@gmail.com so we can begin testing and approval.
+
+If you have any questions, don't hesitate to reach out. We're here to help make your event look stunning!
+
+---
+📅 21 BUSINESS DAYS REQUIRED
+All assets must be uploaded at least 21 business days before your event to allow for proper testing and playback approval.`;
 }
 
 export function CollectAssetsEmailCard() {
