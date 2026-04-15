@@ -1,59 +1,43 @@
 
 
-## Plan: Adapt Creative Session ↔ Proposal Linking (DSX-style)
+## Plan: Add 21-Day Deadline Banner to Footer & Upload Notification Request
 
-### What changes
+### Current State
+The Content Delivery Email template (`CollectAssetsEmailCard.tsx`) provides technical instructions for DXV3 encoding and content submission, but lacks:
+1. A prominent 21-day deadline banner in the footer
+2. A request asking clients to notify the team when files are uploaded
 
-The DSX project links creative sessions to proposals using a `proposal_id` column on the `creative_sessions` table, and shows a "View Proposal" card on the client-facing session page. The current Soleia project uses the inverse (`session_id` on `proposals`). This plan adapts the Soleia project to match the DSX approach.
+### Changes Required
 
-### Database Migration
+**File: `src/components/admin/CollectAssetsEmailCard.tsx`**
 
-Add a `proposal_id` column to `creative_sessions`:
+#### 1. Add Upload Notification Request (before closing paragraph)
+Insert a gold-bordered instruction block after "Tips for Best Results" and before the final closing paragraph:
+- Use existing `buildInstructionBlock()` pattern
+- Title: "PLEASE NOTIFY US"
+- Content: "Once you've uploaded all files to the project folder, please send a confirmation email to luisdreamslv@gmail.com so we can begin testing and approval."
 
-```sql
-ALTER TABLE public.creative_sessions
-  ADD COLUMN proposal_id uuid REFERENCES public.proposals(id) ON DELETE SET NULL;
-```
+#### 2. Add 21-Day Deadline Banner to Footer
+Insert a new table row **before** the dark footer with contact info (between line 110 and 111):
+- Full-width gold-bordered banner
+- Light yellow background (#fdf6e3)
+- Calendar emoji (📅) + bold "21 BUSINESS DAYS REQUIRED"
+- Explain assets must be uploaded 21 business days before the event for testing and approval
+- Matching visual style to `ClientAssetCollectEmailCard.tsx` deadline banner
 
-Migrate existing links from `proposals.session_id` → `creative_sessions.proposal_id`, then drop the old column:
+#### 3. Update Plain-Text Version
+Update `buildAssetsEmailText()` to include:
+- Upload notification request after "Tips for Best Results"
+- Deadline reminder at the end
 
-```sql
-UPDATE public.creative_sessions cs
-SET proposal_id = p.id
-FROM public.proposals p
-WHERE p.session_id = cs.id;
+### Visual Design
+- **Upload Notification Block**: Gold left-border (#DAA520), light beige background (#faf8f3), matches existing instruction blocks
+- **Footer Deadline Banner**: Full-width gold border (#DAA520), light yellow background (#fdf6e3), prominent typography, sits above dark contact footer
+- Maintains email-safe table structure with inline styles
 
-ALTER TABLE public.proposals DROP COLUMN session_id;
-```
-
-### Code Changes
-
-**1. `src/pages/CreativeSession.tsx`**
-- Add `proposal_id` to the `CreativeSessionData` interface
-- Fetch the linked proposal's token when `session.proposal_id` is set
-- Add a "View Proposal" link card at the bottom of the session (matching DSX: FileText icon, "Review and sign the project proposal" subtitle)
-
-**2. `src/components/admin/ProposalSessionLinker.tsx`**
-- Reverse the linking direction: instead of updating `proposals.session_id`, update `creative_sessions.proposal_id` with the selected proposal's ID
-- Adjust the query and UI labels accordingly (now selecting a proposal to link to a session, rather than a session to link to a proposal)
-
-**3. `src/components/admin/CreativeSessionCard.tsx`**
-- Add a "Link Proposal" button (Link2 icon) that opens a proposal picker dialog
-- Show linked proposal badge/indicator when `proposal_id` is set
-
-**4. `src/components/admin/CreativeSessionManager.tsx`**
-- Pass proposal linking capability down to session cards
-
-**5. `src/components/calendar/EventLinkedItems.tsx`**
-- Update any queries that reference `proposals.session_id` to use the new `creative_sessions.proposal_id` relationship
-
-**6. `src/components/proposal/ProposalApprovedClips.tsx`**
-- Update query to find linked session via `creative_sessions.proposal_id` instead of `proposals.session_id`
-
-### Technical Details
-
-- The `proposal_id` foreign key uses `ON DELETE SET NULL` so deleting a proposal doesn't break the session
-- Existing linked data will be migrated automatically in the migration SQL
-- The client-facing "View Proposal" card only appears when `proposalToken` is resolved (proposal exists and is active)
-- Cover image auto-pull logic in the linker remains the same, just the direction of the FK update changes
+### Technical Approach
+- Reuse `buildInstructionBlock()` helper for upload notification
+- Insert new table row for deadline banner before existing footer
+- Maintain accessibility with `role="presentation"` and semantic markup
+- No breaking changes to component props or behavior
 
