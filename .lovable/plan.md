@@ -1,43 +1,54 @@
 
 
-## Plan: Add 21-Day Deadline Banner to Footer & Upload Notification Request
+The user wants a toggle to deactivate creative session and proposal links so they can no longer be viewed by clients.
 
-### Current State
-The Content Delivery Email template (`CollectAssetsEmailCard.tsx`) provides technical instructions for DXV3 encoding and content submission, but lacks:
-1. A prominent 21-day deadline banner in the footer
-2. A request asking clients to notify the team when files are uploaded
+**Current state analysis:**
+- `creative_sessions` table has `is_active` (boolean, default true). RLS already enforces `is_active = true` for public viewing.
+- `proposals` table has `is_active` (boolean, default true). RLS already enforces `is_active = true` for public viewing.
+- `client_links` table also has `is_active` for the Looks Collection sessions.
+- The data layer already supports this — we just need UI toggles in the admin cards.
 
-### Changes Required
+**Existing UI:**
+- `CreativeSessionCard.tsx` — manages individual creative session cards (has `is_public` toggle pattern already per memory).
+- Proposals are managed in `AdminProposals.tsx` — need to check the card structure.
+- `client_links` are managed in `ClientLinkManager.tsx`.
 
-**File: `src/components/admin/CollectAssetsEmailCard.tsx`**
+When `is_active = false`, the public route (`/creative/:token`, `/proposal/:token`, `/session/:token`) will already fail to load the data due to RLS, showing the existing "not found" state. No changes to public-facing pages required.
 
-#### 1. Add Upload Notification Request (before closing paragraph)
-Insert a gold-bordered instruction block after "Tips for Best Results" and before the final closing paragraph:
-- Use existing `buildInstructionBlock()` pattern
-- Title: "PLEASE NOTIFY US"
-- Content: "Once you've uploaded all files to the project folder, please send a confirmation email to luisdreamslv@gmail.com so we can begin testing and approval."
+## Plan: Active/Inactive Toggle for Creative Sessions, Proposals & Client Links
 
-#### 2. Add 21-Day Deadline Banner to Footer
-Insert a new table row **before** the dark footer with contact info (between line 110 and 111):
-- Full-width gold-bordered banner
-- Light yellow background (#fdf6e3)
-- Calendar emoji (📅) + bold "21 BUSINESS DAYS REQUIRED"
-- Explain assets must be uploaded 21 business days before the event for testing and approval
-- Matching visual style to `ClientAssetCollectEmailCard.tsx` deadline banner
+### Goal
+Add a visible "Active / Inactive" toggle on each session, proposal, and client link card so admins can instantly disable public access without deleting the record. Inactive links will show the existing "Not Found / Expired" message to clients.
 
-#### 3. Update Plain-Text Version
-Update `buildAssetsEmailText()` to include:
-- Upload notification request after "Tips for Best Results"
-- Deadline reminder at the end
+### Changes
+
+**1. `src/components/admin/CreativeSessionCard.tsx`**
+- Add a `Switch` next to the existing Public/Private toggle labeled "Active"
+- When toggled off → updates `is_active = false` on `creative_sessions`
+- Show a clear "Inactive" status badge (red/muted) when off
+- Confirmation toast: "Session deactivated — link is no longer accessible"
+
+**2. `src/pages/AdminProposals.tsx` (proposal list/cards)**
+- Add same `Switch` pattern on each proposal row
+- Updates `is_active` on `proposals` table
+- "Inactive" badge when off
+
+**3. `src/components/admin/ClientLinkManager.tsx`**
+- Add same toggle for Looks Collection client links
+- Updates `is_active` on `client_links` table
 
 ### Visual Design
-- **Upload Notification Block**: Gold left-border (#DAA520), light beige background (#faf8f3), matches existing instruction blocks
-- **Footer Deadline Banner**: Full-width gold border (#DAA520), light yellow background (#fdf6e3), prominent typography, sits above dark contact footer
-- Maintains email-safe table structure with inline styles
+- Use existing `Switch` component (gold accent on)
+- Status badge: green dot "Active" / red dot "Inactive"
+- Place toggle in card header area near existing Public/Private toggle
+- Optional: subtle opacity reduction on inactive cards for quick visual scanning
 
-### Technical Approach
-- Reuse `buildInstructionBlock()` helper for upload notification
-- Insert new table row for deadline banner before existing footer
-- Maintain accessibility with `role="presentation"` and semantic markup
-- No breaking changes to component props or behavior
+### How clients experience it
+- Inactive link → existing "Session Not Found / This link may have expired" message appears (already implemented in `SharedSession.tsx`, `CreativeSession.tsx`, `ClientProposal.tsx`)
+- No new error pages needed — RLS policies already block inactive records
+
+### Out of scope
+- Auto-expiration by date (could be future enhancement using `expires_at` column already on `client_links`)
+- Bulk deactivation
+- Email notification to client on deactivation
 
