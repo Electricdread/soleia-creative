@@ -7,11 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard, Share2 } from 'lucide-react';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard, Share2, ChevronDown as ChevronDownIcon } from 'lucide-react';
 import { copyOgShareLink } from '@/lib/ogShare';
 import { ClipSelector } from './ClipSelector';
 import { SessionUploadsViewer } from './SessionUploadsViewer';
@@ -394,69 +400,74 @@ export function ClientLinkManager() {
                 <div
                   key={link.id}
                   className={cn(
-                    "flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50 transition-opacity",
+                    "p-4 rounded-xl bg-secondary/30 border border-border/50 transition-opacity",
                     !link.is_active && "opacity-60"
                   )}
                 >
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-foreground truncate">
-                      {link.client_name}
-                    </h4>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {link.event_name}
-                      {link.event_date && ` • ${format(new Date(link.event_date), 'MMM d, yyyy')}`}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="text-xs text-muted-foreground/70">
-                        Created {format(new Date(link.created_at), 'MMM d, yyyy')}
-                      </span>
-                      <span className={cn(
-                        "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
-                        link.is_active
-                          ? "bg-emerald-500/10 text-emerald-500"
-                          : "bg-red-500/10 text-red-500"
-                      )}>
-                        <span className={cn("w-1.5 h-1.5 rounded-full", link.is_active ? "bg-emerald-500" : "bg-red-500")} />
-                        {link.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                      <span className={cn(
-                        "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
-                        link.is_public 
-                          ? "bg-emerald-500/10 text-emerald-500" 
-                          : "bg-amber-500/10 text-amber-500"
-                      )}>
-                        {link.is_public ? (
-                          <><Globe className="w-3 h-3" /> Public</>
-                        ) : (
-                          <><Lock className="w-3 h-3" /> Private</>
-                        )}
-                      </span>
-                      {link.clip_count !== undefined && (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                          <Video className="w-3 h-3" />
-                          {link.clip_count} clips
-                        </span>
-                      )}
-                      {link.upload_count !== undefined && link.upload_count > 0 && (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400">
-                          <FolderOpen className="w-3 h-3" />
-                          {link.upload_count} uploads
-                        </span>
-                      )}
+                  {/* Header row with title + Active toggle */}
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-foreground truncate">
+                        {link.client_name}
+                      </h4>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {link.event_name}
+                        {link.event_date && ` • ${format(new Date(link.event_date), 'MMM d, yyyy')}`}
+                      </p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    <div
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/40 border border-border/50"
-                      title="Toggle off to disable client access"
-                    >
+                    {/* Prominent Active toggle in header */}
+                    <label className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-secondary/60 border border-border/50 cursor-pointer hover:bg-secondary transition-colors">
                       <Switch
                         checked={link.is_active}
                         onCheckedChange={() => toggleActive(link.id, link.is_active)}
-                        className="scale-75"
                       />
-                      <span className="text-xs text-muted-foreground">Live</span>
-                    </div>
+                      <span className="text-xs font-medium text-foreground">Active</span>
+                    </label>
+                  </div>
+                  
+                  {/* Metadata row */}
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <span className="text-xs text-muted-foreground/70">
+                      Created {format(new Date(link.created_at), 'MMM d, yyyy')}
+                    </span>
+                    <span className={cn(
+                      "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
+                      link.is_active
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : "bg-red-500/10 text-red-500"
+                    )}>
+                      <span className={cn("w-1.5 h-1.5 rounded-full", link.is_active ? "bg-emerald-500" : "bg-red-500")} />
+                      {link.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                    <span className={cn(
+                      "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
+                      link.is_public 
+                        ? "bg-emerald-500/10 text-emerald-500" 
+                        : "bg-amber-500/10 text-amber-500"
+                    )}>
+                      {link.is_public ? (
+                        <><Globe className="w-3 h-3" /> Public</>
+                      ) : (
+                        <><Lock className="w-3 h-3" /> Private</>
+                      )}
+                    </span>
+                    {link.clip_count !== undefined && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        <Video className="w-3 h-3" />
+                        {link.clip_count} clips
+                      </span>
+                    )}
+                    {link.upload_count !== undefined && link.upload_count > 0 && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-400">
+                        <FolderOpen className="w-3 h-3" />
+                        {link.upload_count} uploads
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Action row */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Files button (conditional) */}
                     {link.upload_count !== undefined && link.upload_count > 0 && (
                       <Button
                         size="sm"
@@ -468,26 +479,39 @@ export function ClientLinkManager() {
                         Files
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyOgShareLink(link.token, 'session')}
-                      className="gap-1.5"
-                      title="Copy social share link"
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                      Share
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyLink(link.token)}
-                      className="gap-1.5"
-                      title="Copy direct link"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                      Copy
-                    </Button>
+
+                    {/* Consolidated Copy Link dropdown */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5"
+                        >
+                          <Link2 className="w-3.5 h-3.5" />
+                          Copy Link
+                          <ChevronDownIcon className="w-3 h-3 ml-0.5 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => copyOgShareLink(link.token, 'session')}>
+                          <Share2 className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <div className="flex flex-col">
+                            <span className="text-sm">Social share link</span>
+                            <span className="text-xs text-muted-foreground">Rich preview for social & messaging</span>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => copyLink(link.token)}>
+                          <Copy className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <div className="flex flex-col">
+                            <span className="text-sm">Direct link</span>
+                            <span className="text-xs text-muted-foreground">Plain URL for email or manual sharing</span>
+                          </div>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* Open button */}
                     <Button
                       size="sm"
                       variant="outline"
@@ -497,20 +521,27 @@ export function ClientLinkManager() {
                       <ExternalLink className="w-3.5 h-3.5" />
                       Open
                     </Button>
-                    <DeleteConfirmDialog
-                      trigger={
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      }
-                      title="Delete Session Link?"
-                      description={`This will permanently delete the link for "${link.client_name} — ${link.event_name}" and all associated selections. This action cannot be undone.`}
-                      onConfirm={() => deleteLink(link.id)}
-                    />
+
+                    {/* Visual divider before delete */}
+                    <div className="w-px h-5 bg-border/50 mx-1" />
+
+                    {/* Delete button - isolated and with confirmation */}
+                    <div className="ml-1">
+                      <DeleteConfirmDialog
+                        trigger={
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        }
+                        title="Delete Session Link?"
+                        description={`This will permanently delete the link for "${link.client_name} — ${link.event_name}" and all associated selections. This action cannot be undone.`}
+                        onConfirm={() => deleteLink(link.id)}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
