@@ -184,6 +184,29 @@ export function ClientLinkManager() {
     });
   };
 
+  // Toggle active status
+  const toggleActive = async (id: string, current: boolean) => {
+    const next = !current;
+    const { error } = await supabase
+      .from('client_links')
+      .update({ is_active: next })
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: 'Failed to update status',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+    setLinks(prev => prev.map(l => l.id === id ? { ...l, is_active: next } : l));
+    toast({
+      title: next ? 'Session activated' : 'Session deactivated',
+      description: next ? 'Link is live for clients' : 'Link is no longer accessible',
+    });
+  };
+
   // Delete link
   const deleteLink = async (id: string) => {
     try {
@@ -370,7 +393,10 @@ export function ClientLinkManager() {
               {links.map((link) => (
                 <div
                   key={link.id}
-                  className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50"
+                  className={cn(
+                    "flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50 transition-opacity",
+                    !link.is_active && "opacity-60"
+                  )}
                 >
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-foreground truncate">
@@ -383,6 +409,15 @@ export function ClientLinkManager() {
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="text-xs text-muted-foreground/70">
                         Created {format(new Date(link.created_at), 'MMM d, yyyy')}
+                      </span>
+                      <span className={cn(
+                        "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
+                        link.is_active
+                          ? "bg-emerald-500/10 text-emerald-500"
+                          : "bg-red-500/10 text-red-500"
+                      )}>
+                        <span className={cn("w-1.5 h-1.5 rounded-full", link.is_active ? "bg-emerald-500" : "bg-red-500")} />
+                        {link.is_active ? 'Active' : 'Inactive'}
                       </span>
                       <span className={cn(
                         "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",

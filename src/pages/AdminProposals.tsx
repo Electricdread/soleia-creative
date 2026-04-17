@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Share2, Mail, Link2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { copyOgShareLink } from '@/lib/ogShare';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
@@ -37,6 +38,7 @@ interface ProposalRow {
   signed_at: string | null;
   client_signature: string | null;
   created_at: string;
+  is_active: boolean;
 }
 
 export default function AdminProposals() {
@@ -167,6 +169,17 @@ export default function AdminProposals() {
     await supabase.from('proposals').update({ status: 'sent' }).eq('id', id);
     fetchProposals();
     toast({ title: 'Proposal marked as sent' });
+  };
+
+  const toggleActive = async (id: string, current: boolean) => {
+    const next = !current;
+    const { error } = await supabase.from('proposals').update({ is_active: next }).eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to update status', variant: 'destructive' });
+      return;
+    }
+    setProposals(prev => prev.map(p => p.id === id ? { ...p, is_active: next } : p));
+    toast({ title: next ? 'Proposal activated — link is live' : 'Proposal deactivated — link is no longer accessible' });
   };
 
   const copyEmailTemplate = async (token: string) => {
@@ -438,12 +451,16 @@ export default function AdminProposals() {
         ) : (
           <div className="space-y-3">
             {proposals.map(p => (
-              <div key={p.id} className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 flex items-center justify-between gap-4">
+              <div key={p.id} className={`bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 flex items-center justify-between gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="text-white font-medium truncate">{p.event_name}</h3>
                     <Badge className={`${statusColor(p.status)} text-white text-[10px] px-2`}>
                       {p.status}
+                    </Badge>
+                    <Badge className={`${p.is_active ? 'bg-emerald-600' : 'bg-red-600'} text-white text-[10px] px-2 gap-1`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-emerald-300' : 'bg-red-300'}`} />
+                      {p.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                   <p className="text-zinc-500 text-sm truncate">
@@ -458,6 +475,10 @@ export default function AdminProposals() {
                   )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-1.5 mr-1 px-2 py-1 rounded-md bg-zinc-800/50" title="Toggle off to disable client access">
+                    <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} className="scale-75" />
+                    <span className="text-[10px] text-zinc-400">Live</span>
+                  </div>
                   {p.status === 'draft' && (
                     <Button variant="ghost" size="sm" onClick={() => markSent(p.id)} className="text-blue-400 hover:text-blue-300 text-xs">
                       Mark Sent
