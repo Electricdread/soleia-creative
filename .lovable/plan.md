@@ -1,57 +1,43 @@
 
+You’re right to flag this. I checked the source and the requested UI is already implemented in code:
 
-## Plan: Consolidate duplicate link buttons & isolate the delete button
+- `ClientLinkManager.tsx` already has the header Active toggle, a single “Copy Link” dropdown, and an isolated Delete button.
+- `CreativeSessionCard.tsx` already has the same pattern.
+- `AdminProposals.tsx` already has the same pattern.
 
-### Problem
-Both the Creative Session card and Proposal row have **multiple buttons that all point to the same URL**, plus the **Trash/Delete sits flush against the "Open" button**, making accidental deletion easy.
+What does not match is what you’re seeing:
+- Your current preview state is `/admin/login?redirect=%2F`
+- Your screenshot shows the old proposals UI
 
-### Duplicates identified
+That strongly suggests this is a render/caching/version mismatch, not that the feature was never added.
 
-**Creative Session card** — current action row:
-`[Public toggle] [Mail] [Edit] [Share] [Link] [↗ Open] [🗑 Delete]`
-- `Share` (copyOgShareLink) and `Link` (onCopyLink) **both copy URLs for the same session** — just OG-wrapped vs direct.
+### Plan
+1. Verify the rendered admin pages, not just the source
+   - Check `/admin/looks`, `/admin/creative`, and `/admin/proposals` after auth
+   - Confirm each route is actually showing the updated component
 
-**Proposal row** — current action row:
-`[Mark Sent] [Edit] [Link2 session] [Mail] [Share] [Copy] [↗ Open] [🗑 Delete]`
-- `Share` (OG wrapper) and `Copy` (direct link) **both copy URLs for the same proposal**.
+2. Fix the stale UI source
+   - If an older cached bundle is being shown, force the app to load the newest version
+   - If needed, adjust update/caching behavior so admin pages stop showing outdated UI after changes
 
-In both, the trash icon is the rightmost ghost button immediately adjacent to the Open ↗ button — same size, same styling, very easy mis-tap (especially on touch).
+3. Only patch code if one route is still truly old
+   - Re-touch the affected page/component only if it is rendering a different layout than the source
+   - No database changes are needed
 
-### Changes
+4. QA the exact problem you reported
+   - Recheck the three admin sections at your current viewport size
+   - Confirm duplicate link buttons are gone
+   - Confirm Delete is visually separated and harder to misclick
 
-**1. Consolidate the two "copy link" buttons into one split-style "Copy Link" dropdown**
-Replace the separate `Share` + `Link/Copy` buttons with a single **"Copy Link" button + small chevron menu** giving two options:
-- "Social share link (rich preview)" → `copyOgShareLink(token, type)`
-- "Direct link" → existing direct copy
-Default click action = social share link (the recommended one).
+### Technical details
+Files to verify first:
+- `src/components/admin/ClientLinkManager.tsx`
+- `src/components/admin/CreativeSessionCard.tsx`
+- `src/pages/AdminProposals.tsx`
 
-**2. Visually isolate the Delete button**
-- Add a vertical divider (`<div className="w-px h-5 bg-border/50 mx-1" />`) between the Open ↗ button and Delete.
-- Push the trash to the far right with a small extra gap (`ml-2`).
-- Keep the existing `DeleteConfirmDialog` on Creative Sessions (already safe).
-- **Wrap the proposal Delete in `DeleteConfirmDialog` too** — currently it uses a plain `confirm()` which is also easy to dismiss accidentally. Switch to the same branded confirm dialog used on Creative Sessions for consistency.
-- Tint the trash button red on hover only (already done) and keep its base color muted so it doesn't draw the eye.
+Possible follow-up if caching is the cause:
+- `vite.config.ts`
+- `src/main.tsx`
 
-### Resulting action rows
-
-**Creative Session card:**
-```text
-[Public toggle] [Mail] [Edit] [🔗 Copy Link ▾] [↗ Open]   |  [🗑]
-```
-
-**Proposal row:**
-```text
-[Mark Sent] [Edit] [Link2 session] [Mail] [🔗 Copy Link ▾] [↗ Open]   |  [🗑]
-```
-
-Buttons drop from 6→4 (Creative) and 7→5 (Proposals), with the destructive action visually separated.
-
-### Files changed
-- `src/components/admin/CreativeSessionCard.tsx` — merge Share + Link into dropdown, add divider before delete
-- `src/pages/AdminProposals.tsx` — merge Share + Copy into dropdown, add divider before delete, replace `confirm()` with `DeleteConfirmDialog`
-
-### Out of scope
-- No DB changes
-- No changes to the linking dialog or email templates
-- "Mark Sent" / "Link session" stay distinct (different actions, not duplicates)
-
+### Expected outcome
+The visible admin UI will match the updated source, so this is treated as a sync/visibility fix rather than redoing the same feature again.
