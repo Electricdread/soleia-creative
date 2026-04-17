@@ -221,16 +221,32 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
         <div className="p-3 space-y-2">
           {/* Title & meta */}
-          <div>
-            <h4 className="font-medium text-foreground truncate text-sm">
-              {session.project_name}
-            </h4>
-            <p className="text-xs text-muted-foreground truncate">
-              {session.client_name}
-              {session.event_date && (
-                <> • {format(new Date(session.event_date + 'T00:00:00'), 'MMM d, yyyy')}</>
-              )}
-            </p>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h4 className="font-medium text-foreground truncate text-sm">
+                {session.project_name}
+              </h4>
+              <p className="text-xs text-muted-foreground truncate">
+                {session.client_name}
+                {session.event_date && (
+                  <> • {format(new Date(session.event_date + 'T00:00:00'), 'MMM d, yyyy')}</>
+                )}
+              </p>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <label className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-secondary/60 border border-border/60 cursor-pointer flex-shrink-0">
+                    <Switch
+                      checked={isActive}
+                      onCheckedChange={handleActiveToggle}
+                    />
+                    <span className="text-xs font-medium text-foreground">Active</span>
+                  </label>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">Toggle off to disable client access to this link</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {session.creative_notes && (
@@ -272,21 +288,6 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
           {/* Actions row */}
           <div className="flex items-center gap-1.5 pt-1 border-t border-border/30">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1">
-                    <Switch
-                      checked={isActive}
-                      onCheckedChange={handleActiveToggle}
-                      className="scale-75"
-                    />
-                    <span className="text-[10px] text-muted-foreground">Live</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent><p className="text-xs">Toggle off to disable client access to this link</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
