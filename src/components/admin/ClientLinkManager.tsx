@@ -446,6 +446,17 @@ export function ClientLinkManager() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-4">
+                    <div
+                      className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary/40 border border-border/50"
+                      title="Toggle off to disable client access"
+                    >
+                      <Switch
+                        checked={link.is_active}
+                        onCheckedChange={() => toggleActive(link.id, link.is_active)}
+                        className="scale-75"
+                      />
+                      <span className="text-xs text-muted-foreground">Live</span>
+                    </div>
                     {link.upload_count !== undefined && link.upload_count > 0 && (
                       <Button
                         size="sm"
