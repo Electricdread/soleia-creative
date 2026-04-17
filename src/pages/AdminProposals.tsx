@@ -9,9 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Share2, Mail, Link2 } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Share2, Mail, Link2, ChevronDown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { copyOgShareLink } from '@/lib/ogShare';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import ProposalSessionLinker from '@/components/admin/ProposalSessionLinker';
@@ -153,7 +155,6 @@ export default function AdminProposals() {
   };
 
   const deleteProposal = async (id: string) => {
-    if (!confirm('Delete this proposal?')) return;
     await supabase.from('proposals').delete().eq('id', id);
     fetchProposals();
     toast({ title: 'Proposal deleted' });
@@ -496,18 +497,44 @@ export default function AdminProposals() {
                   <Button variant="ghost" size="icon" onClick={() => copyEmailTemplate(p.token)} title="Copy email template" className="text-zinc-400 hover:text-white" disabled={emailCopying === p.token}>
                     {emailCopying === p.token ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => copyOgShareLink(p.token, 'proposal')} title="Copy social share link" className="text-zinc-400 hover:text-white">
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => copyLink(p.token)} title="Copy direct link" className="text-zinc-400 hover:text-white">
-                    <Copy className="w-4 h-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" title="Copy link" className="text-zinc-400 hover:text-white gap-1 h-9 px-2 text-xs">
+                        <Link2 className="w-4 h-4" /> Copy Link <ChevronDown className="w-3 h-3 opacity-60" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem onClick={() => copyOgShareLink(p.token, 'proposal')}>
+                        <Share2 className="w-3.5 h-3.5 mr-2" />
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Social share link</span>
+                          <span className="text-[10px] text-muted-foreground">Rich preview when shared</span>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => copyLink(p.token)}>
+                        <Copy className="w-3.5 h-3.5 mr-2" />
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">Direct link</span>
+                          <span className="text-[10px] text-muted-foreground">Plain URL to the proposal</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="ghost" size="icon" onClick={() => window.open(`/proposal/${p.token}`, '_blank')} className="text-zinc-400 hover:text-white">
                     <ExternalLink className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => deleteProposal(p.id)} className="text-zinc-400 hover:text-red-400">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="w-px h-5 bg-zinc-700 mx-1" />
+                  <DeleteConfirmDialog
+                    trigger={
+                      <Button variant="ghost" size="icon" className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 ml-1">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    }
+                    title="Delete Proposal?"
+                    description={`This will permanently delete the proposal for "${p.event_name}". This action cannot be undone.`}
+                    onConfirm={() => deleteProposal(p.id)}
+                  />
                 </div>
               </div>
             ))}
