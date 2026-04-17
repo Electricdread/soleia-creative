@@ -48,6 +48,23 @@ interface CreativeSessionCardProps {
 
 export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOpen, onSessionUpdate }: CreativeSessionCardProps) {
   const [isPublic, setIsPublic] = useState(session.is_public ?? false);
+  const [isActive, setIsActive] = useState(session.is_active ?? true);
+
+  const handleActiveToggle = async (checked: boolean) => {
+    setIsActive(checked);
+    const { error } = await supabase
+      .from('creative_sessions')
+      .update({ is_active: checked })
+      .eq('id', session.id);
+
+    if (error) {
+      toast.error('Failed to update status');
+      setIsActive(!checked);
+    } else {
+      toast.success(checked ? 'Session activated — link is live' : 'Session deactivated — link is no longer accessible');
+      onSessionUpdate?.();
+    }
+  };
   const [coverImage, setCoverImage] = useState<CoverImage | null>(
     (session.cover_images as CoverImage[])?.[0] || null
   );
@@ -173,7 +190,10 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
   return (
     <>
-      <div className="rounded-xl bg-secondary/30 border border-border/50 overflow-hidden">
+      <div className={cn(
+        "rounded-xl bg-secondary/30 border border-border/50 overflow-hidden transition-opacity",
+        !isActive && "opacity-60"
+      )}>
         {/* Cover thumbnail row */}
         {coverImage && (
           <div className="relative h-24 w-full">
@@ -223,6 +243,15 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className={cn(
               "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
+              isActive
+                ? "bg-emerald-500/10 text-emerald-500"
+                : "bg-red-500/10 text-red-500"
+            )}>
+              <span className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-emerald-500" : "bg-red-500")} />
+              {isActive ? 'Active' : 'Inactive'}
+            </span>
+            <span className={cn(
+              "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
               isPublic
                 ? "bg-emerald-500/10 text-emerald-500"
                 : "bg-amber-500/10 text-amber-500"
@@ -243,11 +272,36 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
           {/* Actions row */}
           <div className="flex items-center gap-1.5 pt-1 border-t border-border/30">
-            <Switch
-              checked={isPublic}
-              onCheckedChange={handlePublicToggle}
-              className="scale-75"
-            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    <Switch
+                      checked={isActive}
+                      onCheckedChange={handleActiveToggle}
+                      className="scale-75"
+                    />
+                    <span className="text-[10px] text-muted-foreground">Live</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">Toggle off to disable client access to this link</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    <Switch
+                      checked={isPublic}
+                      onCheckedChange={handlePublicToggle}
+                      className="scale-75"
+                    />
+                    <span className="text-[10px] text-muted-foreground">Public</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">Public links don't require authentication</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div className="flex-1" />
             <TooltipProvider>
               <Tooltip>
