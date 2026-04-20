@@ -159,16 +159,27 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       const newSessionId = editFields.linked_session_id || null;
       const oldSessionId = linkedSessionId;
 
+      // Defensive whitelist: only these columns exist on `proposals`.
+      // Session linkage lives on creative_sessions.proposal_id (NOT proposals.session_id).
+      // Never spread editFields here — it contains linked_session_id which is not a proposals column.
+      const proposalPayload = {
+        event_name: editFields.event_name,
+        client_name: editFields.client_name,
+        venue_name: editFields.venue_name || null,
+        event_date: editFields.event_date || null,
+        validity_days: parseInt(editFields.validity_days) || 7,
+        contact_email: editFields.contact_email,
+      };
+
+      if (import.meta.env.DEV) {
+        const allowed = new Set(Object.keys(proposalPayload));
+        const stray = Object.keys(proposalPayload).filter(k => !allowed.has(k));
+        if (stray.length) console.warn('[saveHeader] stray keys in proposals payload:', stray);
+      }
+
       const { error } = await supabase
         .from('proposals')
-        .update({
-          event_name: editFields.event_name,
-          client_name: editFields.client_name,
-          venue_name: editFields.venue_name || null,
-          event_date: editFields.event_date || null,
-          validity_days: parseInt(editFields.validity_days) || 7,
-          contact_email: editFields.contact_email,
-        })
+        .update(proposalPayload)
         .eq('id', proposal.id);
       if (error) throw error;
 
