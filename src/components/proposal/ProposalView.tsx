@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown } from 'lucide-react';
+import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus } from 'lucide-react';
 import { generateProposalPdf } from '@/lib/proposalPdfGenerator';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
@@ -31,6 +31,25 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const [clientName, setClientName] = useState('');
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(!!proposal.signed_at);
+  const [clientQty, setClientQty] = useState<Record<string, number>>(
+    Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1]))
+  );
+
+  // Re-sync clientQty when items prop changes (e.g. after admin edit / refresh)
+  useEffect(() => {
+    setClientQty(Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1])));
+  }, [items]);
+
+  const isClientEditable = !isAdmin && !signed;
+  const getEffectiveQty = (i: any) =>
+    isClientEditable ? (clientQty[i.id] ?? (Number(i.quantity) || 1)) : (Number(i.quantity) || 1);
+  const adjustQty = (id: string, delta: number) => {
+    setClientQty(prev => {
+      const current = prev[id] ?? 1;
+      const next = Math.max(1, current + delta);
+      return { ...prev, [id]: next };
+    });
+  };
 
   // Admin editing states
   const [editingHeader, setEditingHeader] = useState(false);
@@ -61,7 +80,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       });
   }, [isAdmin, proposal.id]);
 
-  const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1);
+  const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * getEffectiveQty(i);
 
   const total = useMemo(() => {
     if (isAdmin && !editingItems) {
@@ -70,11 +89,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     return items
       .filter(i => selectedIds.has(i.id))
       .reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [selectedIds, items, isAdmin, editingItems]);
+  }, [selectedIds, items, isAdmin, editingItems, clientQty]);
 
   const grandTotal = useMemo(() => {
     return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [items]);
+  }, [items, clientQty]);
 
   const displayedTotal = isAdmin || signed ? grandTotal : total;
 
@@ -124,6 +143,20 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     }
     setSigning(true);
     try {
+      // Persist client-adjusted quantities for selected items before signing.
+      const qtyUpdates = items
+        .filter(i => selectedIds.has(i.id) && !i.is_flat_fee)
+        .map(i => ({ id: i.id, qty: clientQty[i.id] ?? (Number(i.quantity) || 1) }))
+        .filter(u => u.qty !== Number(items.find(i => i.id === u.id)?.quantity || 1));
+
+      if (qtyUpdates.length) {
+        await Promise.all(
+          qtyUpdates.map(u =>
+            supabase.from('proposal_items').update({ quantity: u.qty }).eq('id', u.id)
+          )
+        );
+      }
+
       const { error } = await supabase
         .from('proposals')
         .update({
@@ -576,8 +609,31 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               <p className="text-xs text-[#95a5a6] mt-0.5 whitespace-pre-line">{item.description}</p>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-[#2c3e50] text-center align-top">
-                            {isFlatFee ? '—' : (item.quantity || 1)}
+                          <TableCell className="text-sm text-[#2c3e50] text-center align-top" onClick={e => e.stopPropagation()}>
+                            {isFlatFee ? '—' : (
+                              isClientEditable ? (
+                                <div className="inline-flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => adjustQty(item.id, -1)}
+                                    disabled={getEffectiveQty(item) <= 1}
+                                    aria-label="Decrease quantity"
+                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation"
+                                  >
+                                    <Minus className="w-3 h-3" />
+                                  </button>
+                                  <span className="min-w-[1.5rem] text-center font-semibold tabular-nums">{getEffectiveQty(item)}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => adjustQty(item.id, 1)}
+                                    aria-label="Increase quantity"
+                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ) : (item.quantity || 1)
+                            )}
                           </TableCell>
                           <TableCell className="text-sm text-[#7f8c8d] align-top">
                             {isFlatFee ? 'Flat Fee' : (item.unit || '—')}
@@ -635,10 +691,34 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               <p className="text-[13px] text-[#95a5a6] mt-1.5 whitespace-pre-line leading-relaxed">{item.description}</p>
                             )}
                             <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#f0f3f5]">
-                              <div className="flex items-center gap-3 text-[12px] text-[#7f8c8d]">
+                              <div className="flex items-center gap-3 text-[12px] text-[#7f8c8d] flex-wrap">
                                 {!isFlatFee && (
                                   <>
-                                    <span>Qty: <span className="text-[#2c3e50] font-medium">{item.quantity || 1}</span></span>
+                                    {isClientEditable ? (
+                                      <div className="inline-flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                        <span className="text-[#7f8c8d]">Qty:</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => adjustQty(item.id, -1)}
+                                          disabled={getEffectiveQty(item) <= 1}
+                                          aria-label="Decrease quantity"
+                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation active:scale-95"
+                                        >
+                                          <Minus className="w-3.5 h-3.5" />
+                                        </button>
+                                        <span className="min-w-[1.5rem] text-center text-[#2c3e50] font-semibold tabular-nums">{getEffectiveQty(item)}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => adjustQty(item.id, 1)}
+                                          aria-label="Increase quantity"
+                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation active:scale-95"
+                                        >
+                                          <Plus className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <span>Qty: <span className="text-[#2c3e50] font-medium">{item.quantity || 1}</span></span>
+                                    )}
                                     {item.unit && <span>• {item.unit}</span>}
                                     <span>@ {formatCurrency(Number(item.price))}</span>
                                   </>
