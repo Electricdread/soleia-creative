@@ -595,8 +595,31 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               <p className="text-xs text-[#95a5a6] mt-0.5 whitespace-pre-line">{item.description}</p>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-[#2c3e50] text-center align-top">
-                            {isFlatFee ? '—' : (item.quantity || 1)}
+                          <TableCell className="text-sm text-[#2c3e50] text-center align-top" onClick={e => e.stopPropagation()}>
+                            {isFlatFee ? '—' : (
+                              isClientEditable ? (
+                                <div className="inline-flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => adjustQty(item.id, -1)}
+                                    disabled={getEffectiveQty(item) <= 1}
+                                    aria-label="Decrease quantity"
+                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation"
+                                  >
+                                    <Minus className="w-3 h-3" />
+                                  </button>
+                                  <span className="min-w-[1.5rem] text-center font-semibold tabular-nums">{getEffectiveQty(item)}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => adjustQty(item.id, 1)}
+                                    aria-label="Increase quantity"
+                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ) : (item.quantity || 1)
+                            )}
                           </TableCell>
                           <TableCell className="text-sm text-[#7f8c8d] align-top">
                             {isFlatFee ? 'Flat Fee' : (item.unit || '—')}
