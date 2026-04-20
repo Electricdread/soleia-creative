@@ -42,7 +42,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const isClientEditable = !isAdmin && !signed;
   const getEffectiveQty = (i: any) =>
-    isClientEditable ? (clientQty[i.id] ?? Number(i.quantity) || 1) : Number(i.quantity) || 1;
+    isClientEditable ? (clientQty[i.id] ?? (Number(i.quantity) || 1)) : (Number(i.quantity) || 1);
   const adjustQty = (id: string, delta: number) => {
     setClientQty(prev => {
       const current = prev[id] ?? 1;
