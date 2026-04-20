@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Plus, Users, Loader2 } from 'lucide-react';
 import { CreativeSessionCard } from './CreativeSessionCard';
 import { NewSessionForm } from './NewSessionForm';
+import { getPublicOrigin } from '@/lib/ogShare';
 
 interface CoverImage {
   url: string;

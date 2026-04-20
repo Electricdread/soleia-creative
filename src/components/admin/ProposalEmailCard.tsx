@@ -3,6 +3,7 @@ import { Copy, Check, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { getPublicOrigin } from '@/lib/ogShare';
 import {
   Select,
   SelectContent,
