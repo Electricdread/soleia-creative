@@ -1,26 +1,36 @@
 
-## Fix proposal PDF cover page text overlap
 
-### Problem
-On the cover page of `proposalPdfGenerator.ts`, the event title is drawn with `maxWidth: CONTENT_W` so jsPDF wraps long titles to multiple lines — but the subtitles ("Prepared for…", "at <venue>", date) are positioned at fixed offsets (`+30`, `+48`, `+68`) from the title baseline. When the title wraps to 2+ lines, the second line draws on top of the subtitles, producing the unreadable mess in the screenshot.
+## Fix: "Could not find 'session_id' column of 'proposals'" when linking session to proposal
 
-A second related issue: when the title is long enough to wrap, the 32pt font also gets visually crowded against the cover image above.
+### Root cause
+A previous version of the schema had `proposals.session_id` (added in migration `20260321092134`, dropped in `20260410182149`). The current correct linkage lives on `creative_sessions.proposal_id`.
 
-### Fix
-In `generateCoverPage`:
+I scanned the entire codebase — no source file currently writes `session_id` to `proposals`. The error is therefore one of two things:
 
-1. **Measure the wrapped title before drawing.** Use `doc.splitTextToSize(proposal.event_name, CONTENT_W - 40)` to get the actual line array, then compute total title height = `lines.length × lineHeight`.
+1. **The user's browser is running a stale cached JS bundle** that still writes `session_id` to `proposals` from the old code path.
+2. **PostgREST's schema cache is stale** and somehow still references the dropped column for a related operation.
 
-2. **Auto-shrink long titles.** If the title wraps to more than 2 lines, drop the font size from 32pt → 26pt → 22pt until it fits in ≤2 lines (or cap at 3 lines max). This keeps the cover balanced.
+The current code in `ProposalView.saveHeader` (the "Link Creative Session" select) and `ProposalSessionLinker` is already correct: it only writes `proposal_id` to `creative_sessions`, never `session_id` to `proposals`.
 
-3. **Anchor subtitles below the measured title block.** Replace fixed `bottomY + 30/48/68` offsets with a running `cursorY` that starts at `titleEndY + 18` and increments based on each subtitle's actual line height.
+### Fix plan
 
-4. **Reserve a fixed bottom band for the text block.** Pin the title block so the entire text group (title + "Prepared for" + venue + date) is bottom-anchored: compute total text-block height first, then set `startY = PAGE_H - 80 - totalTextH` so the date always sits ~80pt above the page bottom and the title grows upward.
+**1. Force-refresh the PostgREST schema cache** (handles case 2)
+Run `NOTIFY pgrst, 'reload schema';` via a tiny migration so Supabase reloads its column list and forgets the old `session_id` column entirely.
 
-5. **Add a soft dark scrim behind the text band** (a semi-transparent dark rectangle covering the bottom 25% of the cover image area) so text is readable even when the cover image is bright/busy — this also visually separates text from the image like the original design intent.
+**2. Add a defensive guard in `ProposalView.saveHeader`** (handles case 1 + future regressions)
+Before the `proposals.update(...)`, explicitly construct the payload object from a hardcoded list of allowed proposal columns (`event_name`, `client_name`, `venue_name`, `event_date`, `validity_days`, `contact_email`) so even if a future bug spreads `editFields` (which contains `linked_session_id`), the bad key cannot leak into the proposals update. It already does this — I'll harden it with a comment + a runtime sanity check that warns in dev if any unknown key sneaks in.
 
-### Files
-- `src/lib/proposalPdfGenerator.ts` — rewrite `generateCoverPage` text-block layout (lines ~117–140)
+**3. Verify the link flow works end-to-end after the cache reload**
+- Open a proposal in admin
+- Use "Link Creative Session" select → pick a session → Save
+- Confirm: no error toast, the session's `proposal_id` is set, and the cover image is auto-pulled into `proposal_gallery`.
 
-### QA
-After the change, generate a test PDF for the McDonald's proposal (long title) and a short-title proposal, convert page 1 to image with `pdftoppm`, and visually verify no overlap on either.
+**4. If error still appears after steps 1–3**, it is 100% a stale browser bundle — instruct the user to hard-refresh (Cmd+Shift+R) the admin tab. Vite's hashed bundles guarantee the new code loads after that.
+
+### Files to touch
+- New migration: `NOTIFY pgrst, 'reload schema';` (one-line, no DDL)
+- `src/components/proposal/ProposalView.tsx` — defensive payload construction in `saveHeader`
+
+### Out of scope
+- No schema change. The `proposals` table is correct as-is; the linkage column lives on `creative_sessions.proposal_id` (working as designed per the project memory `proposal-session-integration`).
+
