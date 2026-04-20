@@ -143,6 +143,20 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     }
     setSigning(true);
     try {
+      // Persist client-adjusted quantities for selected items before signing.
+      const qtyUpdates = items
+        .filter(i => selectedIds.has(i.id) && !i.is_flat_fee)
+        .map(i => ({ id: i.id, qty: clientQty[i.id] ?? Number(i.quantity) || 1 }))
+        .filter(u => u.qty !== Number(items.find(i => i.id === u.id)?.quantity || 1));
+
+      if (qtyUpdates.length) {
+        await Promise.all(
+          qtyUpdates.map(u =>
+            supabase.from('proposal_items').update({ quantity: u.qty }).eq('id', u.id)
+          )
+        );
+      }
+
       const { error } = await supabase
         .from('proposals')
         .update({
