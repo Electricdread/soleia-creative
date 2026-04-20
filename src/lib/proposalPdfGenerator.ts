@@ -114,27 +114,79 @@ async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageU
   doc.setFont('helvetica', 'bold');
   doc.text('PROPOSAL', PAGE_W / 2, 108, { align: 'center' });
 
-  // Event info at bottom
-  const bottomY = 580;
+  // === BOTTOM TEXT BLOCK (dynamically measured) ===
+  const titleMaxW = CONTENT_W - 40;
+
+  // Auto-shrink title to fit in ≤2 lines if possible (cap at 3 lines)
+  let titleSize = 32;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(32);
-  doc.setTextColor('#ffffff');
-  doc.text(proposal.event_name, PAGE_W / 2, bottomY, { align: 'center', maxWidth: CONTENT_W });
+  doc.setFontSize(titleSize);
+  let titleLines: string[] = doc.splitTextToSize(proposal.event_name, titleMaxW);
+  for (const trySize of [26, 22]) {
+    if (titleLines.length <= 2) break;
+    titleSize = trySize;
+    doc.setFontSize(titleSize);
+    titleLines = doc.splitTextToSize(proposal.event_name, titleMaxW);
+  }
+  if (titleLines.length > 3) titleLines = titleLines.slice(0, 3);
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(14);
-  doc.setTextColor(LIGHT_GRAY);
-  doc.text(`Prepared for ${proposal.client_name}`, PAGE_W / 2, bottomY + 30, { align: 'center' });
+  const titleLH = titleSize * 1.1;
+  const preparedLH = 18;
+  const venueLH = 16;
+  const dateLH = 16;
 
-  if (proposal.venue_name) {
-    doc.setFontSize(12);
-    doc.text(`at ${proposal.venue_name}`, PAGE_W / 2, bottomY + 48, { align: 'center' });
+  const titleBlockH = titleLines.length * titleLH;
+  const preparedH = preparedLH;
+  const venueH = proposal.venue_name ? venueLH : 0;
+  const dateH = proposal.event_date ? dateLH + 6 : 0; // small gap before gold date
+
+  const totalTextH = titleBlockH + 14 + preparedH + venueH + dateH;
+  const bottomPad = 80;
+  const startY = PAGE_H - bottomPad - totalTextH;
+
+  // Soft dark scrim behind text band for readability
+  const scrimY = startY - 24;
+  const scrimH = PAGE_H - scrimY;
+  try {
+    doc.setFillColor(DARK);
+    doc.setGState(new (doc as any).GState({ opacity: 0.55 }));
+    doc.rect(0, scrimY, PAGE_W, scrimH, 'F');
+    doc.setGState(new (doc as any).GState({ opacity: 1 }));
+  } catch {
+    // GState unsupported — skip scrim
   }
 
+  // Title (wrapped, drawn line by line)
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(titleSize);
+  doc.setTextColor('#ffffff');
+  let cursorY = startY + titleLH - titleSize * 0.2;
+  for (const ln of titleLines) {
+    doc.text(ln, PAGE_W / 2, cursorY, { align: 'center' });
+    cursorY += titleLH;
+  }
+
+  // Prepared for
+  cursorY += 4;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(13);
+  doc.setTextColor(LIGHT_GRAY);
+  doc.text(`Prepared for ${proposal.client_name}`, PAGE_W / 2, cursorY, { align: 'center' });
+  cursorY += preparedLH;
+
+  // Venue
+  if (proposal.venue_name) {
+    doc.setFontSize(11);
+    doc.text(`at ${proposal.venue_name}`, PAGE_W / 2, cursorY, { align: 'center' });
+    cursorY += venueLH;
+  }
+
+  // Date
   if (proposal.event_date) {
+    cursorY += 6;
     doc.setFontSize(11);
     doc.setTextColor(GOLD);
-    doc.text(formatDate(proposal.event_date), PAGE_W / 2, bottomY + 68, { align: 'center' });
+    doc.text(formatDate(proposal.event_date), PAGE_W / 2, cursorY, { align: 'center' });
   }
 }
 
