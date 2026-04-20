@@ -11,7 +11,7 @@ import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, P
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { SessionContentManager } from './SessionContentManager';
-import { copyOgShareLink } from '@/lib/ogShare';
+import { copyOgShareLink, getPublicOrigin } from '@/lib/ogShare';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';

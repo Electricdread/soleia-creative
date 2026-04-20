@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Share2, Mail, Link2, ChevronDown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { copyOgShareLink } from '@/lib/ogShare';
+import { copyOgShareLink, getPublicOrigin } from '@/lib/ogShare';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
