@@ -11,7 +11,7 @@ import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, P
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { SessionContentManager } from './SessionContentManager';
-import { copyOgShareLink } from '@/lib/ogShare';
+import { copyOgShareLink, getPublicOrigin } from '@/lib/ogShare';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -501,14 +501,14 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                   <div className="flex gap-2">
                     <Input
                       readOnly
-                      value={`${window.location.origin}/delivery/${session.token}`}
+                      value={`${getPublicOrigin()}/delivery/${session.token}`}
                       className="h-9 text-sm bg-muted/50"
                     />
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/delivery/${session.token}`);
+                        navigator.clipboard.writeText(`${getPublicOrigin()}/delivery/${session.token}`);
                         toast.success('Delivery guide link copied!');
                       }}
                     >

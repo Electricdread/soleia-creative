@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Plus, Users, Loader2 } from 'lucide-react';
 import { CreativeSessionCard } from './CreativeSessionCard';
 import { NewSessionForm } from './NewSessionForm';
+import { getPublicOrigin } from '@/lib/ogShare';
 
 interface CoverImage {
   url: string;
@@ -58,7 +59,7 @@ export function CreativeSessionManager() {
   };
 
   const copyLink = (token: string) => {
-    const url = `${window.location.origin}/creative/${token}`;
+    const url = `${getPublicOrigin()}/creative/${token}`;
     navigator.clipboard.writeText(url);
     toast.success('Link copied to clipboard!');
   };

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Copy, ExternalLink, Share2, Link2, QrCode } from 'lucide-react';
 import { toast } from 'sonner';
+import { getPublicOrigin } from '@/lib/ogShare';
 
 interface LinkPreviewCardProps {
   token: string;
@@ -16,7 +17,7 @@ interface LinkPreviewCardProps {
 export function LinkPreviewCard({ token, type, projectName, clientName, coverImageUrl, eventDate }: LinkPreviewCardProps) {
   const [showPreview, setShowPreview] = useState(false);
 
-  const directUrl = `${window.location.origin}/${type === 'creative' ? 'creative' : 'session'}/${token}`;
+  const directUrl = `${getPublicOrigin()}/${type === 'creative' ? 'creative' : 'session'}/${token}`;
   const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-preview?token=${token}&type=${type}`;
 
   const copyOgLink = () => {

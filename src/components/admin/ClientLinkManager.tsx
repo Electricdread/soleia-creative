@@ -18,7 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard, Share2, ChevronDown as ChevronDownIcon } from 'lucide-react';
-import { copyOgShareLink } from '@/lib/ogShare';
+import { copyOgShareLink, getPublicOrigin } from '@/lib/ogShare';
 import { ClipSelector } from './ClipSelector';
 import { SessionUploadsViewer } from './SessionUploadsViewer';
 import { ContentPrevizManager } from './ContentPrevizManager';
@@ -182,7 +182,7 @@ export function ClientLinkManager() {
 
   // Copy link to clipboard
   const copyLink = async (token: string) => {
-    const url = `${window.location.origin}/session/${token}`;
+    const url = `${getPublicOrigin()}/session/${token}`;
     await navigator.clipboard.writeText(url);
     toast({
       title: 'Link copied!',

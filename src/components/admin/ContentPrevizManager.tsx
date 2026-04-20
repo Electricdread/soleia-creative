@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getPublicOrigin } from "@/lib/ogShare";
 import {
   Plus,
   Trash2,
@@ -160,7 +161,7 @@ export function ContentPrevizManager({
   };
 
   const copyPrevizLink = async () => {
-    const url = `${window.location.origin}/preview/${linkToken}`;
+    const url = `${getPublicOrigin()}/preview/${linkToken}`;
     await navigator.clipboard.writeText(url);
     toast({ title: "Previz link copied!" });
   };
