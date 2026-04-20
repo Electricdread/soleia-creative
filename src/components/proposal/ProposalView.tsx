@@ -31,6 +31,25 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const [clientName, setClientName] = useState('');
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(!!proposal.signed_at);
+  const [clientQty, setClientQty] = useState<Record<string, number>>(
+    Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1]))
+  );
+
+  // Re-sync clientQty when items prop changes (e.g. after admin edit / refresh)
+  useEffect(() => {
+    setClientQty(Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1])));
+  }, [items]);
+
+  const isClientEditable = !isAdmin && !signed;
+  const getEffectiveQty = (i: any) =>
+    isClientEditable ? (clientQty[i.id] ?? Number(i.quantity) || 1) : Number(i.quantity) || 1;
+  const adjustQty = (id: string, delta: number) => {
+    setClientQty(prev => {
+      const current = prev[id] ?? 1;
+      const next = Math.max(1, current + delta);
+      return { ...prev, [id]: next };
+    });
+  };
 
   // Admin editing states
   const [editingHeader, setEditingHeader] = useState(false);
