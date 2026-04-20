@@ -160,7 +160,7 @@ export function ContentPrevizManager({
   };
 
   const copyPrevizLink = async () => {
-    const url = `${window.location.origin}/preview/${linkToken}`;
+    const url = `${getPublicOrigin()}/preview/${linkToken}`;
     await navigator.clipboard.writeText(url);
     toast({ title: "Previz link copied!" });
   };

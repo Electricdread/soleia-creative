@@ -161,7 +161,7 @@ export default function AdminProposals() {
   };
 
   const copyLink = (token: string) => {
-    const url = `${window.location.origin}/proposal/${token}`;
+    const url = `${getPublicOrigin()}/proposal/${token}`;
     navigator.clipboard.writeText(url);
     toast({ title: 'Link copied!' });
   };

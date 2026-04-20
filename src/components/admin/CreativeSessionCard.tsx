@@ -501,14 +501,14 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                   <div className="flex gap-2">
                     <Input
                       readOnly
-                      value={`${window.location.origin}/delivery/${session.token}`}
+                      value={`${getPublicOrigin()}/delivery/${session.token}`}
                       className="h-9 text-sm bg-muted/50"
                     />
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/delivery/${session.token}`);
+                        navigator.clipboard.writeText(`${getPublicOrigin()}/delivery/${session.token}`);
                         toast.success('Delivery guide link copied!');
                       }}
                     >

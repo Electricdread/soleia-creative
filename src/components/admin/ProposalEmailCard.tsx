@@ -186,7 +186,7 @@ export function ProposalEmailCard() {
 
   const selected = proposals.find((p) => p.id === selectedId);
   const proposalLink = selected
-    ? `${window.location.origin}/proposal/${selected.token}`
+    ? `${getPublicOrigin()}/proposal/${selected.token}`
     : '';
 
   const htmlContent = selected

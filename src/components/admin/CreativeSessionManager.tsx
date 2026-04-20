@@ -58,7 +58,7 @@ export function CreativeSessionManager() {
   };
 
   const copyLink = (token: string) => {
-    const url = `${window.location.origin}/creative/${token}`;
+    const url = `${getPublicOrigin()}/creative/${token}`;
     navigator.clipboard.writeText(url);
     toast.success('Link copied to clipboard!');
   };

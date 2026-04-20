@@ -176,7 +176,7 @@ export function CreativeSessionEmailCard() {
   const selected = sessions.find((s) => s.id === selectedId);
   const coverImageUrl = selected?.cover_images?.[0]?.url || null;
   const sessionLink = selected
-    ? `${window.location.origin}/creative/${selected.token}`
+    ? `${getPublicOrigin()}/creative/${selected.token}`
     : '';
 
   const htmlContent = selected

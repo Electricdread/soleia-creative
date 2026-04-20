@@ -182,7 +182,7 @@ export function ClientLinkManager() {
 
   // Copy link to clipboard
   const copyLink = async (token: string) => {
-    const url = `${window.location.origin}/session/${token}`;
+    const url = `${getPublicOrigin()}/session/${token}`;
     await navigator.clipboard.writeText(url);
     toast({
       title: 'Link copied!',
