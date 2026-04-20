@@ -328,18 +328,18 @@ export default function AdminProposals() {
                   />
                   <label htmlFor={`create-flat-${idx}`} className="text-xs text-zinc-400 cursor-pointer">Flat Fee</label>
                 </div>
-                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center">
-                  <Textarea
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={e => {
-                      const n = [...itemsList];
-                      n[idx].description = e.target.value;
-                      setItemsList(n);
-                    }}
-                    className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[38px] resize-none"
-                    rows={1}
-                  />
+                <Textarea
+                  placeholder="Description — write a detailed scope of work, deliverables, and notes..."
+                  value={item.description}
+                  onChange={e => {
+                    const n = [...itemsList];
+                    n[idx].description = e.target.value;
+                    setItemsList(n);
+                  }}
+                  className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[140px] resize-y w-full mb-2"
+                  rows={6}
+                />
+                <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
                   {!item.is_flat_fee && (
                     <>
                       <Input
