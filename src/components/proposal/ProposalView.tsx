@@ -80,7 +80,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       });
   }, [isAdmin, proposal.id]);
 
-  const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1);
+  const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * getEffectiveQty(i);
 
   const total = useMemo(() => {
     if (isAdmin && !editingItems) {
