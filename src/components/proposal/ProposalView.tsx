@@ -677,10 +677,34 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               <p className="text-[13px] text-[#95a5a6] mt-1.5 whitespace-pre-line leading-relaxed">{item.description}</p>
                             )}
                             <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#f0f3f5]">
-                              <div className="flex items-center gap-3 text-[12px] text-[#7f8c8d]">
+                              <div className="flex items-center gap-3 text-[12px] text-[#7f8c8d] flex-wrap">
                                 {!isFlatFee && (
                                   <>
-                                    <span>Qty: <span className="text-[#2c3e50] font-medium">{item.quantity || 1}</span></span>
+                                    {isClientEditable ? (
+                                      <div className="inline-flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                        <span className="text-[#7f8c8d]">Qty:</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => adjustQty(item.id, -1)}
+                                          disabled={getEffectiveQty(item) <= 1}
+                                          aria-label="Decrease quantity"
+                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation active:scale-95"
+                                        >
+                                          <Minus className="w-3.5 h-3.5" />
+                                        </button>
+                                        <span className="min-w-[1.5rem] text-center text-[#2c3e50] font-semibold tabular-nums">{getEffectiveQty(item)}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => adjustQty(item.id, 1)}
+                                          aria-label="Increase quantity"
+                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation active:scale-95"
+                                        >
+                                          <Plus className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <span>Qty: <span className="text-[#2c3e50] font-medium">{item.quantity || 1}</span></span>
+                                    )}
                                     {item.unit && <span>• {item.unit}</span>}
                                     <span>@ {formatCurrency(Number(item.price))}</span>
                                   </>
