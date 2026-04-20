@@ -198,80 +198,119 @@ export async function generateProposalPdf(
   doc.text(`Quote Date: ${formatDate(quoteDate)}  |  Valid for ${proposal.validity_days || 7} days`, MARGIN, y);
 
   // === SCOPE TABLE ===
-  y += 20;
+  y += 18;
   doc.setDrawColor('#ecf0f1');
   doc.setLineWidth(0.5);
 
+  // Column geometry — fixed anchors so columns never collide
+  // Item: left edge -> 58% (text wraps inside this column)
+  // Type: 58% -> 78% (right-aligned at 78%)
+  // Price: 78% -> 100% (right-aligned at right margin)
+  const COL_ITEM_X = MARGIN + 6;
+  const COL_ITEM_W = CONTENT_W * 0.58 - 12;
+  const COL_TYPE_RIGHT = MARGIN + CONTENT_W * 0.78;
+  const COL_PRICE_RIGHT = MARGIN + CONTENT_W - 6;
+
   // Table header
   doc.setFillColor('#f8f9fa');
-  doc.rect(MARGIN, y, CONTENT_W, 18, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 16, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(LIGHT_GRAY);
+  doc.text('ITEM', COL_ITEM_X, y + 11);
+  doc.text('TYPE', COL_TYPE_RIGHT, y + 11, { align: 'right' });
+  doc.text('PRICE', COL_PRICE_RIGHT, y + 11, { align: 'right' });
+  y += 16;
 
-  const colX = { item: MARGIN + 6, type: MARGIN + CONTENT_W * 0.55, price: MARGIN + CONTENT_W - 6 };
-  doc.text('ITEM', colX.item, y + 12);
-  doc.text('TYPE', colX.type, y + 12);
-  doc.text('PRICE', colX.price, y + 12, { align: 'right' });
-  y += 18;
+  // Spacing constants
+  const TITLE_SIZE = 8.5;
+  const DESC_SIZE = 7;
+  const TITLE_LH = 11;       // line height for wrapped title
+  const DESC_LH = 9;         // line height for wrapped description
+  const ROW_TOP_PAD = 5;
+  const ROW_BOTTOM_PAD = 5;
+  const TITLE_DESC_GAP = 3;
+  const SECTION_HEADER_H = 14;
 
-  // Table rows
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
   let lastCategory = '';
 
   for (const item of items) {
     const lineTotal = item.is_flat_fee ? Number(item.price) : Number(item.price) * Number(item.quantity || 1);
-    const needsCategory = item.category && item.category !== lastCategory;
+    const needsCategory = !!item.category && item.category !== lastCategory;
     if (item.category) lastCategory = item.category;
 
-    // Check page break
-    const rowH = item.description ? 28 : 18;
-    if (y + rowH > PAGE_H - 120) {
+    // Pre-measure wrapped text
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(TITLE_SIZE);
+    const titleLines: string[] = doc.splitTextToSize(item.title, COL_ITEM_W);
+
+    let descLines: string[] = [];
+    if (item.description) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(DESC_SIZE);
+      descLines = doc.splitTextToSize(item.description, COL_ITEM_W);
+    }
+
+    const titleBlockH = titleLines.length * TITLE_LH;
+    const descBlockH = descLines.length > 0 ? TITLE_DESC_GAP + descLines.length * DESC_LH : 0;
+    const rowH = ROW_TOP_PAD + titleBlockH + descBlockH + ROW_BOTTOM_PAD;
+    const sectionH = needsCategory ? SECTION_HEADER_H : 0;
+
+    // Page break check (reserve ~150pt for total + timeline + terms + footer)
+    if (y + sectionH + rowH > PAGE_H - 150) {
       doc.addPage();
       y = MARGIN;
     }
 
+    // Section header
     if (needsCategory) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7);
       doc.setTextColor(GOLD);
-      doc.text(item.category!.toUpperCase(), colX.item, y + 11);
-      y += 14;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
+      doc.text(item.category!.toUpperCase(), COL_ITEM_X, y + 10);
+      y += SECTION_HEADER_H;
     }
 
-    // Row line
+    // Top divider line
     doc.setDrawColor('#f0f3f5');
     doc.line(MARGIN, y, MARGIN + CONTENT_W, y);
 
-    doc.setTextColor(TEXT);
+    // Title (wrapped, left column)
     doc.setFont('helvetica', 'bold');
-    doc.text(item.title, colX.item, y + 12, { maxWidth: CONTENT_W * 0.5 });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(GRAY);
-    if (item.is_flat_fee) {
-      doc.text('Flat Fee', colX.type, y + 12);
-    } else {
-      doc.text(`${item.quantity || 1} × ${item.unit || 'Unit'}`, colX.type, y + 12);
+    doc.setFontSize(TITLE_SIZE);
+    doc.setTextColor(TEXT);
+    let textY = y + ROW_TOP_PAD + TITLE_LH - 2;
+    for (const ln of titleLines) {
+      doc.text(ln, COL_ITEM_X, textY);
+      textY += TITLE_LH;
     }
 
-    doc.setTextColor(TEXT);
-    doc.setFont('helvetica', 'bold');
-    doc.text(formatCurrency(lineTotal), colX.price, y + 12, { align: 'right' });
-
-    if (item.description) {
+    // Description (wrapped, left column, smaller + lighter)
+    if (descLines.length > 0) {
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7);
+      doc.setFontSize(DESC_SIZE);
       doc.setTextColor(LIGHT_GRAY);
-      doc.text(item.description, colX.item, y + 22, { maxWidth: CONTENT_W * 0.75 });
-      doc.setFontSize(8.5);
-      y += rowH;
-    } else {
-      y += 18;
+      let descY = y + ROW_TOP_PAD + titleBlockH + TITLE_DESC_GAP + DESC_LH - 2;
+      for (const ln of descLines) {
+        doc.text(ln, COL_ITEM_X, descY);
+        descY += DESC_LH;
+      }
     }
+
+    // Type column (right-aligned at COL_TYPE_RIGHT, vertically aligned with title)
+    const rightColY = y + ROW_TOP_PAD + TITLE_LH - 2;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(TITLE_SIZE);
+    doc.setTextColor(GRAY);
+    const typeText = item.is_flat_fee ? 'Flat Fee' : `${item.quantity || 1} × ${item.unit || 'Unit'}`;
+    doc.text(typeText, COL_TYPE_RIGHT, rightColY, { align: 'right' });
+
+    // Price column (right-aligned at COL_PRICE_RIGHT)
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(TEXT);
+    doc.text(formatCurrency(lineTotal), COL_PRICE_RIGHT, rightColY, { align: 'right' });
+
+    y += rowH;
   }
 
   // Total row
