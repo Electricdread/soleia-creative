@@ -89,11 +89,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     return items
       .filter(i => selectedIds.has(i.id))
       .reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [selectedIds, items, isAdmin, editingItems]);
+  }, [selectedIds, items, isAdmin, editingItems, clientQty]);
 
   const grandTotal = useMemo(() => {
     return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [items]);
+  }, [items, clientQty]);
 
   const displayedTotal = isAdmin || signed ? grandTotal : total;
 
