@@ -320,9 +320,9 @@ export async function generateProposalPdf(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor('#ffffff');
-  doc.text('TOTAL', colX.item, y + 16);
+  doc.text('TOTAL', COL_ITEM_X, y + 16);
   const grandTotal = items.reduce((sum, i) => sum + (i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1)), 0);
-  doc.text(formatCurrency(grandTotal), colX.price, y + 16, { align: 'right' });
+  doc.text(formatCurrency(grandTotal), COL_PRICE_RIGHT, y + 16, { align: 'right' });
   y += 34;
 
   // === TIMELINE (horizontal dots) ===
