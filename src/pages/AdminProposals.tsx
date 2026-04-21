@@ -377,15 +377,21 @@ export default function AdminProposals() {
                     }}
                     className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
                   />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setItemsList(itemsList.filter((_, i) => i !== idx))}
-                    className="text-zinc-500 hover:text-red-400 h-9 w-9"
-                    disabled={itemsList.length === 1}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <DeleteConfirmDialog
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-zinc-500 hover:text-red-400 h-9 w-9"
+                        disabled={itemsList.length === 1}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    }
+                    title="Delete line item?"
+                    description={`This will permanently remove "${item.title || 'this item'}". This action cannot be undone.`}
+                    onConfirm={() => setItemsList(itemsList.filter((_, i) => i !== idx))}
+                  />
                 </div>
               </div>
             ))}

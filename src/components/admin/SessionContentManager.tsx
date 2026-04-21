@@ -223,7 +223,6 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
   };
 
   const deleteScene = async (id: string) => {
-    if (!confirm('Delete this scene? Items will be unassigned, not deleted.')) return;
     await supabase.from('session_scenes').delete().eq('id', id);
     fetchScenes();
     fetchItems();
