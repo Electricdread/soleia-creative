@@ -17,8 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard, Share2, ChevronDown as ChevronDownIcon } from 'lucide-react';
-import { copyOgShareLink, getPublicOrigin } from '@/lib/ogShare';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard } from 'lucide-react';
+import { getPublicOrigin } from '@/lib/ogShare';
 import { ClipSelector } from './ClipSelector';
 import { SessionUploadsViewer } from './SessionUploadsViewer';
 import { ContentPrevizManager } from './ContentPrevizManager';
@@ -486,30 +486,13 @@ export function ClientLinkManager() {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => copyLink(link.token)}
                           className="gap-1.5"
                         >
                           <Link2 className="w-3.5 h-3.5" />
                           Copy Link
-                          <ChevronDownIcon className="w-3 h-3 ml-0.5 text-muted-foreground" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => copyOgShareLink(link.token, 'session')}>
-                          <Share2 className="w-4 h-4 mr-2 text-muted-foreground" />
-                          <div className="flex flex-col">
-                            <span className="text-sm">Social share link</span>
-                            <span className="text-xs text-muted-foreground">Rich preview for social & messaging</span>
-                          </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => copyLink(link.token)}>
-                          <Copy className="w-4 h-4 mr-2 text-muted-foreground" />
-                          <div className="flex flex-col">
-                            <span className="text-sm">Direct link</span>
-                            <span className="text-xs text-muted-foreground">Plain URL for email or manual sharing</span>
-                          </div>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
 
                     {/* Open button */}
                     <Button
