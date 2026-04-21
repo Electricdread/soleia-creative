@@ -1,0 +1,1 @@
+UPDATE public.proposal_timeline SET duration = 'may take up to 7 Business Days' WHERE phase = 'Applying Fixes & Delivery' AND duration = '2 Business Days';
