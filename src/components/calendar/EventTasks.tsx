@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface Task {
   id: string;
@@ -88,9 +89,16 @@ export function EventTasks({ eventUid }: { eventUid: string }) {
               className="border-border data-[state=checked]:bg-[#7b8a3e] data-[state=checked]:border-[#7b8a3e]"
             />
             <span className={`text-sm flex-1 ${t.is_completed ? 'line-through text-muted-foreground/60' : 'text-foreground'}`}>{t.title}</span>
-            <button onClick={() => deleteTask(t.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            <DeleteConfirmDialog
+              trigger={
+                <button className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              }
+              title="Delete task?"
+              description={`This will permanently remove "${t.title}". This action cannot be undone.`}
+              onConfirm={() => deleteTask(t.id)}
+            />
           </div>
         ))}
       </div>

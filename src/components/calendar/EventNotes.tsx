@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface Note {
   id: string;
@@ -67,9 +68,16 @@ export function EventNotes({ eventUid }: { eventUid: string }) {
           <div key={n.id} className="bg-[#faf8f5] border border-[#e8e2d8] rounded-lg p-3 group">
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm text-[#3d3629] whitespace-pre-line flex-1">{n.content}</p>
-              <button onClick={() => deleteNote(n.id)} className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+              <DeleteConfirmDialog
+                trigger={
+                  <button className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                }
+                title="Delete note?"
+                description="This will permanently remove this note. This action cannot be undone."
+                onConfirm={() => deleteNote(n.id)}
+              />
             </div>
             <span className="text-[10px] text-[#b5ab9a] mt-1 block">{format(new Date(n.created_at), 'MMM d, h:mm a')}</span>
           </div>

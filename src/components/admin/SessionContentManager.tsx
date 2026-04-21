@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Trash2, Upload, Loader2, GripVertical, Image, Film, FileText, Pencil, Check, X, Plus, Layers } from 'lucide-react';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import {
   DndContext,
   closestCenter,
@@ -113,15 +114,21 @@ function SortableContentRow({ item, onDelete, deleting, onEdit, scenes }: {
           <Pencil className="w-3.5 h-3.5" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-destructive hover:bg-destructive/10 touch-manipulation"
-          onClick={() => onDelete(item.id)}
-          disabled={deleting === item.id}
-        >
-          {deleting === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-        </Button>
+        <DeleteConfirmDialog
+          trigger={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:bg-destructive/10 touch-manipulation"
+              disabled={deleting === item.id}
+            >
+              {deleting === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+            </Button>
+          }
+          title="Delete content item?"
+          description={`This will permanently remove "${item.title || 'this item'}" from the session. This action cannot be undone.`}
+          onConfirm={() => onDelete(item.id)}
+        />
       </div>
     </div>
   );
@@ -355,12 +362,16 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
             {scenes.map(scene => (
               <div key={scene.id} className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium group">
                 {scene.title}
-                <button
-                  onClick={() => deleteScene(scene.id)}
-                  className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity touch-manipulation"
-                >
-                  <X className="w-3 h-3" />
-                </button>
+                <DeleteConfirmDialog
+                  trigger={
+                    <button className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity touch-manipulation">
+                      <X className="w-3 h-3" />
+                    </button>
+                  }
+                  title="Delete scene?"
+                  description={`This will permanently remove the scene "${scene.title}". Items will be unassigned, not deleted.`}
+                  onConfirm={() => deleteScene(scene.id)}
+                />
               </div>
             ))}
           </div>

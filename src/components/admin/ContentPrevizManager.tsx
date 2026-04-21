@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getPublicOrigin } from "@/lib/ogShare";
+import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import {
   Plus,
   Trash2,
@@ -234,14 +235,20 @@ export function ContentPrevizManager({
                     </p>
                   )}
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => deletePreview(preview.id)}
-                  className="text-destructive hover:bg-destructive/10 flex-shrink-0"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
+                <DeleteConfirmDialog
+                  trigger={
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:bg-destructive/10 flex-shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  }
+                  title="Delete preview?"
+                  description={`This will permanently remove "${preview.title}" from the previz. This action cannot be undone.`}
+                  onConfirm={() => deletePreview(preview.id)}
+                />
               </div>
             ))}
           </div>

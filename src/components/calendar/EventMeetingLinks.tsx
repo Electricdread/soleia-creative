@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Plus, Trash2, Video, ExternalLink, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface MeetingLink {
   id: string;
@@ -96,9 +97,16 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
             <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-[#c49a3c] hover:text-[#b08a30]">
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
-            <button onClick={() => deleteLink(link.id)} className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            <DeleteConfirmDialog
+              trigger={
+                <button className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              }
+              title="Delete meeting link?"
+              description={`This will permanently remove "${link.label}". This action cannot be undone.`}
+              onConfirm={() => deleteLink(link.id)}
+            />
           </div>
         ))}
       </div>

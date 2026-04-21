@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Plus, Trash2, Palette, FileText, Link2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface Association {
   id: string;
@@ -155,9 +156,16 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             )}
-            <button onClick={() => removeAssociation(a.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            <DeleteConfirmDialog
+              trigger={
+                <button className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              }
+              title="Unlink item?"
+              description={`This will unlink "${a.label}" from this event. The item itself will not be deleted.`}
+              onConfirm={() => removeAssociation(a.id)}
+            />
           </div>
         ))}
       </div>

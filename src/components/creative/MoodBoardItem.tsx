@@ -9,6 +9,7 @@ import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2, 
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface Reaction {
   id: string;
@@ -283,14 +284,20 @@ export function MoodBoardItem({
               <GripVertical className="h-4 w-4" />
             </button>
             {onDelete && (
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
-                onClick={() => onDelete(item.id)}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+              <DeleteConfirmDialog
+                trigger={
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                }
+                title="Delete mood board item?"
+                description={`This will permanently remove "${item.title || 'this item'}" from the mood board. This action cannot be undone.`}
+                onConfirm={() => onDelete(item.id)}
+              />
             )}
           </>
         )}
@@ -353,11 +360,16 @@ export function MoodBoardItem({
                   </span>
                 </div>
                 {comment.commenter_name === userName && (
-                  <Button variant="ghost" size="icon"
-                    className="h-5 w-5 opacity-0 group-hover/comment:opacity-100"
-                    onClick={() => deleteComment(comment.id)}>
-                    <Trash2 className="h-2.5 w-2.5" />
-                  </Button>
+                  <DeleteConfirmDialog
+                    trigger={
+                      <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover/comment:opacity-100">
+                        <Trash2 className="h-2.5 w-2.5" />
+                      </Button>
+                    }
+                    title="Delete comment?"
+                    description="This will permanently remove your comment. This action cannot be undone."
+                    onConfirm={() => deleteComment(comment.id)}
+                  />
                 )}
               </div>
               <p className="text-muted-foreground mt-0.5">{comment.content}</p>
