@@ -1,34 +1,26 @@
 
 
-## Remove the "Social Link" / OG share feature entirely
+## Fix Proposal Timeline Disclaimer
 
-The og-preview link goes to a Supabase function URL that returns Open Graph meta tags for messaging-app previews — but in a browser it just looks broken/opaque. You don't want it. Removing it everywhere.
+Change "Applying Fixes & Delivery" from "2 Business Days" to "may take up to 7 Business Days" in the default proposal timeline template.
 
-### What gets removed
+### What to change
 
-**UI buttons & menu items**
-- `src/pages/AdminProposals.tsx` — "Share Link (with preview)" dropdown item on each proposal card.
-- `src/components/admin/CreativeSessionCard.tsx` — "Share Link" dropdown item on each creative session card.
-- `src/components/admin/ClientLinkManager.tsx` — "Share Link" dropdown item on each client link.
-- `src/components/admin/LinkPreviewCard.tsx` — the "Social Link" button (keep "Direct Link" + open-in-new-tab).
+Update the timeline insertion in `src/pages/AdminProposals.tsx` (lines 128-134) that creates the default phases when a new proposal is created.
 
-The remaining "Direct Link" / "Copy Link" actions stay — they already use `getPublicOrigin()` so they produce clean `https://soleiacreative.app/...` URLs.
+**Current code (line 133):**
+```typescript
+{ proposal_id: proposal.id, phase: 'Applying Fixes & Delivery', duration: '2 Business Days', details: 'Time allocated to implement the approved revisions. Final results sent.', sort_order: 3 }
+```
 
-**Helpers**
-- `src/lib/ogShare.ts` — drop `getOgShareUrl`, `copyOgShareLink`, and the `OgLinkType` export. Keep `getPublicOrigin` and `copyDirectLink` (still used widely).
+**New code:**
+```typescript
+{ proposal_id: proposal.id, phase: 'Applying Fixes & Delivery', duration: 'may take up to 7 Business Days', details: 'Time allocated to implement the approved revisions. Final results sent.', sort_order: 3 }
+```
 
-**Edge function**
-- Delete `supabase/functions/og-preview/index.ts` and remove its deployment via `supabase--delete_edge_functions`. No other code references it.
+### Files
+- `src/pages/AdminProposals.tsx` — line 133 only
 
-**Memory cleanup**
-- Remove the `[Dynamic Link Previews](mem://tech/dynamic-link-previews)` entry from `mem://index.md` and delete that memory file so future sessions don't try to re-add the feature.
-
-### Verify after change
-- Open the proposals dashboard → the row dropdown should have only "Copy Link", "Email Template", "Open in New Tab", "Edit", "Delete" (no "Share Link").
-- Same for Creative Sessions and Client Links cards.
-- All remaining copy buttons still produce `https://soleiacreative.app/...` URLs.
-- No TypeScript errors from missing imports.
-
-### Out of scope
-Email templates and the rest of the sharing flow are untouched — they already use direct canonical URLs, not the og-preview function.
+### QA
+- Create a new proposal → verify "Applying Fixes & Delivery" shows "may take up to 7 Business Days" instead of "2 Business Days".
 
