@@ -3,6 +3,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GripVertical, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface Clip {
   id: string;
@@ -110,19 +111,25 @@ export function SortableClipCard({
         >
           <Pencil className="h-4 w-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onDelete(clip.id)}
-          disabled={deletingId === clip.id}
-          className="h-10 w-10 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 touch-manipulation"
-        >
-          {deletingId === clip.id ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Trash2 className="h-4 w-4" />
-          )}
-        </Button>
+        <DeleteConfirmDialog
+          trigger={
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={deletingId === clip.id}
+              className="h-10 w-10 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10 touch-manipulation"
+            >
+              {deletingId === clip.id ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
+          }
+          title="Delete clip?"
+          description={`This will permanently remove "${clip.title}" from the gallery. This action cannot be undone.`}
+          onConfirm={() => onDelete(clip.id)}
+        />
       </div>
     </div>
   );

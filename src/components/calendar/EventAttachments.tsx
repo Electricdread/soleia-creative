@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Upload, FileText, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface Attachment {
   id: string;
@@ -92,9 +93,16 @@ export function EventAttachments({ eventUid }: { eventUid: string }) {
             <a href={att.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
               <ExternalLink className="w-4 h-4" />
             </a>
-            <button onClick={() => deleteAttachment(att)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            <DeleteConfirmDialog
+              trigger={
+                <button className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              }
+              title="Delete attachment?"
+              description={`This will permanently remove "${att.file_name}". This action cannot be undone.`}
+              onConfirm={() => deleteAttachment(att)}
+            />
           </div>
         ))}
       </div>

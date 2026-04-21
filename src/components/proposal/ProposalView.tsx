@@ -10,6 +10,7 @@ import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus } fro
 import { generateProposalPdf } from '@/lib/proposalPdfGenerator';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import ProposalGallery from './ProposalGallery';
 import ProposalTimeline from './ProposalTimeline';
@@ -504,9 +505,16 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                     onChange={e => { const n = [...editItems]; n[idx] = { ...n[idx], price: e.target.value }; setEditItems(n); }}
                     className="text-sm w-28"
                   />
-                  <Button variant="ghost" size="icon" onClick={() => setEditItems(editItems.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600 h-8 w-8">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <DeleteConfirmDialog
+                    trigger={
+                      <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-600 h-8 w-8">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    }
+                    title="Delete line item?"
+                    description={`This will permanently remove "${item.title || 'this item'}". This action cannot be undone.`}
+                    onConfirm={() => setEditItems(editItems.filter((_, i) => i !== idx))}
+                  />
                 </div>
               </div>
             ))}

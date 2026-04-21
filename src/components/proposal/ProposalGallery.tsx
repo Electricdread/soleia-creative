@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Upload, Trash2, Loader2, ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface ProposalGalleryProps {
   gallery: any[];
@@ -114,15 +115,21 @@ export default function ProposalGallery({ gallery, isAdmin, proposalId, onRefres
               />
               {isAdmin && (
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => handleDelete(img.id)}
-                    disabled={deleting === img.id}
-                  >
-                    {deleting === img.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-                  </Button>
+                  <DeleteConfirmDialog
+                    trigger={
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-7 w-7"
+                        disabled={deleting === img.id}
+                      >
+                        {deleting === img.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                      </Button>
+                    }
+                    title="Delete gallery image?"
+                    description={`This will permanently remove "${img.caption || 'this image'}" from the proposal gallery. This action cannot be undone.`}
+                    onConfirm={() => handleDelete(img.id)}
+                  />
                 </div>
               )}
               {editingCaption === img.id ? (

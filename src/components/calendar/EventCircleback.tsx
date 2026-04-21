@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Plus, Trash2, ExternalLink, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 interface CirclebackEntry {
   id: string;
@@ -89,9 +90,16 @@ export function EventCircleback({ eventUid }: { eventUid: string }) {
                   <p className="text-sm text-foreground whitespace-pre-line line-clamp-6">{e.circleback_summary}</p>
                 )}
               </div>
-              <button onClick={() => remove(e.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity shrink-0">
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+              <DeleteConfirmDialog
+                trigger={
+                  <button className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity shrink-0">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                }
+                title="Delete Circleback notes?"
+                description="This will permanently remove these meeting notes. This action cannot be undone."
+                onConfirm={() => remove(e.id)}
+              />
             </div>
             <span className="text-[10px] text-muted-foreground/60 mt-1 block">{format(new Date(e.created_at), 'MMM d, h:mm a')}</span>
           </div>
