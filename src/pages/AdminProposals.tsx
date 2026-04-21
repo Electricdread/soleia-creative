@@ -130,7 +130,7 @@ export default function AdminProposals() {
         { proposal_id: proposal.id, phase: 'Creative Direction', duration: '2 Days', details: 'After receiving the assets, mockups are sent', sort_order: 0 },
         { proposal_id: proposal.id, phase: 'Content Creation', duration: '2 Weeks', details: 'Begins only after the creative direction has been mutually agreed upon and the proposal has been signed.', sort_order: 1 },
         { proposal_id: proposal.id, phase: 'Review and Revisions', duration: '1 x Revision', details: 'One round of fixes within the agreed-upon visual direction.', sort_order: 2 },
-        { proposal_id: proposal.id, phase: 'Applying Fixes & Delivery', duration: '2 Business Days', details: 'Time allocated to implement the approved revisions. Final results sent.', sort_order: 3 },
+        { proposal_id: proposal.id, phase: 'Applying Fixes & Delivery', duration: 'may take up to 7 Business Days', details: 'Time allocated to implement the approved revisions. Final results sent.', sort_order: 3 },
       ]);
 
       toast({ title: 'Proposal created!' });
