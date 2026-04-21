@@ -480,19 +480,16 @@ export function ClientLinkManager() {
                       </Button>
                     )}
 
-                    {/* Consolidated Copy Link dropdown */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => copyLink(link.token)}
-                          className="gap-1.5"
-                        >
-                          <Link2 className="w-3.5 h-3.5" />
-                          Copy Link
-                        </Button>
-                      </DropdownMenuTrigger>
+                    {/* Copy Link button */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyLink(link.token)}
+                      className="gap-1.5"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      Copy Link
+                    </Button>
 
                     {/* Open button */}
                     <Button
