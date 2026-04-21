@@ -1,42 +1,52 @@
 
 
-## Fix: Proposal (and all client) share links use canonical `soleiacreative.app`
+## Site-wide delete confirmation
 
-### Root cause
-Every admin "copy link" / email-template builder uses `window.location.origin`. When the admin is working from the Lovable preview (`id-preview--…lovable.app`) or the staging `.lovable.app` URL, the copied link bakes in that origin. Clients then receive a non-canonical preview URL that may be access-restricted or look untrusted.
+### Problem
+The line item trash icon in the proposal editor sits right next to "Save"/"Add"/"From Library" buttons — one mistap deletes a line item with no confirmation. Several other destructive buttons across the app also delete instantly (or use the ugly native `window.confirm`). Need a consistent guard.
 
-The canonical production domain is already hardcoded as `https://soleiacreative.app` in the edge functions (`generate-session-email`, `og-preview`). The frontend share helpers need the same source of truth.
+### Approach
+Reuse the existing `DeleteConfirmDialog` component (already wraps `AlertDialog`) for every destructive action. It already works (used in `LineItemLibrary`, `AdminProposals` proposal-card delete, `ClientLinkManager`, `CreativeSessionCard`).
 
-### Fix
+Wrap each unconfirmed `Trash2` button with `<DeleteConfirmDialog trigger={...} title=... description=... onConfirm={...} />` so a 2-tap confirm modal always appears.
 
-**1. Create a single `getPublicOrigin()` helper** in `src/lib/ogShare.ts`:
-- Returns `https://soleiacreative.app` whenever the current `window.location.hostname` is *not* `soleiacreative.app` / `www.soleiacreative.app` (i.e., on Lovable previews, localhost, staging).
-- Returns `window.location.origin` when already on the canonical domain (so it works correctly if/when the domain changes or in case of self-hosting).
+### Buttons to wrap
 
-**2. Replace all client-side share/copy URLs to use this helper.** All of these currently leak the wrong origin:
+**Priority (the user's complaint):**
+1. `src/pages/AdminProposals.tsx` line ~382 — **line item trash in proposal editor** (sits next to qty/price inputs and save buttons)
+2. `src/components/proposal/ProposalView.tsx` line 507 — line item trash in inline editor
+3. `src/components/proposal/ProposalGallery.tsx` line ~120 — gallery image delete
 
-| File | Line | What it builds |
-|---|---|---|
-| `src/lib/ogShare.ts` | `copyDirectLink` | any direct link |
-| `src/pages/AdminProposals.tsx` | 164 | `/proposal/{token}` copy |
-| `src/components/admin/ProposalEmailCard.tsx` | 189 | proposal email body link |
-| `src/components/admin/CreativeSessionEmailCard.tsx` | 179 | session email body link |
-| `src/components/admin/CreativeSessionManager.tsx` | 61 | `/creative/{token}` copy |
-| `src/components/admin/ClientLinkManager.tsx` | 185 | `/session/{token}` copy |
-| `src/components/admin/ContentPrevizManager.tsx` | 163 | `/preview/{token}` copy |
-| `src/components/admin/CreativeSessionCard.tsx` | 504, 511 | `/delivery/{token}` copy |
-| `src/components/admin/LinkPreviewCard.tsx` | 19 | direct preview link |
+**Site-wide cleanup:**
+4. `src/components/admin/SessionContentManager.tsx` line 226 — replace native `confirm()` with dialog
+5. `src/components/admin/SortableClipCard.tsx` — clip delete (admin gallery)
+6. `src/components/admin/ContentPrevizManager.tsx` — preview link delete
+7. `src/components/admin/BatchVideoUploader.tsx` — queued upload remove (skip — pre-upload queue removal isn't destructive of saved data)
+8. `src/components/creative/MoodBoardItem.tsx` — mood board item delete + comment delete
+9. `src/components/calendar/EventAttachments.tsx` — file delete
+10. `src/components/calendar/EventTasks.tsx`, `EventNotes.tsx`, `EventMeetingLinks.tsx`, `EventLinkedItems.tsx`, `EventCircleback.tsx` — wrap each Trash button
+11. `src/components/creative-guide/ZoneSelectionSummary.tsx` — zone removal (skip if it's a deselect, not a destroy — verify during impl)
+12. `src/components/PlacementEditDialog.tsx` — placement clear (verify if destructive vs. reset)
 
-Out of scope (correctly using `window.location.origin`):
-- `useAuth.tsx` / `AdminSetup.tsx` `emailRedirectTo` — must be the runtime origin so Supabase redirects back to wherever the admin is signing up.
-- `DeliveryGuide.tsx` line 102 — internal PDF generation only.
+For item 11/12: only wrap if the action hits `supabase.from(...).delete()`. Pure UI deselection (toggle) does not need confirmation.
 
-**3. Also strip the `?edit=true` admin URL when admins use the in-page "Copy public link" button** — already handled by current code (only `copyLink`/`copyOgShareLink` are used for sharing), no change needed.
+### Copy convention
+- Title: `Delete <thing>?`  (e.g. "Delete line item?", "Delete attachment?", "Delete task?")
+- Description: `This will permanently remove "<name or summary>". This action cannot be undone.`
+- Confirm button stays the destructive red from `DeleteConfirmDialog`.
+
+### UX detail (mobile)
+`DeleteConfirmDialog` already inherits the shared `AlertDialog` — buttons hit ≥44px on mobile. Confirmed compliant with project's mobile-ux 44px rule. No new component needed.
+
+### Out of scope
+- Deselecting/unchecking selections (mood board reactions, zone toggles, checkbox state changes) — these are reversible UI state, not deletes.
+- Pre-save edit-buffer removals where nothing has been persisted yet (e.g. removing a "new-…" line item before clicking Save). For consistency and the user's stated mistap concern, **we will still confirm these** — the trash icon visually reads the same as a destructive delete, and the user explicitly asked for site-wide confirmation.
 
 ### Files
-- `src/lib/ogShare.ts` — add `getPublicOrigin()`, update `copyDirectLink` + `getOgShareUrl` is already correct (uses Supabase URL).
-- 8 admin component files listed above — replace `${window.location.origin}` with `${getPublicOrigin()}` for client-share links.
+~13 component files touched. No DB/schema changes. No new dependencies.
 
 ### QA
-After the change: open the admin from the Lovable preview, copy a proposal link → confirm the clipboard contains `https://soleiacreative.app/proposal/<token>` (not `id-preview--…lovable.app`). Repeat for the session, creative, preview, and delivery copy buttons.
+- Open a proposal in admin, click Edit Items, tap the trash on a line item → confirm dialog appears, Cancel keeps the item, Delete removes it.
+- Repeat for: proposal gallery image, calendar task/note/attachment, mood board item, admin clip card, content previz link, session scene.
+- Verify mobile (375px) — buttons have ≥44px tap targets and modal is readable.
 
