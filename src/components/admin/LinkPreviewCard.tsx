@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Copy, ExternalLink, Share2, Link2, QrCode } from 'lucide-react';
+import { ExternalLink, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getPublicOrigin } from '@/lib/ogShare';
 
@@ -18,12 +18,6 @@ export function LinkPreviewCard({ token, type, projectName, clientName, coverIma
   const [showPreview, setShowPreview] = useState(false);
 
   const directUrl = `${getPublicOrigin()}/${type === 'creative' ? 'creative' : 'session'}/${token}`;
-  const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-preview?token=${token}&type=${type}`;
-
-  const copyOgLink = () => {
-    navigator.clipboard.writeText(ogUrl);
-    toast.success('Social-friendly link copied! This link shows rich previews on social media & messaging apps.');
-  };
 
   const copyDirectLink = () => {
     navigator.clipboard.writeText(directUrl);
@@ -60,34 +54,15 @@ export function LinkPreviewCard({ token, type, projectName, clientName, coverIma
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={copyOgLink}
-                  className="h-7 text-xs gap-1 px-2 flex-1"
-                >
-                  <Share2 className="w-3 h-3" />
-                  Social Link
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Copy link with rich preview for social media & messaging</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="outline"
                   onClick={copyDirectLink}
                   className="h-7 text-xs gap-1 px-2 flex-1"
                 >
                   <Link2 className="w-3 h-3" />
-                  Direct Link
+                  Copy Link
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p className="text-xs">Copy direct link (no preview)</p>
+                <p className="text-xs">Copy direct link</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

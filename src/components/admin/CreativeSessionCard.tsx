@@ -7,11 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck, Share2, Link2, Mail, ChevronDown } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck, Link2, Mail } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { SessionContentManager } from './SessionContentManager';
-import { copyOgShareLink, getPublicOrigin } from '@/lib/ogShare';
+import { getPublicOrigin } from '@/lib/ogShare';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -348,30 +347,9 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             <Button size="sm" variant="outline" onClick={openEditDialog} className="h-7 text-xs gap-1 px-2">
               <Pencil className="w-3 h-3" /> Edit
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline" className="h-7 text-xs gap-1 px-2">
-                  <Link2 className="w-3 h-3" /> Copy Link <ChevronDown className="w-3 h-3 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => copyOgShareLink(session.token, 'creative')}>
-                  <Share2 className="w-3.5 h-3.5 mr-2" />
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium">Social share link</span>
-                    <span className="text-[10px] text-muted-foreground">Rich preview when shared</span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onCopyLink(session.token)}>
-                  <Link2 className="w-3.5 h-3.5 mr-2" />
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium">Direct link</span>
-                    <span className="text-[10px] text-muted-foreground">Plain URL to the session</span>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button size="sm" variant="outline" onClick={() => onCopyLink(session.token)} className="h-7 text-xs gap-1 px-2">
+              <Link2 className="w-3 h-3" /> Copy Link
+            </Button>
             <Button size="sm" variant="outline" onClick={() => onOpen(session.token)} className="h-7 w-7 p-0">
               <ExternalLink className="w-3 h-3" />
             </Button>
