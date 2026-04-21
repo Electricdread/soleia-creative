@@ -1,52 +1,34 @@
 
 
-## Site-wide delete confirmation
+## Remove the "Social Link" / OG share feature entirely
 
-### Problem
-The line item trash icon in the proposal editor sits right next to "Save"/"Add"/"From Library" buttons — one mistap deletes a line item with no confirmation. Several other destructive buttons across the app also delete instantly (or use the ugly native `window.confirm`). Need a consistent guard.
+The og-preview link goes to a Supabase function URL that returns Open Graph meta tags for messaging-app previews — but in a browser it just looks broken/opaque. You don't want it. Removing it everywhere.
 
-### Approach
-Reuse the existing `DeleteConfirmDialog` component (already wraps `AlertDialog`) for every destructive action. It already works (used in `LineItemLibrary`, `AdminProposals` proposal-card delete, `ClientLinkManager`, `CreativeSessionCard`).
+### What gets removed
 
-Wrap each unconfirmed `Trash2` button with `<DeleteConfirmDialog trigger={...} title=... description=... onConfirm={...} />` so a 2-tap confirm modal always appears.
+**UI buttons & menu items**
+- `src/pages/AdminProposals.tsx` — "Share Link (with preview)" dropdown item on each proposal card.
+- `src/components/admin/CreativeSessionCard.tsx` — "Share Link" dropdown item on each creative session card.
+- `src/components/admin/ClientLinkManager.tsx` — "Share Link" dropdown item on each client link.
+- `src/components/admin/LinkPreviewCard.tsx` — the "Social Link" button (keep "Direct Link" + open-in-new-tab).
 
-### Buttons to wrap
+The remaining "Direct Link" / "Copy Link" actions stay — they already use `getPublicOrigin()` so they produce clean `https://soleiacreative.app/...` URLs.
 
-**Priority (the user's complaint):**
-1. `src/pages/AdminProposals.tsx` line ~382 — **line item trash in proposal editor** (sits next to qty/price inputs and save buttons)
-2. `src/components/proposal/ProposalView.tsx` line 507 — line item trash in inline editor
-3. `src/components/proposal/ProposalGallery.tsx` line ~120 — gallery image delete
+**Helpers**
+- `src/lib/ogShare.ts` — drop `getOgShareUrl`, `copyOgShareLink`, and the `OgLinkType` export. Keep `getPublicOrigin` and `copyDirectLink` (still used widely).
 
-**Site-wide cleanup:**
-4. `src/components/admin/SessionContentManager.tsx` line 226 — replace native `confirm()` with dialog
-5. `src/components/admin/SortableClipCard.tsx` — clip delete (admin gallery)
-6. `src/components/admin/ContentPrevizManager.tsx` — preview link delete
-7. `src/components/admin/BatchVideoUploader.tsx` — queued upload remove (skip — pre-upload queue removal isn't destructive of saved data)
-8. `src/components/creative/MoodBoardItem.tsx` — mood board item delete + comment delete
-9. `src/components/calendar/EventAttachments.tsx` — file delete
-10. `src/components/calendar/EventTasks.tsx`, `EventNotes.tsx`, `EventMeetingLinks.tsx`, `EventLinkedItems.tsx`, `EventCircleback.tsx` — wrap each Trash button
-11. `src/components/creative-guide/ZoneSelectionSummary.tsx` — zone removal (skip if it's a deselect, not a destroy — verify during impl)
-12. `src/components/PlacementEditDialog.tsx` — placement clear (verify if destructive vs. reset)
+**Edge function**
+- Delete `supabase/functions/og-preview/index.ts` and remove its deployment via `supabase--delete_edge_functions`. No other code references it.
 
-For item 11/12: only wrap if the action hits `supabase.from(...).delete()`. Pure UI deselection (toggle) does not need confirmation.
+**Memory cleanup**
+- Remove the `[Dynamic Link Previews](mem://tech/dynamic-link-previews)` entry from `mem://index.md` and delete that memory file so future sessions don't try to re-add the feature.
 
-### Copy convention
-- Title: `Delete <thing>?`  (e.g. "Delete line item?", "Delete attachment?", "Delete task?")
-- Description: `This will permanently remove "<name or summary>". This action cannot be undone.`
-- Confirm button stays the destructive red from `DeleteConfirmDialog`.
-
-### UX detail (mobile)
-`DeleteConfirmDialog` already inherits the shared `AlertDialog` — buttons hit ≥44px on mobile. Confirmed compliant with project's mobile-ux 44px rule. No new component needed.
+### Verify after change
+- Open the proposals dashboard → the row dropdown should have only "Copy Link", "Email Template", "Open in New Tab", "Edit", "Delete" (no "Share Link").
+- Same for Creative Sessions and Client Links cards.
+- All remaining copy buttons still produce `https://soleiacreative.app/...` URLs.
+- No TypeScript errors from missing imports.
 
 ### Out of scope
-- Deselecting/unchecking selections (mood board reactions, zone toggles, checkbox state changes) — these are reversible UI state, not deletes.
-- Pre-save edit-buffer removals where nothing has been persisted yet (e.g. removing a "new-…" line item before clicking Save). For consistency and the user's stated mistap concern, **we will still confirm these** — the trash icon visually reads the same as a destructive delete, and the user explicitly asked for site-wide confirmation.
-
-### Files
-~13 component files touched. No DB/schema changes. No new dependencies.
-
-### QA
-- Open a proposal in admin, click Edit Items, tap the trash on a line item → confirm dialog appears, Cancel keeps the item, Delete removes it.
-- Repeat for: proposal gallery image, calendar task/note/attachment, mood board item, admin clip card, content previz link, session scene.
-- Verify mobile (375px) — buttons have ≥44px tap targets and modal is readable.
+Email templates and the rest of the sharing flow are untouched — they already use direct canonical URLs, not the og-preview function.
 
