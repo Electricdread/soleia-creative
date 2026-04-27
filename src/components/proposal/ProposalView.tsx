@@ -411,7 +411,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               )}
               {eventDate && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {isProposalClosed(proposal) ? (
+                  {(signed || isProposalClosed(proposal)) ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                       <Check className="w-3.5 h-3.5" />
                       Signed · Ready for invoice
@@ -444,7 +444,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               This proposal is valid for <strong>{proposal.validity_days || 7} days</strong>, please respond until{' '}
               <strong>{format(expiryDate, 'MMMM d, yyyy')}</strong>.
             </p>
-            {!isProposalClosed(proposal) && (
+            {!(signed || isProposalClosed(proposal)) && (
               <CountdownBadge
                 eventDate={format(expiryDate, 'yyyy-MM-dd')}
                 prefix="Quote expires:"
