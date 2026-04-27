@@ -18,9 +18,12 @@ export type Database = {
         Row: {
           category: string
           created_at: string
+          drive_file_id: string | null
+          drive_web_view_link: string | null
           duration: string | null
           external_id: string
           id: string
+          original_storage: string
           preview_url: string | null
           resolution: string | null
           sort_order: number | null
@@ -33,9 +36,12 @@ export type Database = {
         Insert: {
           category: string
           created_at?: string
+          drive_file_id?: string | null
+          drive_web_view_link?: string | null
           duration?: string | null
           external_id: string
           id?: string
+          original_storage?: string
           preview_url?: string | null
           resolution?: string | null
           sort_order?: number | null
@@ -48,9 +54,12 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
+          drive_file_id?: string | null
+          drive_web_view_link?: string | null
           duration?: string | null
           external_id?: string
           id?: string
+          original_storage?: string
           preview_url?: string | null
           resolution?: string | null
           sort_order?: number | null

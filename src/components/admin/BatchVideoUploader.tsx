@@ -52,22 +52,24 @@ export function BatchVideoUploader({ onClipAdded }: BatchVideoUploaderProps) {
         // Update status to uploading
         uploadQueue.updateItem(item.id, { status: 'uploading', progress: 60 });
 
-        // Upload original video
         const timestamp = Date.now();
         const sanitizedName = item.file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const originalPath = `${timestamp}-${sanitizedName}`;
 
-        const { error: originalError } = await supabase.storage
-          .from('clips')
-          .upload(originalPath, item.file, {
-            cacheControl: '3600',
-            upsert: false,
-          });
+        // Upload ORIGINAL to Google Drive (cold storage — frees Supabase quota)
+        const driveForm = new FormData();
+        driveForm.append('file', item.file, sanitizedName);
+        driveForm.append('filename', `${timestamp}-${sanitizedName}`);
+        driveForm.append('mimeType', item.file.type || 'video/mp4');
 
-        if (originalError) throw originalError;
+        const { data: driveData, error: driveError } = await supabase.functions.invoke(
+          'upload-to-drive',
+          { body: driveForm },
+        );
+        if (driveError) throw driveError;
+        if (!driveData?.fileId) throw new Error('Drive upload returned no fileId');
         uploadQueue.updateItem(item.id, { progress: 75 });
 
-        // Upload preview video
+        // Upload preview video to Supabase (UI streams from here)
         const previewPath = `${timestamp}-preview.webm`;
         const { error: previewError } = await supabase.storage
           .from('clip-previews')
@@ -91,11 +93,6 @@ export function BatchVideoUploader({ onClipAdded }: BatchVideoUploaderProps) {
         if (thumbError) throw thumbError;
         uploadQueue.updateItem(item.id, { progress: 92 });
 
-        // Get public URLs
-        const { data: { publicUrl: videoUrl } } = supabase.storage
-          .from('clips')
-          .getPublicUrl(originalPath);
-
         const { data: { publicUrl: previewVideoUrl } } = supabase.storage
           .from('clip-previews')
           .getPublicUrl(previewPath);
@@ -104,18 +101,21 @@ export function BatchVideoUploader({ onClipAdded }: BatchVideoUploaderProps) {
           .from('clip-previews')
           .getPublicUrl(thumbPath);
 
-        // Save to database
+        // Save to database — original lives on Drive, preview on Supabase
         const { error: dbError } = await supabase.from('cached_clips').insert({
           title: item.title || 'Untitled Clip',
-          video_url: videoUrl,
+          video_url: null,
           preview_url: previewVideoUrl,
           thumbnail: thumbnailPublicUrl,
           resolution: compressed.resolution,
           duration: compressed.duration,
           category: item.category,
-          source_url: videoUrl,
+          source_url: driveData.webViewLink ?? null,
           external_id: `upload-${timestamp}`,
-        });
+          drive_file_id: driveData.fileId,
+          drive_web_view_link: driveData.webViewLink ?? null,
+          original_storage: 'drive',
+        } as any);
 
         if (dbError) throw dbError;
 
