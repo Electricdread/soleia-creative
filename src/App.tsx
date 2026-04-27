@@ -21,6 +21,7 @@ import AdminLooks from "./pages/AdminLooks";
 import AdminUsers from "./pages/AdminUsers";
 import AdminProposals from "./pages/AdminProposals";
 import AdminCalendar from "./pages/AdminCalendar";
+import AdminEmailPreviews from "./pages/AdminEmailPreviews";
 import ClientProposal from "./pages/ClientProposal";
 import OfficePortal from "./pages/OfficePortal";
 import Tutorial from "./pages/Tutorial";
