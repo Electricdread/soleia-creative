@@ -57,6 +57,74 @@ export function SortableClipCard({
     zIndex: isDragging ? 1000 : undefined,
   };
 
+  const { toast } = useToast();
+  const [downloading, setDownloading] = useState(false);
+  const isOnDrive = clip.original_storage === 'drive' && !!clip.drive_file_id;
+  const canDownload = isOnDrive || !!clip.video_url;
+
+  const triggerBlobDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const filenameFromDisposition = (header: string | null, fallback: string) => {
+    if (!header) return fallback;
+    const m = /filename="?([^";]+)"?/i.exec(header);
+    return m?.[1] ?? fallback;
+  };
+
+  const handleDownloadOriginal = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      if (isOnDrive) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+        const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(
+          `${supabaseUrl}/functions/v1/download-from-drive?fileId=${encodeURIComponent(clip.drive_file_id!)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session?.access_token ?? anon}`,
+              apikey: anon,
+            },
+          },
+        );
+        if (!res.ok) {
+          const txt = await res.text();
+          let msg = txt;
+          try { msg = JSON.parse(txt).error ?? txt; } catch { /* noop */ }
+          throw new Error(msg.slice(0, 300));
+        }
+        const blob = await res.blob();
+        const name = filenameFromDisposition(
+          res.headers.get('content-disposition'),
+          `${clip.title || clip.id}.mp4`,
+        );
+        triggerBlobDownload(blob, name);
+        toast({ title: 'Downloaded from Drive', description: name });
+      } else if (clip.video_url) {
+        const res = await fetch(clip.video_url);
+        if (!res.ok) throw new Error(`Fetch failed [${res.status}]`);
+        const blob = await res.blob();
+        const fallback = clip.video_url.split('/').pop() || `${clip.title}.mp4`;
+        triggerBlobDownload(blob, fallback);
+        toast({ title: 'Downloaded original', description: fallback });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast({ title: 'Download failed', description: msg, variant: 'destructive' });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
