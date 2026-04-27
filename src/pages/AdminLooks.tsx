@@ -110,6 +110,13 @@ export default function AdminLooks() {
                     <List className="h-4 w-4" />
                     <span>Manage Clips</span>
                   </TabsTrigger>
+                  <TabsTrigger 
+                    value="storage" 
+                    className="gap-2 px-4 py-2.5 data-[state=active]:bg-white/10 data-[state=active]:text-white text-zinc-400 rounded-lg whitespace-nowrap"
+                  >
+                    <HardDrive className="h-4 w-4" />
+                    <span>Storage</span>
+                  </TabsTrigger>
                 </TabsList>
                 <ScrollBar orientation="horizontal" className="h-1.5" />
               </ScrollArea>
