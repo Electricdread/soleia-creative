@@ -172,11 +172,36 @@ export function SortableClipCard({
           {clip.duration && (
             <span className="text-[10px] text-muted-foreground">• {clip.duration}</span>
           )}
+          {isOnDrive && (
+            <Badge
+              variant="outline"
+              className="text-[9px] px-1.5 py-0 border-emerald-500/40 text-emerald-400 gap-1"
+            >
+              <HardDrive className="h-2.5 w-2.5" />
+              Drive
+            </Badge>
+          )}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex-shrink-0 flex gap-1">
+        {canDownload && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDownloadOriginal}
+            disabled={downloading}
+            title={isOnDrive ? 'Download original from Drive' : 'Download original'}
+            className="h-10 w-10 rounded-lg touch-manipulation"
+          >
+            {downloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"
