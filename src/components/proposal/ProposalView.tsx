@@ -16,6 +16,7 @@ import ProposalGallery from './ProposalGallery';
 import ProposalTimeline from './ProposalTimeline';
 import ProposalTerms from './ProposalTerms';
 import ProposalApprovedClips from './ProposalApprovedClips';
+import { CountdownBadge } from '@/components/CountdownBadge';
 
 interface ProposalViewProps {
   proposal: any;
@@ -413,6 +414,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <div>
                   <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Event Date</span>
                   <span className="text-[#2c3e50] font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
+                  <div className="mt-1 flex justify-end">
+                    <CountdownBadge eventDate={proposal.event_date} size="md" />
+                  </div>
                 </div>
               )}
               <div className="mt-2">
@@ -432,6 +436,13 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           <p className="text-[#7f8c8d] text-sm mt-1">
             Confirmation within this period allows us to reserve production time.
           </p>
+          <div className="mt-3">
+            <CountdownBadge
+              eventDate={format(expiryDate, 'yyyy-MM-dd')}
+              prefix="Quote expires:"
+              size="sm"
+            />
+          </div>
         </div>
 
         {/* Line Items */}
