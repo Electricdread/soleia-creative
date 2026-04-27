@@ -155,35 +155,32 @@ serve(async (req) => {
 
     const subject = `Soleia · ${overdue.length} overdue · ${dueWeek.length} this week`;
 
-    const sendTo = async (to: string) => fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Soleia Deadlines <onboarding@resend.dev>',
-        to: [to],
-        subject,
-        html,
-      }),
-    });
-
-    let res = await sendTo(RECIPIENT);
-    if (!res.ok) {
-      // Resend test mode only accepts the verified account email — fall back
-      const errBody = await res.text();
-      console.warn(`Primary recipient ${RECIPIENT} failed: ${errBody}. Falling back to ${FALLBACK_RECIPIENT}`);
-      res = await sendTo(FALLBACK_RECIPIENT);
+    // Resend free/test mode only delivers to the account owner address.
+    // Send to both the desired and the verified fallback so at least one lands.
+    const recipients = Array.from(new Set([RECIPIENT, FALLBACK_RECIPIENT]));
+    let lastErr = '';
+    let delivered = '';
+    for (const to of recipients) {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Soleia Deadlines <onboarding@resend.dev>',
+          to: [to],
+          subject,
+          html,
+        }),
+      });
+      if (res.ok) { delivered = to; break; }
+      lastErr = await res.text();
+      console.warn(`Send to ${to} failed: ${lastErr}`);
     }
+    if (!delivered) throw new Error(`Resend error: ${lastErr}`);
 
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Resend error: ${err}`);
-    }
-
-    const result = await res.json();
-    return new Response(JSON.stringify({ success: true, counts: { overdue: overdue.length, dueWeek: dueWeek.length, upcoming: upcoming.length }, resend: result }), {
+    return new Response(JSON.stringify({ success: true, delivered, counts: { overdue: overdue.length, dueWeek: dueWeek.length, upcoming: upcoming.length } }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e: any) {
