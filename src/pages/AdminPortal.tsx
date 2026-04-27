@@ -9,8 +9,10 @@ import { useTheme } from 'next-themes';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 
-import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
 import { UpcomingDeadlines } from '@/components/admin/UpcomingDeadlines';
+import { DashboardStatusGrid } from '@/components/admin/DashboardStatusGrid';
+import { PendingActionsPanel } from '@/components/admin/PendingActionsPanel';
+import { RecentActivityFeed } from '@/components/admin/RecentActivityFeed';
 import { useDeadlineCount } from '@/hooks/useDeadlineCount';
 import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval, isSameDay, isToday } from 'date-fns';
 import { getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
@@ -374,8 +376,16 @@ export default function AdminPortal() {
       </aside>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         <UpcomingDeadlines />
+
+        <DashboardStatusGrid />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          <PendingActionsPanel />
+          <RecentActivityFeed />
+        </div>
+
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
