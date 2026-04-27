@@ -4,16 +4,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { AlertCircle, FileText, Video, Upload, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { InlineDeadlineEditor } from '@/components/admin/InlineDeadlineEditor';
 
 type ActionKind = 'unsigned-proposal' | 'no-selections' | 'no-uploads';
 
 interface PendingAction {
   kind: ActionKind;
   id: string;
+  rawId: string;
   title: string;
   subtitle: string;
   ageDays: number;
   href: string;
+  eventDate: string | null;
+  module: 'proposal' | 'link' | null;
 }
 
 const KIND_META: Record<ActionKind, { icon: typeof FileText; label: string; tone: string }> = {
@@ -32,10 +36,10 @@ export function PendingActionsPanel() {
       const today = new Date();
       const [proposals, links, selections, uploads] = await Promise.all([
         supabase.from('proposals')
-          .select('id, token, event_name, client_name, status, signed_at, is_active, updated_at, created_at')
+          .select('id, token, event_name, client_name, event_date, status, signed_at, is_active, updated_at, created_at')
           .eq('is_active', true).eq('status', 'sent'),
         supabase.from('client_links')
-          .select('id, token, event_name, client_name, created_at, is_active')
+          .select('id, token, event_name, client_name, event_date, created_at, is_active')
           .eq('is_active', true),
         supabase.from('link_selections').select('link_id'),
         supabase.from('session_uploads').select('link_id'),
@@ -49,10 +53,13 @@ export function PendingActionsPanel() {
         all.push({
           kind: 'unsigned-proposal',
           id: p.id,
+          rawId: p.id,
           title: p.event_name,
           subtitle: p.client_name,
           ageDays: Math.max(0, differenceInCalendarDays(today, sentDate)),
           href: '/admin/proposals',
+          eventDate: p.event_date || null,
+          module: 'proposal',
         });
       });
 
@@ -66,20 +73,26 @@ export function PendingActionsPanel() {
           all.push({
             kind: 'no-selections',
             id: l.id,
+            rawId: l.id,
             title: l.event_name,
             subtitle: l.client_name,
             ageDays: age,
             href: '/admin/looks',
+            eventDate: l.event_date || null,
+            module: 'link',
           });
         }
         if (!linksWithUploads.has(l.id)) {
           all.push({
             kind: 'no-uploads',
             id: l.id + '-upload',
+            rawId: l.id,
             title: l.event_name,
             subtitle: l.client_name,
             ageDays: age,
             href: '/admin/looks',
+            eventDate: l.event_date || null,
+            module: 'link',
           });
         }
       });
@@ -134,18 +147,22 @@ export function PendingActionsPanel() {
               const meta = KIND_META[a.kind];
               const Icon = meta.icon;
               return (
-                <button
+                <div
                   key={`${a.kind}-${a.id}`}
-                  onClick={() => navigate(a.href)}
-                  className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+                  className="w-full px-4 py-2.5 flex items-center gap-2 hover:bg-muted/50 transition-colors"
                 >
-                  <Icon className={cn('w-4 h-4 flex-shrink-0', meta.tone)} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{a.title}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      {meta.label} · {a.subtitle}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => navigate(a.href)}
+                    className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                  >
+                    <Icon className={cn('w-4 h-4 flex-shrink-0', meta.tone)} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{a.title}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {meta.label} · {a.subtitle}
+                      </p>
+                    </div>
+                  </button>
                   <span className={cn(
                     'text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap',
                     a.ageDays >= 7
@@ -156,8 +173,23 @@ export function PendingActionsPanel() {
                   )}>
                     {a.ageDays === 0 ? 'today' : `${a.ageDays}d`}
                   </span>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 flex-shrink-0" />
-                </button>
+                  {a.module && (
+                    <InlineDeadlineEditor
+                      module={a.module}
+                      entityId={a.rawId}
+                      currentDate={a.eventDate}
+                      compact
+                      onSaved={() => load()}
+                    />
+                  )}
+                  <button
+                    onClick={() => navigate(a.href)}
+                    className="p-1 -mr-1 text-muted-foreground/40 hover:text-foreground"
+                    aria-label="Open"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               );
             })}
           </div>

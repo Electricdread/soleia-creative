@@ -1,43 +1,45 @@
-## Issue
+## Goal
+Let you edit / extend client deadlines directly from the **Upcoming Deadlines** panel on `/admin`, without navigating to each module.
 
-The Sandler Partners proposal is showing as "12 days overdue" on the admin dashboard even though it's already signed.
+## Where editing will live
+Inline on each row of the existing `UpcomingDeadlines` panel (top of the admin home). A small **calendar icon button** next to the countdown badge opens a date picker popover. Picking a new date saves immediately and the list re-sorts.
 
-DB confirms the row: `status: 'sent'`, but `signed_at: 2026-04-25 06:13:50` is populated — so it IS signed, the status column just wasn't bumped to `'signed'`. The deadline UI currently filters only by `is_active = true` and event_date, with no awareness of completion state.
+This works for all three deadline sources:
+- **Proposals** → updates `proposals.event_date`
+- **Creative Sessions** → updates `creative_sessions.event_date`
+- **Content Previz / Looks links** → updates `client_links.event_date`
 
-## Root Cause
+## UX
+- Each row gets a `Pencil`/`CalendarDays` icon button (44px touch target on mobile).
+- Clicking opens a `Popover` containing the shadcn `Calendar` component with `pointer-events-auto`.
+- Quick-extend chips above the calendar: **+3d**, **+7d**, **+14d**, **+30d** for one-tap extensions of the current date.
+- On save: optimistic update, toast "Deadline updated", row re-sorts by new urgency.
+- The same inline editor appears on rows in `PendingActionsPanel` for proposals/links so you can extend deadlines right where you see them flagged.
 
-Three surfaces compute deadlines without checking whether work is actually done:
+## Technical changes
 
-1. **`src/components/admin/UpcomingDeadlines.tsx`** — pulls all active proposals/sessions/links with a past or near event_date.
-2. **`src/hooks/useDeadlineCount.tsx`** — same logic, drives the `(N)` browser tab title prefix.
-3. **`src/components/proposal/ProposalView.tsx`** — renders the red "Event: 12d overdue" badge on the proposal page itself, regardless of `signed_at` / `status`.
+### 1. New component: `src/components/admin/InlineDeadlineEditor.tsx`
+- Props: `module: 'proposal' | 'session' | 'link'`, `entityId: string`, `currentDate: string | null`, `onSaved: (newDate: string) => void`
+- Renders a `Popover` with `Calendar` + quick-extend buttons.
+- Maps `module` to the correct Supabase table for the `update` call.
+- Uses `sonner` toast for feedback.
 
-A proposal is effectively "done" when `signed_at IS NOT NULL` OR `status IN ('signed','accepted','closed','won','invoiced')`. Today neither check exists.
+### 2. Update `src/components/admin/UpcomingDeadlines.tsx`
+- Add `<InlineDeadlineEditor>` next to each `<CountdownBadge>`.
+- Stop the row's parent `<button>` propagation when the editor is clicked (wrap row in `<div>` instead of `<button>`, with a separate "open" affordance).
+- After save, update the local `items` state and re-sort.
 
-## Plan
+### 3. Update `src/components/admin/PendingActionsPanel.tsx`
+- For `unsigned-proposal` and link rows, add the same inline editor so you can push the deadline forward without leaving the dashboard.
 
-### 1. `UpcomingDeadlines.tsx`
-- Select `signed_at` and `status` from `proposals`; filter out rows where `signed_at` is set or status is one of `signed | accepted | closed | won | invoiced`.
-- For `creative_sessions`, exclude rows where `is_active = false` (already done) — no extra completion column exists, so active+future is the right scope.
-- For `client_links`, same: rely on `is_active`. (No "completed" flag exists; if the user wants one later we can add it.)
-- Keep current sort and 30-day horizon.
+### 4. No DB changes required
+RLS already allows authenticated admins to update all three tables (`proposals`, `creative_sessions`, `client_links`).
 
-### 2. `useDeadlineCount.tsx`
-- Mirror the same proposals filter so the browser tab `(N)` count drops Sandler Partners and any other signed proposals.
+## Files
+- `src/components/admin/InlineDeadlineEditor.tsx` (new)
+- `src/components/admin/UpcomingDeadlines.tsx` (edit)
+- `src/components/admin/PendingActionsPanel.tsx` (edit)
 
-### 3. `ProposalView.tsx`
-- Hide the red "Event: Xd overdue" header badge when `proposal.signed_at` is set or status is in the completed set. Replace it with a subtle green "Signed" pill (or just hide it) so the page no longer screams overdue on a closed deal.
-- Also hide the "Quote expires" badge in the validity banner when signed — quote validity is moot once countersigned.
-
-### 4. Shared helper
-- Add a small `isProposalClosed(p)` helper in `src/lib/utils.ts` (or a new `src/lib/proposalStatus.ts`) so all three call sites use the same definition. Closed = `!!signed_at || ['signed','accepted','closed','won','invoiced'].includes(status)`.
-
-### Files to modify
-- `src/lib/proposalStatus.ts` (new, ~10 lines)
-- `src/components/admin/UpcomingDeadlines.tsx`
-- `src/hooks/useDeadlineCount.tsx`
-- `src/components/proposal/ProposalView.tsx`
-
-### Out of scope (flag for later)
-- Bumping `status` to `'signed'` automatically when `signed_at` is written — currently the signing flow only sets `signed_at`, leaving `status='sent'`. Worth fixing in a follow-up so other UIs (status badges, filters) align.
-- Adding a "completed" flag to `creative_sessions` / `client_links` if you want to mark those as done independently of the event date.
+## Out of scope
+- Bulk-editing multiple deadlines at once (can add later if useful).
+- Editing the *content asset* deadline stored in `calendar_event_client_info.content_deadline` — that already has its own editor inside the calendar event detail panel. Let me know if you want that surfaced on the dashboard too.
