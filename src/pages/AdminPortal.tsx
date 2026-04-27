@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen, MapPin, ArrowRight, Menu, X, Sun, Moon } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen, MapPin, ArrowRight, Menu, X, Sun, Moon, Mail } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
