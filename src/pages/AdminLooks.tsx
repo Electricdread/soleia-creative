@@ -8,7 +8,8 @@ import { BatchVideoUploader } from '@/components/admin/BatchVideoUploader';
 import { AddClipForm } from '@/components/admin/AddClipForm';
 import { BulkImportForm } from '@/components/admin/BulkImportForm';
 import { ClipManager } from '@/components/admin/ClipManager';
-import { ArrowLeft, Link2, Video, Plus, Upload, List, Settings } from 'lucide-react';
+import { StoragePanel } from '@/components/admin/StoragePanel';
+import { ArrowLeft, Link2, Video, Plus, Upload, List, Settings, HardDrive } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 // This component is wrapped by ProtectedRoute with requireAdmin
