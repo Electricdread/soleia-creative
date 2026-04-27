@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { AlertCircle, FileText, Video, Upload, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { InlineDeadlineEditor } from '@/components/admin/InlineDeadlineEditor';
 
 type ActionKind = 'unsigned-proposal' | 'no-selections' | 'no-uploads';
 
