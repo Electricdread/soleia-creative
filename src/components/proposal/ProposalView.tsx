@@ -444,7 +444,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               This proposal is valid for <strong>{proposal.validity_days || 7} days</strong>, please respond until{' '}
               <strong>{format(expiryDate, 'MMMM d, yyyy')}</strong>.
             </p>
-            {!isProposalClosed(proposal) && (
+            {!(signed || isProposalClosed(proposal)) && (
               <CountdownBadge
                 eventDate={format(expiryDate, 'yyyy-MM-dd')}
                 prefix="Quote expires:"
