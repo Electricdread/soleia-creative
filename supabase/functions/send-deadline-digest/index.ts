@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const RECIPIENT = 'luisdreamslv@gmail.com';
+const FALLBACK_RECIPIENT = 'ninemilelion@gmail.com';
 const APP_ORIGIN = 'https://soleiacreative.app';
 const GOLD = '#c49a3c';
 
@@ -154,7 +155,7 @@ serve(async (req) => {
 
     const subject = `Soleia · ${overdue.length} overdue · ${dueWeek.length} this week`;
 
-    const res = await fetch('https://api.resend.com/emails', {
+    const sendTo = async (to: string) => fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
@@ -162,11 +163,19 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'Soleia Deadlines <onboarding@resend.dev>',
-        to: [RECIPIENT],
+        to: [to],
         subject,
         html,
       }),
     });
+
+    let res = await sendTo(RECIPIENT);
+    if (!res.ok) {
+      // Resend test mode only accepts the verified account email — fall back
+      const errBody = await res.text();
+      console.warn(`Primary recipient ${RECIPIENT} failed: ${errBody}. Falling back to ${FALLBACK_RECIPIENT}`);
+      res = await sendTo(FALLBACK_RECIPIENT);
+    }
 
     if (!res.ok) {
       const err = await res.text();
