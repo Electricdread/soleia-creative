@@ -147,18 +147,22 @@ export function PendingActionsPanel() {
               const meta = KIND_META[a.kind];
               const Icon = meta.icon;
               return (
-                <button
+                <div
                   key={`${a.kind}-${a.id}`}
-                  onClick={() => navigate(a.href)}
-                  className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+                  className="w-full px-4 py-2.5 flex items-center gap-2 hover:bg-muted/50 transition-colors"
                 >
-                  <Icon className={cn('w-4 h-4 flex-shrink-0', meta.tone)} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{a.title}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      {meta.label} · {a.subtitle}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => navigate(a.href)}
+                    className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                  >
+                    <Icon className={cn('w-4 h-4 flex-shrink-0', meta.tone)} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{a.title}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {meta.label} · {a.subtitle}
+                      </p>
+                    </div>
+                  </button>
                   <span className={cn(
                     'text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap',
                     a.ageDays >= 7
@@ -169,8 +173,23 @@ export function PendingActionsPanel() {
                   )}>
                     {a.ageDays === 0 ? 'today' : `${a.ageDays}d`}
                   </span>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 flex-shrink-0" />
-                </button>
+                  {a.module && (
+                    <InlineDeadlineEditor
+                      module={a.module}
+                      entityId={a.rawId}
+                      currentDate={a.eventDate}
+                      compact
+                      onSaved={() => load()}
+                    />
+                  )}
+                  <button
+                    onClick={() => navigate(a.href)}
+                    className="p-1 -mr-1 text-muted-foreground/40 hover:text-foreground"
+                    aria-label="Open"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               );
             })}
           </div>
