@@ -143,6 +143,10 @@ export default function AdminLooks() {
               <TabsContent value="manage" className="mt-0 focus-visible:outline-none">
                 <ClipManager key={refreshKey} onClipsUpdated={handleClipsUpdated} />
               </TabsContent>
+
+              <TabsContent value="storage" className="mt-0 focus-visible:outline-none">
+                <StoragePanel />
+              </TabsContent>
             </div>
           </Tabs>
         </div>
