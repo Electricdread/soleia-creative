@@ -41,6 +41,9 @@ interface Clip {
   source_url: string | null;
   thumbnail: string | null;
   sort_order?: number;
+  drive_file_id?: string | null;
+  drive_web_view_link?: string | null;
+  original_storage?: string | null;
 }
 
 export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
