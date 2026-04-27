@@ -1,61 +1,49 @@
-## Goal
-Add an admin-only page at `/admin/email-previews` where you can browse and preview each of the six auth email templates (signup, magic link, recovery, invite, email change, reauthentication) rendered with realistic sample data — directly inside the app, before triggering any test sends.
+## Issue
 
-## How it works
-The existing `auth-email-hook` Edge Function already has a `/preview` endpoint (see `supabase/functions/auth-email-hook/index.ts`) that:
-- Accepts `POST { type: "signup" | "magiclink" | "recovery" | "invite" | "email_change" | "reauthentication" }`
-- Renders the matching React Email template with built-in `SAMPLE_DATA`
-- Returns the fully rendered HTML
+The `CountdownBadge` shows on the **admin proposals list** (`/admin/proposals`), but **not on the live client-facing proposal page** (`/proposal/:token`) — which is what you see when you open an "active proposal." That's why the deadline countdown looks missing.
 
-We'll build the admin UI on top of that existing endpoint — no new Edge Function or template duplication needed.
+Verified data is fine — e.g. `04.14.26 Sandler Partners` has `event_date = 2026-04-14`, so it should display "13d overdue."
 
-## Changes
+## Fix
 
-### 1. New page — `src/pages/AdminEmailPreviews.tsx`
-- Protected admin route with the standard Soleia admin layout (back link to `/admin`, gold accent header, JetBrains Mono labels)
-- Left sidebar (or top tab bar on mobile): list of the 6 templates with friendly labels
-  - Signup confirmation
-  - Magic link
-  - Password recovery
-  - Invite
-  - Email change
-  - Reauthentication (OTP)
-- Main panel: 
-  - Subject line preview (pulled from the same `EMAIL_SUBJECTS` map used by the hook)
-  - Sample-data summary card showing the props being injected (recipient, URLs, token)
-  - Live `<iframe srcDoc={html}>` rendering of the email at ~600px width so layout matches real inboxes
-  - Desktop / Mobile width toggle (600px / 375px)
-  - "Open in new tab", "Copy HTML", and "Download .html" buttons
-- Loading + error states; auto-fetches when the selected template changes
+### 1. `src/components/proposal/ProposalView.tsx` — show countdown next to Event Date
 
-### 2. Route registration — `src/App.tsx`
-- Add `<Route path="/admin/email-previews" element={<ProtectedRoute requireAdmin><AdminEmailPreviews /></ProtectedRoute>} />`
+In the header's right column where Event Date is rendered (around line 412-417), add a `CountdownBadge` directly under the formatted date so the client sees urgency at a glance.
 
-### 3. Admin Portal entry point — `src/pages/AdminPortal.tsx`
-- Add a new gold-accent card "Auth Email Previews" linking to `/admin/email-previews` so it's discoverable from the dashboard
+```tsx
+import { CountdownBadge } from '@/components/CountdownBadge';
 
-### 4. Preview fetch helper (inline in the page, no new lib file)
-- Calls `${VITE_SUPABASE_URL}/functions/v1/auth-email-hook/preview` with `Authorization: Bearer <LOVABLE_API_KEY>`
-- **Auth note**: the `/preview` endpoint requires the project's `LOVABLE_API_KEY`. Since we cannot expose that key to the browser, we'll add a **thin admin-only Supabase Edge Function** `preview-auth-email` that:
-  - Verifies the caller is an authenticated admin (using `has_role(auth.uid(), 'admin')`)
-  - Server-side, calls the existing `auth-email-hook/preview` with the `LOVABLE_API_KEY` from Deno env
-  - Returns the rendered HTML to the browser
-- This keeps the secret on the server and reuses the existing template registry.
+{eventDate && (
+  <div>
+    <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Event Date</span>
+    <span className="text-[#2c3e50] font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
+    <div className="mt-1 flex justify-end">
+      <CountdownBadge eventDate={proposal.event_date} size="md" />
+    </div>
+  </div>
+)}
+```
 
-### 5. New Edge Function — `supabase/functions/preview-auth-email/index.ts`
-- Reads JWT, verifies admin role via service-role client + `has_role` RPC
-- Forwards `{ type }` to `auth-email-hook/preview` with bearer auth
-- Returns the HTML string as JSON `{ html, subject }`
-- Registered in `supabase/config.toml` with `verify_jwt = true`
+### 2. Also add the badge to the **Validity Notice** banner
 
-## Out of scope (can add later if you want)
-- Editing sample data inline before rendering
-- Actually sending a test email to your inbox from this page (would be a small follow-up: a "Send test to luisdreamslv@gmail.com" button that enqueues via the existing email queue with the rendered HTML)
-- Previewing transactional/app email templates (none scaffolded yet)
+The "valid for X days, please respond until …" banner (line 427-435) is the natural place to surface a *quote-expiry* countdown for the client. Add a small countdown anchored to `expiryDate`:
 
-## Files touched
-- **New**: `src/pages/AdminEmailPreviews.tsx`
-- **New**: `supabase/functions/preview-auth-email/index.ts`
-- **Edit**: `src/App.tsx` (add route)
-- **Edit**: `src/pages/AdminPortal.tsx` (add dashboard card)
-- **Edit**: `supabase/config.toml` (register new function)
+```tsx
+<div className="mt-2">
+  <CountdownBadge eventDate={addDays(quoteDate, proposal.validity_days || 7).toISOString().slice(0,10)} prefix="Quote expires:" size="sm" />
+</div>
+```
+
+This gives clients two clear urgency cues: **event countdown** + **quote-validity countdown**.
+
+### 3. Quick sanity pass on the badge logic
+
+`CountdownBadge` already handles overdue / due-today / <7d / <21d / >21d tones correctly and renders for any non-null date, so no changes needed there. The bug is purely that it was never mounted on `ProposalView`.
+
+## Files Modified
+- `src/components/proposal/ProposalView.tsx` (add import + 2 badge placements)
+
+## Out of scope (already working)
+- Admin proposal list badge (`AdminProposals.tsx` line 473) ✅
+- Creative Sessions, Client Links, Calendar event detail badges ✅
+- Daily 9am ET deadline digest email ✅
