@@ -91,7 +91,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
     try {
       let query = supabase
         .from('cached_clips')
-        .select('id, title, category, resolution, duration, created_at, video_url, source_url, thumbnail, sort_order')
+        .select('id, title, category, resolution, duration, created_at, video_url, source_url, thumbnail, sort_order, drive_file_id, drive_web_view_link, original_storage')
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false });
 
