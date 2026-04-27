@@ -1,88 +1,90 @@
-# Plan — Google Drive as Cold Archive for Original Clips
-
 ## Goal
-Free space in the 8 GB Supabase quota by moving **original** high-res uploads to Google Drive, while keeping all browser-playable previews/thumbnails in Supabase Storage so the UI/UX is unchanged.
 
-## What stays where
+Give admins a self-serve "Drive Cold Storage" control surface inside the existing Soleia Looks admin area:
 
-| Asset | Location | Reason |
-|---|---|---|
-| 720p WebM previews (`clip-previews`) | Supabase | Streamed in galleries — needs CDN + range requests |
-| Thumbnails / cover images | Supabase | Public URLs used in `<img>` tags |
-| `session-uploads`, `creative-uploads`, `email-assets` | Supabase | Active client/admin workflows |
-| **Original full-res clips (`clips` bucket)** | **Google Drive** | Cold storage — only downloaded occasionally |
+1. **Migrate older clips** button that runs the existing `migrate-clips-to-drive` edge function in batches with live progress + per-clip results.
+2. **Download original** action in the Clip Manager that streams the file from Google Drive via `download-from-drive` whenever `original_storage = 'drive'`.
+3. **Drive connection status widget** that verifies the Drive connector is reachable (list + create a test folder) and surfaces any gateway/API errors.
 
-## How it works
+## New / Updated Files
 
 ```text
-Upload flow (BatchVideoUploader)
-   │
-   ├─► Re-encode to 720p WebM ─► Supabase clip-previews  (UI plays this)
-   │
-   └─► Original file ─────────► Edge Function ─► Google Drive
-                                                       │
-                                                       └─► Save driveFileId + webViewLink
-                                                            on cached_clips row
+src/components/admin/StoragePanel.tsx          (new — Drive status + migrate UI)
+src/components/admin/SortableClipCard.tsx      (add Download Original action)
+src/components/admin/ClipManager.tsx           (pass drive fields into card)
+src/pages/AdminLooks.tsx                       (add new "Storage" tab)
+supabase/functions/drive-status/index.ts       (new — health-check endpoint)
+supabase/functions/migrate-clips-to-drive/...  (small response tweak: return per-clip detail)
+supabase/config.toml                           (register drive-status function)
 ```
 
-The gallery, sessions, and proposals never change — they already use the WebM preview URL. The original is only fetched when an admin clicks **Download Original**.
+## 1. Drive connection status widget
 
-## Implementation steps
+New edge function `drive-status` does three things and returns a structured report:
 
-### 1. Database migration
-Add columns to `cached_clips` (and any other table holding originals):
-- `drive_file_id text`
-- `drive_web_view_link text`
-- `original_storage` text default `'supabase'` (`'supabase' | 'drive'`)
+- Calls `POST https://connector-gateway.lovable.dev/api/v1/verify_credentials` (gateway built-in check).
+- `GET /drive/v3/files?q=name='Soleia Originals' and mimeType='application/vnd.google-apps.folder'&fields=files(id,name)` — proves list permission.
+- If the folder is missing, creates a temporary `Soleia Health Check {timestamp}` folder via `POST /drive/v3/files` then deletes it via `DELETE /drive/v3/files/{id}` — proves write permission. If `Soleia Originals` exists, only do the temp create/delete (still exercises write).
+- Returns `{ verifyCredentials, listOk, writeOk, soleiaFolderId, latencyMs, errors[] }`.
 
-### 2. Edge function: `upload-to-drive`
-- Accepts a file (multipart) + target folder name
-- Uses Google Drive connector gateway (`https://connector-gateway.lovable.dev/google_drive/upload/drive/v3/files?uploadType=multipart`)
-- Creates/uses a `Soleia Originals` folder in Drive
-- Returns `{ fileId, webViewLink }`
-- Validates JWT, rate-limits, validates file size
+Frontend widget `DriveStatusCard` (inside `StoragePanel.tsx`):
+- Shows three pills: **Auth**, **List**, **Write**, each green/red with latency.
+- Shows `Soleia Originals` folder ID + Drive link when present.
+- Shows the raw error message from any failing check (gateway HTTP status + body excerpt).
+- "Re-test" button.
 
-### 3. Edge function: `download-from-drive`
-- Accepts `driveFileId`
-- Streams the file back via `?alt=media`
-- Used by admin "Download Original" button
+## 2. Migrate older clips UI
 
-### 4. Edge function: `migrate-clips-to-drive` (one-time)
-- Iterates rows in `cached_clips` where `original_storage = 'supabase'`
-- Downloads from Supabase `clips` bucket → uploads to Drive → updates row → deletes from Supabase
-- Runs in batches (e.g. 10 at a time) with progress reporting
+`StoragePanel.tsx` adds a card with:
+- Stat row: total clips, clips on Supabase (`original_storage='supabase'` and `video_url not null`), clips on Drive.
+- **Batch size** input (default 5, max 20).
+- **Migrate next batch** button — invokes `supabase.functions.invoke('migrate-clips-to-drive', { body: { batchSize } })`.
+- **Migrate all** button — loops batches until the response reports `remaining = 0` or an error, with a cancel button.
+- Live progress bar (`migrated / totalSupabase`).
+- Results list: per-clip row with title, status (✓ migrated / ✗ failed), Drive link or error message. Persisted in component state for the session.
+- Refresh button to recompute stats from `cached_clips`.
 
-### 5. UI changes
-- **`BatchVideoUploader`**: after WebM preview uploads to Supabase, send original to `upload-to-drive` instead of `clips` bucket
-- **Admin clip card**: replace "Download Original" Supabase URL with a button that calls `download-from-drive` (uses the existing fetch-to-blob CORS bypass pattern)
-- **New "Storage" admin panel** (optional, small): shows Supabase quota used vs. count of clips archived to Drive, with a "Migrate older clips" button
+Tweak to `migrate-clips-to-drive`: ensure the response shape is
+```json
+{ "processed": n, "succeeded": [...], "failed": [{id,title,error}], "remaining": n }
+```
+so the UI can render rows reliably.
 
-### 6. Drive folder structure
+## 3. Download original from Drive
+
+In `SortableClipCard.tsx`, when the clip has `original_storage === 'drive'` and a `drive_file_id`:
+- Add a small "Download original" menu item / icon button (Download icon).
+- Handler:
+  ```ts
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/download-from-drive?fileId=${clip.drive_file_id}`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${session.access_token}`, apikey: VITE_SUPABASE_PUBLISHABLE_KEY } });
+  const blob = await res.blob();
+  // trigger anchor download with filename from content-disposition or clip.title
+  ```
+- Falls back to existing Supabase `video_url` download when `original_storage === 'supabase'`.
+- Toast on error using the JSON error body returned by the edge function.
+
+`ClipManager.tsx` query is updated to also select `drive_file_id, drive_web_view_link, original_storage` and pass them into the card props (Clip interface extended).
+
+## 4. Navigation
+
+Add a new tab in `src/pages/AdminLooks.tsx` next to "Manage Clips":
 ```text
-Soleia Originals/
-├── 2026-Q2/
-│   ├── {clip-id}-{filename}.mov
-│   └── ...
-└── 2026-Q1/
+[ Sessions ] [ Upload ] [ Add URL ] [ Bulk ] [ Manage ] [ Storage ]
 ```
-Organized by quarter so the Drive folder stays browsable.
+Storage tab renders `<StoragePanel />`.
 
-## Tradeoffs you should know
-- **Drive uploads are slower** than direct-to-Supabase (must proxy through edge function with `LOVABLE_API_KEY`). Acceptable for originals since users already wait for re-encoding.
-- **Drive download throughput** is lower than Supabase CDN — fine for occasional admin downloads, not for streaming.
-- All originals will live in **your single Drive account** (the one that authorized the connector). Capacity = your Google plan's quota.
-- If the Google Drive connection is ever disconnected, originals stay safe in Drive but the app can't fetch them until reconnected.
+## Technical details (for reference)
 
-## Files to be created/modified
-- `supabase/migrations/<timestamp>_add_drive_columns.sql` (new)
-- `supabase/functions/upload-to-drive/index.ts` (new)
-- `supabase/functions/download-from-drive/index.ts` (new)
-- `supabase/functions/migrate-clips-to-drive/index.ts` (new)
-- `src/components/admin/BatchVideoUploader.tsx` (modify upload destination)
-- `src/components/admin/ClipManager.tsx` or equivalent (Download Original button)
-- `src/components/admin/AdminPanel.tsx` (optional Storage panel + Migrate button)
+- All edge functions keep current CORS pattern (manual headers, OPTIONS handler).
+- `drive-status` uses both `LOVABLE_API_KEY` and `GOOGLE_DRIVE_API_KEY` (already configured per `<secrets>`).
+- Verify-credentials call uses `https://connector-gateway.lovable.dev/api/v1/verify_credentials` (no connector_id in path).
+- Migration loop on the client respects a `remaining` counter from the edge function so we never hammer the gateway; small `await new Promise(r => setTimeout(r, 500))` between batches.
+- Download uses fetch-to-blob (matches existing `storage-download-cors-bypass` memory pattern).
+- No DB migration needed — all required columns already exist on `cached_clips`.
 
-## Out of scope (ask if you want these added)
-- Per-client Drive folders shared with each client
-- Moving `creative-uploads` or `session-uploads` to Drive (active workflows — UX impact)
-- Automatic cleanup based on age
+## Out of scope
+
+- Auto-migration on upload (already routed to Drive in `BatchVideoUploader`).
+- Restoring files from Drive back to Supabase.
+- Per-user Drive (this stays workspace-scoped on the connected DSX Drive account).
