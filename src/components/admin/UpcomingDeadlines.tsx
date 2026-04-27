@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { CountdownBadge, getDaysUntil } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
+import { InlineDeadlineEditor } from '@/components/admin/InlineDeadlineEditor';
 import { FileText, Palette, Video, AlertTriangle, ChevronRight, Loader2 } from 'lucide-react';
 
 type Module = 'proposal' | 'session' | 'link';
