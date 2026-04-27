@@ -59,7 +59,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('Error:', e);
     return new Response(JSON.stringify({ error: e.message }), {
       status: 500,
