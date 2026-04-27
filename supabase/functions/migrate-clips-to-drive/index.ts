@@ -114,6 +114,14 @@ Deno.serve(async (req) => {
 
     if (queryErr) throw queryErr;
 
+    // Total remaining count (for UI progress)
+    const { count: remainingBefore } = await admin
+      .from('cached_clips')
+      .select('id', { count: 'exact', head: true })
+      .eq('original_storage', 'supabase')
+      .not('video_url', 'is', null)
+      .like('video_url', '%/storage/v1/object/public/clips/%');
+
     const results: Array<Record<string, unknown>> = [];
 
     for (const clip of clips ?? []) {
