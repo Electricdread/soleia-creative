@@ -35,3 +35,5 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = false
   [functions.migrate-clips-to-drive]
     verify_jwt = false
+  [functions.drive-status]
+    verify_jwt = false

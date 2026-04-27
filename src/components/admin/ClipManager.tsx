@@ -41,6 +41,9 @@ interface Clip {
   source_url: string | null;
   thumbnail: string | null;
   sort_order?: number;
+  drive_file_id?: string | null;
+  drive_web_view_link?: string | null;
+  original_storage?: string | null;
 }
 
 export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void }) {
@@ -88,7 +91,7 @@ export function ClipManager({ onClipsUpdated }: { onClipsUpdated?: () => void })
     try {
       let query = supabase
         .from('cached_clips')
-        .select('id, title, category, resolution, duration, created_at, video_url, source_url, thumbnail, sort_order')
+        .select('id, title, category, resolution, duration, created_at, video_url, source_url, thumbnail, sort_order, drive_file_id, drive_web_view_link, original_storage')
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false });
 

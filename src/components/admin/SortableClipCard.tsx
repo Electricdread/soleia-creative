@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { GripVertical, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, Loader2, Download, HardDrive } from 'lucide-react';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Clip {
   id: string;
@@ -16,6 +19,9 @@ interface Clip {
   source_url: string | null;
   thumbnail: string | null;
   sort_order?: number;
+  drive_file_id?: string | null;
+  drive_web_view_link?: string | null;
+  original_storage?: string | null;
 }
 
 interface SortableClipCardProps {
@@ -49,6 +55,74 @@ export function SortableClipCard({
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1000 : undefined,
+  };
+
+  const { toast } = useToast();
+  const [downloading, setDownloading] = useState(false);
+  const isOnDrive = clip.original_storage === 'drive' && !!clip.drive_file_id;
+  const canDownload = isOnDrive || !!clip.video_url;
+
+  const triggerBlobDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const filenameFromDisposition = (header: string | null, fallback: string) => {
+    if (!header) return fallback;
+    const m = /filename="?([^";]+)"?/i.exec(header);
+    return m?.[1] ?? fallback;
+  };
+
+  const handleDownloadOriginal = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      if (isOnDrive) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+        const anon = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(
+          `${supabaseUrl}/functions/v1/download-from-drive?fileId=${encodeURIComponent(clip.drive_file_id!)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session?.access_token ?? anon}`,
+              apikey: anon,
+            },
+          },
+        );
+        if (!res.ok) {
+          const txt = await res.text();
+          let msg = txt;
+          try { msg = JSON.parse(txt).error ?? txt; } catch { /* noop */ }
+          throw new Error(msg.slice(0, 300));
+        }
+        const blob = await res.blob();
+        const name = filenameFromDisposition(
+          res.headers.get('content-disposition'),
+          `${clip.title || clip.id}.mp4`,
+        );
+        triggerBlobDownload(blob, name);
+        toast({ title: 'Downloaded from Drive', description: name });
+      } else if (clip.video_url) {
+        const res = await fetch(clip.video_url);
+        if (!res.ok) throw new Error(`Fetch failed [${res.status}]`);
+        const blob = await res.blob();
+        const fallback = clip.video_url.split('/').pop() || `${clip.title}.mp4`;
+        triggerBlobDownload(blob, fallback);
+        toast({ title: 'Downloaded original', description: fallback });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast({ title: 'Download failed', description: msg, variant: 'destructive' });
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -98,11 +172,36 @@ export function SortableClipCard({
           {clip.duration && (
             <span className="text-[10px] text-muted-foreground">• {clip.duration}</span>
           )}
+          {isOnDrive && (
+            <Badge
+              variant="outline"
+              className="text-[9px] px-1.5 py-0 border-emerald-500/40 text-emerald-400 gap-1"
+            >
+              <HardDrive className="h-2.5 w-2.5" />
+              Drive
+            </Badge>
+          )}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex-shrink-0 flex gap-1">
+        {canDownload && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDownloadOriginal}
+            disabled={downloading}
+            title={isOnDrive ? 'Download original from Drive' : 'Download original'}
+            className="h-10 w-10 rounded-lg touch-manipulation"
+          >
+            {downloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"

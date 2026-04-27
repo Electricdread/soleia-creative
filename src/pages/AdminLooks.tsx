@@ -8,7 +8,8 @@ import { BatchVideoUploader } from '@/components/admin/BatchVideoUploader';
 import { AddClipForm } from '@/components/admin/AddClipForm';
 import { BulkImportForm } from '@/components/admin/BulkImportForm';
 import { ClipManager } from '@/components/admin/ClipManager';
-import { ArrowLeft, Link2, Video, Plus, Upload, List, Settings } from 'lucide-react';
+import { StoragePanel } from '@/components/admin/StoragePanel';
+import { ArrowLeft, Link2, Video, Plus, Upload, List, Settings, HardDrive } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 // This component is wrapped by ProtectedRoute with requireAdmin
@@ -109,6 +110,13 @@ export default function AdminLooks() {
                     <List className="h-4 w-4" />
                     <span>Manage Clips</span>
                   </TabsTrigger>
+                  <TabsTrigger 
+                    value="storage" 
+                    className="gap-2 px-4 py-2.5 data-[state=active]:bg-white/10 data-[state=active]:text-white text-zinc-400 rounded-lg whitespace-nowrap"
+                  >
+                    <HardDrive className="h-4 w-4" />
+                    <span>Storage</span>
+                  </TabsTrigger>
                 </TabsList>
                 <ScrollBar orientation="horizontal" className="h-1.5" />
               </ScrollArea>
@@ -134,6 +142,10 @@ export default function AdminLooks() {
               
               <TabsContent value="manage" className="mt-0 focus-visible:outline-none">
                 <ClipManager key={refreshKey} onClipsUpdated={handleClipsUpdated} />
+              </TabsContent>
+
+              <TabsContent value="storage" className="mt-0 focus-visible:outline-none">
+                <StoragePanel />
               </TabsContent>
             </div>
           </Tabs>

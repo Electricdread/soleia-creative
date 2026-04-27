@@ -114,7 +114,16 @@ Deno.serve(async (req) => {
 
     if (queryErr) throw queryErr;
 
-    const results: Array<Record<string, unknown>> = [];
+    // Total remaining count (for UI progress)
+    const { count: remainingBefore } = await admin
+      .from('cached_clips')
+      .select('id', { count: 'exact', head: true })
+      .eq('original_storage', 'supabase')
+      .not('video_url', 'is', null)
+      .like('video_url', '%/storage/v1/object/public/clips/%');
+
+    const succeeded: Array<Record<string, unknown>> = [];
+    const failed: Array<Record<string, unknown>> = [];
 
     for (const clip of clips ?? []) {
       try {
@@ -122,7 +131,7 @@ Deno.serve(async (req) => {
         const marker = '/storage/v1/object/public/clips/';
         const idx = url.indexOf(marker);
         if (idx === -1) {
-          results.push({ id: clip.id, status: 'skipped', reason: 'unrecognized URL' });
+          failed.push({ id: clip.id, title: clip.title, error: 'unrecognized URL' });
           continue;
         }
         const objectPath = decodeURIComponent(url.slice(idx + marker.length));
@@ -130,7 +139,7 @@ Deno.serve(async (req) => {
         // Download from Supabase
         const dl = await admin.storage.from('clips').download(objectPath);
         if (dl.error || !dl.data) {
-          results.push({ id: clip.id, status: 'error', reason: dl.error?.message || 'download failed' });
+          failed.push({ id: clip.id, title: clip.title, error: dl.error?.message || 'download failed' });
           continue;
         }
 
@@ -157,16 +166,28 @@ Deno.serve(async (req) => {
         const rm = await admin.storage.from('clips').remove([objectPath]);
         if (rm.error) console.warn('Supabase remove warning:', rm.error.message);
 
-        results.push({ id: clip.id, status: 'migrated', driveFileId: uploaded.id });
+        succeeded.push({
+          id: clip.id,
+          title: clip.title,
+          driveFileId: uploaded.id,
+          driveWebViewLink: uploaded.webViewLink ?? null,
+        });
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         console.error(`Migration failed for ${clip.id}:`, msg);
-        results.push({ id: clip.id, status: 'error', reason: msg });
+        failed.push({ id: clip.id, title: clip.title, error: msg });
       }
     }
 
+    const remaining = Math.max(0, (remainingBefore ?? 0) - succeeded.length);
+
     return new Response(
-      JSON.stringify({ processed: results.length, results }),
+      JSON.stringify({
+        processed: succeeded.length + failed.length,
+        succeeded,
+        failed,
+        remaining,
+      }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {
