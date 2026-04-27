@@ -17,6 +17,7 @@ import ProposalTimeline from './ProposalTimeline';
 import ProposalTerms from './ProposalTerms';
 import ProposalApprovedClips from './ProposalApprovedClips';
 import { CountdownBadge } from '@/components/CountdownBadge';
+import { isProposalClosed } from '@/lib/proposalStatus';
 
 interface ProposalViewProps {
   proposal: any;
@@ -409,8 +410,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <p className="text-[#95a5a6] text-sm">at {proposal.venue_name}</p>
               )}
               {eventDate && (
-                <div className="mt-3">
-                  <CountdownBadge eventDate={proposal.event_date} prefix="Event:" size="md" />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {isProposalClosed(proposal) ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                      <Check className="w-3.5 h-3.5" />
+                      Signed · Ready for invoice
+                    </span>
+                  ) : (
+                    <CountdownBadge eventDate={proposal.event_date} prefix="Event:" size="md" />
+                  )}
                 </div>
               )}
             </div>
@@ -436,11 +444,13 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               This proposal is valid for <strong>{proposal.validity_days || 7} days</strong>, please respond until{' '}
               <strong>{format(expiryDate, 'MMMM d, yyyy')}</strong>.
             </p>
-            <CountdownBadge
-              eventDate={format(expiryDate, 'yyyy-MM-dd')}
-              prefix="Quote expires:"
-              size="md"
-            />
+            {!isProposalClosed(proposal) && (
+              <CountdownBadge
+                eventDate={format(expiryDate, 'yyyy-MM-dd')}
+                prefix="Quote expires:"
+                size="md"
+              />
+            )}
           </div>
           <p className="text-[#7f8c8d] text-sm mt-1">
             Confirmation within this period allows us to reserve production time.

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { CountdownBadge, getDaysUntil } from '@/components/CountdownBadge';
+import { isProposalClosed } from '@/lib/proposalStatus';
 import { FileText, Palette, Video, AlertTriangle, ChevronRight, Loader2 } from 'lucide-react';
 
 type Module = 'proposal' | 'session' | 'link';
@@ -38,7 +39,7 @@ export function UpcomingDeadlines() {
 
       const [proposals, sessions, links] = await Promise.all([
         supabase.from('proposals')
-          .select('id, token, event_name, client_name, event_date')
+          .select('id, token, event_name, client_name, event_date, status, signed_at')
           .eq('is_active', true)
           .not('event_date', 'is', null)
           .lte('event_date', horizonStr),
@@ -57,6 +58,7 @@ export function UpcomingDeadlines() {
       const all: DeadlineItem[] = [];
 
       (proposals.data || []).forEach((p: any) => {
+        if (isProposalClosed(p)) return;
         const days = getDaysUntil(p.event_date);
         if (days === null) return;
         all.push({
