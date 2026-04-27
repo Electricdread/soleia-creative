@@ -65,6 +65,12 @@ const portals: PortalCard[] = [
     href: '/admin/looks',
   },
   {
+    title: 'Auth Email Previews',
+    description: 'Preview the six branded auth emails (signup, magic link, recovery, etc.)',
+    icon: <Mail className="w-6 h-6 text-[#c49a3c]" />,
+    href: '/admin/email-previews',
+  },
+  {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
     icon: <Users className="w-6 h-6 text-[#c49a3c]" />,
