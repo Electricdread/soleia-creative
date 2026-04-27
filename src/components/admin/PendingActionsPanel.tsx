@@ -36,10 +36,10 @@ export function PendingActionsPanel() {
       const today = new Date();
       const [proposals, links, selections, uploads] = await Promise.all([
         supabase.from('proposals')
-          .select('id, token, event_name, client_name, status, signed_at, is_active, updated_at, created_at')
+          .select('id, token, event_name, client_name, event_date, status, signed_at, is_active, updated_at, created_at')
           .eq('is_active', true).eq('status', 'sent'),
         supabase.from('client_links')
-          .select('id, token, event_name, client_name, created_at, is_active')
+          .select('id, token, event_name, client_name, event_date, created_at, is_active')
           .eq('is_active', true),
         supabase.from('link_selections').select('link_id'),
         supabase.from('session_uploads').select('link_id'),
@@ -53,10 +53,13 @@ export function PendingActionsPanel() {
         all.push({
           kind: 'unsigned-proposal',
           id: p.id,
+          rawId: p.id,
           title: p.event_name,
           subtitle: p.client_name,
           ageDays: Math.max(0, differenceInCalendarDays(today, sentDate)),
           href: '/admin/proposals',
+          eventDate: p.event_date || null,
+          module: 'proposal',
         });
       });
 
@@ -70,20 +73,26 @@ export function PendingActionsPanel() {
           all.push({
             kind: 'no-selections',
             id: l.id,
+            rawId: l.id,
             title: l.event_name,
             subtitle: l.client_name,
             ageDays: age,
             href: '/admin/looks',
+            eventDate: l.event_date || null,
+            module: 'link',
           });
         }
         if (!linksWithUploads.has(l.id)) {
           all.push({
             kind: 'no-uploads',
             id: l.id + '-upload',
+            rawId: l.id,
             title: l.event_name,
             subtitle: l.client_name,
             ageDays: age,
             href: '/admin/looks',
+            eventDate: l.event_date || null,
+            module: 'link',
           });
         }
       });
