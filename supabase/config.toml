@@ -1,36 +1,29 @@
 project_id = "rszawchsbpsmtrtvljta"
 
-[functions.send-selections-pdf]
-verify_jwt = false
-
-[functions.notify-upload]
-verify_jwt = false
-
-[functions.notify-admin-signup]
-verify_jwt = false
-
-[functions.approve-user]
-verify_jwt = false
-
-[functions.generate-cover-images]
-verify_jwt = false
-
-[functions.analyze-circleback]
-verify_jwt = false
-
-[functions.scrape-creative-gallery]
-verify_jwt = false
-
-[functions.notify-proposal-signed]
-verify_jwt = false
-
-[functions.fetch-ical]
-verify_jwt = false
-
-[functions.generate-session-email]
-verify_jwt = false
-
-[functions.send-deadline-digest]
-verify_jwt = false
-[functions.process-email-queue]
-verify_jwt = true
+[functions]
+  [functions.analyze-circleback]
+    verify_jwt = false
+  [functions.approve-user]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.fetch-ical]
+    verify_jwt = false
+  [functions.generate-cover-images]
+    verify_jwt = false
+  [functions.generate-session-email]
+    verify_jwt = false
+  [functions.notify-admin-signup]
+    verify_jwt = false
+  [functions.notify-proposal-signed]
+    verify_jwt = false
+  [functions.notify-upload]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.scrape-creative-gallery]
+    verify_jwt = false
+  [functions.send-deadline-digest]
+    verify_jwt = false
+  [functions.send-selections-pdf]
+    verify_jwt = false
