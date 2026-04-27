@@ -1,137 +1,61 @@
-## Universal Deadline Countdowns + Daily Email Digest
+## Goal
+Add an admin-only page at `/admin/email-previews` where you can browse and preview each of the six auth email templates (signup, magic link, recovery, invite, email change, reauthentication) rendered with realistic sample data — directly inside the app, before triggering any test sends.
 
-Add countdown badges across all modules (Proposals, Creative Sessions, Calendar Events, Delivery Guides, Content Previz) using `event_date` as the source of truth, an "Upcoming Deadlines" alert center on the Admin Portal, and a daily email digest sent to **luisdreamslv@gmail.com** summarizing what's due.
+## How it works
+The existing `auth-email-hook` Edge Function already has a `/preview` endpoint (see `supabase/functions/auth-email-hook/index.ts`) that:
+- Accepts `POST { type: "signup" | "magiclink" | "recovery" | "invite" | "email_change" | "reauthentication" }`
+- Renders the matching React Email template with built-in `SAMPLE_DATA`
+- Returns the fully rendered HTML
 
----
+We'll build the admin UI on top of that existing endpoint — no new Edge Function or template duplication needed.
 
-### 1. Shared Countdown Component
+## Changes
 
-**New file**: `src/components/CountdownBadge.tsx`
+### 1. New page — `src/pages/AdminEmailPreviews.tsx`
+- Protected admin route with the standard Soleia admin layout (back link to `/admin`, gold accent header, JetBrains Mono labels)
+- Left sidebar (or top tab bar on mobile): list of the 6 templates with friendly labels
+  - Signup confirmation
+  - Magic link
+  - Password recovery
+  - Invite
+  - Email change
+  - Reauthentication (OTP)
+- Main panel: 
+  - Subject line preview (pulled from the same `EMAIL_SUBJECTS` map used by the hook)
+  - Sample-data summary card showing the props being injected (recipient, URLs, token)
+  - Live `<iframe srcDoc={html}>` rendering of the email at ~600px width so layout matches real inboxes
+  - Desktop / Mobile width toggle (600px / 375px)
+  - "Open in new tab", "Copy HTML", and "Download .html" buttons
+- Loading + error states; auto-fetches when the selected template changes
 
-A small pill component used everywhere. Props: `eventDate: string | null`, `label?: string`, `size?: 'sm' | 'md'`.
+### 2. Route registration — `src/App.tsx`
+- Add `<Route path="/admin/email-previews" element={<ProtectedRoute requireAdmin><AdminEmailPreviews /></ProtectedRoute>} />`
 
-Urgency mapping (based on business days until `event_date`):
+### 3. Admin Portal entry point — `src/pages/AdminPortal.tsx`
+- Add a new gold-accent card "Auth Email Previews" linking to `/admin/email-previews` so it's discoverable from the dashboard
 
-| Days remaining | Color | Label | Icon |
-|---|---|---|---|
-| Past due | Red (`bg-destructive`) | `Xd overdue` | AlertTriangle |
-| 0 | Red | `Due today` | AlertTriangle |
-| 1–3 | Red-soft (`bg-red-500/15 text-red-600`) | `Xd left` | Clock |
-| 4–7 | Amber (`bg-amber-500/15 text-amber-600`) | `Xd left` | Clock |
-| 8–21 | Gold (`bg-[#c49a3c]/15 text-[#c49a3c]`) | `Xd left` | CalendarClock |
-| > 21 | Muted | `Xd left` | CalendarClock |
-| No date | Hidden | — | — |
+### 4. Preview fetch helper (inline in the page, no new lib file)
+- Calls `${VITE_SUPABASE_URL}/functions/v1/auth-email-hook/preview` with `Authorization: Bearer <LOVABLE_API_KEY>`
+- **Auth note**: the `/preview` endpoint requires the project's `LOVABLE_API_KEY`. Since we cannot expose that key to the browser, we'll add a **thin admin-only Supabase Edge Function** `preview-auth-email` that:
+  - Verifies the caller is an authenticated admin (using `has_role(auth.uid(), 'admin')`)
+  - Server-side, calls the existing `auth-email-hook/preview` with the `LOVABLE_API_KEY` from Deno env
+  - Returns the rendered HTML to the browser
+- This keeps the secret on the server and reuses the existing template registry.
 
-Renders nothing when `eventDate` is null (graceful fallback).
+### 5. New Edge Function — `supabase/functions/preview-auth-email/index.ts`
+- Reads JWT, verifies admin role via service-role client + `has_role` RPC
+- Forwards `{ type }` to `auth-email-hook/preview` with bearer auth
+- Returns the HTML string as JSON `{ html, subject }`
+- Registered in `supabase/config.toml` with `verify_jwt = true`
 
----
+## Out of scope (can add later if you want)
+- Editing sample data inline before rendering
+- Actually sending a test email to your inbox from this page (would be a small follow-up: a "Send test to luisdreamslv@gmail.com" button that enqueues via the existing email queue with the rendered HTML)
+- Previewing transactional/app email templates (none scaffolded yet)
 
-### 2. Module Integration
-
-Add `<CountdownBadge eventDate={...} />` to:
-
-- **Proposals** — `src/pages/AdminProposals.tsx` proposal cards + `src/components/proposal/ProposalView.tsx` header (client-facing)
-- **Creative Sessions** — `src/components/admin/CreativeSessionCard.tsx` + `src/pages/SharedSession.tsx` header
-- **Calendar Events** — `src/components/calendar/EventDetailPanel.tsx` (replaces/augments existing logic) + event list rows in `src/pages/AdminCalendar.tsx`
-- **Delivery Guides** — `src/pages/SessionDeliveryGuide.tsx` + `src/pages/TailgateDeliveryGuide.tsx` headers
-- **Content Previz** — `src/components/admin/ContentPrevizManager.tsx` cards
-
-Source field per module:
-- Proposals → `proposals.event_date`
-- Creative Sessions → `creative_sessions.event_date`
-- Calendar Events → `calendar_events.event_date` (or existing `content_deadline` if present)
-- Delivery Guides → linked session's `event_date`
-- Content Previz → linked `client_links.event_date`
-
----
-
-### 3. Admin Portal "Upcoming Deadlines" Alert Center
-
-**File**: `src/pages/AdminPortal.tsx`
-
-New section above the existing dashboard cards:
-- Aggregates Proposals + Creative Sessions + Calendar Events + Delivery Guides where `event_date` is within the next 30 days OR overdue.
-- Sorted by urgency (overdue first, then ascending by date).
-- Each row: module icon + title + `<CountdownBadge>` + click-through link.
-- Section collapses gracefully if nothing is due in the window.
-- Header shows total overdue + due-today counts (e.g. "3 overdue · 2 due today").
-
----
-
-### 4. Browser Tab Pulse
-
-**File**: `src/App.tsx`
-
-Lightweight global hook that queries the four tables once on mount + every 5 min, counts overdue + due-today items, and prefixes `document.title` with `(N) ` when count > 0. No layout changes.
-
----
-
-### 5. Daily Email Digest → luisdreamslv@gmail.com
-
-**New edge function**: `supabase/functions/send-deadline-digest/index.ts`
-
-- Uses existing `RESEND_API_KEY` (no new secrets).
-- Queries Proposals, Creative Sessions, Calendar Events, Delivery Guides where `event_date` falls within the next 7 days or is overdue.
-- Sends ONE branded HTML email per day to `luisdreamslv@gmail.com` with three grouped sections: 🔴 Overdue · 🟡 Due This Week · 🟢 Upcoming (8–21 days).
-- Each row links back to the relevant admin page on `https://soleiacreative.app`.
-- Uses Soleia branding (gold accent, `email-assets` bucket logo, dark header band) consistent with `mem://tech/email-rendering-strategy`.
-- Skips sending if there are zero items in all sections (no spam).
-
-**Schedule**: pg_cron job runs daily at **9:00 AM Eastern (14:00 UTC)**.
-
-`supabase/config.toml` addition:
-```toml
-[functions.send-deadline-digest]
-verify_jwt = false
-```
-
-Migration creates the cron schedule:
-```sql
-select cron.schedule(
-  'soleia-deadline-digest',
-  '0 14 * * *',
-  $$ select net.http_post(
-    url := 'https://rszawchsbpsmtrtvljta.supabase.co/functions/v1/send-deadline-digest',
-    headers := '{"Content-Type":"application/json"}'::jsonb,
-    body := '{}'::jsonb
-  ); $$
-);
-```
-
-Enables `pg_cron` and `pg_net` extensions if not already enabled.
-
----
-
-### 6. No client-facing emails (yet)
-
-Per your earlier choice, this plan sends in-app countdowns to clients (visible on shared session/proposal/delivery pages) but emails go ONLY to you. Client reminder emails can be added later if you want.
-
----
-
-### Files Touched
-
-**New**
-- `src/components/CountdownBadge.tsx`
-- `src/components/admin/UpcomingDeadlines.tsx`
-- `src/hooks/useDeadlineCount.tsx`
-- `supabase/functions/send-deadline-digest/index.ts`
-- Migration: enable pg_cron/pg_net + schedule digest
-
-**Modified**
-- `src/App.tsx` (tab pulse)
-- `src/pages/AdminPortal.tsx` (alert center)
-- `src/pages/AdminProposals.tsx`, `src/components/proposal/ProposalView.tsx`
-- `src/components/admin/CreativeSessionCard.tsx`, `src/pages/SharedSession.tsx`
-- `src/components/calendar/EventDetailPanel.tsx`, `src/pages/AdminCalendar.tsx`
-- `src/pages/SessionDeliveryGuide.tsx`, `src/pages/TailgateDeliveryGuide.tsx`
-- `src/components/admin/ContentPrevizManager.tsx`
-- `supabase/config.toml`
-
----
-
-### QA
-1. Open Admin Portal → "Upcoming Deadlines" section appears with overdue/due items.
-2. Browser tab title shows `(N)` prefix when items overdue.
-3. Each module card now displays a colored countdown badge.
-4. Manually invoke `send-deadline-digest` → email arrives at luisdreamslv@gmail.com with 3 sections.
-5. Verify cron job exists: `select * from cron.job where jobname = 'soleia-deadline-digest';`
+## Files touched
+- **New**: `src/pages/AdminEmailPreviews.tsx`
+- **New**: `supabase/functions/preview-auth-email/index.ts`
+- **Edit**: `src/App.tsx` (add route)
+- **Edit**: `src/pages/AdminPortal.tsx` (add dashboard card)
+- **Edit**: `supabase/config.toml` (register new function)

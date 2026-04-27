@@ -19,6 +19,8 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = false
   [functions.notify-upload]
     verify_jwt = false
+  [functions.preview-auth-email]
+    verify_jwt = true
   [functions.process-email-queue]
     verify_jwt = true
   [functions.scrape-creative-gallery]
