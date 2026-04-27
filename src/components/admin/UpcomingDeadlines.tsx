@@ -133,21 +133,47 @@ export function UpcomingDeadlines() {
           const meta = moduleMeta[item.module];
           const Icon = meta.icon;
           return (
-            <button
+            <div
               key={`${item.module}-${item.id}`}
-              onClick={() => navigate(item.href)}
-              className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+              className="w-full px-4 py-2.5 flex items-center gap-2 sm:gap-3 hover:bg-muted/50 transition-colors"
             >
-              <Icon className={`w-4 h-4 flex-shrink-0 ${meta.tone}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
-                <p className="text-[11px] text-muted-foreground truncate">
-                  {meta.label} · {item.subtitle}
-                </p>
-              </div>
+              <button
+                onClick={() => navigate(item.href)}
+                className="flex items-center gap-3 flex-1 min-w-0 text-left"
+              >
+                <Icon className={`w-4 h-4 flex-shrink-0 ${meta.tone}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {meta.label} · {item.subtitle}
+                  </p>
+                </div>
+              </button>
               <CountdownBadge eventDate={item.eventDate} />
-              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
-            </button>
+              <InlineDeadlineEditor
+                module={item.module}
+                entityId={item.id}
+                currentDate={item.eventDate}
+                onSaved={(newDate) => {
+                  setItems((prev) =>
+                    prev
+                      .map((it) =>
+                        it.id === item.id && it.module === item.module
+                          ? { ...it, eventDate: newDate, days: getDaysUntil(newDate) ?? it.days }
+                          : it
+                      )
+                      .sort((a, b) => a.days - b.days)
+                  );
+                }}
+              />
+              <button
+                onClick={() => navigate(item.href)}
+                className="p-1 -mr-1 text-muted-foreground/50 hover:text-foreground"
+                aria-label="Open"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           );
         })}
       </div>
