@@ -17,13 +17,15 @@ export function useDeadlineCount() {
         const todayStr = today.toISOString().slice(0, 10);
 
         const [proposals, sessions, links] = await Promise.all([
-          supabase.from('proposals').select('event_date').eq('is_active', true).not('event_date', 'is', null).lte('event_date', todayStr),
+          supabase.from('proposals').select('event_date, status, signed_at').eq('is_active', true).not('event_date', 'is', null).lte('event_date', todayStr),
           supabase.from('creative_sessions').select('event_date').eq('is_active', true).not('event_date', 'is', null).lte('event_date', todayStr),
           supabase.from('client_links').select('event_date').eq('is_active', true).not('event_date', 'is', null).lte('event_date', todayStr),
         ]);
 
+        const openProposals = (proposals.data || []).filter((p: any) => !isProposalClosed(p));
+
         const all = [
-          ...(proposals.data || []),
+          ...openProposals,
           ...(sessions.data || []),
           ...(links.data || []),
         ];
