@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen, MapPin, ArrowRight, Menu, X, Sun, Moon } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen, MapPin, ArrowRight, Menu, X, Sun, Moon, Mail } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
@@ -63,6 +63,12 @@ const portals: PortalCard[] = [
     description: 'Per-client video previews for content review and approval',
     icon: <Video className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/looks',
+  },
+  {
+    title: 'Auth Email Previews',
+    description: 'Preview the six branded auth emails (signup, magic link, recovery, etc.)',
+    icon: <Mail className="w-6 h-6 text-[#c49a3c]" />,
+    href: '/admin/email-previews',
   },
   {
     title: 'User Management',

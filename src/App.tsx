@@ -21,6 +21,7 @@ import AdminLooks from "./pages/AdminLooks";
 import AdminUsers from "./pages/AdminUsers";
 import AdminProposals from "./pages/AdminProposals";
 import AdminCalendar from "./pages/AdminCalendar";
+import AdminEmailPreviews from "./pages/AdminEmailPreviews";
 import ClientProposal from "./pages/ClientProposal";
 import OfficePortal from "./pages/OfficePortal";
 import Tutorial from "./pages/Tutorial";
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
               <Route path="/admin/proposals" element={<ProtectedRoute requireAdmin><AdminProposals /></ProtectedRoute>} />
               <Route path="/admin/calendar" element={<ProtectedRoute requireAdmin><AdminCalendar /></ProtectedRoute>} />
+              <Route path="/admin/email-previews" element={<ProtectedRoute requireAdmin><AdminEmailPreviews /></ProtectedRoute>} />
               
               {/* Public Proposal Page */}
               <Route path="/proposal/:token" element={<ClientProposal />} />
