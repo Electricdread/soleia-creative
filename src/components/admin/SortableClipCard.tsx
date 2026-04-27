@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { GripVertical, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, Loader2, Download, HardDrive } from 'lucide-react';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Clip {
   id: string;
@@ -16,6 +19,9 @@ interface Clip {
   source_url: string | null;
   thumbnail: string | null;
   sort_order?: number;
+  drive_file_id?: string | null;
+  drive_web_view_link?: string | null;
+  original_storage?: string | null;
 }
 
 interface SortableClipCardProps {
