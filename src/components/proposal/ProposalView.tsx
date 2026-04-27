@@ -393,7 +393,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           </div>
         ) : (
           <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h1 className="text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
                 {isAdmin && (
@@ -408,15 +408,17 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               {proposal.venue_name && (
                 <p className="text-[#95a5a6] text-sm">at {proposal.venue_name}</p>
               )}
+              {eventDate && (
+                <div className="mt-3">
+                  <CountdownBadge eventDate={proposal.event_date} prefix="Event:" size="md" />
+                </div>
+              )}
             </div>
-            <div className="text-right text-sm space-y-1">
+            <div className="text-left sm:text-right text-sm space-y-1 shrink-0">
               {eventDate && (
                 <div>
                   <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Event Date</span>
                   <span className="text-[#2c3e50] font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
-                  <div className="mt-1 flex justify-end">
-                    <CountdownBadge eventDate={proposal.event_date} size="md" />
-                  </div>
                 </div>
               )}
               <div className="mt-2">
@@ -429,20 +431,20 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Validity Notice */}
         <div className="bg-white border-l-4 border-[#3498db] rounded-r-lg p-5 mb-10 shadow-sm">
-          <p className="text-[#34495e] text-sm">
-            This proposal is valid for <strong>{proposal.validity_days || 7} days</strong>, please respond until{' '}
-            <strong>{format(expiryDate, 'MMMM d, yyyy')}</strong>.
-          </p>
-          <p className="text-[#7f8c8d] text-sm mt-1">
-            Confirmation within this period allows us to reserve production time.
-          </p>
-          <div className="mt-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <p className="text-[#34495e] text-sm">
+              This proposal is valid for <strong>{proposal.validity_days || 7} days</strong>, please respond until{' '}
+              <strong>{format(expiryDate, 'MMMM d, yyyy')}</strong>.
+            </p>
             <CountdownBadge
               eventDate={format(expiryDate, 'yyyy-MM-dd')}
               prefix="Quote expires:"
-              size="sm"
+              size="md"
             />
           </div>
+          <p className="text-[#7f8c8d] text-sm mt-1">
+            Confirmation within this period allows us to reserve production time.
+          </p>
         </div>
 
         {/* Line Items */}

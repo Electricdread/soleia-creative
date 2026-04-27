@@ -1,49 +1,49 @@
-## Issue
+## What I found
 
-The `CountdownBadge` shows on the **admin proposals list** (`/admin/proposals`), but **not on the live client-facing proposal page** (`/proposal/:token`) — which is what you see when you open an "active proposal." That's why the deadline countdown looks missing.
+The badges are technically rendering on the active proposal page, but they are easy to miss:
 
-Verified data is fine — e.g. `04.14.26 Sandler Partners` has `event_date = 2026-04-14`, so it should display "13d overdue."
+- Event badge appears as a small red pill under the Event Date on the right side.
+- Quote expiry badge appears as a small orange pill inside the validity notice.
+- On the current proposal preview, I can see: `12d overdue` and `Quote expires: 5d left`.
 
-## Fix
+So the issue is visibility/placement, not missing data or broken badge logic.
 
-### 1. `src/components/proposal/ProposalView.tsx` — show countdown next to Event Date
+## Plan
 
-In the header's right column where Event Date is rendered (around line 412-417), add a `CountdownBadge` directly under the formatted date so the client sees urgency at a glance.
+### 1. Make the event deadline badge more prominent
+Update `src/components/proposal/ProposalView.tsx` so the event countdown is displayed directly with the proposal title/client info area, not only tucked under the right-aligned event date.
 
-```tsx
-import { CountdownBadge } from '@/components/CountdownBadge';
-
-{eventDate && (
-  <div>
-    <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Event Date</span>
-    <span className="text-[#2c3e50] font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
-    <div className="mt-1 flex justify-end">
-      <CountdownBadge eventDate={proposal.event_date} size="md" />
-    </div>
-  </div>
-)}
+Proposed header layout:
+```text
+04.14.26 Sandler Partners      Event Date
+Prepared for Sandler Partners  Tue, Apr 14, 2026
+[Event: 12d overdue]           Quote Date
 ```
 
-### 2. Also add the badge to the **Validity Notice** banner
+This keeps the date column clean while making the urgency badge visible near the main event title.
 
-The "valid for X days, please respond until …" banner (line 427-435) is the natural place to surface a *quote-expiry* countdown for the client. Add a small countdown anchored to `expiryDate`:
+### 2. Make the validity/quote expiry badge feel like part of the notice
+Move the quote expiry countdown to the first line of the validity notice and increase its size slightly.
 
-```tsx
-<div className="mt-2">
-  <CountdownBadge eventDate={addDays(quoteDate, proposal.validity_days || 7).toISOString().slice(0,10)} prefix="Quote expires:" size="sm" />
-</div>
+Proposed notice layout:
+```text
+This proposal is valid for 7 days, please respond until May 1, 2026.
+[Quote expires: 5d left]
+Confirmation within this period allows us to reserve production time.
 ```
 
-This gives clients two clear urgency cues: **event countdown** + **quote-validity countdown**.
+### 3. Improve mobile visibility
+On smaller screens, ensure both badges align left and wrap naturally instead of sitting in the right column where they can be overlooked.
 
-### 3. Quick sanity pass on the badge logic
+### 4. Optional small styling adjustment
+Use clearer labels:
+- `Event: 12d overdue`
+- `Quote expires: 5d left`
 
-`CountdownBadge` already handles overdue / due-today / <7d / <21d / >21d tones correctly and renders for any non-null date, so no changes needed there. The bug is purely that it was never mounted on `ProposalView`.
+This avoids a standalone `12d overdue` badge that may not clearly communicate what deadline it refers to.
 
-## Files Modified
-- `src/components/proposal/ProposalView.tsx` (add import + 2 badge placements)
+## Files to update
 
-## Out of scope (already working)
-- Admin proposal list badge (`AdminProposals.tsx` line 473) ✅
-- Creative Sessions, Client Links, Calendar event detail badges ✅
-- Daily 9am ET deadline digest email ✅
+- `src/components/proposal/ProposalView.tsx`
+
+No database changes are needed.
