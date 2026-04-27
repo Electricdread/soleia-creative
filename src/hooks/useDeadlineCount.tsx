@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { differenceInCalendarDays } from 'date-fns';
+import { isProposalClosed } from '@/lib/proposalStatus';
 
 /**
  * Polls proposals + creative_sessions + client_links for items where
