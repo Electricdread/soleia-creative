@@ -18,6 +18,7 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import ProposalSessionLinker from '@/components/admin/ProposalSessionLinker';
 import { format } from 'date-fns';
+import { CountdownBadge } from '@/components/CountdownBadge';
 
 type ViewTab = 'proposals' | 'library';
 
@@ -469,6 +470,7 @@ export default function AdminProposals() {
                       <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-emerald-300' : 'bg-red-300'}`} />
                       {p.is_active ? 'Active' : 'Inactive'}
                     </Badge>
+                    <CountdownBadge eventDate={p.event_date} />
                   </div>
                   <p className="text-zinc-500 text-sm truncate">
                     {p.client_name}

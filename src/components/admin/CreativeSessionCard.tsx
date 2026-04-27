@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { Json } from '@/integrations/supabase/types';
+import { CountdownBadge } from '@/components/CountdownBadge';
 
 interface CoverImage {
   url: string;
@@ -274,6 +275,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             )}>
               {isPublic ? <><Globe className="w-2.5 h-2.5" /> Public</> : <><Lock className="w-2.5 h-2.5" /> Private</>}
             </span>
+            <CountdownBadge eventDate={session.event_date} />
             {!coverImage && (
               <button
                 onClick={() => fileInputRef.current?.click()}

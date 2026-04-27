@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.generate-session-email]
 verify_jwt = false
+
+[functions.send-deadline-digest]
+verify_jwt = false

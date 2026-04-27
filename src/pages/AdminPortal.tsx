@@ -10,6 +10,8 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 
 import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
+import { UpcomingDeadlines } from '@/components/admin/UpcomingDeadlines';
+import { useDeadlineCount } from '@/hooks/useDeadlineCount';
 import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval, isSameDay, isToday } from 'date-fns';
 import { getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
 
@@ -78,6 +80,8 @@ export default function AdminPortal() {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useDeadlineCount();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -365,6 +369,7 @@ export default function AdminPortal() {
 
       {/* Main Content */}
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <UpcomingDeadlines />
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />

@@ -14,6 +14,7 @@ import { EventDelivery } from './EventDelivery';
 import { EventClientInfo } from './EventClientInfo';
 import { EventLinkedItems } from './EventLinkedItems';
 import { EventStatusBadge, type EventStatus } from './EventStatusBadge';
+import { CountdownBadge } from '@/components/CountdownBadge';
 
 interface CalendarEvent {
   uid: string;
@@ -77,16 +78,12 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
               </select>
             </div>
             <h2 className="text-lg font-semibold text-foreground truncate">{event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '')}</h2>
-            {daysUntilDeadline !== null && (
-              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold mt-1 w-fit ${
-                daysUntilDeadline < 0 ? 'bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800' :
-                daysUntilDeadline <= 3 ? 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' :
-                daysUntilDeadline <= 7 ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' :
-                'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
-              }`}>
-                {daysUntilDeadline < 0 ? '⚠️' : '📅'} Content deadline: {daysUntilDeadline < 0 ? `${Math.abs(daysUntilDeadline)}d overdue` : daysUntilDeadline === 0 ? 'Due today' : `${daysUntilDeadline}d left`}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              <CountdownBadge eventDate={event.dtstart} prefix="Event:" />
+              {deadlineInfo && (
+                <CountdownBadge eventDate={deadlineInfo.content_deadline} prefix="Content deadline:" />
+              )}
+            </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-muted-foreground">
               {dateFormatted && (
                 <span className="flex items-center gap-1">
