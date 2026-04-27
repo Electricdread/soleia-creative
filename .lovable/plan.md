@@ -1,45 +1,27 @@
-## Goal
-Let you edit / extend client deadlines directly from the **Upcoming Deadlines** panel on `/admin`, without navigating to each module.
+I’ll fix the Sandler Partners proposal page so signed/accepted proposals never show the red “Event overdue” badge.
 
-## Where editing will live
-Inline on each row of the existing `UpcomingDeadlines` panel (top of the admin home). A small **calendar icon button** next to the countdown badge opens a date picker popover. Picking a new date saves immediately and the list re-sorts.
+Implementation plan:
 
-This works for all three deadline sources:
-- **Proposals** → updates `proposals.event_date`
-- **Creative Sessions** → updates `creative_sessions.event_date`
-- **Content Previz / Looks links** → updates `client_links.event_date`
+1. Update the proposal “closed” detection
+   - Make the signed/closed state use both the live `signed` state and the proposal database fields.
+   - Treat a proposal as closed when:
+     - `signed_at` exists, or
+     - local `signed` state is true after signing, or
+     - `status` is `signed`, `accepted`, `closed`, `won`, or `invoiced`.
 
-## UX
-- Each row gets a `Pencil`/`CalendarDays` icon button (44px touch target on mobile).
-- Clicking opens a `Popover` containing the shadcn `Calendar` component with `pointer-events-auto`.
-- Quick-extend chips above the calendar: **+3d**, **+7d**, **+14d**, **+30d** for one-tap extensions of the current date.
-- On save: optimistic update, toast "Deadline updated", row re-sorts by new urgency.
-- The same inline editor appears on rows in `PendingActionsPanel` for proposals/links so you can extend deadlines right where you see them flagged.
+2. Remove the overdue badge for closed proposals
+   - In `ProposalView.tsx`, replace the current header badge logic so closed proposals show only the green “Signed / Ready for invoice” state.
+   - The red `CountdownBadge` for `Event overdue` will not render for Sandler Partners or any other signed proposal.
 
-## Technical changes
+3. Hide quote expiry warning for closed proposals
+   - Ensure the orange “Quote expires” badge is also hidden once the proposal is signed/accepted/closed.
 
-### 1. New component: `src/components/admin/InlineDeadlineEditor.tsx`
-- Props: `module: 'proposal' | 'session' | 'link'`, `entityId: string`, `currentDate: string | null`, `onSaved: (newDate: string) => void`
-- Renders a `Popover` with `Calendar` + quick-extend buttons.
-- Maps `module` to the correct Supabase table for the `update` call.
-- Uses `sonner` toast for feedback.
+4. Verify related dashboard logic remains consistent
+   - Confirm the existing shared helper continues excluding closed proposals from admin deadline counts and upcoming-deadline lists.
 
-### 2. Update `src/components/admin/UpcomingDeadlines.tsx`
-- Add `<InlineDeadlineEditor>` next to each `<CountdownBadge>`.
-- Stop the row's parent `<button>` propagation when the editor is clicked (wrap row in `<div>` instead of `<button>`, with a separate "open" affordance).
-- After save, update the local `items` state and re-sort.
+Technical details:
 
-### 3. Update `src/components/admin/PendingActionsPanel.tsx`
-- For `unsigned-proposal` and link rows, add the same inline editor so you can push the deadline forward without leaving the dashboard.
-
-### 4. No DB changes required
-RLS already allows authenticated admins to update all three tables (`proposals`, `creative_sessions`, `client_links`).
-
-## Files
-- `src/components/admin/InlineDeadlineEditor.tsx` (new)
-- `src/components/admin/UpcomingDeadlines.tsx` (edit)
-- `src/components/admin/PendingActionsPanel.tsx` (edit)
-
-## Out of scope
-- Bulk-editing multiple deadlines at once (can add later if useful).
-- Editing the *content asset* deadline stored in `calendar_event_client_info.content_deadline` — that already has its own editor inside the calendar event detail panel. Let me know if you want that surfaced on the dashboard too.
+- Main file to change: `src/components/proposal/ProposalView.tsx`
+- Existing helper: `src/lib/proposalStatus.ts`
+- No database schema change is needed.
+- No client-facing image/upload changes are needed; the uploaded screenshot is used as reference only.
