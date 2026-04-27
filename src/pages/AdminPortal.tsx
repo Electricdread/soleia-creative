@@ -10,6 +10,8 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
 
 import { DropboxLinkManager } from '@/components/admin/DropboxLinkManager';
+import { UpcomingDeadlines } from '@/components/admin/UpcomingDeadlines';
+import { useDeadlineCount } from '@/hooks/useDeadlineCount';
 import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval, isWithinInterval, isSameDay, isToday } from 'date-fns';
 import { getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
 
@@ -78,6 +80,8 @@ export default function AdminPortal() {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useDeadlineCount();
 
   useEffect(() => {
     if (!isLoading && !user) {
