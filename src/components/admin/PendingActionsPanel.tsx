@@ -11,10 +11,13 @@ type ActionKind = 'unsigned-proposal' | 'no-selections' | 'no-uploads';
 interface PendingAction {
   kind: ActionKind;
   id: string;
+  rawId: string;
   title: string;
   subtitle: string;
   ageDays: number;
   href: string;
+  eventDate: string | null;
+  module: 'proposal' | 'link' | null;
 }
 
 const KIND_META: Record<ActionKind, { icon: typeof FileText; label: string; tone: string }> = {
