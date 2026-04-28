@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
 
     const { batchSize, mode = 'cached' } = await req.json().catch(() => ({}));
-    const defaultBatch = mode === 'orphans' ? 2 : 5;
+    const defaultBatch = mode === 'orphans' ? 1 : 5;
     const limit = Math.max(1, Math.min(20, Number(batchSize ?? defaultBatch)));
 
     const admin = createClient(supabaseUrl, serviceKey);
