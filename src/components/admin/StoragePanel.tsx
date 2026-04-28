@@ -407,6 +407,115 @@ export function StoragePanel() {
         )}
       </section>
 
+      {/* Orphan files in clips bucket */}
+      <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <CloudUpload className="h-5 w-5 text-amber-400" />
+            <div>
+              <h3 className="text-sm font-semibold">Orphaned Originals in Supabase</h3>
+              <p className="text-xs text-muted-foreground">
+                Raw files in the <code className="text-[10px] bg-muted px-1 rounded">clips</code> bucket
+                that aren't tracked in the database. Migrate them to Drive to free storage.
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={refreshOrphans} disabled={orphansLoading} className="gap-2">
+            {orphansLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Recount
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="rounded-lg bg-muted/40 p-3">
+            <p className="text-[10px] uppercase text-muted-foreground tracking-wide">Orphaned files</p>
+            <p className="text-2xl font-semibold text-amber-300">{orphans.count}</p>
+          </div>
+          <div className="rounded-lg bg-muted/40 p-3">
+            <p className="text-[10px] uppercase text-muted-foreground tracking-wide">Total size</p>
+            <p className="text-2xl font-semibold text-amber-300">
+              {(orphans.bytes / (1024 * 1024 * 1024)).toFixed(2)} GB
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-3 mb-4">
+          <Button
+            onClick={handleMigrateOrphansBatch}
+            disabled={orphanRunning || orphans.count === 0 || !status?.healthy}
+            className="gap-2"
+          >
+            {orphanRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+            Migrate next batch
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleMigrateOrphansAll}
+            disabled={orphanRunning || orphans.count === 0 || !status?.healthy}
+            className="gap-2"
+          >
+            {orphanRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudUpload className="h-4 w-4" />}
+            Migrate all orphans
+          </Button>
+          {orphanRunning && (
+            <Button variant="destructive" onClick={() => setOrphanCancel(true)} className="gap-2">
+              <StopCircle className="h-4 w-4" />
+              Stop after current batch
+            </Button>
+          )}
+        </div>
+
+        {orphanProgress.total > 0 && (
+          <div className="space-y-1.5 mb-4">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">
+                {orphanProgress.migrated} of {orphanProgress.total} migrated
+              </span>
+              <span className="font-mono">
+                {Math.min(100, Math.round((orphanProgress.migrated / orphanProgress.total) * 100))}%
+              </span>
+            </div>
+            <Progress
+              value={Math.min(100, Math.round((orphanProgress.migrated / orphanProgress.total) * 100))}
+              className="h-2"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              {orphanProgress.remaining} remaining in bucket
+            </p>
+          </div>
+        )}
+
+        {orphanResults.length > 0 && (
+          <div className="rounded-lg border border-border/50">
+            <div className="px-3 py-2 border-b border-border/50 flex items-center justify-between">
+              <span className="text-xs font-semibold">Orphan results</span>
+              <Button variant="ghost" size="sm" onClick={() => setOrphanResults([])} className="h-7 text-xs">
+                Clear
+              </Button>
+            </div>
+            <ScrollArea className="h-48">
+              <div className="divide-y divide-border/50">
+                {orphanResults.map((r, i) => (
+                  <div key={`${r.id}-${i}`} className="flex items-start gap-2 px-3 py-2 text-xs">
+                    {r.kind === 'success' ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{r.title || r.id}</p>
+                      {r.kind === 'error' && (
+                        <p className="text-destructive/90 font-mono text-[11px] break-all">{r.error}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+      </section>
+
       {/* Migration */}
       <section className="rounded-xl border border-border/50 bg-card p-5">
         <div className="flex items-start justify-between gap-3 mb-4">
