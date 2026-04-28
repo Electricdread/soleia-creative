@@ -94,14 +94,106 @@ Deno.serve(async (req) => {
     if (!driveKey) throw new Error('GOOGLE_DRIVE_API_KEY is not configured');
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
 
-    const { batchSize = 5 } = await req.json().catch(() => ({}));
+    const { batchSize = 5, mode = 'cached' } = await req.json().catch(() => ({}));
     const limit = Math.max(1, Math.min(20, Number(batchSize)));
 
     const admin = createClient(supabaseUrl, serviceKey);
 
-    // Ensure root + quarter folders
+    // ===== COUNT mode: just return orphan stats from clips bucket =====
+    if (mode === 'count') {
+      let total = 0;
+      let totalBytes = 0;
+      let offset = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data, error } = await admin.storage.from('clips').list('', {
+          limit: pageSize,
+          offset,
+          sortBy: { column: 'name', order: 'asc' },
+        });
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        for (const f of data) {
+          if (f.id) {
+            total += 1;
+            const sz = (f.metadata as Record<string, unknown> | null)?.size;
+            if (typeof sz === 'number') totalBytes += sz;
+          }
+        }
+        if (data.length < pageSize) break;
+        offset += pageSize;
+      }
+      return new Response(
+        JSON.stringify({ totalOrphans: total, totalBytes }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // Ensure root + quarter folders (used by both cached + orphans modes)
     const rootId = await findOrCreateFolder('Soleia Originals', null, lovableKey, driveKey);
     const quarterId = await findOrCreateFolder(quarterFolderName(), rootId, lovableKey, driveKey);
+
+    // ===== ORPHANS mode: migrate raw bucket files not tracked in cached_clips =====
+    if (mode === 'orphans') {
+      const { data: files, error: listErr } = await admin.storage.from('clips').list('', {
+        limit,
+        sortBy: { column: 'name', order: 'asc' },
+      });
+      if (listErr) throw listErr;
+
+      const succeeded: Array<Record<string, unknown>> = [];
+      const failed: Array<Record<string, unknown>> = [];
+
+      for (const file of files ?? []) {
+        if (!file.id) continue;
+        try {
+          const dl = await admin.storage.from('clips').download(file.name);
+          if (dl.error || !dl.data) {
+            failed.push({ id: file.name, title: file.name, error: dl.error?.message || 'download failed' });
+            continue;
+          }
+          const mimeType = (dl.data as Blob).type || 'video/mp4';
+          const uploaded = await uploadBlobToDrive(
+            dl.data as Blob, file.name, mimeType, quarterId, lovableKey, driveKey,
+          );
+          const rm = await admin.storage.from('clips').remove([file.name]);
+          if (rm.error) console.warn('Supabase remove warning:', rm.error.message);
+          succeeded.push({
+            id: file.name,
+            title: file.name,
+            driveFileId: uploaded.id,
+            driveWebViewLink: uploaded.webViewLink ?? null,
+          });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error(`Orphan migration failed for ${file.name}:`, msg);
+          failed.push({ id: file.name, title: file.name, error: msg });
+        }
+      }
+
+      // Recount remaining
+      let remaining = 0;
+      let offset = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data, error } = await admin.storage.from('clips').list('', {
+          limit: pageSize, offset, sortBy: { column: 'name', order: 'asc' },
+        });
+        if (error) break;
+        if (!data || data.length === 0) break;
+        remaining += data.filter((f) => f.id).length;
+        if (data.length < pageSize) break;
+        offset += pageSize;
+      }
+
+      return new Response(
+        JSON.stringify({
+          processed: succeeded.length + failed.length,
+          succeeded, failed, remaining,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
 
     // Find candidates: clips not yet on Drive that have a Supabase video_url
     const { data: clips, error: queryErr } = await admin
