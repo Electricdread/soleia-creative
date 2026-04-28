@@ -518,21 +518,38 @@ export function StoragePanel() {
             </div>
             <ScrollArea className="h-48">
               <div className="divide-y divide-border/50">
-                {orphanResults.map((r, i) => (
-                  <div key={`${r.id}-${i}`} className="flex items-start gap-2 px-3 py-2 text-xs">
-                    {r.kind === 'success' ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{r.title || r.id}</p>
-                      {r.kind === 'error' && (
-                        <p className="text-destructive/90 font-mono text-[11px] break-all">{r.error}</p>
+                {orphanResults.map((r, i) => {
+                  const downloadUrl = r.kind === 'error' && r.skipped ? clipPublicUrl(r.id) : null;
+                  return (
+                    <div key={`${r.id}-${i}`} className="flex items-start gap-2 px-3 py-2 text-xs">
+                      {r.kind === 'success' ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <XCircle className={`h-4 w-4 flex-shrink-0 mt-0.5 ${r.skipped ? 'text-amber-400' : 'text-destructive'}`} />
                       )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{r.title || r.id}</p>
+                        {r.kind === 'error' && (
+                          <>
+                            <p className={`font-mono text-[11px] break-all ${r.skipped ? 'text-amber-400/90' : 'text-destructive/90'}`}>
+                              {r.error}
+                            </p>
+                            {downloadUrl && (
+                              <a
+                                href={downloadUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-primary hover:underline inline-flex items-center gap-1 text-[11px] mt-1"
+                              >
+                                Download from bucket <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollArea>
           </div>
