@@ -18,9 +18,9 @@ const corsHeaders = {
 
 const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
 
-// Even though we stream, give the function comfortable headroom. Anything
-// bigger than this is migrated manually via "Download from bucket" link.
-const MAX_FILE_BYTES = 100 * 1024 * 1024; // 100 MB
+// Streaming uses near-zero RAM, so we can comfortably handle large files.
+// Anything bigger than this is migrated manually via "Download from bucket".
+const MAX_FILE_BYTES = 500 * 1024 * 1024; // 500 MB
 const SIGNED_URL_TTL = 60 * 10; // 10 minutes
 
 function quarterFolderName(d = new Date()) {
