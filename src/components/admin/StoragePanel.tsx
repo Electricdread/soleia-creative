@@ -177,8 +177,9 @@ export function StoragePanel() {
     if (error) throw error;
     return data as {
       processed: number;
+      migratable?: number;
       succeeded: Array<{ id: string; title: string; driveFileId: string; driveWebViewLink: string | null }>;
-      failed: Array<{ id: string; title: string; error: string }>;
+      failed: Array<{ id: string; title: string; error: string; skipped?: boolean }>;
       remaining: number;
     };
   };
@@ -190,6 +191,7 @@ export function StoragePanel() {
     let totalSucceeded = 0;
     let totalFailed = 0;
     let initialTotal = orphans.count;
+    let prevRemaining = Number.POSITIVE_INFINITY;
     try {
       while (true) {
         if (orphanCancel) break;
@@ -207,12 +209,24 @@ export function StoragePanel() {
           total: initialTotal,
           remaining: data.remaining,
         });
-        if (data.remaining === 0 || data.processed === 0) break;
+        // Stop conditions:
+        // 1. Nothing left in bucket
+        // 2. Nothing was processed at all
+        // 3. No actually migratable files in this batch (only oversize skips)
+        // 4. Remaining didn't decrease (would loop forever on giants)
+        const migratable = data.migratable ?? data.succeeded.length;
+        if (
+          data.remaining === 0 ||
+          data.processed === 0 ||
+          migratable === 0 ||
+          data.remaining >= prevRemaining
+        ) break;
+        prevRemaining = data.remaining;
         await new Promise((r) => setTimeout(r, 500));
       }
       toast({
         title: 'Orphan migration finished',
-        description: `${totalSucceeded} migrated, ${totalFailed} failed`,
+        description: `${totalSucceeded} migrated, ${totalFailed} failed/skipped`,
       });
       await refreshOrphans();
     } catch (e) {
