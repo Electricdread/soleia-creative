@@ -1,8 +1,8 @@
 // One-shot batch migrator: pulls original clips from Supabase `clips` bucket,
-// uploads them to Google Drive, updates cached_clips row, and deletes the
-// Supabase original to free the 8 GB quota.
+// uploads them to Google Drive (resumable, streamed), updates cached_clips row,
+// and deletes the Supabase original to free the 8 GB quota.
 //
-// Body (optional): { batchSize?: number }  default 5
+// Body (optional): { batchSize?: number, mode?: 'cached' | 'orphans' | 'count' }
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
@@ -13,6 +13,10 @@ const corsHeaders = {
 };
 
 const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
+
+// Edge functions cap around 256 MB RAM. Even with streaming we stay safe by
+// skipping anything bigger than this — those files must be moved manually.
+const MAX_FILE_BYTES = 200 * 1024 * 1024; // 200 MB
 
 function quarterFolderName(d = new Date()) {
   const year = d.getUTCFullYear();
@@ -57,27 +61,92 @@ async function findOrCreateFolder(name: string, parentId: string | null, lovable
   return created.id as string;
 }
 
-async function uploadBlobToDrive(
+/**
+ * Stream a Blob to Google Drive using the resumable upload protocol.
+ * Memory stays flat because Deno's fetch supports ReadableStream bodies —
+ * we never materialise the whole file in RAM.
+ *
+ * Falls back to single-shot streamed `uploadType=media` + PATCH metadata
+ * if the gateway strips the `Location` header from the resumable init.
+ */
+async function uploadStreamToDrive(
   blob: Blob, filename: string, mimeType: string, parentId: string,
   lovableKey: string, driveKey: string,
-) {
-  const boundary = '----soleia-' + crypto.randomUUID();
-  const metadata = { name: filename, parents: [parentId], mimeType };
-  const fileBuf = new Uint8Array(await blob.arrayBuffer());
-  const enc = new TextEncoder();
-  const head = enc.encode(
-    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
-    JSON.stringify(metadata) + `\r\n--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`,
+): Promise<{ id: string; webViewLink?: string }> {
+  // ---- Try resumable upload first ----
+  const initRes = await fetch(
+    `${GATEWAY}/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${lovableKey}`,
+        'X-Connection-Api-Key': driveKey,
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Upload-Content-Type': mimeType,
+        'X-Upload-Content-Length': String(blob.size),
+      },
+      body: JSON.stringify({ name: filename, parents: [parentId], mimeType }),
+    },
   );
-  const tail = enc.encode(`\r\n--${boundary}--`);
-  const body = new Uint8Array(head.length + fileBuf.length + tail.length);
-  body.set(head, 0); body.set(fileBuf, head.length); body.set(tail, head.length + fileBuf.length);
 
-  return await gatewayJson(
-    '/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',
-    { method: 'POST', headers: { 'Content-Type': `multipart/related; boundary=${boundary}` }, body },
+  const sessionUrl =
+    initRes.headers.get('Location') ||
+    initRes.headers.get('location') ||
+    initRes.headers.get('X-Goog-Upload-URL');
+
+  if (initRes.ok && sessionUrl) {
+    const put = await fetch(sessionUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': mimeType },
+      body: blob.stream(),
+      // @ts-ignore — Deno requires duplex for streaming bodies
+      duplex: 'half',
+    });
+    const text = await put.text();
+    if (!put.ok) throw new Error(`Drive resumable PUT failed [${put.status}]: ${text.slice(0, 400)}`);
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error(`Drive resumable PUT returned non-JSON: ${text.slice(0, 200)}`);
+    }
+  }
+
+  // ---- Fallback: streamed single-shot, then PATCH metadata ----
+  console.warn(
+    `Resumable init failed (status=${initRes.status}, hasLocation=${!!sessionUrl}). Falling back to media upload.`,
+  );
+
+  const mediaRes = await fetch(
+    `${GATEWAY}/upload/drive/v3/files?uploadType=media&fields=id,webViewLink`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${lovableKey}`,
+        'X-Connection-Api-Key': driveKey,
+        'Content-Type': mimeType,
+      },
+      body: blob.stream(),
+      // @ts-ignore
+      duplex: 'half',
+    },
+  );
+  const mediaText = await mediaRes.text();
+  if (!mediaRes.ok) {
+    throw new Error(`Drive media upload failed [${mediaRes.status}]: ${mediaText.slice(0, 400)}`);
+  }
+  const created = JSON.parse(mediaText);
+
+  // Set name + parents via PATCH (metadata-only)
+  const patched = await gatewayJson(
+    `/drive/v3/files/${created.id}?addParents=${parentId}&fields=id,webViewLink`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: filename }),
+    },
     lovableKey, driveKey,
   );
+  return { id: created.id, webViewLink: patched?.webViewLink };
 }
 
 Deno.serve(async (req) => {
@@ -94,12 +163,14 @@ Deno.serve(async (req) => {
     if (!driveKey) throw new Error('GOOGLE_DRIVE_API_KEY is not configured');
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
 
-    const { batchSize = 5, mode = 'cached' } = await req.json().catch(() => ({}));
-    const limit = Math.max(1, Math.min(20, Number(batchSize)));
+    const { batchSize, mode = 'cached' } = await req.json().catch(() => ({}));
+    // Smaller default for orphan mode (large videos), larger for cached (small files)
+    const defaultBatch = mode === 'orphans' ? 2 : 5;
+    const limit = Math.max(1, Math.min(20, Number(batchSize ?? defaultBatch)));
 
     const admin = createClient(supabaseUrl, serviceKey);
 
-    // ===== COUNT mode: just return orphan stats from clips bucket =====
+    // ===== COUNT mode =====
     if (mode === 'count') {
       let total = 0;
       let totalBytes = 0;
@@ -107,9 +178,7 @@ Deno.serve(async (req) => {
       const pageSize = 1000;
       while (true) {
         const { data, error } = await admin.storage.from('clips').list('', {
-          limit: pageSize,
-          offset,
-          sortBy: { column: 'name', order: 'asc' },
+          limit: pageSize, offset, sortBy: { column: 'name', order: 'asc' },
         });
         if (error) throw error;
         if (!data || data.length === 0) break;
@@ -129,23 +198,42 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Ensure root + quarter folders (used by both cached + orphans modes)
     const rootId = await findOrCreateFolder('Soleia Originals', null, lovableKey, driveKey);
     const quarterId = await findOrCreateFolder(quarterFolderName(), rootId, lovableKey, driveKey);
 
-    // ===== ORPHANS mode: migrate raw bucket files not tracked in cached_clips =====
+    // ===== ORPHANS mode =====
     if (mode === 'orphans') {
+      // Pull a slightly bigger window so we can skip oversize files and still
+      // process `limit` reasonable ones in a single invocation.
+      const window = Math.max(limit * 4, 10);
       const { data: files, error: listErr } = await admin.storage.from('clips').list('', {
-        limit,
-        sortBy: { column: 'name', order: 'asc' },
+        limit: window, sortBy: { column: 'name', order: 'asc' },
       });
       if (listErr) throw listErr;
 
       const succeeded: Array<Record<string, unknown>> = [];
       const failed: Array<Record<string, unknown>> = [];
+      let processedReal = 0;
 
       for (const file of files ?? []) {
         if (!file.id) continue;
+        if (processedReal >= limit) break;
+
+        const sizeBytes = Number((file.metadata as Record<string, unknown> | null)?.size ?? 0);
+
+        // Skip giants — they OOM the function. User must move these manually.
+        if (sizeBytes > MAX_FILE_BYTES) {
+          failed.push({
+            id: file.name,
+            title: file.name,
+            error: `too large (${(sizeBytes / 1024 / 1024).toFixed(0)} MB) — download from bucket and upload to Drive manually`,
+            sizeBytes,
+            skipped: true,
+          });
+          continue;
+        }
+
+        processedReal += 1;
         try {
           const dl = await admin.storage.from('clips').download(file.name);
           if (dl.error || !dl.data) {
@@ -153,7 +241,7 @@ Deno.serve(async (req) => {
             continue;
           }
           const mimeType = (dl.data as Blob).type || 'video/mp4';
-          const uploaded = await uploadBlobToDrive(
+          const uploaded = await uploadStreamToDrive(
             dl.data as Blob, file.name, mimeType, quarterId, lovableKey, driveKey,
           );
           const rm = await admin.storage.from('clips').remove([file.name]);
@@ -171,31 +259,29 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Recount remaining
+      // Quick recount (cap at one page — UI will refresh full count separately)
       let remaining = 0;
-      let offset = 0;
-      const pageSize = 1000;
-      while (true) {
-        const { data, error } = await admin.storage.from('clips').list('', {
-          limit: pageSize, offset, sortBy: { column: 'name', order: 'asc' },
-        });
-        if (error) break;
-        if (!data || data.length === 0) break;
-        remaining += data.filter((f) => f.id).length;
-        if (data.length < pageSize) break;
-        offset += pageSize;
-      }
+      const { data: remData } = await admin.storage.from('clips').list('', {
+        limit: 1000, sortBy: { column: 'name', order: 'asc' },
+      });
+      remaining = (remData ?? []).filter((f) => f.id).length;
+
+      // `processed` counts files we attempted (succeeded + failed including skips).
+      // `migratable` tells the client whether any non-skipped work was done — used
+      // to break the auto-loop when only oversized files remain.
+      const migratable = succeeded.length + failed.filter((f) => !f.skipped).length;
 
       return new Response(
         JSON.stringify({
           processed: succeeded.length + failed.length,
+          migratable,
           succeeded, failed, remaining,
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    // Find candidates: clips not yet on Drive that have a Supabase video_url
+    // ===== CACHED mode (db-tracked clips) =====
     const { data: clips, error: queryErr } = await admin
       .from('cached_clips')
       .select('id, title, video_url, original_storage')
@@ -203,10 +289,8 @@ Deno.serve(async (req) => {
       .not('video_url', 'is', null)
       .like('video_url', '%/storage/v1/object/public/clips/%')
       .limit(limit);
-
     if (queryErr) throw queryErr;
 
-    // Total remaining count (for UI progress)
     const { count: remainingBefore } = await admin
       .from('cached_clips')
       .select('id', { count: 'exact', head: true })
@@ -228,21 +312,30 @@ Deno.serve(async (req) => {
         }
         const objectPath = decodeURIComponent(url.slice(idx + marker.length));
 
-        // Download from Supabase
         const dl = await admin.storage.from('clips').download(objectPath);
         if (dl.error || !dl.data) {
           failed.push({ id: clip.id, title: clip.title, error: dl.error?.message || 'download failed' });
           continue;
         }
 
-        const filename = `${clip.id}-${objectPath.split('/').pop() ?? 'clip.bin'}`;
-        const mimeType = (dl.data as Blob).type || 'video/mp4';
+        const blob = dl.data as Blob;
+        if (blob.size > MAX_FILE_BYTES) {
+          failed.push({
+            id: clip.id,
+            title: clip.title,
+            error: `too large (${(blob.size / 1024 / 1024).toFixed(0)} MB) — migrate manually`,
+            skipped: true,
+          });
+          continue;
+        }
 
-        const uploaded = await uploadBlobToDrive(
-          dl.data as Blob, filename, mimeType, quarterId, lovableKey, driveKey,
+        const filename = `${clip.id}-${objectPath.split('/').pop() ?? 'clip.bin'}`;
+        const mimeType = blob.type || 'video/mp4';
+
+        const uploaded = await uploadStreamToDrive(
+          blob, filename, mimeType, quarterId, lovableKey, driveKey,
         );
 
-        // Update DB
         const { error: updErr } = await admin
           .from('cached_clips')
           .update({
@@ -254,7 +347,6 @@ Deno.serve(async (req) => {
           .eq('id', clip.id);
         if (updErr) throw updErr;
 
-        // Delete from Supabase
         const rm = await admin.storage.from('clips').remove([objectPath]);
         if (rm.error) console.warn('Supabase remove warning:', rm.error.message);
 
@@ -272,10 +364,12 @@ Deno.serve(async (req) => {
     }
 
     const remaining = Math.max(0, (remainingBefore ?? 0) - succeeded.length);
+    const migratable = succeeded.length + failed.filter((f) => !f.skipped).length;
 
     return new Response(
       JSON.stringify({
         processed: succeeded.length + failed.length,
+        migratable,
         succeeded,
         failed,
         remaining,

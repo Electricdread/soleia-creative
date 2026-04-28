@@ -30,7 +30,16 @@ type StatusReport = {
 
 type MigrationResult =
   | { kind: 'success'; id: string; title: string; driveFileId: string; driveWebViewLink: string | null }
-  | { kind: 'error'; id: string; title: string; error: string };
+  | { kind: 'error'; id: string; title: string; error: string; skipped?: boolean };
+
+const SUPABASE_PROJECT_REF = (import.meta.env.VITE_SUPABASE_URL as string | undefined)
+  ?.match(/https?:\/\/([^.]+)\./)?.[1];
+
+function clipPublicUrl(filename: string) {
+  return SUPABASE_PROJECT_REF
+    ? `https://${SUPABASE_PROJECT_REF}.supabase.co/storage/v1/object/public/clips/${encodeURIComponent(filename)}`
+    : null;
+}
 
 function StatusPill({
   label,
@@ -78,7 +87,7 @@ export function StoragePanel() {
   const [orphanResults, setOrphanResults] = useState<MigrationResult[]>([]);
 
   // Migration
-  const [batchSize, setBatchSize] = useState(5);
+  const [batchSize, setBatchSize] = useState(2);
   const [running, setRunning] = useState(false);
   const [cancelRequested, setCancelRequested] = useState(false);
   const [results, setResults] = useState<MigrationResult[]>([]);
@@ -168,8 +177,9 @@ export function StoragePanel() {
     if (error) throw error;
     return data as {
       processed: number;
+      migratable?: number;
       succeeded: Array<{ id: string; title: string; driveFileId: string; driveWebViewLink: string | null }>;
-      failed: Array<{ id: string; title: string; error: string }>;
+      failed: Array<{ id: string; title: string; error: string; skipped?: boolean }>;
       remaining: number;
     };
   };
@@ -181,6 +191,7 @@ export function StoragePanel() {
     let totalSucceeded = 0;
     let totalFailed = 0;
     let initialTotal = orphans.count;
+    let prevRemaining = Number.POSITIVE_INFINITY;
     try {
       while (true) {
         if (orphanCancel) break;
@@ -198,12 +209,24 @@ export function StoragePanel() {
           total: initialTotal,
           remaining: data.remaining,
         });
-        if (data.remaining === 0 || data.processed === 0) break;
+        // Stop conditions:
+        // 1. Nothing left in bucket
+        // 2. Nothing was processed at all
+        // 3. No actually migratable files in this batch (only oversize skips)
+        // 4. Remaining didn't decrease (would loop forever on giants)
+        const migratable = data.migratable ?? data.succeeded.length;
+        if (
+          data.remaining === 0 ||
+          data.processed === 0 ||
+          migratable === 0 ||
+          data.remaining >= prevRemaining
+        ) break;
+        prevRemaining = data.remaining;
         await new Promise((r) => setTimeout(r, 500));
       }
       toast({
         title: 'Orphan migration finished',
-        description: `${totalSucceeded} migrated, ${totalFailed} failed`,
+        description: `${totalSucceeded} migrated, ${totalFailed} failed/skipped`,
       });
       await refreshOrphans();
     } catch (e) {
@@ -495,21 +518,38 @@ export function StoragePanel() {
             </div>
             <ScrollArea className="h-48">
               <div className="divide-y divide-border/50">
-                {orphanResults.map((r, i) => (
-                  <div key={`${r.id}-${i}`} className="flex items-start gap-2 px-3 py-2 text-xs">
-                    {r.kind === 'success' ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{r.title || r.id}</p>
-                      {r.kind === 'error' && (
-                        <p className="text-destructive/90 font-mono text-[11px] break-all">{r.error}</p>
+                {orphanResults.map((r, i) => {
+                  const downloadUrl = r.kind === 'error' && r.skipped ? clipPublicUrl(r.id) : null;
+                  return (
+                    <div key={`${r.id}-${i}`} className="flex items-start gap-2 px-3 py-2 text-xs">
+                      {r.kind === 'success' ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <XCircle className={`h-4 w-4 flex-shrink-0 mt-0.5 ${r.skipped ? 'text-amber-400' : 'text-destructive'}`} />
                       )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{r.title || r.id}</p>
+                        {r.kind === 'error' && (
+                          <>
+                            <p className={`font-mono text-[11px] break-all ${r.skipped ? 'text-amber-400/90' : 'text-destructive/90'}`}>
+                              {r.error}
+                            </p>
+                            {downloadUrl && (
+                              <a
+                                href={downloadUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-primary hover:underline inline-flex items-center gap-1 text-[11px] mt-1"
+                              >
+                                Download from bucket <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollArea>
           </div>
