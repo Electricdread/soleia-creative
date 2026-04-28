@@ -69,6 +69,14 @@ export function StoragePanel() {
   const [stats, setStats] = useState({ total: 0, supabase: 0, drive: 0 });
   const [statsLoading, setStatsLoading] = useState(false);
 
+  // Orphans (raw bucket files not in cached_clips)
+  const [orphans, setOrphans] = useState({ count: 0, bytes: 0 });
+  const [orphansLoading, setOrphansLoading] = useState(false);
+  const [orphanRunning, setOrphanRunning] = useState(false);
+  const [orphanCancel, setOrphanCancel] = useState(false);
+  const [orphanProgress, setOrphanProgress] = useState({ migrated: 0, total: 0, remaining: 0 });
+  const [orphanResults, setOrphanResults] = useState<MigrationResult[]>([]);
+
   // Migration
   const [batchSize, setBatchSize] = useState(5);
   const [running, setRunning] = useState(false);
@@ -131,10 +139,108 @@ export function StoragePanel() {
     }
   }, [toast]);
 
+  const refreshOrphans = useCallback(async () => {
+    setOrphansLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('migrate-clips-to-drive', {
+        body: { mode: 'count' },
+      });
+      if (error) throw error;
+      const d = data as { totalOrphans: number; totalBytes: number };
+      setOrphans({ count: d.totalOrphans ?? 0, bytes: d.totalBytes ?? 0 });
+    } catch (e) {
+      console.error('refreshOrphans error:', e);
+    } finally {
+      setOrphansLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     refreshStats();
     runStatus();
-  }, [refreshStats, runStatus]);
+    refreshOrphans();
+  }, [refreshStats, runStatus, refreshOrphans]);
+
+  const runOrphanBatch = async (size: number) => {
+    const { data, error } = await supabase.functions.invoke('migrate-clips-to-drive', {
+      body: { mode: 'orphans', batchSize: size },
+    });
+    if (error) throw error;
+    return data as {
+      processed: number;
+      succeeded: Array<{ id: string; title: string; driveFileId: string; driveWebViewLink: string | null }>;
+      failed: Array<{ id: string; title: string; error: string }>;
+      remaining: number;
+    };
+  };
+
+  const handleMigrateOrphansAll = async () => {
+    setOrphanRunning(true);
+    setOrphanCancel(false);
+    setOrphanResults([]);
+    let totalSucceeded = 0;
+    let totalFailed = 0;
+    let initialTotal = orphans.count;
+    try {
+      while (true) {
+        if (orphanCancel) break;
+        const data = await runOrphanBatch(batchSize);
+        if (initialTotal === 0) initialTotal = data.processed + data.remaining;
+        totalSucceeded += data.succeeded.length;
+        totalFailed += data.failed.length;
+        setOrphanResults((prev) => [
+          ...data.succeeded.map((r) => ({ kind: 'success' as const, ...r })),
+          ...data.failed.map((r) => ({ kind: 'error' as const, ...r })),
+          ...prev,
+        ]);
+        setOrphanProgress({
+          migrated: totalSucceeded,
+          total: initialTotal,
+          remaining: data.remaining,
+        });
+        if (data.remaining === 0 || data.processed === 0) break;
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      toast({
+        title: 'Orphan migration finished',
+        description: `${totalSucceeded} migrated, ${totalFailed} failed`,
+      });
+      await refreshOrphans();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast({ title: 'Orphan migration stopped', description: msg, variant: 'destructive' });
+    } finally {
+      setOrphanRunning(false);
+      setOrphanCancel(false);
+    }
+  };
+
+  const handleMigrateOrphansBatch = async () => {
+    setOrphanRunning(true);
+    try {
+      const data = await runOrphanBatch(batchSize);
+      setOrphanResults((prev) => [
+        ...data.succeeded.map((r) => ({ kind: 'success' as const, ...r })),
+        ...data.failed.map((r) => ({ kind: 'error' as const, ...r })),
+        ...prev,
+      ]);
+      setOrphanProgress({
+        migrated: data.succeeded.length,
+        total: data.processed + data.remaining,
+        remaining: data.remaining,
+      });
+      toast({
+        title: 'Batch complete',
+        description: `${data.succeeded.length} migrated, ${data.failed.length} failed, ${data.remaining} remaining`,
+      });
+      await refreshOrphans();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast({ title: 'Orphan migration failed', description: msg, variant: 'destructive' });
+    } finally {
+      setOrphanRunning(false);
+    }
+  };
 
   const runOneBatch = async (size: number) => {
     const { data, error } = await supabase.functions.invoke(
@@ -297,6 +403,115 @@ export function StoragePanel() {
                 {e}
               </p>
             ))}
+          </div>
+        )}
+      </section>
+
+      {/* Orphan files in clips bucket */}
+      <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <CloudUpload className="h-5 w-5 text-amber-400" />
+            <div>
+              <h3 className="text-sm font-semibold">Orphaned Originals in Supabase</h3>
+              <p className="text-xs text-muted-foreground">
+                Raw files in the <code className="text-[10px] bg-muted px-1 rounded">clips</code> bucket
+                that aren't tracked in the database. Migrate them to Drive to free storage.
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={refreshOrphans} disabled={orphansLoading} className="gap-2">
+            {orphansLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Recount
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="rounded-lg bg-muted/40 p-3">
+            <p className="text-[10px] uppercase text-muted-foreground tracking-wide">Orphaned files</p>
+            <p className="text-2xl font-semibold text-amber-300">{orphans.count}</p>
+          </div>
+          <div className="rounded-lg bg-muted/40 p-3">
+            <p className="text-[10px] uppercase text-muted-foreground tracking-wide">Total size</p>
+            <p className="text-2xl font-semibold text-amber-300">
+              {(orphans.bytes / (1024 * 1024 * 1024)).toFixed(2)} GB
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-3 mb-4">
+          <Button
+            onClick={handleMigrateOrphansBatch}
+            disabled={orphanRunning || orphans.count === 0 || !status?.healthy}
+            className="gap-2"
+          >
+            {orphanRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+            Migrate next batch
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleMigrateOrphansAll}
+            disabled={orphanRunning || orphans.count === 0 || !status?.healthy}
+            className="gap-2"
+          >
+            {orphanRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudUpload className="h-4 w-4" />}
+            Migrate all orphans
+          </Button>
+          {orphanRunning && (
+            <Button variant="destructive" onClick={() => setOrphanCancel(true)} className="gap-2">
+              <StopCircle className="h-4 w-4" />
+              Stop after current batch
+            </Button>
+          )}
+        </div>
+
+        {orphanProgress.total > 0 && (
+          <div className="space-y-1.5 mb-4">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">
+                {orphanProgress.migrated} of {orphanProgress.total} migrated
+              </span>
+              <span className="font-mono">
+                {Math.min(100, Math.round((orphanProgress.migrated / orphanProgress.total) * 100))}%
+              </span>
+            </div>
+            <Progress
+              value={Math.min(100, Math.round((orphanProgress.migrated / orphanProgress.total) * 100))}
+              className="h-2"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              {orphanProgress.remaining} remaining in bucket
+            </p>
+          </div>
+        )}
+
+        {orphanResults.length > 0 && (
+          <div className="rounded-lg border border-border/50">
+            <div className="px-3 py-2 border-b border-border/50 flex items-center justify-between">
+              <span className="text-xs font-semibold">Orphan results</span>
+              <Button variant="ghost" size="sm" onClick={() => setOrphanResults([])} className="h-7 text-xs">
+                Clear
+              </Button>
+            </div>
+            <ScrollArea className="h-48">
+              <div className="divide-y divide-border/50">
+                {orphanResults.map((r, i) => (
+                  <div key={`${r.id}-${i}`} className="flex items-start gap-2 px-3 py-2 text-xs">
+                    {r.kind === 'success' ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{r.title || r.id}</p>
+                      {r.kind === 'error' && (
+                        <p className="text-destructive/90 font-mono text-[11px] break-all">{r.error}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         )}
       </section>
