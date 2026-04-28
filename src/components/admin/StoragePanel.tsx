@@ -87,7 +87,7 @@ export function StoragePanel() {
   const [orphanResults, setOrphanResults] = useState<MigrationResult[]>([]);
 
   // Migration
-  const [batchSize, setBatchSize] = useState(5);
+  const [batchSize, setBatchSize] = useState(2);
   const [running, setRunning] = useState(false);
   const [cancelRequested, setCancelRequested] = useState(false);
   const [results, setResults] = useState<MigrationResult[]>([]);
