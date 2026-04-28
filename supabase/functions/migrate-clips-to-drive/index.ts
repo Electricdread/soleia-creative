@@ -1,6 +1,10 @@
 // One-shot batch migrator: pulls original clips from Supabase `clips` bucket,
-// uploads them to Google Drive (resumable, streamed), updates cached_clips row,
-// and deletes the Supabase original to free the 8 GB quota.
+// uploads them to Google Drive (resumable, fully streamed), updates the
+// cached_clips row, and deletes the Supabase original to free quota.
+//
+// Critical: we NEVER buffer the file in the edge function. We create a
+// short-lived signed URL, fetch it, and pipe the response body straight to
+// Drive's resumable upload session. Memory stays flat regardless of size.
 //
 // Body (optional): { batchSize?: number, mode?: 'cached' | 'orphans' | 'count' }
 
@@ -14,14 +18,24 @@ const corsHeaders = {
 
 const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
 
-// Edge functions cap around 256 MB RAM. Even with streaming we stay safe by
-// skipping anything bigger than this — those files must be moved manually.
-const MAX_FILE_BYTES = 200 * 1024 * 1024; // 200 MB
+// Even though we stream, give the function comfortable headroom. Anything
+// bigger than this is migrated manually via "Download from bucket" link.
+const MAX_FILE_BYTES = 100 * 1024 * 1024; // 100 MB
+const SIGNED_URL_TTL = 60 * 10; // 10 minutes
 
 function quarterFolderName(d = new Date()) {
   const year = d.getUTCFullYear();
   const q = Math.floor(d.getUTCMonth() / 3) + 1;
   return `${year}-Q${q}`;
+}
+
+function mimeFromName(name: string) {
+  const lower = name.toLowerCase();
+  if (lower.endsWith('.mov')) return 'video/quicktime';
+  if (lower.endsWith('.mp4')) return 'video/mp4';
+  if (lower.endsWith('.webm')) return 'video/webm';
+  if (lower.endsWith('.mkv')) return 'video/x-matroska';
+  return 'application/octet-stream';
 }
 
 async function gatewayJson(path: string, init: RequestInit, lovableKey: string, driveKey: string) {
@@ -62,18 +76,18 @@ async function findOrCreateFolder(name: string, parentId: string | null, lovable
 }
 
 /**
- * Stream a Blob to Google Drive using the resumable upload protocol.
- * Memory stays flat because Deno's fetch supports ReadableStream bodies —
- * we never materialise the whole file in RAM.
- *
- * Falls back to single-shot streamed `uploadType=media` + PATCH metadata
- * if the gateway strips the `Location` header from the resumable init.
+ * Stream a ReadableStream straight to Google Drive via the resumable upload
+ * protocol. The body is never buffered in the edge function.
  */
 async function uploadStreamToDrive(
-  blob: Blob, filename: string, mimeType: string, parentId: string,
-  lovableKey: string, driveKey: string,
+  stream: ReadableStream<Uint8Array>,
+  sizeBytes: number,
+  filename: string,
+  mimeType: string,
+  parentId: string,
+  lovableKey: string,
+  driveKey: string,
 ): Promise<{ id: string; webViewLink?: string }> {
-  // ---- Try resumable upload first ----
   const initRes = await fetch(
     `${GATEWAY}/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink`,
     {
@@ -83,7 +97,7 @@ async function uploadStreamToDrive(
         'X-Connection-Api-Key': driveKey,
         'Content-Type': 'application/json; charset=UTF-8',
         'X-Upload-Content-Type': mimeType,
-        'X-Upload-Content-Length': String(blob.size),
+        'X-Upload-Content-Length': String(sizeBytes),
       },
       body: JSON.stringify({ name: filename, parents: [parentId], mimeType }),
     },
@@ -94,59 +108,53 @@ async function uploadStreamToDrive(
     initRes.headers.get('location') ||
     initRes.headers.get('X-Goog-Upload-URL');
 
-  if (initRes.ok && sessionUrl) {
-    const put = await fetch(sessionUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': mimeType },
-      body: blob.stream(),
-      // @ts-ignore — Deno requires duplex for streaming bodies
-      duplex: 'half',
-    });
-    const text = await put.text();
-    if (!put.ok) throw new Error(`Drive resumable PUT failed [${put.status}]: ${text.slice(0, 400)}`);
-    try {
-      return JSON.parse(text);
-    } catch {
-      throw new Error(`Drive resumable PUT returned non-JSON: ${text.slice(0, 200)}`);
-    }
+  if (!initRes.ok || !sessionUrl) {
+    const t = await initRes.text().catch(() => '');
+    throw new Error(
+      `Drive resumable init failed [${initRes.status}, hasLocation=${!!sessionUrl}]: ${t.slice(0, 300)}`,
+    );
   }
 
-  // ---- Fallback: streamed single-shot, then PATCH metadata ----
-  console.warn(
-    `Resumable init failed (status=${initRes.status}, hasLocation=${!!sessionUrl}). Falling back to media upload.`,
-  );
-
-  const mediaRes = await fetch(
-    `${GATEWAY}/upload/drive/v3/files?uploadType=media&fields=id,webViewLink`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${lovableKey}`,
-        'X-Connection-Api-Key': driveKey,
-        'Content-Type': mimeType,
-      },
-      body: blob.stream(),
-      // @ts-ignore
-      duplex: 'half',
-    },
-  );
-  const mediaText = await mediaRes.text();
-  if (!mediaRes.ok) {
-    throw new Error(`Drive media upload failed [${mediaRes.status}]: ${mediaText.slice(0, 400)}`);
+  const put = await fetch(sessionUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': mimeType, 'Content-Length': String(sizeBytes) },
+    body: stream,
+    // @ts-ignore — Deno requires duplex for streaming bodies
+    duplex: 'half',
+  });
+  const text = await put.text();
+  if (!put.ok) throw new Error(`Drive resumable PUT failed [${put.status}]: ${text.slice(0, 400)}`);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Drive resumable PUT returned non-JSON: ${text.slice(0, 200)}`);
   }
-  const created = JSON.parse(mediaText);
+}
 
-  // Set name + parents via PATCH (metadata-only)
-  const patched = await gatewayJson(
-    `/drive/v3/files/${created.id}?addParents=${parentId}&fields=id,webViewLink`,
-    {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: filename }),
-    },
-    lovableKey, driveKey,
-  );
-  return { id: created.id, webViewLink: patched?.webViewLink };
+/**
+ * Open a streaming download for a Supabase storage object using a signed URL.
+ * Returns the response body stream + the resolved size + content-type.
+ */
+async function openStorageStream(
+  admin: ReturnType<typeof createClient>,
+  bucket: string,
+  path: string,
+  fallbackSize: number,
+  fallbackMime: string,
+): Promise<{ stream: ReadableStream<Uint8Array>; size: number; mimeType: string }> {
+  const signed = await admin.storage.from(bucket).createSignedUrl(path, SIGNED_URL_TTL);
+  if (signed.error || !signed.data?.signedUrl) {
+    throw new Error(`signed URL failed: ${signed.error?.message ?? 'no url'}`);
+  }
+  const res = await fetch(signed.data.signedUrl);
+  if (!res.ok || !res.body) {
+    const t = await res.text().catch(() => '');
+    throw new Error(`storage fetch failed [${res.status}]: ${t.slice(0, 200)}`);
+  }
+  const cl = Number(res.headers.get('content-length') ?? '0');
+  const size = cl > 0 ? cl : fallbackSize;
+  const mimeType = res.headers.get('content-type') || fallbackMime;
+  return { stream: res.body, size, mimeType };
 }
 
 Deno.serve(async (req) => {
@@ -164,7 +172,6 @@ Deno.serve(async (req) => {
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
 
     const { batchSize, mode = 'cached' } = await req.json().catch(() => ({}));
-    // Smaller default for orphan mode (large videos), larger for cached (small files)
     const defaultBatch = mode === 'orphans' ? 2 : 5;
     const limit = Math.max(1, Math.min(20, Number(batchSize ?? defaultBatch)));
 
@@ -203,46 +210,51 @@ Deno.serve(async (req) => {
 
     // ===== ORPHANS mode =====
     if (mode === 'orphans') {
-      // Pull a slightly bigger window so we can skip oversize files and still
-      // process `limit` reasonable ones in a single invocation.
-      const window = Math.max(limit * 4, 10);
+      // Pull a full page so we can sort by size and prefer smaller files
+      // first — avoids burning the batch on 250 MB giants.
       const { data: files, error: listErr } = await admin.storage.from('clips').list('', {
-        limit: window, sortBy: { column: 'name', order: 'asc' },
+        limit: 1000, sortBy: { column: 'name', order: 'asc' },
       });
       if (listErr) throw listErr;
+
+      const indexed = (files ?? [])
+        .filter((f) => f.id)
+        .map((f) => ({
+          name: f.name,
+          size: Number((f.metadata as Record<string, unknown> | null)?.size ?? 0),
+        }))
+        .sort((a, b) => a.size - b.size);
 
       const succeeded: Array<Record<string, unknown>> = [];
       const failed: Array<Record<string, unknown>> = [];
       let processedReal = 0;
 
-      for (const file of files ?? []) {
-        if (!file.id) continue;
+      for (const file of indexed) {
         if (processedReal >= limit) break;
 
-        const sizeBytes = Number((file.metadata as Record<string, unknown> | null)?.size ?? 0);
-
-        // Skip giants — they OOM the function. User must move these manually.
-        if (sizeBytes > MAX_FILE_BYTES) {
-          failed.push({
-            id: file.name,
-            title: file.name,
-            error: `too large (${(sizeBytes / 1024 / 1024).toFixed(0)} MB) — download from bucket and upload to Drive manually`,
-            sizeBytes,
-            skipped: true,
-          });
-          continue;
+        if (file.size > MAX_FILE_BYTES) {
+          // Files are size-sorted ascending — once we hit one too big, the
+          // rest of this list is also too big. Push them all as skipped so
+          // the UI can show download links.
+          for (const giant of indexed.slice(indexed.indexOf(file))) {
+            failed.push({
+              id: giant.name,
+              title: giant.name,
+              error: `too large (${(giant.size / 1024 / 1024).toFixed(0)} MB) — download from bucket and upload to Drive manually`,
+              sizeBytes: giant.size,
+              skipped: true,
+            });
+          }
+          break;
         }
 
         processedReal += 1;
         try {
-          const dl = await admin.storage.from('clips').download(file.name);
-          if (dl.error || !dl.data) {
-            failed.push({ id: file.name, title: file.name, error: dl.error?.message || 'download failed' });
-            continue;
-          }
-          const mimeType = (dl.data as Blob).type || 'video/mp4';
+          const { stream, size, mimeType } = await openStorageStream(
+            admin, 'clips', file.name, file.size, mimeFromName(file.name),
+          );
           const uploaded = await uploadStreamToDrive(
-            dl.data as Blob, file.name, mimeType, quarterId, lovableKey, driveKey,
+            stream, size, file.name, mimeType, quarterId, lovableKey, driveKey,
           );
           const rm = await admin.storage.from('clips').remove([file.name]);
           if (rm.error) console.warn('Supabase remove warning:', rm.error.message);
@@ -259,16 +271,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Quick recount (cap at one page — UI will refresh full count separately)
-      let remaining = 0;
-      const { data: remData } = await admin.storage.from('clips').list('', {
-        limit: 1000, sortBy: { column: 'name', order: 'asc' },
-      });
-      remaining = (remData ?? []).filter((f) => f.id).length;
-
-      // `processed` counts files we attempted (succeeded + failed including skips).
-      // `migratable` tells the client whether any non-skipped work was done — used
-      // to break the auto-loop when only oversized files remain.
+      const remaining = indexed.length - succeeded.length;
       const migratable = succeeded.length + failed.filter((f) => !f.skipped).length;
 
       return new Response(
@@ -312,28 +315,41 @@ Deno.serve(async (req) => {
         }
         const objectPath = decodeURIComponent(url.slice(idx + marker.length));
 
-        const dl = await admin.storage.from('clips').download(objectPath);
-        if (dl.error || !dl.data) {
-          failed.push({ id: clip.id, title: clip.title, error: dl.error?.message || 'download failed' });
-          continue;
-        }
-
-        const blob = dl.data as Blob;
-        if (blob.size > MAX_FILE_BYTES) {
+        // Peek at size before streaming so we can skip oversized files cleanly
+        const head = await admin.storage.from('clips').list('', {
+          limit: 1, search: objectPath.split('/').pop() ?? '',
+        });
+        const sizeHint = Number(
+          (head.data?.[0]?.metadata as Record<string, unknown> | null)?.size ?? 0,
+        );
+        if (sizeHint > MAX_FILE_BYTES) {
           failed.push({
             id: clip.id,
             title: clip.title,
-            error: `too large (${(blob.size / 1024 / 1024).toFixed(0)} MB) — migrate manually`,
+            error: `too large (${(sizeHint / 1024 / 1024).toFixed(0)} MB) — migrate manually`,
+            skipped: true,
+          });
+          continue;
+        }
+
+        const { stream, size, mimeType } = await openStorageStream(
+          admin, 'clips', objectPath, sizeHint, mimeFromName(objectPath),
+        );
+        if (size > MAX_FILE_BYTES) {
+          // cancel the stream we opened
+          try { await stream.cancel(); } catch { /* ignore */ }
+          failed.push({
+            id: clip.id,
+            title: clip.title,
+            error: `too large (${(size / 1024 / 1024).toFixed(0)} MB) — migrate manually`,
             skipped: true,
           });
           continue;
         }
 
         const filename = `${clip.id}-${objectPath.split('/').pop() ?? 'clip.bin'}`;
-        const mimeType = blob.type || 'video/mp4';
-
         const uploaded = await uploadStreamToDrive(
-          blob, filename, mimeType, quarterId, lovableKey, driveKey,
+          stream, size, filename, mimeType, quarterId, lovableKey, driveKey,
         );
 
         const { error: updErr } = await admin

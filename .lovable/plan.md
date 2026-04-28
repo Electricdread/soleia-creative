@@ -1,76 +1,49 @@
-# Fix Orphan Migration OOM Crashes
+The migration is still failing because the current function still downloads each storage object into a `Blob` before uploading it to Drive. Even though the Drive upload side is streamed, `storage.download()` buffers the original video in the function first, so 100–190 MB clips can still exceed the function memory limit. The failing requests are returning status `546 WORKER_RESOURCE_LIMIT`.
 
-## Problem
-Edge function `migrate-clips-to-drive` is killed with **"Memory limit exceeded"** every run. Files in the `clips` bucket are up to **270 MB each**, but the current uploader buffers the whole file (`blob.arrayBuffer()` + concatenated `Uint8Array`) → ~540 MB peak RAM, well over the ~256 MB edge function cap.
+Plan:
 
-## Fix
+1. Replace buffered storage downloads with signed URL streaming
+   - In `migrate-clips-to-drive`, stop using `admin.storage.from('clips').download(...)` for migration.
+   - Use `createSignedUrl(...)` to generate a temporary storage URL.
+   - `fetch()` that signed URL and pass `response.body` directly into the Drive upload request.
+   - This avoids creating a full in-memory `Blob` for each video.
 
-### 1. Edge function: `supabase/functions/migrate-clips-to-drive/index.ts`
+2. Update Drive upload helper to accept streams
+   - Change `uploadStreamToDrive(...)` from `Blob` input to a `ReadableStream` plus `sizeBytes` and `mimeType`.
+   - Keep Google Drive resumable upload, but send the storage response stream as the PUT body.
+   - Remove or heavily restrict the media-upload fallback, because it can hide the real failure and may still be resource-heavy.
 
-**a. New streamed uploader using Drive's resumable upload protocol**
-- `POST /upload/drive/v3/files?uploadType=resumable` with metadata only → Drive returns a session URL in the `Location` header.
-- `PUT` the body to that session URL using `blob.stream()` directly (Deno fetch supports `ReadableStream` bodies → flat memory).
-- Fallback path if the gateway strips the `Location` header: stream `uploadType=media`, then PATCH the file metadata to set name/parents.
+3. Lower the automatic safety threshold
+   - Reduce the auto-migration file limit from 200 MB to a safer value, likely 100 MB.
+   - The database currently shows 20 files over 100 MB and 9 files over 200 MB, so this will prevent repeated crashes while still migrating the smaller bulk safely.
+   - Oversized files will be marked as skipped with clear manual-download instructions.
 
-**b. Per-file size guard**
-- Before downloading, read `file.metadata.size`. If `> 200 MB`, push to `failed[]` with reason `"too large for edge function — download manually from bucket and upload to Drive"` and continue.
+4. Sort migration by smallest files first
+   - For orphaned files, list a window of files, sort by `metadata.size` ascending, and migrate the smallest safe files first.
+   - This prevents the migration from repeatedly starting on large early filenames such as the Gold/SKY-SPACE clips.
 
-**c. Smaller default batch + sequential**
-- Default `batchSize` for `orphans` mode: **2** (was 5). Keeps wall-clock per invocation low and avoids CPU timeout.
+5. Make the UI error more useful
+   - Surface `WORKER_RESOURCE_LIMIT` as “file too large / migration exceeded compute limits” instead of only “Edge Function returned a non-2xx status code.”
+   - Continue showing skipped/failed files and direct bucket download links for manual Drive upload.
+   - Adjust “Migrate all orphans” to stop gracefully once only oversized files remain.
 
-**d. Better failure isolation**
-- Already `try/catch` per file; verify partial successes are still committed when a later file errors.
+6. Deploy and test the function
+   - Deploy the updated `migrate-clips-to-drive` function.
+   - Test `mode: count` and a single orphan batch.
+   - Confirm it either migrates a small file successfully or returns a clean skipped-file response instead of a 546 compute-limit crash.
 
-### 2. UI: `src/components/admin/StoragePanel.tsx`
+Technical details:
 
-**a. Render `failed[]` inline** under the orphan section showing filename + reason (so the user sees which giants were skipped).
+```text
+Before:
+Storage object -> storage.download() -> full Blob in Edge Function memory -> blob.stream() -> Drive
 
-**b. Loop guard** — stop the "Migrate all orphans" loop when:
-- `processed === 0`, OR
-- `remaining` did not decrease vs previous iteration (prevents infinite loop on giants that always skip).
-
-**c. Manual-download helper** — for each failed/oversized file, show a "Download from bucket" button that opens the public clips URL so the user can manually push it to Drive.
-
-## Technical snippet
-```ts
-async function uploadStreamToDrive(blob, filename, mimeType, parentId, lovableKey, driveKey) {
-  const init = await fetch(
-    `${GATEWAY}/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${lovableKey}`,
-        'X-Connection-Api-Key': driveKey,
-        'Content-Type': 'application/json; charset=UTF-8',
-        'X-Upload-Content-Type': mimeType,
-        'X-Upload-Content-Length': String(blob.size),
-      },
-      body: JSON.stringify({ name: filename, parents: [parentId], mimeType }),
-    },
-  );
-  const sessionUrl = init.headers.get('Location') ?? init.headers.get('location');
-  if (!sessionUrl) throw new Error('No resumable session URL returned');
-
-  const put = await fetch(sessionUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': mimeType },
-    body: blob.stream(),  // streamed — no full buffer in RAM
-  });
-  if (!put.ok) throw new Error(`Drive PUT failed [${put.status}]: ${await put.text()}`);
-  return await put.json();
-}
-
-// Per-file guard
-const sizeBytes = (file.metadata as any)?.size ?? 0;
-if (sizeBytes > 200 * 1024 * 1024) {
-  failed.push({ id: file.name, title: file.name, error: 'too large for edge function — download manually' });
-  continue;
-}
+After:
+Storage object -> signed URL -> fetch Response.body stream -> Drive resumable upload
 ```
 
-## Files modified
+Files to update:
 - `supabase/functions/migrate-clips-to-drive/index.ts`
 - `src/components/admin/StoragePanel.tsx`
 
-## After deploy
-You'll be able to migrate files up to ~200 MB automatically (covers most of the bucket). The 8 giant 250–270 MB SKY-SPACE/WAVE files (~2 GB total) will appear in a "Skipped — too large" list with download links so you can move them to Drive by hand.
+After this, the remaining very large originals may still need manual upload to Drive, but the automated migration should no longer crash on the first large clip.
