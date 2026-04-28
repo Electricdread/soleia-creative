@@ -30,7 +30,16 @@ type StatusReport = {
 
 type MigrationResult =
   | { kind: 'success'; id: string; title: string; driveFileId: string; driveWebViewLink: string | null }
-  | { kind: 'error'; id: string; title: string; error: string };
+  | { kind: 'error'; id: string; title: string; error: string; skipped?: boolean };
+
+const SUPABASE_PROJECT_REF = (import.meta.env.VITE_SUPABASE_URL as string | undefined)
+  ?.match(/https?:\/\/([^.]+)\./)?.[1];
+
+function clipPublicUrl(filename: string) {
+  return SUPABASE_PROJECT_REF
+    ? `https://${SUPABASE_PROJECT_REF}.supabase.co/storage/v1/object/public/clips/${encodeURIComponent(filename)}`
+    : null;
+}
 
 function StatusPill({
   label,
