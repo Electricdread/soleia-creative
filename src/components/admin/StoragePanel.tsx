@@ -69,6 +69,14 @@ export function StoragePanel() {
   const [stats, setStats] = useState({ total: 0, supabase: 0, drive: 0 });
   const [statsLoading, setStatsLoading] = useState(false);
 
+  // Orphans (raw bucket files not in cached_clips)
+  const [orphans, setOrphans] = useState({ count: 0, bytes: 0 });
+  const [orphansLoading, setOrphansLoading] = useState(false);
+  const [orphanRunning, setOrphanRunning] = useState(false);
+  const [orphanCancel, setOrphanCancel] = useState(false);
+  const [orphanProgress, setOrphanProgress] = useState({ migrated: 0, total: 0, remaining: 0 });
+  const [orphanResults, setOrphanResults] = useState<MigrationResult[]>([]);
+
   // Migration
   const [batchSize, setBatchSize] = useState(5);
   const [running, setRunning] = useState(false);
