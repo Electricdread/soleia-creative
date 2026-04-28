@@ -139,10 +139,108 @@ export function StoragePanel() {
     }
   }, [toast]);
 
+  const refreshOrphans = useCallback(async () => {
+    setOrphansLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('migrate-clips-to-drive', {
+        body: { mode: 'count' },
+      });
+      if (error) throw error;
+      const d = data as { totalOrphans: number; totalBytes: number };
+      setOrphans({ count: d.totalOrphans ?? 0, bytes: d.totalBytes ?? 0 });
+    } catch (e) {
+      console.error('refreshOrphans error:', e);
+    } finally {
+      setOrphansLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     refreshStats();
     runStatus();
-  }, [refreshStats, runStatus]);
+    refreshOrphans();
+  }, [refreshStats, runStatus, refreshOrphans]);
+
+  const runOrphanBatch = async (size: number) => {
+    const { data, error } = await supabase.functions.invoke('migrate-clips-to-drive', {
+      body: { mode: 'orphans', batchSize: size },
+    });
+    if (error) throw error;
+    return data as {
+      processed: number;
+      succeeded: Array<{ id: string; title: string; driveFileId: string; driveWebViewLink: string | null }>;
+      failed: Array<{ id: string; title: string; error: string }>;
+      remaining: number;
+    };
+  };
+
+  const handleMigrateOrphansAll = async () => {
+    setOrphanRunning(true);
+    setOrphanCancel(false);
+    setOrphanResults([]);
+    let totalSucceeded = 0;
+    let totalFailed = 0;
+    let initialTotal = orphans.count;
+    try {
+      while (true) {
+        if (orphanCancel) break;
+        const data = await runOrphanBatch(batchSize);
+        if (initialTotal === 0) initialTotal = data.processed + data.remaining;
+        totalSucceeded += data.succeeded.length;
+        totalFailed += data.failed.length;
+        setOrphanResults((prev) => [
+          ...data.succeeded.map((r) => ({ kind: 'success' as const, ...r })),
+          ...data.failed.map((r) => ({ kind: 'error' as const, ...r })),
+          ...prev,
+        ]);
+        setOrphanProgress({
+          migrated: totalSucceeded,
+          total: initialTotal,
+          remaining: data.remaining,
+        });
+        if (data.remaining === 0 || data.processed === 0) break;
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      toast({
+        title: 'Orphan migration finished',
+        description: `${totalSucceeded} migrated, ${totalFailed} failed`,
+      });
+      await refreshOrphans();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast({ title: 'Orphan migration stopped', description: msg, variant: 'destructive' });
+    } finally {
+      setOrphanRunning(false);
+      setOrphanCancel(false);
+    }
+  };
+
+  const handleMigrateOrphansBatch = async () => {
+    setOrphanRunning(true);
+    try {
+      const data = await runOrphanBatch(batchSize);
+      setOrphanResults((prev) => [
+        ...data.succeeded.map((r) => ({ kind: 'success' as const, ...r })),
+        ...data.failed.map((r) => ({ kind: 'error' as const, ...r })),
+        ...prev,
+      ]);
+      setOrphanProgress({
+        migrated: data.succeeded.length,
+        total: data.processed + data.remaining,
+        remaining: data.remaining,
+      });
+      toast({
+        title: 'Batch complete',
+        description: `${data.succeeded.length} migrated, ${data.failed.length} failed, ${data.remaining} remaining`,
+      });
+      await refreshOrphans();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast({ title: 'Orphan migration failed', description: msg, variant: 'destructive' });
+    } finally {
+      setOrphanRunning(false);
+    }
+  };
 
   const runOneBatch = async (size: number) => {
     const { data, error } = await supabase.functions.invoke(
