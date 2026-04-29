@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Settings2, Search, Loader2, Pencil, Trash2, Play } from 'lucide-react';
+import { Plus, Settings2, Search, Loader2, Pencil, Trash2, Play, Share2, Link2 } from 'lucide-react';
 import { CategoryManagerDialog, type LookbookCategory } from './CategoryManagerDialog';
 import { AddLookMediaDialog } from './AddLookMediaDialog';
+import { ShareLookBookDialog } from './ShareLookBookDialog';
+import { ManageLookBookSharesDialog } from './ManageLookBookSharesDialog';
 
 interface LookClip {
   id: string;
