@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Settings2, Search, Loader2, Pencil, Trash2, Play } from 'lucide-react';
+import { Plus, Settings2, Search, Loader2, Pencil, Trash2, Play, Share2, Link2 } from 'lucide-react';
 import { CategoryManagerDialog, type LookbookCategory } from './CategoryManagerDialog';
 import { AddLookMediaDialog } from './AddLookMediaDialog';
+import { ShareLookBookDialog } from './ShareLookBookDialog';
+import { ManageLookBookSharesDialog } from './ManageLookBookSharesDialog';
 
 interface LookClip {
   id: string;
@@ -31,6 +33,8 @@ export function LookBookView() {
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [showCats, setShowCats] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [showManageShares, setShowManageShares] = useState(false);
   const [previewing, setPreviewing] = useState<LookClip | null>(null);
   const [editing, setEditing] = useState<LookClip | null>(null);
 
@@ -95,7 +99,23 @@ export function LookBookView() {
             style={{ fontSize: '16px' }}
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={() => setShowManageShares(true)}
+            className="border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 hover:text-[#c49a3c]"
+          >
+            <Link2 className="h-4 w-4 mr-2" />
+            Shares
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowShare(true)}
+            className="border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 hover:text-[#c49a3c]"
+          >
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
+          </Button>
           <Button
             variant="outline"
             onClick={() => setShowCats(true)}
@@ -186,6 +206,16 @@ export function LookBookView() {
         categories={categories}
         onClose={() => setEditing(null)}
         onSaved={loadAll}
+      />
+      <ShareLookBookDialog
+        open={showShare}
+        onOpenChange={setShowShare}
+        categories={categories}
+        clips={clips.map((c) => ({ id: c.id, title: c.title, thumbnail: c.thumbnail, category_id: c.category_id }))}
+      />
+      <ManageLookBookSharesDialog
+        open={showManageShares}
+        onOpenChange={setShowManageShares}
       />
     </div>
   );
@@ -354,12 +384,16 @@ function EditDialog({
 }) {
   const { toast } = useToast();
   const [title, setTitle] = useState('');
+  const [resolution, setResolution] = useState('');
+  const [duration, setDuration] = useState('');
   const [categoryId, setCategoryId] = useState<string>('none');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (clip) {
       setTitle(clip.title || '');
+      setResolution(clip.resolution || '');
+      setDuration(clip.duration || '');
       setCategoryId(clip.category_id || 'none');
     }
   }, [clip]);
@@ -372,6 +406,8 @@ function EditDialog({
       .from('cached_clips')
       .update({
         title: title.trim() || 'Untitled',
+        resolution: resolution.trim() || null,
+        duration: duration.trim() || null,
         category_id: categoryId === 'none' ? null : categoryId,
         category: cat?.slug ?? clip.category ?? null,
       } as any)
@@ -402,6 +438,28 @@ function EditDialog({
               className="bg-zinc-900 border-zinc-800 text-zinc-100"
               style={{ fontSize: '16px' }}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs uppercase tracking-wider text-zinc-400">Resolution</label>
+              <Input
+                value={resolution}
+                onChange={(e) => setResolution(e.target.value)}
+                placeholder="e.g. 4K, 1080p"
+                className="bg-zinc-900 border-zinc-800 text-zinc-100"
+                style={{ fontSize: '16px' }}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs uppercase tracking-wider text-zinc-400">Duration</label>
+              <Input
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="e.g. 00:15, 8s loop"
+                className="bg-zinc-900 border-zinc-800 text-zinc-100"
+                style={{ fontSize: '16px' }}
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
             <label className="text-xs uppercase tracking-wider text-zinc-400">Category</label>
