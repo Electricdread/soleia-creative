@@ -61,8 +61,8 @@ const portals: PortalCard[] = [
     href: '/admin/creative',
   },
   {
-    title: 'Content Previz',
-    description: 'Per-client video previews for content review and approval',
+    title: 'Looks Collection',
+    description: 'Curated motion library — upload, categorize, and browse looks',
     icon: <Video className="w-6 h-6 text-[#c49a3c]" />,
     href: '/admin/looks',
   },

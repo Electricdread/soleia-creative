@@ -17,6 +17,7 @@ export type Database = {
       cached_clips: {
         Row: {
           category: string
+          category_id: string | null
           created_at: string
           drive_file_id: string | null
           drive_web_view_link: string | null
@@ -35,6 +36,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          category_id?: string | null
           created_at?: string
           drive_file_id?: string | null
           drive_web_view_link?: string | null
@@ -53,6 +55,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          category_id?: string | null
           created_at?: string
           drive_file_id?: string | null
           drive_web_view_link?: string | null
@@ -69,7 +72,15 @@ export type Database = {
           updated_at?: string
           video_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cached_clips_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "lookbook_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       calendar_event_associations: {
         Row: {
@@ -691,6 +702,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lookbook_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       mood_board_comments: {
         Row: {
