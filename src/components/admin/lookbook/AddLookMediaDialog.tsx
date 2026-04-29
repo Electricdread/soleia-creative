@@ -26,7 +26,10 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded 
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
 
-  useEffect(() => uploadQueue.subscribe(setQueue), []);
+  useEffect(() => {
+    const unsubscribe = uploadQueue.subscribe(setQueue);
+    return () => { unsubscribe(); };
+  }, []);
 
   useEffect(() => {
     uploadQueue.setProcessor(async (item: QueueItem) => {
