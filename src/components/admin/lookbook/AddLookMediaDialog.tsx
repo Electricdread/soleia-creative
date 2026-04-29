@@ -126,8 +126,14 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded,
       toast({ title: 'Pick a category first', variant: 'destructive' });
       return;
     }
+    const VIDEO_EXTS = ['.mp4', '.mov', '.webm', '.m4v', '.mkv', '.avi'];
+    const looksLikeVideo = (f: File) => {
+      if (f.type.startsWith('video/')) return true;
+      const name = f.name.toLowerCase();
+      return VIDEO_EXTS.some((ext) => name.endsWith(ext));
+    };
     const valid = files.filter((f) => {
-      if (!f.type.startsWith('video/')) {
+      if (!looksLikeVideo(f)) {
         toast({ title: `Skipped ${f.name}`, description: 'Not a video file', variant: 'destructive' });
         return false;
       }
