@@ -1,43 +1,29 @@
-## Fix Look Book Add Media flow
+## Problem
 
-The "Add Media" dialog opens, but clicking the dropzone often does nothing and uploads silently fail to start. Three concrete causes were identified.
+When tapping "Browse files" in the Add to Look Book dialog, the iOS file picker opens but most files appear greyed out and unselectable. This happens because the file input uses `accept="video/*"`, which on iOS/iPadOS aggressively filters the Files app to disable anything not recognized as a video — including legitimate video files (like `.mov`, `.mp4` from Drive/Dropbox folders) whose MIME type can't be inferred from extension alone.
 
-### Problems found
+The screenshot confirms the user is in iOS Files → Downloads, where `.mp3`, `.pdf`, `.numbers`, etc. are correctly disabled, but on iPad this restriction also frequently disables real video files when their UTI isn't detected.
 
-1. **Dropzone is silently disabled when no category is picked.**
-   The hidden `<input type="file">` has `disabled={!categoryId}` and the visible drop area gets `cursor-not-allowed` + `opacity-50`. When the user clicks, nothing happens and there is no toast or visible explanation. If no categories exist yet, the Select shows only "Create a category first." with no shortcut to actually create one — a dead-end UX.
+## Fix
 
-2. **Click target is unreliable.**
-   The `<input>` is `absolute inset-0` over the dropzone, but the dropzone also has its own `cursor-pointer` and click handlers stacked with `<input>` siblings. On some browsers/iOS, the overlay input does not receive the synthetic click. We will switch to an explicit "Browse files" button that calls `fileInputRef.current?.click()`, plus keep drag-and-drop on the surrounding area.
+Loosen the file input's accept filter so iOS doesn't pre-filter the picker, then validate the chosen files in JS (which already happens — the existing handler rejects non-video files with a toast).
 
-3. **No user feedback when the upload pipeline starts/fails early.**
-   `extractVideoMetadata` runs in a loop with `await` before clearing the input — if any file is corrupt or browser can't decode it, the whole queue stalls silently. We will wrap the loop in try/catch per item and toast on failure, and start queue processing even if metadata extraction fails (thumbnail is optional in the queue UI).
+### Changes to `src/components/admin/lookbook/AddLookMediaDialog.tsx`
 
-### Changes
+1. Change the `<input>` accept attribute from `accept="video/*"` to an explicit list of common video extensions plus the wildcard, so iOS Files presents all matching files as enabled:
+   ```tsx
+   accept="video/*,.mp4,.mov,.webm,.m4v,.mkv,.avi"
+   ```
+2. Keep the existing JS-side validation in `handleFiles` that rejects non-video files (`!f.type.startsWith('video/')`) — but make it more lenient by also accepting files whose extension matches a known video extension when the browser-reported MIME type is empty (common on iOS for `.mov`).
+3. Update the helper text under the dropzone to mention supported formats explicitly: "MP4, MOV, WebM, M4V — up to 500 MB each".
 
-**`src/components/admin/lookbook/AddLookMediaDialog.tsx`**
-- Replace the hidden full-cover input with a normal hidden input + a visible **Browse files** button (always rendered) and a **Drop zone** (drag/drop only). The button is enabled only when a category is chosen; when not, it shows a helper line: *"Pick or create a category first"* with an inline **Create category** action that opens the Category Manager.
-- Add a "Create category" inline shortcut (`onCreateCategory` prop) that closes the upload dialog and opens `CategoryManagerDialog`, so users are never stuck.
-- Toast a clear message when the user attempts to add files without a category, instead of silently doing nothing.
-- Per-file try/catch around `extractVideoMetadata` so a single bad file no longer blocks the queue. Always call `uploadQueue.addFiles` first, then attach optional thumbnails.
-- Add `onClick` handler to the visible drop area that triggers the file picker as a fallback (so clicking the zone also works, not only the button).
-- Show inline error text and a "Retry" hint when a queue item fails (already partly there — make the error message readable instead of `[object Object]` by extracting `.message`).
-- Reset the queue/thumbnails state when the dialog closes so reopening starts clean.
+### Why this works
 
-**`src/components/admin/lookbook/LookBookView.tsx`**
-- Wire a new `onCreateCategory` callback into `AddLookMediaDialog` that closes Add Media and opens `CategoryManagerDialog`. After categories change, reload and reopen Add Media.
-- When the user clicks **Add Media** and there are zero categories, open the Category Manager first with a toast: *"Create at least one category to organize your looks."*
+- `accept="video/*"` on iOS uses UTI matching that's stricter than desktop browsers. Adding explicit extensions tells iOS Files to enable any file with those extensions regardless of UTI detection.
+- The defensive JS validation ensures non-video files still can't sneak through if the user manually picks one.
 
-### Out of scope
+## Files to modify
 
-- The Drive upload edge function (`upload-to-drive`) itself appears healthy; no logs of failures. We will not change it. If after this fix uploads still fail server-side, we will inspect `upload-to-drive` logs in a follow-up.
-- Video re-encoding pipeline (`compressVideo`) is unchanged.
+- `src/components/admin/lookbook/AddLookMediaDialog.tsx` — relax `accept`, add extension-based fallback in `handleFiles`, update helper text.
 
-### Verification
-
-After the fix:
-- Open `/admin/looks` → click **Add Media**.
-- With no categories: a toast prompts you to create one and the Category Manager opens.
-- With a category selected: clicking the dropzone OR the **Browse files** button opens the OS file picker.
-- Dragging files in still works.
-- A bad/corrupt file shows an error in its queue row but other files keep processing.
+No database, RLS, or other component changes needed.

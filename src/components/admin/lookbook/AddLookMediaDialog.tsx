@@ -126,8 +126,14 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded,
       toast({ title: 'Pick a category first', variant: 'destructive' });
       return;
     }
+    const VIDEO_EXTS = ['.mp4', '.mov', '.webm', '.m4v', '.mkv', '.avi'];
+    const looksLikeVideo = (f: File) => {
+      if (f.type.startsWith('video/')) return true;
+      const name = f.name.toLowerCase();
+      return VIDEO_EXTS.some((ext) => name.endsWith(ext));
+    };
     const valid = files.filter((f) => {
-      if (!f.type.startsWith('video/')) {
+      if (!looksLikeVideo(f)) {
         toast({ title: `Skipped ${f.name}`, description: 'Not a video file', variant: 'destructive' });
         return false;
       }
@@ -229,7 +235,7 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded,
         <input
           ref={fileInputRef}
           type="file"
-          accept="video/*"
+          accept="video/*,.mp4,.mov,.webm,.m4v,.mkv,.avi"
           multiple
           onChange={handleFiles}
           className="hidden"
@@ -255,7 +261,7 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded,
               <Upload className="h-6 w-6 text-[#c49a3c]" />
             </div>
             <p className="text-sm text-zinc-200">Drop videos here or tap to browse</p>
-            <p className="text-xs text-zinc-500">MP4, WebM, MOV — up to 500 MB each</p>
+            <p className="text-xs text-zinc-500">MP4, MOV, WebM, M4V — up to 500 MB each</p>
             <Button
               type="button"
               onClick={(e) => { e.stopPropagation(); openFilePicker(); }}
