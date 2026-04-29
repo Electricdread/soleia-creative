@@ -1,77 +1,43 @@
-## Look Book — Full Edit Dialog + Shareable Client Links
+## Fix Look Book Add Media flow
 
-Two upgrades to `/admin/looks`:
+The "Add Media" dialog opens, but clicking the dropzone often does nothing and uploads silently fail to start. Three concrete causes were identified.
 
-### 1. Expanded Edit Dialog
+### Problems found
 
-Currently `EditDialog` in `LookBookView.tsx` only edits **title** + **category**. Expand it to also edit:
+1. **Dropzone is silently disabled when no category is picked.**
+   The hidden `<input type="file">` has `disabled={!categoryId}` and the visible drop area gets `cursor-not-allowed` + `opacity-50`. When the user clicks, nothing happens and there is no toast or visible explanation. If no categories exist yet, the Select shows only "Create a category first." with no shortcut to actually create one — a dead-end UX.
 
-- Title
-- Resolution (free-text input, e.g. `4K`, `1080p`, `8192×1080`)
-- Duration (free-text, e.g. `00:15`, `8s loop`)
-- Category (existing dropdown from `lookbook_categories`)
+2. **Click target is unreliable.**
+   The `<input>` is `absolute inset-0` over the dropzone, but the dropzone also has its own `cursor-pointer` and click handlers stacked with `<input>` siblings. On some browsers/iOS, the overlay input does not receive the synthetic click. We will switch to an explicit "Browse files" button that calls `fileInputRef.current?.click()`, plus keep drag-and-drop on the surrounding area.
 
-Updates `cached_clips` row in place — no re-upload, no thumbnail change. Save button writes `{ title, resolution, duration, category_id, category }` and refreshes the gallery.
+3. **No user feedback when the upload pipeline starts/fails early.**
+   `extractVideoMetadata` runs in a loop with `await` before clearing the input — if any file is corrupt or browser can't decode it, the whole queue stalls silently. We will wrap the loop in try/catch per item and toast on failure, and start queue processing even if metadata extraction fails (thumbnail is optional in the queue UI).
 
-### 2. Shareable Look Book Links
+### Changes
 
-Generate a token-based public link to any **subset of looks** (filtered by category, or hand-picked) that can be pasted into a proposal, creative guide, or branded HTML email.
+**`src/components/admin/lookbook/AddLookMediaDialog.tsx`**
+- Replace the hidden full-cover input with a normal hidden input + a visible **Browse files** button (always rendered) and a **Drop zone** (drag/drop only). The button is enabled only when a category is chosen; when not, it shows a helper line: *"Pick or create a category first"* with an inline **Create category** action that opens the Category Manager.
+- Add a "Create category" inline shortcut (`onCreateCategory` prop) that closes the upload dialog and opens `CategoryManagerDialog`, so users are never stuck.
+- Toast a clear message when the user attempts to add files without a category, instead of silently doing nothing.
+- Per-file try/catch around `extractVideoMetadata` so a single bad file no longer blocks the queue. Always call `uploadQueue.addFiles` first, then attach optional thumbnails.
+- Add `onClick` handler to the visible drop area that triggers the file picker as a fallback (so clicking the zone also works, not only the button).
+- Show inline error text and a "Retry" hint when a queue item fails (already partly there — make the error message readable instead of `[object Object]` by extracting `.message`).
+- Reset the queue/thumbnails state when the dialog closes so reopening starts clean.
 
-#### New table: `lookbook_shares`
-
-```text
-id              uuid pk
-token           text unique           — short random token used in URL
-title           text                  — admin label, e.g. "Spring Cinematic Selects"
-intro_note      text nullable         — optional headline shown to client
-category_id     uuid nullable         — null = all clips, or scope to one category
-clip_ids        uuid[] nullable       — null = use category/all, or hand-picked subset
-is_active       boolean default true
-expires_at      timestamptz nullable  — optional expiry
-view_count      integer default 0
-created_by      uuid
-created_at      timestamptz default now()
-```
-
-RLS:
-- Admins: ALL (manage)
-- Public SELECT: only when `is_active = true AND (expires_at is null or expires_at > now())`
-
-#### New public route
-
-`/looks/:token` → `src/pages/SharedLookBook.tsx`
-
-- Fetches share by token (public read)
-- Resolves clips: hand-picked > category-filtered > all
-- Renders dark Soleia-branded gallery (Soleia wide logo header, gold accents, DM Serif title, JetBrains Mono meta)
-- Same hover-autoplay tile + tap-fullscreen behavior as admin
-- No edit/delete affordances; clean client view
-- Optional intro note shown above gallery
-- Tracks `view_count` increment on load
-
-Added to `src/App.tsx` routing as a public route (no `ProtectedRoute`).
-
-#### New admin UI: Share dialog
-
-Add a **Share** button to the Look Book toolbar (next to Categories / Add Media) and a small "Manage shares" entry. Two components:
-
-- `ShareLookBookDialog.tsx` — create a new share. Form: title, optional note, scope (All / specific category), optional expiry date, optional manual clip subset (uses currently filtered/visible clips with checkboxes). Generates token, inserts row, shows the public URL with **Copy Link** + **Copy as HTML email snippet** + **Copy as Markdown** buttons.
-- `ManageLookBookSharesDialog.tsx` — list of existing shares with view count, expiry, copy link, deactivate, delete.
-
-The **Copy as HTML email snippet** produces a small Soleia-branded `<table>` block (matches existing email patterns from `mem://tech/email-rendering-strategy`) with a centered gold CTA button linking to `https://soleiacreative.app/looks/{token}` — so it can be dropped into any client email, proposal, or creative guide.
-
-The **Copy Link** uses `getPublicOrigin()` from `src/lib/ogShare.ts` so the canonical `soleiacreative.app` domain is always used.
-
-### Files to change
-
-- `supabase/migrations/<new>.sql` — create `lookbook_shares` + RLS
-- `src/components/admin/lookbook/LookBookView.tsx` — expand EditDialog (resolution/duration), add Share button
-- `src/components/admin/lookbook/ShareLookBookDialog.tsx` — new
-- `src/components/admin/lookbook/ManageLookBookSharesDialog.tsx` — new
-- `src/pages/SharedLookBook.tsx` — new public page
-- `src/App.tsx` — add `/looks/:token` route
+**`src/components/admin/lookbook/LookBookView.tsx`**
+- Wire a new `onCreateCategory` callback into `AddLookMediaDialog` that closes Add Media and opens `CategoryManagerDialog`. After categories change, reload and reopen Add Media.
+- When the user clicks **Add Media** and there are zero categories, open the Category Manager first with a toast: *"Create at least one category to organize your looks."*
 
 ### Out of scope
 
-- No re-upload / new thumbnail capture in the edit dialog (existing AddLookMediaDialog handles new media).
-- No per-clip approval/selection flow on the shared page (this is presentational; selection-style flows live in client sessions).
+- The Drive upload edge function (`upload-to-drive`) itself appears healthy; no logs of failures. We will not change it. If after this fix uploads still fail server-side, we will inspect `upload-to-drive` logs in a follow-up.
+- Video re-encoding pipeline (`compressVideo`) is unchanged.
+
+### Verification
+
+After the fix:
+- Open `/admin/looks` → click **Add Media**.
+- With no categories: a toast prompts you to create one and the Category Manager opens.
+- With a category selected: clicking the dropzone OR the **Browse files** button opens the OS file picker.
+- Dragging files in still works.
+- A bad/corrupt file shows an error in its queue row but other files keep processing.
