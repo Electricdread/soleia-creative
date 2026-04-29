@@ -28,6 +28,7 @@ import OfficePortal from "./pages/OfficePortal";
 import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
 import ShowBloxPreview from "./pages/ShowBloxPreview";
+import SharedLookBook from "./pages/SharedLookBook";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/delivery-guide" element={<DeliveryGuide />} />
               
               <Route path="/delivery/:token" element={<SessionDeliveryGuide />} />
+              <Route path="/looks/:token" element={<SharedLookBook />} />
               
               {/* Root redirects to Admin Portal */}
               <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
