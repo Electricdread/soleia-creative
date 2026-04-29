@@ -384,12 +384,16 @@ function EditDialog({
 }) {
   const { toast } = useToast();
   const [title, setTitle] = useState('');
+  const [resolution, setResolution] = useState('');
+  const [duration, setDuration] = useState('');
   const [categoryId, setCategoryId] = useState<string>('none');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (clip) {
       setTitle(clip.title || '');
+      setResolution(clip.resolution || '');
+      setDuration(clip.duration || '');
       setCategoryId(clip.category_id || 'none');
     }
   }, [clip]);
@@ -402,6 +406,8 @@ function EditDialog({
       .from('cached_clips')
       .update({
         title: title.trim() || 'Untitled',
+        resolution: resolution.trim() || null,
+        duration: duration.trim() || null,
         category_id: categoryId === 'none' ? null : categoryId,
         category: cat?.slug ?? clip.category ?? null,
       } as any)
@@ -432,6 +438,28 @@ function EditDialog({
               className="bg-zinc-900 border-zinc-800 text-zinc-100"
               style={{ fontSize: '16px' }}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs uppercase tracking-wider text-zinc-400">Resolution</label>
+              <Input
+                value={resolution}
+                onChange={(e) => setResolution(e.target.value)}
+                placeholder="e.g. 4K, 1080p"
+                className="bg-zinc-900 border-zinc-800 text-zinc-100"
+                style={{ fontSize: '16px' }}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs uppercase tracking-wider text-zinc-400">Duration</label>
+              <Input
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="e.g. 00:15, 8s loop"
+                className="bg-zinc-900 border-zinc-800 text-zinc-100"
+                style={{ fontSize: '16px' }}
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
             <label className="text-xs uppercase tracking-wider text-zinc-400">Category</label>
