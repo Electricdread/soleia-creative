@@ -730,6 +730,59 @@ export type Database = {
         }
         Relationships: []
       }
+      lookbook_shares: {
+        Row: {
+          category_id: string | null
+          clip_ids: string[] | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          intro_note: string | null
+          is_active: boolean
+          title: string
+          token: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          category_id?: string | null
+          clip_ids?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          intro_note?: string | null
+          is_active?: boolean
+          title: string
+          token: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          category_id?: string | null
+          clip_ids?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          intro_note?: string | null
+          is_active?: boolean
+          title?: string
+          token?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lookbook_shares_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "lookbook_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mood_board_comments: {
         Row: {
           commenter_name: string
