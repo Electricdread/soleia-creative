@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { compressVideo, extractVideoMetadata } from '@/lib/videoCompressor';
 import { uploadQueue, QueueItem } from '@/lib/uploadQueue';
-import { Upload, Loader2, Check, X, FileVideo, Trash2, RotateCcw } from 'lucide-react';
+import { Upload, Loader2, Check, X, FileVideo, Trash2, RotateCcw, FolderPlus } from 'lucide-react';
 import type { LookbookCategory } from './CategoryManagerDialog';
 
 interface Props {
@@ -17,9 +17,10 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   categories: LookbookCategory[];
   onUploaded?: () => void;
+  onCreateCategory?: () => void;
 }
 
-export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded }: Props) {
+export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded, onCreateCategory }: Props) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [categoryId, setCategoryId] = useState('');
@@ -30,6 +31,14 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded 
     const unsubscribe = uploadQueue.subscribe(setQueue);
     return () => { unsubscribe(); };
   }, []);
+
+  // Reset local state when the dialog closes
+  useEffect(() => {
+    if (!open) {
+      setThumbnails({});
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }, [open]);
 
   useEffect(() => {
     uploadQueue.setProcessor(async (item: QueueItem) => {
@@ -96,6 +105,20 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded 
     });
   }, [categories, categoryId, onUploaded]);
 
+  const openFilePicker = () => {
+    if (!categoryId) {
+      toast({
+        title: 'Pick a category first',
+        description: categories.length === 0
+          ? 'Create at least one category to organize your looks.'
+          : 'Choose a category from the dropdown above before adding files.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
   const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
@@ -114,20 +137,33 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded 
       }
       return true;
     });
-    if (!valid.length) return;
-    // We pass the categoryId as the "category" string slot in the queue (used inside processor lookup)
-    const items = uploadQueue.addFiles(valid, categoryId);
-    for (const it of items) {
-      try {
-        const meta = await extractVideoMetadata(it.file);
-        setThumbnails((prev) => ({ ...prev, [it.id]: URL.createObjectURL(meta.thumbnailBlob) }));
-      } catch { /* ignore */ }
+    if (!valid.length) {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
     }
+
+    // Queue immediately so processing starts even if metadata extraction fails
+    const items = uploadQueue.addFiles(valid, categoryId);
+    toast({ title: `${items.length} file${items.length > 1 ? 's' : ''} added to upload queue` });
+
+    // Best-effort thumbnail extraction (non-blocking per file)
+    for (const it of items) {
+      extractVideoMetadata(it.file)
+        .then((meta) => {
+          setThumbnails((prev) => ({ ...prev, [it.id]: URL.createObjectURL(meta.thumbnailBlob) }));
+        })
+        .catch(() => { /* preview only — ignore */ });
+    }
+
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    if (!categoryId) {
+      toast({ title: 'Pick a category first', variant: 'destructive' });
+      return;
+    }
     const files = Array.from(e.dataTransfer.files);
     if (files.length) {
       handleFiles({ target: { files } } as unknown as React.ChangeEvent<HTMLInputElement>);
@@ -147,46 +183,92 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded 
         </DialogHeader>
 
         <div className="space-y-2">
-          <Label className="text-zinc-300">Category</Label>
-          <Select value={categoryId} onValueChange={setCategoryId}>
-            <SelectTrigger className="bg-zinc-900 border-zinc-800 text-zinc-100">
-              <SelectValue placeholder="Choose a category…" />
-            </SelectTrigger>
-            <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
-              {categories.length === 0 && (
-                <div className="px-3 py-2 text-sm text-zinc-500">Create a category first.</div>
+          <div className="flex items-center justify-between">
+            <Label className="text-zinc-300">Category</Label>
+            {onCreateCategory && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={onCreateCategory}
+                className="h-7 px-2 text-xs text-[#c49a3c] hover:text-[#c49a3c] hover:bg-zinc-900"
+              >
+                <FolderPlus className="h-3.5 w-3.5 mr-1" /> Manage categories
+              </Button>
+            )}
+          </div>
+          {categories.length === 0 ? (
+            <div className="rounded-md border border-zinc-800 bg-zinc-900/60 p-3 text-sm text-zinc-400 flex items-center justify-between gap-3">
+              <span>No categories yet — create one to start uploading.</span>
+              {onCreateCategory && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={onCreateCategory}
+                  className="bg-[#c49a3c] hover:bg-[#b38a30] text-black"
+                >
+                  <FolderPlus className="h-3.5 w-3.5 mr-1" /> Create
+                </Button>
               )}
-              {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            </div>
+          ) : (
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger className="bg-zinc-900 border-zinc-800 text-zinc-100">
+                <SelectValue placeholder="Choose a category…" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
+        {/* Hidden native input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="video/*"
+          multiple
+          onChange={handleFiles}
+          className="hidden"
+        />
+
+        {/* Drop zone (drag) + click fallback */}
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
-          className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+          onClick={openFilePicker}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openFilePicker(); }}
+          className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
             categoryId
-              ? 'border-zinc-700 hover:border-[#c49a3c]/60 cursor-pointer'
-              : 'border-zinc-900 opacity-50 cursor-not-allowed'
+              ? 'border-zinc-700 hover:border-[#c49a3c]/60'
+              : 'border-zinc-800 hover:border-[#c49a3c]/40'
           }`}
+          style={{ touchAction: 'manipulation' }}
         >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="video/*"
-            multiple
-            disabled={!categoryId}
-            onChange={handleFiles}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="mx-auto w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center">
               <Upload className="h-6 w-6 text-[#c49a3c]" />
             </div>
-            <p className="text-sm text-zinc-200">Drop videos here or click to browse</p>
+            <p className="text-sm text-zinc-200">Drop videos here or tap to browse</p>
             <p className="text-xs text-zinc-500">MP4, WebM, MOV — up to 500 MB each</p>
+            <Button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); openFilePicker(); }}
+              className="bg-[#c49a3c] hover:bg-[#b38a30] text-black min-h-[44px]"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Browse files
+            </Button>
+            {!categoryId && (
+              <p className="text-[11px] uppercase tracking-wider text-zinc-500" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                Pick or create a category first
+              </p>
+            )}
           </div>
         </div>
 
@@ -210,8 +292,10 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded 
                       {(item.status === 'compressing' || item.status === 'uploading') && (
                         <Loader2 className="h-3 w-3 animate-spin text-[#c49a3c]" />
                       )}
-                      <span className="text-[10px] uppercase tracking-wider text-zinc-500">
-                        {item.status === 'error' ? item.error || 'Failed' : item.status}
+                      <span className={`text-[10px] uppercase tracking-wider ${item.status === 'error' ? 'text-red-400' : 'text-zinc-500'}`}>
+                        {item.status === 'error'
+                          ? (typeof item.error === 'string' ? item.error : 'Upload failed')
+                          : item.status}
                       </span>
                     </div>
                     {(item.status === 'compressing' || item.status === 'uploading') && (
