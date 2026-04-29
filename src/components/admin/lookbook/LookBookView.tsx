@@ -125,7 +125,14 @@ export function LookBookView() {
             Categories
           </Button>
           <Button
-            onClick={() => setShowAdd(true)}
+            onClick={() => {
+              if (categories.length === 0) {
+                toast({ title: 'Create a category first', description: 'Add at least one category to organize your looks.' });
+                setShowCats(true);
+                return;
+              }
+              setShowAdd(true);
+            }}
             className="bg-[#c49a3c] hover:bg-[#b38a30] text-black"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -199,6 +206,7 @@ export function LookBookView() {
         onOpenChange={(o) => { setShowAdd(o); if (!o) loadAll(); }}
         categories={categories}
         onUploaded={loadAll}
+        onCreateCategory={() => { setShowAdd(false); setShowCats(true); }}
       />
       <PreviewDialog clip={previewing} onClose={() => setPreviewing(null)} />
       <EditDialog
