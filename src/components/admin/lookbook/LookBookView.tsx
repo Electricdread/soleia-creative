@@ -33,6 +33,8 @@ export function LookBookView() {
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [showCats, setShowCats] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [showManageShares, setShowManageShares] = useState(false);
   const [previewing, setPreviewing] = useState<LookClip | null>(null);
   const [editing, setEditing] = useState<LookClip | null>(null);
 
