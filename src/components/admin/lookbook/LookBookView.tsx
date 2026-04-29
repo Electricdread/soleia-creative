@@ -99,7 +99,23 @@ export function LookBookView() {
             style={{ fontSize: '16px' }}
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={() => setShowManageShares(true)}
+            className="border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 hover:text-[#c49a3c]"
+          >
+            <Link2 className="h-4 w-4 mr-2" />
+            Shares
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowShare(true)}
+            className="border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 hover:text-[#c49a3c]"
+          >
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
+          </Button>
           <Button
             variant="outline"
             onClick={() => setShowCats(true)}
