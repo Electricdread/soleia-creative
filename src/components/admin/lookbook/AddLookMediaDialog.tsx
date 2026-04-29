@@ -235,7 +235,7 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded,
         <input
           ref={fileInputRef}
           type="file"
-          accept="video/*"
+          accept="video/*,.mp4,.mov,.webm,.m4v,.mkv,.avi"
           multiple
           onChange={handleFiles}
           className="hidden"
