@@ -261,7 +261,7 @@ export function AddLookMediaDialog({ open, onOpenChange, categories, onUploaded,
               <Upload className="h-6 w-6 text-[#c49a3c]" />
             </div>
             <p className="text-sm text-zinc-200">Drop videos here or tap to browse</p>
-            <p className="text-xs text-zinc-500">MP4, WebM, MOV — up to 500 MB each</p>
+            <p className="text-xs text-zinc-500">MP4, MOV, WebM, M4V — up to 500 MB each</p>
             <Button
               type="button"
               onClick={(e) => { e.stopPropagation(); openFilePicker(); }}
