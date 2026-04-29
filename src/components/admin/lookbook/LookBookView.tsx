@@ -207,6 +207,16 @@ export function LookBookView() {
         onClose={() => setEditing(null)}
         onSaved={loadAll}
       />
+      <ShareLookBookDialog
+        open={showShare}
+        onOpenChange={setShowShare}
+        categories={categories}
+        clips={clips.map((c) => ({ id: c.id, title: c.title, thumbnail: c.thumbnail, category_id: c.category_id }))}
+      />
+      <ManageLookBookSharesDialog
+        open={showManageShares}
+        onOpenChange={setShowManageShares}
+      />
     </div>
   );
 }
