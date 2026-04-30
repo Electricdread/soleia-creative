@@ -269,6 +269,16 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
 
     setUploading(true);
 
+    // Get the current max sort_order so new uploads append to the end
+    // (and don't collide with existing drag-reordered items)
+    const { data: maxRow } = await supabase
+      .from('mood_board_items')
+      .select('sort_order')
+      .eq('session_id', sessionId)
+      .order('sort_order', { ascending: false, nullsFirst: false })
+      .limit(1);
+    let sortOrder = ((maxRow?.[0]?.sort_order ?? -1) as number) + 1;
+
     for (const file of Array.from(files)) {
       const fileExt = file.name.split('.').pop()?.toLowerCase();
       const baseName = `${sessionId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
@@ -291,20 +301,19 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
         .from('creative-uploads')
         .getPublicUrl(fileName);
 
-      const nextOrder = items.length;
-
       const { error: insertError } = await supabase.from('mood_board_items').insert({
         session_id: sessionId,
         item_type: itemType,
         file_url: urlData.publicUrl,
         title: file.name,
         added_by: 'Admin',
-        sort_order: nextOrder,
+        sort_order: sortOrder,
       });
 
       if (insertError) {
         toast.error(`Failed to save ${file.name}`);
       }
+      sortOrder++;
     }
 
     toast.success(`${files.length} file(s) uploaded`);
