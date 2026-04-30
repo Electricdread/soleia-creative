@@ -275,7 +275,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             )}>
               {isPublic ? <><Globe className="w-2.5 h-2.5" /> Public</> : <><Lock className="w-2.5 h-2.5" /> Private</>}
             </span>
-            <CountdownBadge eventDate={session.event_date} />
+            {session.is_active && <CountdownBadge eventDate={session.event_date} />}
             {!coverImage && (
               <button
                 onClick={() => fileInputRef.current?.click()}
