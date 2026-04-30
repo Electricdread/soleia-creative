@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Play } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { HomeButton } from '@/components/HomeButton';
 
 interface Share {
   id: string;
@@ -124,6 +125,9 @@ export default function SharedLookBook() {
 
       {/* Header */}
       <header className="relative z-10 border-b border-zinc-800">
+        <div className="absolute top-4 left-4 z-20">
+          <HomeButton variant="dark" />
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center text-center">
           <img src={soleiaLogo} alt="Soleia" className="h-10 w-auto object-contain" />
           <p className="mt-4 text-[11px] uppercase tracking-[0.3em] text-[#c49a3c]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>

@@ -12,6 +12,7 @@ import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaView
 import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
+import { HomeButton } from '@/components/HomeButton';
 
 interface CoverImage {
   url: string;
@@ -282,8 +283,11 @@ export default function CreativeSession() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <img src={soleiaLogo} alt="Soleia" className="h-8 sm:h-10 object-contain" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <HomeButton />
+            <img src={soleiaLogo} alt="Soleia" className="h-8 sm:h-10 object-contain" />
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-[10px] text-muted-foreground">
               Reviewing as <span className="text-foreground font-medium">{userName}</span>

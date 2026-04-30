@@ -1,29 +1,79 @@
-## Problem
+# Site-Wide "Return Home" Button Cleanup
 
-When tapping "Browse files" in the Add to Look Book dialog, the iOS file picker opens but most files appear greyed out and unselectable. This happens because the file input uses `accept="video/*"`, which on iOS/iPadOS aggressively filters the Files app to disable anything not recognized as a video — including legitimate video files (like `.mov`, `.mp4` from Drive/Dropbox folders) whose MIME type can't be inferred from extension alone.
+Add a single, consistent "Return Home" control to every page that currently lacks navigation back to the Admin Portal (`/admin`, the de facto home for authenticated users) or to a sensible landing for public pages. The Creative Guide section is intentionally excluded per the brand rule that its header has no back button.
 
-The screenshot confirms the user is in iOS Files → Downloads, where `.mp3`, `.pdf`, `.numbers`, etc. are correctly disabled, but on iPad this restriction also frequently disables real video files when their UTI isn't detected.
+## Audit Results
 
-## Fix
+Pages that already have a back/home control (no change):
+- `AdminCreative`, `AdminLooks`, `AdminCalendar`, `AdminEmailPreviews`, `AdminUsers`, `AdminProposals`, `AdminStorage` — Back to `/admin`
+- `OfficePortal` — Back to `/admin`
+- `DeliveryGuide`, `TailgateDeliveryGuide` — Back to `/`
+- `SessionDeliveryGuide` — has "Go Home" only on error; needs one in normal header
+- `NotFound` — has "Return to Home" link
+- `AdminPortal` / `Index` — IS the home, no button needed
+- `AdminLogin` — auth entry, no button needed
 
-Loosen the file input's accept filter so iOS doesn't pre-filter the picker, then validate the chosen files in JS (which already happens — the existing handler rejects non-video files with a toast).
+Pages explicitly EXCLUDED (Creative Guide section):
+- `CreativeGuide` (`CreativeGuideView`)
+- `PrintCreativeGuide`
 
-### Changes to `src/components/admin/lookbook/AddLookMediaDialog.tsx`
+Pages that need a "Return Home" button added:
+1. `SharedLookBook` (`/looks/:token`) — public client page, no header nav
+2. `SharedSession` (`/session/:token`) — wrapped gallery, no top-level home button
+3. `CreativeSession` (`/creative/:token`) — public client page, no header back
+4. `ClientProposal` (`/proposal/:token`) — public client page, no header back
+5. `ShowBloxPreview` (`/preview/:token`) — public preview, no header back
+6. `Tutorial` (`/tutorial`) — has header but no return button
+7. `SessionDeliveryGuide` (`/delivery/:token`) — add to normal-state header (currently only on error)
 
-1. Change the `<input>` accept attribute from `accept="video/*"` to an explicit list of common video extensions plus the wildcard, so iOS Files presents all matching files as enabled:
-   ```tsx
-   accept="video/*,.mp4,.mov,.webm,.m4v,.mkv,.avi"
-   ```
-2. Keep the existing JS-side validation in `handleFiles` that rejects non-video files (`!f.type.startsWith('video/')`) — but make it more lenient by also accepting files whose extension matches a known video extension when the browser-reported MIME type is empty (common on iOS for `.mov`).
-3. Update the helper text under the dropzone to mention supported formats explicitly: "MP4, MOV, WebM, M4V — up to 500 MB each".
+## Design
 
-### Why this works
+A small, consistent button rendered in the top-left of each page's existing header (or a fixed top-left if no header exists). Uses the same pattern already used in `AdminCreative`/`AdminLooks`:
 
-- `accept="video/*"` on iOS uses UTI matching that's stricter than desktop browsers. Adding explicit extensions tells iOS Files to enable any file with those extensions regardless of UTI detection.
-- The defensive JS validation ensures non-video files still can't sneak through if the user manually picks one.
+```tsx
+<Button
+  variant="ghost"
+  size="sm"
+  onClick={() => navigate('/')}
+  className="text-muted-foreground hover:text-foreground"
+>
+  <Home className="w-4 h-4 mr-2" />
+  Home
+</Button>
+```
 
-## Files to modify
+Destination logic:
+- Authenticated/admin context pages → `navigate('/')` (which redirects to `/admin` via `ProtectedRoute`)
+- Public client-facing pages (SharedLookBook, ClientProposal, ShowBloxPreview, CreativeSession, SessionDeliveryGuide, SharedSession) → `navigate('/')` as well; for unauthenticated visitors this lands on the protected route → admin login, which is the correct "exit" behavior. We'll use the `Home` icon + label "Home" so it reads naturally on both sides.
 
-- `src/components/admin/lookbook/AddLookMediaDialog.tsx` — relax `accept`, add extension-based fallback in `handleFiles`, update helper text.
+For client-facing public pages, the button is styled subtly (ghost, low-contrast) so it doesn't compete with the branded content.
 
-No database, RLS, or other component changes needed.
+## Changes by File
+
+1. `src/pages/SharedLookBook.tsx` — Add a slim sticky top bar with Soleia logo (already used) and a left-aligned Home button.
+2. `src/pages/SharedSession.tsx` — Wrap `SharedGalleryView` in a fragment with a fixed top-left Home button overlay (or pass through a header slot if simpler — implement as a small absolute-positioned button to avoid touching the gallery component).
+3. `src/pages/CreativeSession.tsx` — Add Home button to the existing top header area near the Soleia logo.
+4. `src/pages/ClientProposal.tsx` — Add a fixed top-left Home button overlay above `ProposalView` (proposal view is full-bleed cinematic, so use a low-contrast floating button that respects the dark luxury aesthetic).
+5. `src/pages/ShowBloxPreview.tsx` — Add Home button to the existing header next to the Soleia logo.
+6. `src/pages/Tutorial.tsx` — Add Home button at the left of the existing header (line ~705).
+7. `src/pages/SessionDeliveryGuide.tsx` — Add Home button to the normal-state header (it already imports `ArrowLeft` and has the error-state version).
+
+No changes to:
+- Creative Guide pages (excluded)
+- Admin pages that already have Back buttons
+- `AdminPortal` / `Index` (is home)
+- `AdminLogin`, `NotFound`
+
+## Visual Consistency
+
+- Icon: `Home` from lucide-react (clearer than `ArrowLeft` for "return home")
+- Label: "Home" (short, fits mobile)
+- Mobile: icon-only at `<sm` breakpoint where header space is tight
+- Touch target: 44px min (h-11 on mobile) per project mobile UX rule
+- Color: respects each page's theme — `text-muted-foreground` for light pages, `text-zinc-400 hover:text-white` for dark pages (Looks/Proposal/Preview)
+
+## Out of Scope
+
+- No changes to Creative Guide section
+- No changes to header layouts beyond adding the button
+- No new routes or auth changes

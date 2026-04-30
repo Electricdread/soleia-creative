@@ -36,6 +36,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
+import { HomeButton } from '@/components/HomeButton';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -704,17 +705,20 @@ export default function Tutorial() {
       {/* Header */}
       <header className="relative z-10 border-b border-zinc-800/50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <img 
-              src="/soleia-icon.png" 
-              alt="Soleia" 
-              className="w-10 h-10"
-            />
-            <div>
-              <span className="font-tech text-lg font-bold uppercase tracking-wider text-white">Soleia</span>
-              <span className="text-zinc-500 text-xs font-tech uppercase tracking-widest block">Creative Platform</span>
-            </div>
-          </Link>
+          <div className="flex items-center gap-3">
+            <HomeButton variant="dark" />
+            <Link to="/" className="flex items-center gap-3">
+              <img 
+                src="/soleia-icon.png" 
+                alt="Soleia" 
+                className="w-10 h-10"
+              />
+              <div>
+                <span className="font-tech text-lg font-bold uppercase tracking-wider text-white">Soleia</span>
+                <span className="text-zinc-500 text-xs font-tech uppercase tracking-widest block">Creative Platform</span>
+              </div>
+            </Link>
+          </div>
           <Link to="/admin">
             <Button variant="outline" size="sm" className="font-tech uppercase tracking-wider border-zinc-700 hover:bg-zinc-800">
               <ExternalLink className="w-4 h-4 mr-2" />

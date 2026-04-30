@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import showbloxIcon from "@/assets/showblox-icon.png";
 import soleiaLogo from "@/assets/soleia-wide-logo.png";
 import { Loader2 } from "lucide-react";
+import { HomeButton } from "@/components/HomeButton";
 
 interface PreviewTab {
   id: string;
@@ -203,6 +204,7 @@ function PreviewHeader({ clientName }: { clientName?: string }) {
   return (
     <header className="flex items-center justify-between px-4 sm:px-7 py-4 border-b border-white/[0.08]">
       <div className="flex items-center gap-2.5">
+        <HomeButton variant="dark" className="mr-1" />
         <img src={showbloxIcon} alt="ShowBlox" className="h-5 w-auto" />
         <span className="text-[13px] font-semibold tracking-[0.12em] text-white hidden sm:inline">
           SHOWBLOX
