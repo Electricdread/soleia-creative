@@ -1,39 +1,59 @@
-# Fix Creative Session Media Ordering on Upload
+# Remove "Overdue" Badge from Sandler Partners
 
-## Problem
-When admins upload multiple media files into a Creative Session via **Session Content Manager**, the new items don't appear in the order they were added (or at the end of the list). They show up in random/unstable order, and prioritization via drag-and-drop gets disrupted.
+## What I found
 
-## Root Cause
-In `src/components/admin/SessionContentManager.tsx` (`handleFileUpload`), the `sort_order` is computed **once** outside the upload loop:
+There are two Sandler Partners records in the database:
 
-```ts
-const nextOrder = items.length;  // ← same value used for every file
-for (const file of files) {
-  await supabase.from('mood_board_items').insert({ ..., sort_order: nextOrder });
-}
+1. **Proposal** "04.14.26 Sandler Partners" — event date `2026-04-14`, status `sent`, **already signed on 2026-04-25**. Today is April 30, so the event date is 16 days in the past, which is why a red "16d overdue" badge is appearing.
+2. **Creative Session** "Sandler Partners" — already marked inactive (closed). Same overdue math applies if displayed.
+
+The shared helper `isProposalClosed()` already correctly identifies the proposal as closed (because `signed_at` is set), and it's properly used by `UpcomingDeadlines` and the browser-tab `useDeadlineCount`. **Those two places already exclude it.**
+
+The bug is that the standalone `CountdownBadge` component is rendered in three list views without checking whether the item is closed or inactive:
+
+- `src/pages/AdminProposals.tsx` (proposal list cards) — shows badge even when proposal is signed/won/invoiced
+- `src/components/admin/CreativeSessionCard.tsx` (session list) — shows badge even when session is inactive
+- `src/components/admin/ClientLinkManager.tsx` (link list) — shows badge even when link is inactive
+
+So the Sandler proposal shows "16d overdue" even though it was signed. The (inactive) Sandler session would also show it if rendered.
+
+## The fix
+
+Suppress the `CountdownBadge` whenever the item is "done" — no need to flag a deadline that's already been met or for an item that's been turned off. This is a one-line gating change in each of the three call sites; no new logic, no DB changes.
+
+### Specific changes
+
+**`src/pages/AdminProposals.tsx`** (line 473)
+Wrap the badge so it only renders for active, non-closed proposals:
+```tsx
+{p.is_active && !isProposalClosed(p) && (
+  <CountdownBadge eventDate={p.event_date} />
+)}
+```
+Add the `isProposalClosed` import from `@/lib/proposalStatus`.
+
+**`src/components/admin/CreativeSessionCard.tsx`** (line 278)
+Only show countdown for active sessions:
+```tsx
+{session.is_active && <CountdownBadge eventDate={session.event_date} />}
 ```
 
-Result: every file in the batch is inserted with the **same** `sort_order`, so the secondary `created_at` sort decides order — and because uploads complete out-of-sequence (especially videos), the visible order becomes unpredictable.
+**`src/components/admin/ClientLinkManager.tsx`** (line 425)
+Only show countdown for active links:
+```tsx
+{link.is_active && <CountdownBadge eventDate={link.event_date} />}
+```
 
-There's also a secondary issue: `items.length` ignores existing `sort_order` values that may be higher (after prior drag-reorders), so new items can collide with existing ones.
+### Why this is the right fix (vs. editing the Sandler row)
 
-The sibling component `AddMoodBoardItem` already does this correctly using a `getNextSortOrder()` helper (max+1) and incrementing per file.
+This isn't a Sandler-specific data issue — the proposal data is already correct (`signed_at` is set, session is `is_active = false`). The badges are simply not respecting that state. Fixing the gating logic resolves Sandler today and prevents the same false-overdue noise on every future signed proposal or closed session/link.
 
-## Fix
+## Files to modify
 
-In `src/components/admin/SessionContentManager.tsx`:
+- `src/pages/AdminProposals.tsx`
+- `src/components/admin/CreativeSessionCard.tsx`
+- `src/components/admin/ClientLinkManager.tsx`
 
-1. Add a `getNextSortOrder(sessionId)` helper (mirror of the one in `AddMoodBoardItem.tsx`) that queries the current max `sort_order` for the session.
-2. In `handleFileUpload`:
-   - Call `getNextSortOrder` once before the loop to get the starting index.
-   - Use a local `let sortOrder = startingIndex;` and increment **inside** the loop (`sortOrder++`) after each insert.
-3. Keep the existing fetch ordering (`sort_order ASC, created_at ASC`) — no change needed.
+No database changes, no migrations, no edge function changes.
 
-## Files Modified
-- `src/components/admin/SessionContentManager.tsx` — fix per-file `sort_order` assignment in `handleFileUpload`
-
-## Verification
-After fix:
-- Uploading 5 files in one batch → they appear at the end of the list in the order picked.
-- Existing drag-prioritized items stay at the top; new items are appended below.
-- No collisions with previously reordered items.
+Approve to apply the fix.
