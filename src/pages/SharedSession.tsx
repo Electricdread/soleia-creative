@@ -3,6 +3,7 @@ import { useSharedSession } from '@/hooks/useSharedSession';
 import SharedGalleryView from '@/components/SharedGalleryView';
 import { Loader2, AlertCircle } from 'lucide-react';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
+import { HomeButton } from '@/components/HomeButton';
 
 const SharedSession = () => {
   const { token } = useParams<{ token: string }>();
@@ -55,18 +56,21 @@ const SharedSession = () => {
   }
 
   return (
-    <SharedGalleryView
-      clientLink={clientLink}
-      sessionClips={sessionClips}
-      selections={selections}
-      uploads={uploads}
-      toggleSelection={toggleSelection}
-      updateNote={updateNote}
-      updatePlacements={updatePlacements}
-      isSelected={isSelected}
-      getSelection={getSelection}
-      onUploadComplete={refetchUploads}
-    />
+    <>
+      <HomeButton variant="floating" />
+      <SharedGalleryView
+        clientLink={clientLink}
+        sessionClips={sessionClips}
+        selections={selections}
+        uploads={uploads}
+        toggleSelection={toggleSelection}
+        updateNote={updateNote}
+        updatePlacements={updatePlacements}
+        isSelected={isSelected}
+        getSelection={getSelection}
+        onUploadComplete={refetchUploads}
+      />
+    </>
   );
 };
 

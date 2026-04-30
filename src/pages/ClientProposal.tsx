@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import ProposalView from '@/components/proposal/ProposalView';
+import { HomeButton } from '@/components/HomeButton';
 
 export default function ClientProposal() {
   const { token } = useParams<{ token: string }>();
@@ -69,13 +70,16 @@ export default function ClientProposal() {
   }
 
   return (
-    <ProposalView
-      proposal={proposal}
-      items={items}
-      gallery={gallery}
-      timeline={timeline}
-      isAdmin={isEditMode}
-      onRefresh={load}
-    />
+    <>
+      <HomeButton variant="floating" />
+      <ProposalView
+        proposal={proposal}
+        items={items}
+        gallery={gallery}
+        timeline={timeline}
+        isAdmin={isEditMode}
+        onRefresh={load}
+      />
+    </>
   );
 }

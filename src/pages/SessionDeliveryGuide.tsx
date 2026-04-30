@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import SoleiaLogo from '@/components/SoleiaLogo';
+import { HomeButton } from '@/components/HomeButton';
 
 const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
@@ -78,8 +79,11 @@ export default function SessionDeliveryGuide() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm">
         <div className="container mx-auto px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <SoleiaLogo className="h-8 sm:h-10" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <HomeButton />
+              <SoleiaLogo className="h-8 sm:h-10" />
+            </div>
             <div className="text-right">
               <h1 className="text-sm font-semibold text-foreground">Content Delivery Guide</h1>
               <p className="text-xs text-muted-foreground">{session.client_name} • {session.project_name}</p>
