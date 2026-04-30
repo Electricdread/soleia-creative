@@ -463,6 +463,17 @@ export default function AdminPortal() {
             <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
           </div>
         )}
+
+        <div className="mt-8">
+          <UpcomingDeadlines />
+        </div>
+
+        <DashboardStatusGrid />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          <PendingActionsPanel />
+          <RecentActivityFeed />
+        </div>
       </main>
 
       {/* Footer */}
