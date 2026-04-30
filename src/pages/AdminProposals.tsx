@@ -19,6 +19,7 @@ import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import ProposalSessionLinker from '@/components/admin/ProposalSessionLinker';
 import { format } from 'date-fns';
 import { CountdownBadge } from '@/components/CountdownBadge';
+import { isProposalClosed } from '@/lib/proposalStatus';
 
 type ViewTab = 'proposals' | 'library';
 
