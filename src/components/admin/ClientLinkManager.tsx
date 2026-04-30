@@ -422,7 +422,7 @@ export function ClientLinkManager() {
                   
                   {/* Metadata row */}
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <CountdownBadge eventDate={link.event_date} />
+                    {link.is_active && <CountdownBadge eventDate={link.event_date} />}
                     <span className="text-xs text-muted-foreground/70">
                       Created {format(new Date(link.created_at), 'MMM d, yyyy')}
                     </span>
