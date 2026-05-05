@@ -1,59 +1,33 @@
-# Remove "Overdue" Badge from Sandler Partners
+## Goal
+Add a "Download PDF" (and "Print") action to the Item Library in the Proposals section so the full list of line item templates can be saved or printed.
 
-## What I found
+## Where
+`src/pages/AdminProposals.tsx` — the "Item Library" tab (around line 252-257), next to the existing "Line Item Templates" header.
 
-There are two Sandler Partners records in the database:
+## UI
+Add two small buttons in the header row of the Item Library card:
+- **Print** (Printer icon) — opens the browser print dialog with a clean printable view.
+- **Download PDF** (Download icon) — generates and downloads a PDF.
 
-1. **Proposal** "04.14.26 Sandler Partners" — event date `2026-04-14`, status `sent`, **already signed on 2026-04-25**. Today is April 30, so the event date is 16 days in the past, which is why a red "16d overdue" badge is appearing.
-2. **Creative Session** "Sandler Partners" — already marked inactive (closed). Same overdue math applies if displayed.
+Layout: header becomes a flex row with title on the left, buttons on the right.
 
-The shared helper `isProposalClosed()` already correctly identifies the proposal as closed (because `signed_at` is set), and it's properly used by `UpcomingDeadlines` and the browser-tab `useDeadlineCount`. **Those two places already exclude it.**
+## PDF content
+Grouped by category (matching the library's existing sort), each row showing:
+- Title
+- Category badge
+- Description (if any)
+- Price (right-aligned, USD)
 
-The bug is that the standalone `CountdownBadge` component is rendered in three list views without checking whether the item is closed or inactive:
+Plus a header with "Line Item Library" title, generated date, and a totals footer (item count).
 
-- `src/pages/AdminProposals.tsx` (proposal list cards) — shows badge even when proposal is signed/won/invoiced
-- `src/components/admin/CreativeSessionCard.tsx` (session list) — shows badge even when session is inactive
-- `src/components/admin/ClientLinkManager.tsx` (link list) — shows badge even when link is inactive
+## Technical approach
+- Use `jspdf` (already a project dep — used in `src/lib/pdfGenerator.ts` and `proposalPdfGenerator.ts`).
+- Create a new helper `src/lib/lineItemLibraryPdf.ts` exporting `generateLineItemLibraryPdf(templates)` that returns/triggers a download. Style consistent with existing dark/luxury PDF aesthetic (gold #c49a3c accent header, Inter-like default font, ASCII-safe text).
+- Fetch `line_item_templates` from Supabase in AdminProposals on demand when the user clicks the button (or reuse a fetched copy if we lift the LineItemLibrary state — simpler: re-query in the handler).
+- Print: open a new window with a minimal HTML table styled for print, then `window.print()`.
 
-So the Sandler proposal shows "16d overdue" even though it was signed. The (inactive) Sandler session would also show it if rendered.
+## Files to modify / add
+- `src/pages/AdminProposals.tsx` — add buttons + handlers in the library tab header.
+- `src/lib/lineItemLibraryPdf.ts` — new PDF generator helper.
 
-## The fix
-
-Suppress the `CountdownBadge` whenever the item is "done" — no need to flag a deadline that's already been met or for an item that's been turned off. This is a one-line gating change in each of the three call sites; no new logic, no DB changes.
-
-### Specific changes
-
-**`src/pages/AdminProposals.tsx`** (line 473)
-Wrap the badge so it only renders for active, non-closed proposals:
-```tsx
-{p.is_active && !isProposalClosed(p) && (
-  <CountdownBadge eventDate={p.event_date} />
-)}
-```
-Add the `isProposalClosed` import from `@/lib/proposalStatus`.
-
-**`src/components/admin/CreativeSessionCard.tsx`** (line 278)
-Only show countdown for active sessions:
-```tsx
-{session.is_active && <CountdownBadge eventDate={session.event_date} />}
-```
-
-**`src/components/admin/ClientLinkManager.tsx`** (line 425)
-Only show countdown for active links:
-```tsx
-{link.is_active && <CountdownBadge eventDate={link.event_date} />}
-```
-
-### Why this is the right fix (vs. editing the Sandler row)
-
-This isn't a Sandler-specific data issue — the proposal data is already correct (`signed_at` is set, session is `is_active = false`). The badges are simply not respecting that state. Fixing the gating logic resolves Sandler today and prevents the same false-overdue noise on every future signed proposal or closed session/link.
-
-## Files to modify
-
-- `src/pages/AdminProposals.tsx`
-- `src/components/admin/CreativeSessionCard.tsx`
-- `src/components/admin/ClientLinkManager.tsx`
-
-No database changes, no migrations, no edge function changes.
-
-Approve to apply the fix.
+No DB changes, no edge functions, no new dependencies.
