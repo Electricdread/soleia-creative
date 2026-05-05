@@ -252,12 +252,12 @@ export default function AdminProposals() {
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {activeTab === 'library' ? (
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
               <div className="min-w-0">
                 <h2 className="text-white text-lg font-semibold">Line Item Templates</h2>
                 <p className="text-zinc-500 text-sm mt-1">Save reusable services and items here, then quickly add them when creating proposals.</p>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
