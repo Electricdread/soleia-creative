@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2 } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer } from 'lucide-react';
+import { downloadLineItemLibraryPdf, printLineItemLibraryPdf } from '@/lib/lineItemLibraryPdf';
 import { Switch } from '@/components/ui/switch';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -251,8 +252,52 @@ export default function AdminProposals() {
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {activeTab === 'library' ? (
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <h2 className="text-white text-lg font-semibold mb-4">Line Item Templates</h2>
-            <p className="text-zinc-500 text-sm mb-6">Save reusable services and items here, then quickly add them when creating proposals.</p>
+            <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+              <div className="min-w-0">
+                <h2 className="text-white text-lg font-semibold">Line Item Templates</h2>
+                <p className="text-zinc-500 text-sm mt-1">Save reusable services and items here, then quickly add them when creating proposals.</p>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 gap-1.5"
+                  onClick={async () => {
+                    const { data, error } = await supabase
+                      .from('line_item_templates')
+                      .select('*')
+                      .order('category', { ascending: true })
+                      .order('title', { ascending: true });
+                    if (error || !data?.length) {
+                      toast({ title: 'Nothing to print', description: 'Add some templates first.', variant: 'destructive' });
+                      return;
+                    }
+                    printLineItemLibraryPdf(data as any);
+                  }}
+                >
+                  <Printer className="w-3.5 h-3.5" /> Print
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-[#c49a3c] text-black hover:bg-[#b08a30] gap-1.5"
+                  onClick={async () => {
+                    const { data, error } = await supabase
+                      .from('line_item_templates')
+                      .select('*')
+                      .order('category', { ascending: true })
+                      .order('title', { ascending: true });
+                    if (error || !data?.length) {
+                      toast({ title: 'Nothing to download', description: 'Add some templates first.', variant: 'destructive' });
+                      return;
+                    }
+                    downloadLineItemLibraryPdf(data as any);
+                    toast({ title: 'PDF downloaded' });
+                  }}
+                >
+                  <Download className="w-3.5 h-3.5" /> Download PDF
+                </Button>
+              </div>
+            </div>
             <LineItemLibrary />
           </div>
         ) : (
