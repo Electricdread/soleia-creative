@@ -304,9 +304,51 @@ export default function AdminProposals() {
           <>
         {/* Create New */}
         {!showForm ? (
-          <Button onClick={() => setShowForm(true)} className="mb-8 gap-2 bg-white text-black hover:bg-zinc-200">
-            <Plus className="w-4 h-4" /> New Proposal
-          </Button>
+          <div className="mb-8 flex flex-col sm:flex-row gap-2 sm:items-center">
+            <Button onClick={() => setShowForm(true)} className="gap-2 bg-white text-black hover:bg-zinc-200 w-full sm:w-auto">
+              <Plus className="w-4 h-4" /> New Proposal
+            </Button>
+            <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 gap-1.5 h-10"
+                onClick={async () => {
+                  const { data, error } = await supabase
+                    .from('line_item_templates')
+                    .select('*')
+                    .order('category', { ascending: true })
+                    .order('title', { ascending: true });
+                  if (error || !data?.length) {
+                    toast({ title: 'Nothing to print', description: 'Add some templates first.', variant: 'destructive' });
+                    return;
+                  }
+                  printLineItemLibraryPdf(data as any);
+                }}
+              >
+                <Printer className="w-3.5 h-3.5" /> Print Library
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1 sm:flex-none bg-[#c49a3c] text-black hover:bg-[#b08a30] gap-1.5 h-10"
+                onClick={async () => {
+                  const { data, error } = await supabase
+                    .from('line_item_templates')
+                    .select('*')
+                    .order('category', { ascending: true })
+                    .order('title', { ascending: true });
+                  if (error || !data?.length) {
+                    toast({ title: 'Nothing to download', description: 'Add some templates first.', variant: 'destructive' });
+                    return;
+                  }
+                  downloadLineItemLibraryPdf(data as any);
+                  toast({ title: 'PDF downloaded' });
+                }}
+              >
+                <Download className="w-3.5 h-3.5" /> Library PDF
+              </Button>
+            </div>
+          </div>
         ) : (
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-8">
             <h2 className="text-white text-lg font-semibold mb-4">Create Proposal</h2>
