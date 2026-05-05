@@ -61,8 +61,6 @@ export function generateLineItemLibraryPdf(templates: LineItemTemplate[]): jsPDF
     }
   };
 
-  let total = 0;
-
   for (const cat of categories) {
     ensureSpace(40);
     // Category header
@@ -117,27 +115,10 @@ export function generateLineItemLibraryPdf(templates: LineItemTemplate[]): jsPDF
       doc.setDrawColor(235, 235, 235);
       doc.line(marginX, y, pageW - marginX, y);
       y += 8;
-
-      total += Number(item.price) || 0;
     }
 
     y += 10;
   }
-
-  // Footer total
-  ensureSpace(40);
-  doc.setDrawColor(GOLD);
-  doc.setLineWidth(1);
-  doc.line(marginX, y, pageW - marginX, y);
-  y += 18;
-  doc.setTextColor(60, 60, 60);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('Sum of listed prices', marginX, y);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(20, 20, 20);
-  doc.text(fmt(total), pageW - marginX, y, { align: 'right' });
 
   // Page numbers
   const pageCount = doc.getNumberOfPages();
