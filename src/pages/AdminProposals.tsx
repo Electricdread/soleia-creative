@@ -279,7 +279,7 @@ export default function AdminProposals() {
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-[#c49a3c] text-black hover:bg-[#b08a30] gap-1.5"
+                  className="flex-1 sm:flex-none bg-[#c49a3c] text-black hover:bg-[#b08a30] gap-1.5"
                   onClick={async () => {
                     const { data, error } = await supabase
                       .from('line_item_templates')
