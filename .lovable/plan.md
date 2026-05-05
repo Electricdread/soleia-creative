@@ -1,33 +1,34 @@
-## Goal
-Add a "Download PDF" (and "Print") action to the Item Library in the Proposals section so the full list of line item templates can be saved or printed.
+## Problem
 
-## Where
-`src/pages/AdminProposals.tsx` — the "Item Library" tab (around line 252-257), next to the existing "Line Item Templates" header.
+The Print and Download PDF buttons already exist in `src/pages/AdminProposals.tsx` (lines 260–299), but they only appear inside the **Item Library** tab. On the current ~677px viewport the page header is a single non-wrapping flex row containing:
 
-## UI
-Add two small buttons in the header row of the Item Library card:
-- **Print** (Printer icon) — opens the browser print dialog with a clean printable view.
-- **Download PDF** (Download icon) — generates and downloads a PDF.
+- Soleia logo
+- "Client Proposals" title
+- Proposals tab button
+- Item Library tab button
+- Settings icon
 
-Layout: header becomes a flex row with title on the left, buttons on the right.
+At narrow widths this row overflows and the "Item Library" tab gets clipped / pushed off the visible area, so the user can never switch to the tab where the PDF buttons live. Result: "the PDF print button is not visible."
 
-## PDF content
-Grouped by category (matching the library's existing sort), each row showing:
-- Title
-- Category badge
-- Description (if any)
-- Price (right-aligned, USD)
+## Fix
 
-Plus a header with "Line Item Library" title, generated date, and a totals footer (item count).
+### 1. Make the header responsive (`src/pages/AdminProposals.tsx`, header around lines 222–250)
 
-## Technical approach
-- Use `jspdf` (already a project dep — used in `src/lib/pdfGenerator.ts` and `proposalPdfGenerator.ts`).
-- Create a new helper `src/lib/lineItemLibraryPdf.ts` exporting `generateLineItemLibraryPdf(templates)` that returns/triggers a download. Style consistent with existing dark/luxury PDF aesthetic (gold #c49a3c accent header, Inter-like default font, ASCII-safe text).
-- Fetch `line_item_templates` from Supabase in AdminProposals on demand when the user clicks the button (or reuse a fetched copy if we lift the LineItemLibrary state — simpler: re-query in the handler).
-- Print: open a new window with a minimal HTML table styled for print, then `window.print()`.
+- Allow the header bar to wrap: change the inner row to `flex-wrap gap-3` and stack the title row above the tab row on small screens.
+- Hide the "Client Proposals" text label below `sm:` (keep the logo) so the tabs always fit.
+- Ensure the Proposals / Item Library tabs render as a self-contained group that wraps to a second line on mobile rather than getting clipped.
 
-## Files to modify / add
-- `src/pages/AdminProposals.tsx` — add buttons + handlers in the library tab header.
-- `src/lib/lineItemLibraryPdf.ts` — new PDF generator helper.
+### 2. Make the buttons obvious in the library view (lines 254–302)
 
-No DB changes, no edge functions, no new dependencies.
+- Keep both buttons in the card header, but on mobile let the header stack vertically (`flex-col sm:flex-row`) so the buttons sit on their own full-width row instead of squeezing next to the title.
+- Give both buttons `w-full sm:w-auto` on mobile for an easy 44px tap target.
+
+### 3. (Optional polish) Surface a quick-access PDF action
+
+When `activeTab === 'library'`, also show a small Download PDF icon button in the page header next to "Item Library" so the action is reachable without scrolling. Reuses the existing `downloadLineItemLibraryPdf` helper.
+
+## Files to modify
+
+- `src/pages/AdminProposals.tsx` — header wrap behavior + library card header responsive layout (no logic changes, no new dependencies).
+
+No DB changes, no edge functions, no new files.

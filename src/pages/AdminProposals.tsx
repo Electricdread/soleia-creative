@@ -220,12 +220,12 @@ export default function AdminProposals() {
       <div className="fixed inset-0 z-[1] opacity-5 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
 
       <header className="relative z-10 border-b border-zinc-800">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain" />
-            <h1 className="text-white text-lg font-semibold">Client Proposals</h1>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain flex-shrink-0" />
+            <h1 className="text-white text-base sm:text-lg font-semibold truncate hidden sm:block">Client Proposals</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant="ghost"
               size="sm"
