@@ -220,12 +220,12 @@ export default function AdminProposals() {
       <div className="fixed inset-0 z-[1] opacity-5 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
 
       <header className="relative z-10 border-b border-zinc-800">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain" />
-            <h1 className="text-white text-lg font-semibold">Client Proposals</h1>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain flex-shrink-0" />
+            <h1 className="text-white text-base sm:text-lg font-semibold truncate hidden sm:block">Client Proposals</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant="ghost"
               size="sm"
@@ -252,16 +252,16 @@ export default function AdminProposals() {
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {activeTab === 'library' ? (
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
               <div className="min-w-0">
                 <h2 className="text-white text-lg font-semibold">Line Item Templates</h2>
                 <p className="text-zinc-500 text-sm mt-1">Save reusable services and items here, then quickly add them when creating proposals.</p>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 gap-1.5"
+                  className="flex-1 sm:flex-none border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 gap-1.5"
                   onClick={async () => {
                     const { data, error } = await supabase
                       .from('line_item_templates')
@@ -279,7 +279,7 @@ export default function AdminProposals() {
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-[#c49a3c] text-black hover:bg-[#b08a30] gap-1.5"
+                  className="flex-1 sm:flex-none bg-[#c49a3c] text-black hover:bg-[#b08a30] gap-1.5"
                   onClick={async () => {
                     const { data, error } = await supabase
                       .from('line_item_templates')
