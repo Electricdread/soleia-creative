@@ -377,6 +377,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <Input value={editFields.contact_email} onChange={e => setEditFields({ ...editFields, contact_email: e.target.value })} />
               </div>
               <div className="col-span-2">
+                <label className="text-xs text-[#95a5a6] font-semibold">Creative Call Scheduling Link (optional)</label>
+                <Input
+                  value={editFields.creative_call_url}
+                  onChange={e => setEditFields({ ...editFields, creative_call_url: e.target.value })}
+                  placeholder="https://calendly.com/..."
+                />
+                <p className="text-[11px] text-[#95a5a6] mt-1">When set, adds a "Schedule Our Creative Call" button to the proposal email.</p>
+              </div>
+              <div className="col-span-2">
                 <label className="text-xs text-[#95a5a6] font-semibold">Link Creative Session</label>
                 <select
                   value={editFields.linked_session_id}
