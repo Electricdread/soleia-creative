@@ -659,8 +659,11 @@ Let me know if you have any questions.
                   <Button variant="ghost" size="icon" onClick={() => setLinkerProposal(p)} title="Link creative session" className="text-zinc-400 hover:text-white">
                     <Link2 className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => copyEmailTemplate(p.token)} title="Copy email template" className="text-zinc-400 hover:text-white" disabled={emailCopying === p.token}>
+                  <Button variant="ghost" size="icon" onClick={() => copyEmailTemplate(p.token)} title="Copy email template (rich HTML)" className="text-zinc-400 hover:text-white" disabled={emailCopying === p.token}>
                     {emailCopying === p.token ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => openInMailApp(p)} title="Open in Mail app (recommended on mobile)" className="text-zinc-400 hover:text-white">
+                    <ExternalLink className="w-4 h-4 rotate-45" />
                   </Button>
                   <Button variant="ghost" size="sm" title="Copy link" onClick={() => copyLink(p.token)} className="text-zinc-400 hover:text-white gap-1 h-9 px-2 text-xs">
                     <Link2 className="w-4 h-4" /> Copy Link
