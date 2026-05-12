@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   )
 
-  let title = '', clientName = '', coverUrl = '', eventDate = '', pageUrl = ''
+  let title = '', clientName = '', coverUrl = '', eventDate = '', pageUrl = '', creativeCallUrl = '', driveFolderUrl = ''
   const siteUrl = 'https://soleiacreative.app'
 
   if (type === 'creative') {
