@@ -45,6 +45,7 @@ interface ProposalRow {
   created_at: string;
   is_active: boolean;
   drive_folder_url: string | null;
+  creative_call_url: string | null;
 }
 
 export default function AdminProposals() {
