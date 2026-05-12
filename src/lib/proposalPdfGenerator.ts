@@ -427,12 +427,12 @@ export async function generateProposalPdf(
   y += 14;
 
   const terms = [
+    'Work begins only after sign-off and all brand assets received.',
+    '14 days from kickoff to first review cut delivery.',
+    'Client review window: 3 days from delivery.',
+    'One included revision round.',
+    'Final revision requests due no later than 4 days before event.',
     'Creative licensing covers event duration only.',
-    'Logo animations include up to 2 revision rounds.',
-    'Content delivery via secure cloud links.',
-    'All branding assets due 21 days before event.',
-    'Payment terms: 50% deposit, 50% upon delivery.',
-    'Cancellation policy applies per signed agreement.',
   ];
 
   const colWidth = (CONTENT_W - 12) / 2;

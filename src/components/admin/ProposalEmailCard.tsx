@@ -99,7 +99,7 @@ function buildProposalEmailHtml(
                     <tr>
                       <td width="36" style="padding:6px 12px 6px 0;vertical-align:top;font-size:20px;">&#128197;</td>
                       <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;">
-                        <strong>Timeline</strong> — Key milestones and production schedule
+                        <strong>Timeline</strong> — after sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before the event
                       </td>
                     </tr>
                     <tr>

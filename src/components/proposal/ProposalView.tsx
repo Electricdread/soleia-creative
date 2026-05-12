@@ -856,15 +856,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         {/* Timeline */}
         <ProposalTimeline timeline={timeline} />
 
-        {/* Asset Deadline */}
+        {/* Kickoff Conditions */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Asset Deadline</h2>
+          <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Kickoff Conditions</h2>
           <div className="bg-white rounded-lg p-5 border border-[#ecf0f1]">
             <p className="text-sm text-[#34495e]">
-              All branding assets must be delivered from the client <strong>21 days</strong> prior to the event date.
+              Production begins only once <strong>both</strong> conditions are met: the proposal is signed off and all client brand assets have been delivered.
             </p>
             <p className="text-sm text-[#7f8c8d] mt-2">
-              Timely submission allows for proper testing, quality control, and creative development.
+              From kickoff: <strong>14 days</strong> to deliver the first review &middot; <strong>3 days</strong> for client review &middot; <strong>1</strong> included revision &middot; final notes due <strong>no later than 4 days before the event</strong>.
             </p>
           </div>
         </section>
