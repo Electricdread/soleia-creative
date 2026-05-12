@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
                   <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128221;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Line Item Menu</strong> &mdash; browse our full menu of services and pricing</td></tr>
                   <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#127916;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Creative Guide</strong> &mdash; venue specs, LED zones, content delivery standards</td></tr>
                   <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128193;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Collect Assets folder</strong> &mdash; where you&rsquo;ll drop logos, references, brand assets</td></tr>
-                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128197;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Timeline</strong> &mdash; key milestones leading up to the event</td></tr>
+                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128197;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Timeline</strong> &mdash; after sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before the event</td></tr>
                 </table>
               </td></tr>
             </table>
