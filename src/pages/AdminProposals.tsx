@@ -45,6 +45,7 @@ interface ProposalRow {
   created_at: string;
   is_active: boolean;
   drive_folder_url: string | null;
+  creative_call_url: string | null;
 }
 
 export default function AdminProposals() {
@@ -63,6 +64,7 @@ export default function AdminProposals() {
   const [eventDate, setEventDate] = useState('');
   const [validityDays, setValidityDays] = useState('7');
   const [contactEmail, setContactEmail] = useState('luisdreamslv@gmail.com');
+  const [creativeCallUrl, setCreativeCallUrl] = useState('');
   const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
   const [saving, setSaving] = useState(false);
   const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
@@ -123,6 +125,7 @@ export default function AdminProposals() {
           event_date: eventDate || null,
           validity_days: parseInt(validityDays) || 7,
           contact_email: contactEmail,
+          creative_call_url: creativeCallUrl.trim() || null,
           status: 'draft',
           created_by: user?.id,
         })
@@ -176,6 +179,7 @@ export default function AdminProposals() {
     setValidityDays('7');
     setContactEmail('luisdreamslv@gmail.com');
     setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
+    setCreativeCallUrl('');
   };
 
   const deleteProposal = async (id: string) => {
@@ -207,21 +211,37 @@ export default function AdminProposals() {
     toast({ title: next ? 'Proposal activated — link is live' : 'Proposal deactivated — link is no longer accessible' });
   };
 
-  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string }) => {
+  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null }) => {
     const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
+    const callUrl = p.creative_call_url?.trim();
+    const callBlock = callUrl
+      ? `Schedule our creative call:\n${callUrl}\n\n`
+      : `We'll reach out separately to schedule the creative call.\n\n`;
     return `SOLEIA CREATIVE TEAM
-Project Proposal
+Your Proposal & Pre-Call Packet
 
 Hi ${p.client_name || 'there'},
 
-Your proposal for ${p.event_name} is ready to review and sign:
+Ahead of our creative call, please take a few minutes
+to review the materials below for ${p.event_name}.
+They'll get you acquainted with our process so we can
+hit the ground running on the call — choosing themes,
+line items, and content ideas.
+
+Open your proposal & menu:
 ${proposalUrl}
 
-Inside you'll find the scope of work, timeline,
-and pricing — plus a one-click digital signature
-when you're ready to move forward.
+What's inside:
+  • Line Item Menu — full menu of services & pricing
+  • Creative Guide — venue specs, LED zones, delivery standards
+  • Collect Assets folder — where to drop logos & brand assets
+  • Timeline — key milestones leading up to the event
 
-Let me know if you have any questions.
+${callBlock}Once you've had a chance to look through everything,
+we'll meet on the creative call to finalize themes,
+content, and the line items you'd like to include.
+The on-page signature stays available for whenever
+you're ready to lock things in.
 
 — Soleia Creative Team
 luisdreamslv@gmail.com`;
@@ -234,7 +254,7 @@ luisdreamslv@gmail.com`;
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-session-email?token=${token}&type=proposal`;
       const res = await fetch(url);
-      const { html, subject } = await res.json();
+      const { html } = await res.json();
       if (!html) throw new Error('No HTML returned');
       const plainText = buildPlainTextEmail(proposal);
       const htmlBlob = new Blob([html], { type: 'text/html' });
@@ -248,11 +268,12 @@ luisdreamslv@gmail.com`;
     }
   };
 
-  const openInMailApp = (p: { event_name: string; client_name: string; token: string }) => {
-    const subject = `Proposal: ${p.event_name} — ${p.client_name}`;
+  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null }) => {
+    const subject = `Pre-Call Packet: ${p.event_name} — ${p.client_name}`;
     const body = buildPlainTextEmail(p);
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
+
 
   const statusColor = (s: string) => {
     switch (s) {
@@ -427,6 +448,16 @@ luisdreamslv@gmail.com`;
               <div>
                 <Label className="text-zinc-400 text-xs">Contact Email</Label>
                 <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white mt-1" />
+              </div>
+              <div className="sm:col-span-2">
+                <Label className="text-zinc-400 text-xs">Creative Call Scheduling Link (optional)</Label>
+                <Input
+                  value={creativeCallUrl}
+                  onChange={e => setCreativeCallUrl(e.target.value)}
+                  placeholder="https://calendly.com/..."
+                  className="bg-zinc-800 border-zinc-700 text-white mt-1"
+                />
+                <p className="text-zinc-500 text-[11px] mt-1">If set, a "Schedule Our Creative Call" button is added to the proposal email.</p>
               </div>
             </div>
 

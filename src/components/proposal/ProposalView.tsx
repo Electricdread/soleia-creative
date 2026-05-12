@@ -63,6 +63,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
     contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
+    creative_call_url: proposal.creative_call_url || '',
     linked_session_id: '',
   });
   const [linkedSessionId, setLinkedSessionId] = useState<string | null>(null);
@@ -210,6 +211,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         event_date: editFields.event_date || null,
         validity_days: parseInt(editFields.validity_days) || 7,
         contact_email: editFields.contact_email,
+        creative_call_url: editFields.creative_call_url?.trim() || null,
       };
 
       if (import.meta.env.DEV) {
@@ -375,6 +377,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <Input value={editFields.contact_email} onChange={e => setEditFields({ ...editFields, contact_email: e.target.value })} />
               </div>
               <div className="col-span-2">
+                <label className="text-xs text-[#95a5a6] font-semibold">Creative Call Scheduling Link (optional)</label>
+                <Input
+                  value={editFields.creative_call_url}
+                  onChange={e => setEditFields({ ...editFields, creative_call_url: e.target.value })}
+                  placeholder="https://calendly.com/..."
+                />
+                <p className="text-[11px] text-[#95a5a6] mt-1">When set, adds a "Schedule Our Creative Call" button to the proposal email.</p>
+              </div>
+              <div className="col-span-2">
                 <label className="text-xs text-[#95a5a6] font-semibold">Link Creative Session</label>
                 <select
                   value={editFields.linked_session_id}
@@ -439,6 +450,28 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <span className="text-[#2c3e50] font-medium">{format(quoteDate, 'M/d/yyyy')}</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Pre-Call Packet Banner */}
+        {!signed && !isProposalClosed(proposal) && (
+          <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
+            <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
+            <p className="text-[#34495e] text-sm leading-relaxed">
+              This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
+              We'll discuss themes and final selections together on our creative call &mdash; sign whenever
+              you're ready.
+            </p>
+            {proposal.creative_call_url && (
+              <a
+                href={proposal.creative_call_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-3 text-sm font-semibold text-[#c49a3c] hover:underline"
+              >
+                Schedule our creative call &rarr;
+              </a>
+            )}
           </div>
         )}
 
