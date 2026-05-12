@@ -1,42 +1,33 @@
-# Remove Creative Direction references + hide proposal deadline pre-sign
+# Auto-include Pixel Map PNG in client Drive folder
+
+The `create-client-drive-folder` edge function already creates a `02_Pixel Map/` subfolder under each client folder but leaves it empty. Mirror the existing Creative Guide zip-upload pattern so the master Soleia pixel map gets dropped in automatically (idempotent).
 
 ## Changes
 
-### 1. `src/components/proposal/ProposalTerms.tsx` — Revisions wording
-Change line 29 from:
-> "Includes one revision round within the approved creative direction and existing elements."
+### 1. Asset hosting
+- Upload `user-uploads://SOLEIApixmap.png` to the existing public `creative-guide-template` Supabase Storage bucket as `SOLEIA-Pixel-Map.png` (same bucket used for the Creative Guide zip — no new bucket needed).
+- Public URL becomes the default the edge function fetches.
 
-to:
-> "Includes one revision round within the agreed scope and existing elements."
+### 2. `supabase/functions/create-client-drive-folder/index.ts`
+After the existing zip upload block, add a parallel block that:
+- Resolves the pixel map URL from optional `site_settings.value` where `key = 'pixel_map_url'`, falling back to the public storage URL `${SUPABASE_URL}/storage/v1/object/public/creative-guide-template/SOLEIA-Pixel-Map.png`.
+- Checks `02_Pixel Map/` for an existing file named `SOLEIA-Pixel-Map.png` — skip upload if present (idempotent).
+- Otherwise, fetch bytes and multipart-upload to Drive with `mimeType: 'image/png'` into the `pixelMapFolderId`.
+- Wrap in `try/catch` like the zip block so failures are non-fatal.
 
-### 2. `src/pages/AdminProposals.tsx` — Default timeline (remove Phase 1)
-Drop the `Kickoff Conditions` row from the auto-inserted `proposal_timeline` array (lines 156–161). New default starts with `Content Creation` → `Client Review` → `Revision & Final Delivery` (re-index `sort_order` 0/1/2).
+To get the folder ID, change the `Promise.all([…])` (line 122–126) to capture all three IDs:
+```ts
+const [creativeGuideFolderId, pixelMapFolderId, _assetCollectFolderId] = await Promise.all([…]);
+```
 
-### 3. `src/components/proposal/ProposalGallery.tsx` — Caption
-Replace the line 161 disclaimer:
-> "These mockups are references for creative direction. The final design is rebuilt and realized for production."
-
-with:
-> "These mockups are references only. The final design is rebuilt and realized for production."
-
-### 4. `src/lib/proposalPdfGenerator.ts` — PDF gallery header
-Replace line 484:
-> "Creative direction references — final designs are rebuilt for production"
-
-with:
-> "Reference mockups — final designs are rebuilt for production"
-
-### 5. `src/components/proposal/ProposalView.tsx` — Hide validity notice + countdown until signed
-Wrap the entire validity notice block (lines ~478–496, the "This proposal is valid for…" card with the `CountdownBadge`) in `{(signed || isProposalClosed(proposal)) && ( … )}` so it only renders after the proposal is signed or otherwise closed. Pre-call view will no longer show any deadline pressure.
+### 3. Optional admin override
+Add nothing in the UI for now — admins can override later by inserting `pixel_map_url` into `site_settings` (same pattern as `creative_guide_template_url`). No DB migration required since the row is optional.
 
 ## Out of scope
-- No DB migration; existing proposals keep their stored timeline rows. Only newly created proposals use the trimmed default.
-- `proposals.validity_days` column stays (used in PDF + post-sign references).
-- Email template wording unchanged.
+- No frontend UI changes.
+- No DB migration.
+- Existing client folders won't be retroactively populated unless `create-client-drive-folder` is re-invoked for them (it is idempotent and safe to re-run).
 
 ## Files touched
-- `src/components/proposal/ProposalTerms.tsx`
-- `src/pages/AdminProposals.tsx`
-- `src/components/proposal/ProposalGallery.tsx`
-- `src/lib/proposalPdfGenerator.ts`
-- `src/components/proposal/ProposalView.tsx`
+- `supabase/functions/create-client-drive-folder/index.ts`
+- New asset uploaded to `creative-guide-template` bucket: `SOLEIA-Pixel-Map.png`

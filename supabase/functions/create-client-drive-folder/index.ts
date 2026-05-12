@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
     const clientFolderId = await findOrCreateFolder(clientFolderName, rootId, lovableKey, driveKey);
 
     // 3 subfolders
-    const [creativeGuideFolderId] = await Promise.all([
+    const [creativeGuideFolderId, pixelMapFolderId, _assetCollectFolderId] = await Promise.all([
       findOrCreateFolder('01_Soleia Creative Guide', clientFolderId, lovableKey, driveKey),
       findOrCreateFolder('02_Pixel Map', clientFolderId, lovableKey, driveKey),
       findOrCreateFolder('03_Client Asset Collect', clientFolderId, lovableKey, driveKey),
@@ -188,6 +188,68 @@ Deno.serve(async (req) => {
     } catch (zipErr) {
       // Non-fatal: log and continue so the folder is still returned
       console.error('Creative Guide zip upload failed:', zipErr instanceof Error ? zipErr.message : zipErr);
+    }
+
+    // Upload the master Pixel Map PNG into 02_Pixel Map (idempotent by name)
+    try {
+      const pixmapName = 'SOLEIA-Pixel-Map.png';
+      const { data: pmRow } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'pixel_map_url')
+        .maybeSingle();
+      const pixmapUrl = (pmRow?.value && pmRow.value.trim().length > 0)
+        ? pmRow.value.trim()
+        : `${supabaseUrl}/storage/v1/object/public/creative-guide-template/${encodeURIComponent(pixmapName)}`;
+
+      const existsQ = encodeURIComponent(
+        `name='${pixmapName.replace(/'/g, "\\'")}' and '${pixelMapFolderId}' in parents and trashed=false`,
+      );
+      const existing = await gw(
+        `/drive/v3/files?q=${existsQ}&fields=files(id)&pageSize=1`,
+        { method: 'GET' },
+        lovableKey,
+        driveKey,
+      );
+
+      if (!existing?.files?.length) {
+        const imgRes = await fetch(pixmapUrl);
+        if (!imgRes.ok) throw new Error(`Fetch pixel map failed [${imgRes.status}]`);
+        const imgBytes = new Uint8Array(await imgRes.arrayBuffer());
+
+        const boundary = '----soleia-' + crypto.randomUUID();
+        const metadata = {
+          name: pixmapName,
+          parents: [pixelMapFolderId],
+          mimeType: 'image/png',
+        };
+        const enc = new TextEncoder();
+        const head = enc.encode(
+          `--${boundary}\r\n` +
+          `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+          JSON.stringify(metadata) + `\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Type: image/png\r\n\r\n`,
+        );
+        const tail = enc.encode(`\r\n--${boundary}--`);
+        const body = new Uint8Array(head.length + imgBytes.length + tail.length);
+        body.set(head, 0);
+        body.set(imgBytes, head.length);
+        body.set(tail, head.length + imgBytes.length);
+
+        const r = await fetch(`${GATEWAY}/upload/drive/v3/files?uploadType=multipart&fields=id`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${lovableKey}`,
+            'X-Connection-Api-Key': driveKey,
+            'Content-Type': `multipart/related; boundary=${boundary}`,
+          },
+          body,
+        });
+        if (!r.ok) throw new Error(`Drive upload pixel map failed [${r.status}]: ${(await r.text()).slice(0, 300)}`);
+      }
+    } catch (pmErr) {
+      console.error('Pixel Map upload failed:', pmErr instanceof Error ? pmErr.message : pmErr);
     }
 
     // anyone-with-link → writer (idempotent: Drive accepts duplicate "anyone" permission)
