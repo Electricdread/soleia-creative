@@ -474,25 +474,20 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           </>
         )}
 
-        {/* Validity Notice */}
-        <div className="bg-white border-l-4 border-[#3498db] rounded-r-lg p-5 mb-10 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <p className="text-[#34495e] text-sm">
-              This proposal is valid for <strong>{proposal.validity_days || 7} days</strong>, please respond until{' '}
-              <strong>{format(expiryDate, 'MMMM d, yyyy')}</strong>.
+        {/* Validity Notice — only after sign-off / closure */}
+        {(signed || isProposalClosed(proposal)) && (
+          <div className="bg-white border-l-4 border-[#3498db] rounded-r-lg p-5 mb-10 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <p className="text-[#34495e] text-sm">
+                This proposal is valid for <strong>{proposal.validity_days || 7} days</strong>, please respond until{' '}
+                <strong>{format(expiryDate, 'MMMM d, yyyy')}</strong>.
+              </p>
+            </div>
+            <p className="text-[#7f8c8d] text-sm mt-1">
+              Confirmation within this period allows us to reserve production time.
             </p>
-            {!(signed || isProposalClosed(proposal)) && (
-              <CountdownBadge
-                eventDate={format(expiryDate, 'yyyy-MM-dd')}
-                prefix="Quote expires:"
-                size="md"
-              />
-            )}
           </div>
-          <p className="text-[#7f8c8d] text-sm mt-1">
-            Confirmation within this period allows us to reserve production time.
-          </p>
-        </div>
+        )}
 
         {/* Line Items */}
         {editingItems ? (
