@@ -1077,6 +1077,8 @@ export type Database = {
           contact_email: string | null
           created_at: string
           created_by: string | null
+          drive_folder_id: string | null
+          drive_folder_url: string | null
           event_date: string | null
           event_name: string
           id: string
@@ -1096,6 +1098,8 @@ export type Database = {
           contact_email?: string | null
           created_at?: string
           created_by?: string | null
+          drive_folder_id?: string | null
+          drive_folder_url?: string | null
           event_date?: string | null
           event_name: string
           id?: string
@@ -1115,6 +1119,8 @@ export type Database = {
           contact_email?: string | null
           created_at?: string
           created_by?: string | null
+          drive_folder_id?: string | null
+          drive_folder_url?: string | null
           event_date?: string | null
           event_name?: string
           id?: string
