@@ -111,7 +111,7 @@ function buildProposalEmailHtml(
                     <tr>
                       <td width="36" style="padding:6px 12px 6px 0;vertical-align:top;font-size:20px;">&#9997;&#65039;</td>
                       <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;">
-                        <strong>Digital Signature</strong> — Accept the proposal online with a simple signature
+                        <strong>Digital Signature</strong> — Available on the proposal page when you're ready
                       </td>
                     </tr>
                   </table>
@@ -125,13 +125,22 @@ function buildProposalEmailHtml(
                   <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                     <tr>
                       <td style="background-color:#B8860B;border-radius:8px;padding:14px 36px;text-align:center;">
-                        <a href="${proposalLink}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">View Proposal &#8594;</a>
+                        <a href="${proposalLink}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Open Proposal &amp; Menu &#8594;</a>
                       </td>
                     </tr>
                    </table>
                 </td>
               </tr>
             </table>
+            ${creativeCallUrl ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr><td align="center" style="padding:0 0 12px;">
+                <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                  <tr><td style="background-color:#ffffff;border:1.5px solid #B8860B;border-radius:8px;padding:12px 32px;text-align:center;">
+                    <a href="${creativeCallUrl}" target="_blank" style="display:inline-block;color:#B8860B;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Schedule Our Creative Call &#8594;</a>
+                  </td></tr>
+                </table>
+              </td></tr>
+            </table>` : `<p style="font-size:13px;line-height:1.6;color:#888888;font-style:italic;text-align:center;margin:0 0 12px;">We'll reach out separately to schedule the creative call.</p>`}
 
             <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
               <tr>
@@ -179,7 +188,7 @@ export function ProposalEmailCard() {
     const fetchProposals = async () => {
       const { data } = await supabase
         .from('proposals')
-        .select('id, token, event_name, client_name, venue_name, event_date, status')
+        .select('id, token, event_name, client_name, venue_name, event_date, status, creative_call_url')
         .eq('is_active', true)
         .order('event_date', { ascending: true, nullsFirst: false });
       if (data) setProposals(data);
