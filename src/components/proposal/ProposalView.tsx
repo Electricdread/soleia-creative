@@ -911,3 +911,137 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     </div>
   );
 }
+
+interface PreCallResourcesProps {
+  proposal: any;
+  isAdmin: boolean;
+  onRefresh?: () => void;
+}
+
+function PreCallResources({ proposal, isAdmin, onRefresh }: PreCallResourcesProps) {
+  const { toast } = useToast();
+  const [generating, setGenerating] = useState(false);
+  const driveUrl: string | null = proposal.drive_folder_url || null;
+  const callUrl: string | null = proposal.creative_call_url || null;
+
+  const generateFolder = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
+        body: { proposal_id: proposal.id },
+      });
+      if (error) throw error;
+      const url = (data as any)?.folderUrl;
+      if (!url) throw new Error('No folder URL returned');
+      toast({ title: (data as any)?.existing ? 'Folder already exists' : 'Client folder created' });
+      onRefresh?.();
+    } catch (e: any) {
+      toast({ title: 'Folder generation failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const Tile = ({
+    icon: Icon,
+    title,
+    subtitle,
+    onClick,
+    href,
+    disabled,
+    cta,
+  }: {
+    icon: any;
+    title: string;
+    subtitle: string;
+    onClick?: () => void;
+    href?: string;
+    disabled?: boolean;
+    cta?: React.ReactNode;
+  }) => {
+    const inner = (
+      <>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+            <Icon className="w-5 h-5 text-[#c49a3c]" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[#2c3e50] font-semibold text-sm leading-tight">{title}</p>
+            <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">{subtitle}</p>
+            {cta && <div className="mt-2">{cta}</div>}
+          </div>
+        </div>
+      </>
+    );
+    const baseCls = `block bg-white border-l-4 border-[#c49a3c] border border-[#ecf0f1] rounded-r-lg p-4 transition-all ${
+      disabled ? 'opacity-60 cursor-default' : 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer'
+    }`;
+    if (href && !disabled) {
+      return (
+        <a href={href} target={href.startsWith('#') ? undefined : '_blank'} rel="noopener noreferrer" className={baseCls}>
+          {inner}
+        </a>
+      );
+    }
+    return (
+      <div className={baseCls} onClick={disabled ? undefined : onClick} role={onClick ? 'button' : undefined}>
+        {inner}
+      </div>
+    );
+  };
+
+  return (
+    <div className="mb-8 print:hidden">
+      <p className="text-[10px] tracking-[0.2em] uppercase text-[#95a5a6] font-semibold mb-3">Pre-Call Resources</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Tile
+          icon={ListChecks}
+          title="Line Item Menu"
+          subtitle="Browse services & pricing below."
+          href="#line-items"
+        />
+        <Tile
+          icon={BookOpen}
+          title="Creative Guide"
+          subtitle="Venue specs, LED zones, delivery standards."
+          href="/creative-guide"
+        />
+        {driveUrl ? (
+          <Tile
+            icon={FolderOpen}
+            title="Collect Assets Folder"
+            subtitle="Drop logos, references & brand assets here."
+            href={driveUrl}
+          />
+        ) : isAdmin ? (
+          <Tile
+            icon={FolderOpen}
+            title="Collect Assets Folder"
+            subtitle="No client folder yet."
+            cta={
+              <Button size="sm" variant="outline" onClick={generateFolder} disabled={generating} className="h-7 text-xs gap-1.5 border-[#c49a3c] text-[#c49a3c] hover:bg-[#faf8f4]">
+                {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                Generate folder
+              </Button>
+            }
+          />
+        ) : (
+          <Tile
+            icon={FolderOpen}
+            title="Collect Assets Folder"
+            subtitle="Folder will be shared after sign-off."
+            disabled
+          />
+        )}
+        {callUrl && (
+          <Tile
+            icon={Calendar}
+            title="Schedule Creative Call"
+            subtitle="Book a time to align on themes & content."
+            href={callUrl}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
