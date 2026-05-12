@@ -1,32 +1,33 @@
-## Brighten Proposal Client Email
+## Add Content Delivery Guide to `02_Pixel Map` Drive subfolder
 
-Update `src/components/admin/ProposalEmailCard.tsx` (the `buildProposalEmailHtml` function) so the email reads as a light, airy version of the current layout. No structural changes — same content, same CTA, same fallback link, same Show/Hide preview behavior.
+When a client Drive folder is auto-created on proposal sign, also drop the master Content Delivery Guide PDF into the `02_Pixel Map` subfolder — alongside the existing `SOLEIA-Pixel-Map.png`.
 
-### Changes
+### Why `02_Pixel Map`
+That subfolder already holds the technical asset (the pixel map). The Content Delivery Guide explains how to package/encode/name files for the LED system, so it belongs with the same technical bundle. (If you'd rather drop it in `03_Client Asset Collect`, say the word and I'll switch.)
 
-**Outer canvas**
-- Outer wrapper background: `#f3f1eb` → `#ffffff`
-- Inner card border: keep `#e5e5e5` for definition on white-on-white clients
+### Implementation
 
-**Header band (was solid black `#111111`)**
-- Background: `#faf8f4` (warm cream)
-- Bottom border: `1px solid #e8dfc9` (soft gold hairline) for separation
-- Logo: swap `soleia-logo-color.png` → use the same asset but it already renders on cream; keep `width:180`, `height:60`
-- Add a small uppercase tagline under the logo: `CREATIVE TEAM` in `#B8860B`, `letter-spacing:2px`, `font-size:11px`
+Edit `supabase/functions/create-client-drive-folder/index.ts`:
 
-**Body**
-- Keep white background, dark text (already light-friendly)
-- "Event Details" callout: change `background:#faf8f4` → `#fdfbf6`, keep gold left border
-- "What You'll Find Inside" panel: change `background:#f9f9f9` → `#faf8f4` for warmth consistency
+1. After the existing Pixel Map upload block (around line 253), add a third upload block — same idempotent `findOrCreate` pattern:
+   - File name: `SOLEIA-Content-Delivery-Guide.pdf`
+   - Source URL resolution order:
+     1. `site_settings.content_delivery_guide_url` (admin override)
+     2. Fallback: `${SUPABASE_URL}/storage/v1/object/public/creative-guide-template/SOLEIA-Content-Delivery-Guide.pdf`
+   - MIME type: `application/pdf`
+   - Parent folder: `pixelMapFolderId`
+   - Skip if a file with that name already exists in the folder
+   - Wrap in try/catch — non-fatal, log only (matches existing pattern for zip + pixel map)
 
-**Footer band (was solid black `#111111`)**
-- Background: `#faf8f4`
-- Top border: `1px solid #e8dfc9`
-- Logo opacity: remove (`opacity:0.85` → none) since it's now on light bg
-- "Creative Team" text color: keep `#B8860B`
-- Email link color: `#888888` → `#666666` for contrast on cream
+2. No DB schema changes. No new tables. The `site_settings` row is optional — works out of the box with the public bucket fallback.
+
+### Source PDF
+
+Two options for the master PDF that lives in `creative-guide-template`:
+- **Option A (default)**: You upload `SOLEIA-Content-Delivery-Guide.pdf` to the existing `creative-guide-template` Supabase Storage bucket manually (same place `SOLEIA-Pixel-Map.png` lives). Nothing else needed.
+- **Option B**: I add a small admin tool to generate the PDF via `deliveryGuidePdf.ts` and upload it to that bucket on demand. Tell me if you want this — otherwise I'll stop at Option A.
 
 ### Out of scope
-- No changes to copy, CTA wording, link structure, or the React component shell.
-- No changes to other email templates (asset collect, session invite, delivery guide).
-- No changes to the proposal page itself or the PDF generator.
+- No changes to the live `/delivery-guide` page or `deliveryGuidePdf.ts`.
+- No changes to existing folder structure or names.
+- No changes to per-session delivery guides (`/delivery/:token`).
