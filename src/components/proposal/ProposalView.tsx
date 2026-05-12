@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus } from 'lucide-react';
+import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus, ListChecks, BookOpen, FolderOpen, Calendar, Loader2 } from 'lucide-react';
 import { generateProposalPdf } from '@/lib/proposalPdfGenerator';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
@@ -455,24 +455,23 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Pre-Call Packet Banner */}
         {!signed && !isProposalClosed(proposal) && (
-          <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
-            <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
-            <p className="text-[#34495e] text-sm leading-relaxed">
-              This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
-              We'll discuss themes and final selections together on our creative call &mdash; sign whenever
-              you're ready.
-            </p>
-            {proposal.creative_call_url && (
-              <a
-                href={proposal.creative_call_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-3 text-sm font-semibold text-[#c49a3c] hover:underline"
-              >
-                Schedule our creative call &rarr;
-              </a>
-            )}
-          </div>
+          <>
+            <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
+              <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
+              <p className="text-[#34495e] text-sm leading-relaxed">
+                This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
+                We'll discuss themes and final selections together on our creative call &mdash; sign whenever
+                you're ready.
+              </p>
+            </div>
+
+            {/* Pre-Call Resources */}
+            <PreCallResources
+              proposal={proposal}
+              isAdmin={!!isAdmin}
+              onRefresh={onRefresh}
+            />
+          </>
         )}
 
         {/* Validity Notice */}
@@ -622,7 +621,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             )}
           </div>
         ) : (
-          <div className="mb-10">
+          <div id="line-items" className="mb-10 scroll-mt-20">
             {isAdmin && (
               <div className="flex justify-end mb-2">
                 <button onClick={() => setEditingItems(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors flex items-center gap-1 text-xs">
@@ -630,6 +629,25 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 </button>
               </div>
             )}
+            {items.length === 0 ? (
+              isAdmin ? (
+                <div className="bg-white border-2 border-dashed border-[#ecf0f1] rounded-lg p-10 text-center">
+                  <ListChecks className="w-8 h-8 text-[#c49a3c] mx-auto mb-3" />
+                  <p className="text-[#2c3e50] font-semibold mb-1">No line items yet</p>
+                  <p className="text-[#7f8c8d] text-sm mb-4">Add items so your client can see the menu and pricing.</p>
+                  <Button size="sm" onClick={() => setEditingItems(true)} className="bg-[#2c3e50] text-white hover:bg-[#34495e] gap-1.5">
+                    <Plus className="w-3 h-3" /> Add items
+                  </Button>
+                </div>
+              ) : (
+                <div className="bg-[#faf8f4] border border-[#ecf0f1] rounded-lg p-8 text-center">
+                  <p className="text-[#7f8c8d] text-sm italic">
+                    Line items will be finalized together on our creative call.
+                  </p>
+                </div>
+              )
+            ) : (
+            <>
             {/* Desktop Table - hidden on mobile */}
             <div className="hidden sm:block bg-white rounded-lg border border-[#ecf0f1] overflow-hidden">
               <Table>
@@ -804,6 +822,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 });
               })()}
             </div>
+            </>
+            )}
           </div>
         )}
 
@@ -887,6 +907,140 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         <footer className="text-center pt-8 pb-12 border-t border-[#ecf0f1]">
           <img src={soleiaLogo} alt="Soleia" className="h-8 mx-auto opacity-40" />
         </footer>
+      </div>
+    </div>
+  );
+}
+
+interface PreCallResourcesProps {
+  proposal: any;
+  isAdmin: boolean;
+  onRefresh?: () => void;
+}
+
+function PreCallResources({ proposal, isAdmin, onRefresh }: PreCallResourcesProps) {
+  const { toast } = useToast();
+  const [generating, setGenerating] = useState(false);
+  const driveUrl: string | null = proposal.drive_folder_url || null;
+  const callUrl: string | null = proposal.creative_call_url || null;
+
+  const generateFolder = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
+        body: { proposal_id: proposal.id },
+      });
+      if (error) throw error;
+      const url = (data as any)?.folderUrl;
+      if (!url) throw new Error('No folder URL returned');
+      toast({ title: (data as any)?.existing ? 'Folder already exists' : 'Client folder created' });
+      onRefresh?.();
+    } catch (e: any) {
+      toast({ title: 'Folder generation failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const Tile = ({
+    icon: Icon,
+    title,
+    subtitle,
+    onClick,
+    href,
+    disabled,
+    cta,
+  }: {
+    icon: any;
+    title: string;
+    subtitle: string;
+    onClick?: () => void;
+    href?: string;
+    disabled?: boolean;
+    cta?: React.ReactNode;
+  }) => {
+    const inner = (
+      <>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+            <Icon className="w-5 h-5 text-[#c49a3c]" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[#2c3e50] font-semibold text-sm leading-tight">{title}</p>
+            <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">{subtitle}</p>
+            {cta && <div className="mt-2">{cta}</div>}
+          </div>
+        </div>
+      </>
+    );
+    const baseCls = `block bg-white border-l-4 border-[#c49a3c] border border-[#ecf0f1] rounded-r-lg p-4 transition-all ${
+      disabled ? 'opacity-60 cursor-default' : 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer'
+    }`;
+    if (href && !disabled) {
+      return (
+        <a href={href} target={href.startsWith('#') ? undefined : '_blank'} rel="noopener noreferrer" className={baseCls}>
+          {inner}
+        </a>
+      );
+    }
+    return (
+      <div className={baseCls} onClick={disabled ? undefined : onClick} role={onClick ? 'button' : undefined}>
+        {inner}
+      </div>
+    );
+  };
+
+  return (
+    <div className="mb-8 print:hidden">
+      <p className="text-[10px] tracking-[0.2em] uppercase text-[#95a5a6] font-semibold mb-3">Pre-Call Resources</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Tile
+          icon={ListChecks}
+          title="Line Item Menu"
+          subtitle="Browse services & pricing below."
+          href="#line-items"
+        />
+        <Tile
+          icon={BookOpen}
+          title="Creative Guide"
+          subtitle="Venue specs, LED zones, delivery standards."
+          href="/creative-guide"
+        />
+        {driveUrl ? (
+          <Tile
+            icon={FolderOpen}
+            title="Collect Assets Folder"
+            subtitle="Drop logos, references & brand assets here."
+            href={driveUrl}
+          />
+        ) : isAdmin ? (
+          <Tile
+            icon={FolderOpen}
+            title="Collect Assets Folder"
+            subtitle="No client folder yet."
+            cta={
+              <Button size="sm" variant="outline" onClick={generateFolder} disabled={generating} className="h-7 text-xs gap-1.5 border-[#c49a3c] text-[#c49a3c] hover:bg-[#faf8f4]">
+                {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                Generate folder
+              </Button>
+            }
+          />
+        ) : (
+          <Tile
+            icon={FolderOpen}
+            title="Collect Assets Folder"
+            subtitle="Folder will be shared after sign-off."
+            disabled
+          />
+        )}
+        {callUrl && (
+          <Tile
+            icon={Calendar}
+            title="Schedule Creative Call"
+            subtitle="Book a time to align on themes & content."
+            href={callUrl}
+          />
+        )}
       </div>
     </div>
   );
