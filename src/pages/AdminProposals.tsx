@@ -607,6 +607,28 @@ export default function AdminProposals() {
                       Mark Sent
                     </Button>
                   )}
+                  {p.drive_folder_url ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => window.open(p.drive_folder_url!, '_blank')}
+                      title="Open client Drive folder"
+                      className="text-[#c49a3c] hover:text-[#d4aa4c]"
+                    >
+                      <Folder className="w-4 h-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => generateClientFolder(p.id)}
+                      title="Generate client Drive folder"
+                      className="text-zinc-400 hover:text-[#c49a3c]"
+                      disabled={folderGenerating === p.id}
+                    >
+                      {folderGenerating === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderPlus className="w-4 h-4" />}
+                    </Button>
+                  )}
                   <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} title="Edit proposal" className="text-zinc-400 hover:text-white">
                     <Pencil className="w-4 h-4" />
                   </Button>
