@@ -455,24 +455,23 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Pre-Call Packet Banner */}
         {!signed && !isProposalClosed(proposal) && (
-          <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
-            <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
-            <p className="text-[#34495e] text-sm leading-relaxed">
-              This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
-              We'll discuss themes and final selections together on our creative call &mdash; sign whenever
-              you're ready.
-            </p>
-            {proposal.creative_call_url && (
-              <a
-                href={proposal.creative_call_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-3 text-sm font-semibold text-[#c49a3c] hover:underline"
-              >
-                Schedule our creative call &rarr;
-              </a>
-            )}
-          </div>
+          <>
+            <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
+              <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
+              <p className="text-[#34495e] text-sm leading-relaxed">
+                This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
+                We'll discuss themes and final selections together on our creative call &mdash; sign whenever
+                you're ready.
+              </p>
+            </div>
+
+            {/* Pre-Call Resources */}
+            <PreCallResources
+              proposal={proposal}
+              isAdmin={!!isAdmin}
+              onRefresh={onRefresh}
+            />
+          </>
         )}
 
         {/* Validity Notice */}
