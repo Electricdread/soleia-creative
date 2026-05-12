@@ -822,6 +822,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 });
               })()}
             </div>
+            </>
+            )}
           </div>
         )}
 
