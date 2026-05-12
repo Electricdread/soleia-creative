@@ -252,6 +252,68 @@ Deno.serve(async (req) => {
       console.error('Pixel Map upload failed:', pmErr instanceof Error ? pmErr.message : pmErr);
     }
 
+    // Upload the master Content Delivery Guide PDF into 02_Pixel Map (idempotent by name)
+    try {
+      const cdgName = 'SOLEIA-Content-Delivery-Guide.pdf';
+      const { data: cdgRow } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'content_delivery_guide_url')
+        .maybeSingle();
+      const cdgUrl = (cdgRow?.value && cdgRow.value.trim().length > 0)
+        ? cdgRow.value.trim()
+        : `${supabaseUrl}/storage/v1/object/public/creative-guide-template/${encodeURIComponent(cdgName)}`;
+
+      const existsQ = encodeURIComponent(
+        `name='${cdgName.replace(/'/g, "\\'")}' and '${pixelMapFolderId}' in parents and trashed=false`,
+      );
+      const existing = await gw(
+        `/drive/v3/files?q=${existsQ}&fields=files(id)&pageSize=1`,
+        { method: 'GET' },
+        lovableKey,
+        driveKey,
+      );
+
+      if (!existing?.files?.length) {
+        const pdfRes = await fetch(cdgUrl);
+        if (!pdfRes.ok) throw new Error(`Fetch content delivery guide failed [${pdfRes.status}]`);
+        const pdfBytes = new Uint8Array(await pdfRes.arrayBuffer());
+
+        const boundary = '----soleia-' + crypto.randomUUID();
+        const metadata = {
+          name: cdgName,
+          parents: [pixelMapFolderId],
+          mimeType: 'application/pdf',
+        };
+        const enc = new TextEncoder();
+        const head = enc.encode(
+          `--${boundary}\r\n` +
+          `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+          JSON.stringify(metadata) + `\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Type: application/pdf\r\n\r\n`,
+        );
+        const tail = enc.encode(`\r\n--${boundary}--`);
+        const body = new Uint8Array(head.length + pdfBytes.length + tail.length);
+        body.set(head, 0);
+        body.set(pdfBytes, head.length);
+        body.set(tail, head.length + pdfBytes.length);
+
+        const r = await fetch(`${GATEWAY}/upload/drive/v3/files?uploadType=multipart&fields=id`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${lovableKey}`,
+            'X-Connection-Api-Key': driveKey,
+            'Content-Type': `multipart/related; boundary=${boundary}`,
+          },
+          body,
+        });
+        if (!r.ok) throw new Error(`Drive upload content delivery guide failed [${r.status}]: ${(await r.text()).slice(0, 300)}`);
+      }
+    } catch (cdgErr) {
+      console.error('Content Delivery Guide upload failed:', cdgErr instanceof Error ? cdgErr.message : cdgErr);
+    }
+
     // anyone-with-link → writer (idempotent: Drive accepts duplicate "anyone" permission)
     await gw(
       `/drive/v3/files/${clientFolderId}/permissions?fields=id`,
