@@ -20,6 +20,7 @@ interface ProposalOption {
   venue_name: string | null;
   event_date: string | null;
   status: string;
+  creative_call_url: string | null;
 }
 
 function buildProposalEmailHtml(
@@ -27,7 +28,8 @@ function buildProposalEmailHtml(
   clientName: string,
   venueName: string | null,
   eventDate: string | null,
-  proposalLink: string
+  proposalLink: string,
+  creativeCallUrl: string | null
 ) {
   const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
   const formattedDate = eventDate
