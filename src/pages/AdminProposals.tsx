@@ -67,6 +67,26 @@ export default function AdminProposals() {
   const [saving, setSaving] = useState(false);
   const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
   const [emailCopying, setEmailCopying] = useState<string | null>(null);
+  const [folderGenerating, setFolderGenerating] = useState<string | null>(null);
+
+  const generateClientFolder = async (proposalId: string) => {
+    setFolderGenerating(proposalId);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
+        body: { proposal_id: proposalId },
+      });
+      if (error) throw error;
+      const url = (data as any)?.folderUrl;
+      if (!url) throw new Error('No folder URL returned');
+      await navigator.clipboard.writeText(url).catch(() => {});
+      toast({ title: (data as any)?.existing ? 'Folder already exists' : 'Client folder created', description: 'Link copied to clipboard' });
+      fetchProposals();
+    } catch (e: any) {
+      toast({ title: 'Folder generation failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setFolderGenerating(null);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !user) navigate('/admin/login');
