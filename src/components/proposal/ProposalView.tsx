@@ -621,7 +621,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             )}
           </div>
         ) : (
-          <div className="mb-10">
+          <div id="line-items" className="mb-10 scroll-mt-20">
             {isAdmin && (
               <div className="flex justify-end mb-2">
                 <button onClick={() => setEditingItems(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors flex items-center gap-1 text-xs">
@@ -629,6 +629,25 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 </button>
               </div>
             )}
+            {items.length === 0 ? (
+              isAdmin ? (
+                <div className="bg-white border-2 border-dashed border-[#ecf0f1] rounded-lg p-10 text-center">
+                  <ListChecks className="w-8 h-8 text-[#c49a3c] mx-auto mb-3" />
+                  <p className="text-[#2c3e50] font-semibold mb-1">No line items yet</p>
+                  <p className="text-[#7f8c8d] text-sm mb-4">Add items so your client can see the menu and pricing.</p>
+                  <Button size="sm" onClick={() => setEditingItems(true)} className="bg-[#2c3e50] text-white hover:bg-[#34495e] gap-1.5">
+                    <Plus className="w-3 h-3" /> Add items
+                  </Button>
+                </div>
+              ) : (
+                <div className="bg-[#faf8f4] border border-[#ecf0f1] rounded-lg p-8 text-center">
+                  <p className="text-[#7f8c8d] text-sm italic">
+                    Line items will be finalized together on our creative call.
+                  </p>
+                </div>
+              )
+            ) : (
+            <>
             {/* Desktop Table - hidden on mobile */}
             <div className="hidden sm:block bg-white rounded-lg border border-[#ecf0f1] overflow-hidden">
               <Table>
