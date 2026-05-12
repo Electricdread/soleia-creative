@@ -211,6 +211,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         event_date: editFields.event_date || null,
         validity_days: parseInt(editFields.validity_days) || 7,
         contact_email: editFields.contact_email,
+        creative_call_url: editFields.creative_call_url?.trim() || null,
       };
 
       if (import.meta.env.DEV) {
