@@ -179,6 +179,7 @@ export default function AdminProposals() {
     setValidityDays('7');
     setContactEmail('luisdreamslv@gmail.com');
     setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
+    setCreativeCallUrl('');
   };
 
   const deleteProposal = async (id: string) => {
