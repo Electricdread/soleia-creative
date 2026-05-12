@@ -226,7 +226,10 @@ ${formattedDate ? `<p style="margin:0;font-size:13px;color:#888888;">${esc(forma
 </html>`
   }
 
-  return new Response(JSON.stringify({ html, subject: `${typeLabel}: ${title} — ${clientName}` }), {
+  const subject = type === 'proposal'
+    ? `Pre-Call Packet: ${title} — ${clientName}`
+    : `${typeLabel}: ${title} — ${clientName}`
+  return new Response(JSON.stringify({ html, subject }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 })
