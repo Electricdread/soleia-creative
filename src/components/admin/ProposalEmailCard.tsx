@@ -207,7 +207,8 @@ export function ProposalEmailCard() {
         selected.client_name,
         selected.venue_name,
         selected.event_date,
-        proposalLink
+        proposalLink,
+        selected.creative_call_url
       )
     : '';
 
