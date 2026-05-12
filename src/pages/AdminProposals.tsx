@@ -235,7 +235,7 @@ What's inside:
   • Line Item Menu — full menu of services & pricing
   • Creative Guide — venue specs, LED zones, delivery standards
   • Collect Assets folder — where to drop logos & brand assets
-  • Timeline — key milestones leading up to the event
+  • Timeline — after sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before the event
 
 ${callBlock}Once you've had a chance to look through everything,
 we'll meet on the creative call to finalize themes,
