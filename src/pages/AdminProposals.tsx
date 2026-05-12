@@ -211,24 +211,67 @@ export default function AdminProposals() {
     toast({ title: next ? 'Proposal activated — link is live' : 'Proposal deactivated — link is no longer accessible' });
   };
 
-  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string }) => {
+  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null }) => {
     const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
+    const callUrl = p.creative_call_url?.trim();
+    const callBlock = callUrl
+      ? `Schedule our creative call:\n${callUrl}\n\n`
+      : `We'll reach out separately to schedule the creative call.\n\n`;
     return `SOLEIA CREATIVE TEAM
-Project Proposal
+Your Proposal & Pre-Call Packet
 
 Hi ${p.client_name || 'there'},
 
-Your proposal for ${p.event_name} is ready to review and sign:
+Ahead of our creative call, please take a few minutes
+to review the materials below for ${p.event_name}.
+They'll get you acquainted with our process so we can
+hit the ground running on the call — choosing themes,
+line items, and content ideas.
+
+Open your proposal & menu:
 ${proposalUrl}
 
-Inside you'll find the scope of work, timeline,
-and pricing — plus a one-click digital signature
-when you're ready to move forward.
+What's inside:
+  • Line Item Menu — full menu of services & pricing
+  • Creative Guide — venue specs, LED zones, delivery standards
+  • Collect Assets folder — where to drop logos & brand assets
+  • Timeline — key milestones leading up to the event
 
-Let me know if you have any questions.
+${callBlock}Once you've had a chance to look through everything,
+we'll meet on the creative call to finalize themes,
+content, and the line items you'd like to include.
+The on-page signature stays available for whenever
+you're ready to lock things in.
 
 — Soleia Creative Team
 luisdreamslv@gmail.com`;
+  };
+
+  const copyEmailTemplate = async (token: string) => {
+    const proposal = proposals.find(p => p.token === token);
+    if (!proposal) return;
+    setEmailCopying(token);
+    try {
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-session-email?token=${token}&type=proposal`;
+      const res = await fetch(url);
+      const { html } = await res.json();
+      if (!html) throw new Error('No HTML returned');
+      const plainText = buildPlainTextEmail(proposal);
+      const htmlBlob = new Blob([html], { type: 'text/html' });
+      const textBlob = new Blob([plainText], { type: 'text/plain' });
+      await navigator.clipboard.write([new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })]);
+      toast({ title: 'Email copied!', description: 'Paste into your email client (rich HTML on desktop, text + link on mobile)' });
+    } catch (e: any) {
+      toast({ title: 'Error copying email', description: e.message, variant: 'destructive' });
+    } finally {
+      setEmailCopying(null);
+    }
+  };
+
+  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null }) => {
+    const subject = `Pre-Call Packet: ${p.event_name} — ${p.client_name}`;
+    const body = buildPlainTextEmail(p);
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const copyEmailTemplate = async (token: string) => {
