@@ -233,6 +233,17 @@ export default function AdminProposals() {
     toast({ title: next ? 'Proposal activated — link is live' : 'Proposal deactivated — link is no longer accessible' });
   };
 
+  const togglePreCallPacket = async (id: string, current: boolean) => {
+    const next = !current;
+    const { error } = await supabase.from('proposals').update({ is_pre_call_packet: next }).eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to update pre-call packet setting', variant: 'destructive' });
+      return;
+    }
+    setProposals(prev => prev.map(p => p.id === id ? { ...p, is_pre_call_packet: next } : p));
+    toast({ title: next ? 'Pre-call packet enabled' : 'Pre-call packet disabled — straight quote mode' });
+  };
+
   const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
     const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
     const isPrecall = p.is_pre_call_packet !== false;
