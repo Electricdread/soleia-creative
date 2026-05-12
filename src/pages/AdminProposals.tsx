@@ -209,16 +209,22 @@ export default function AdminProposals() {
 
   const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string }) => {
     const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
-    return `Hi ${p.client_name || 'there'},
+    return `SOLEIA CREATIVE TEAM
+Project Proposal
+
+Hi ${p.client_name || 'there'},
 
 Your proposal for ${p.event_name} is ready to review and sign:
 ${proposalUrl}
 
-Inside you'll find the scope of work, timeline, and pricing — plus a one-click digital signature when you're ready to move forward.
+Inside you'll find the scope of work, timeline,
+and pricing — plus a one-click digital signature
+when you're ready to move forward.
 
 Let me know if you have any questions.
 
-— Soleia Creative Team`;
+— Soleia Creative Team
+luisdreamslv@gmail.com`;
   };
 
   const copyEmailTemplate = async (token: string) => {
