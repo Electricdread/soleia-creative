@@ -183,6 +183,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           proposal_url: window.location.href,
         },
       }).catch(console.error);
+
+      // Auto-create client Google Drive folder (idempotent on backend)
+      supabase.functions.invoke('create-client-drive-folder', {
+        body: { proposal_id: proposal.id },
+      }).catch(console.error);
     } catch (e: any) {
       toast({ title: 'Failed to sign', description: e.message, variant: 'destructive' });
     } finally {

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder } from 'lucide-react';
 import { downloadLineItemLibraryPdf, printLineItemLibraryPdf } from '@/lib/lineItemLibraryPdf';
 import { Switch } from '@/components/ui/switch';
 import { getPublicOrigin } from '@/lib/ogShare';
@@ -44,6 +44,7 @@ interface ProposalRow {
   client_signature: string | null;
   created_at: string;
   is_active: boolean;
+  drive_folder_url: string | null;
 }
 
 export default function AdminProposals() {
@@ -66,6 +67,26 @@ export default function AdminProposals() {
   const [saving, setSaving] = useState(false);
   const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
   const [emailCopying, setEmailCopying] = useState<string | null>(null);
+  const [folderGenerating, setFolderGenerating] = useState<string | null>(null);
+
+  const generateClientFolder = async (proposalId: string) => {
+    setFolderGenerating(proposalId);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
+        body: { proposal_id: proposalId },
+      });
+      if (error) throw error;
+      const url = (data as any)?.folderUrl;
+      if (!url) throw new Error('No folder URL returned');
+      await navigator.clipboard.writeText(url).catch(() => {});
+      toast({ title: (data as any)?.existing ? 'Folder already exists' : 'Client folder created', description: 'Link copied to clipboard' });
+      fetchProposals();
+    } catch (e: any) {
+      toast({ title: 'Folder generation failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setFolderGenerating(null);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !user) navigate('/admin/login');
@@ -584,6 +605,28 @@ export default function AdminProposals() {
                   {p.status === 'draft' && (
                     <Button variant="ghost" size="sm" onClick={() => markSent(p.id)} className="text-blue-400 hover:text-blue-300 text-xs">
                       Mark Sent
+                    </Button>
+                  )}
+                  {p.drive_folder_url ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => window.open(p.drive_folder_url!, '_blank')}
+                      title="Open client Drive folder"
+                      className="text-[#c49a3c] hover:text-[#d4aa4c]"
+                    >
+                      <Folder className="w-4 h-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => generateClientFolder(p.id)}
+                      title="Generate client Drive folder"
+                      className="text-zinc-400 hover:text-[#c49a3c]"
+                      disabled={folderGenerating === p.id}
+                    >
+                      {folderGenerating === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderPlus className="w-4 h-4" />}
                     </Button>
                   )}
                   <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} title="Edit proposal" className="text-zinc-400 hover:text-white">

@@ -37,3 +37,5 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = false
   [functions.drive-status]
     verify_jwt = false
+  [functions.create-client-drive-folder]
+    verify_jwt = false
