@@ -125,6 +125,7 @@ export default function AdminProposals() {
           event_date: eventDate || null,
           validity_days: parseInt(validityDays) || 7,
           contact_email: contactEmail,
+          creative_call_url: creativeCallUrl.trim() || null,
           status: 'draft',
           created_by: user?.id,
         })
