@@ -46,6 +46,7 @@ interface ProposalRow {
   is_active: boolean;
   drive_folder_url: string | null;
   creative_call_url: string | null;
+  is_pre_call_packet: boolean;
 }
 
 export default function AdminProposals() {
@@ -232,8 +233,37 @@ export default function AdminProposals() {
     toast({ title: next ? 'Proposal activated — link is live' : 'Proposal deactivated — link is no longer accessible' });
   };
 
-  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null }) => {
+  const togglePreCallPacket = async (id: string, current: boolean) => {
+    const next = !current;
+    const { error } = await supabase.from('proposals').update({ is_pre_call_packet: next }).eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to update pre-call packet setting', variant: 'destructive' });
+      return;
+    }
+    setProposals(prev => prev.map(p => p.id === id ? { ...p, is_pre_call_packet: next } : p));
+    toast({ title: next ? 'Pre-call packet enabled' : 'Pre-call packet disabled — straight quote mode' });
+  };
+
+  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
     const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
+    const isPrecall = p.is_pre_call_packet !== false;
+
+    if (!isPrecall) {
+      return `SOLEIA CREATIVE TEAM
+Your Proposal
+
+Hi ${p.client_name || 'there'},
+
+Please find your proposal for ${p.event_name} below.
+Review the details and sign when you're ready.
+
+Open your proposal:
+${proposalUrl}
+
+— Soleia Creative Team
+luisdreamslv@gmail.com`;
+    }
+
     const callUrl = p.creative_call_url?.trim();
     const callBlock = callUrl
       ? `Schedule our creative call:\n${callUrl}\n\n`
@@ -289,8 +319,10 @@ luisdreamslv@gmail.com`;
     }
   };
 
-  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null }) => {
-    const subject = `Pre-Call Packet: ${p.event_name} — ${p.client_name}`;
+  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
+    const subject = p.is_pre_call_packet === false
+      ? `Proposal: ${p.event_name} — ${p.client_name}`
+      : `Pre-Call Packet: ${p.event_name} — ${p.client_name}`;
     const body = buildPlainTextEmail(p);
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
@@ -682,6 +714,13 @@ luisdreamslv@gmail.com`;
                 >
                   <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
                   <span className="text-xs font-medium text-white">Active</span>
+                </label>
+                <label
+                  className="flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-800 border border-zinc-700 cursor-pointer flex-shrink-0"
+                  title="Off = straight quote (no pre-call banner, resources, or pre-call wording in the email)"
+                >
+                  <Switch checked={p.is_pre_call_packet !== false} onCheckedChange={() => togglePreCallPacket(p.id, p.is_pre_call_packet !== false)} />
+                  <span className="text-xs font-medium text-white">Pre-call packet</span>
                 </label>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {p.status === 'draft' && (

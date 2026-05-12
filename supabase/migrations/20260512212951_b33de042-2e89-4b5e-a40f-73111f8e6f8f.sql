@@ -1,0 +1,1 @@
+alter table public.proposals add column if not exists is_pre_call_packet boolean not null default true;

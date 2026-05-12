@@ -450,7 +450,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         )}
 
         {/* Pre-Call Packet Banner */}
-        {!signed && !isProposalClosed(proposal) && (
+        {!signed && !isProposalClosed(proposal) && proposal.is_pre_call_packet !== false && (
           <>
             <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
               <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
