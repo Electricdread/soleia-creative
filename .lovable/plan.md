@@ -1,33 +1,52 @@
-# Auto-include Pixel Map PNG in client Drive folder
+# Auto-fill new proposals from the Line Item Library
 
-The `create-client-drive-folder` edge function already creates a `02_Pixel Map/` subfolder under each client folder but leaves it empty. Mirror the existing Creative Guide zip-upload pattern so the master Soleia pixel map gets dropped in automatically (idempotent).
+## Problem
+The proposal page is blank because the proposal was created with no items. Existing client UX already supports selection + quantity steppers + live subtotal — it just needs items to render.
+
+## Behavior (after fix)
+- On creating a new proposal, the full Line Item Library is copied into `proposal_items` automatically.
+- Client opens the proposal → sees the full menu, ticks the items they want, adjusts quantity (`+ / -`), and the **Quote Total** updates live as the subtotal of selected lines.
+- Admin can still edit/remove items via the existing "Edit Items" button.
 
 ## Changes
 
-### 1. Asset hosting
-- Upload `user-uploads://SOLEIApixmap.png` to the existing public `creative-guide-template` Supabase Storage bucket as `SOLEIA-Pixel-Map.png` (same bucket used for the Creative Guide zip — no new bucket needed).
-- Public URL becomes the default the edge function fetches.
-
-### 2. `supabase/functions/create-client-drive-folder/index.ts`
-After the existing zip upload block, add a parallel block that:
-- Resolves the pixel map URL from optional `site_settings.value` where `key = 'pixel_map_url'`, falling back to the public storage URL `${SUPABASE_URL}/storage/v1/object/public/creative-guide-template/SOLEIA-Pixel-Map.png`.
-- Checks `02_Pixel Map/` for an existing file named `SOLEIA-Pixel-Map.png` — skip upload if present (idempotent).
-- Otherwise, fetch bytes and multipart-upload to Drive with `mimeType: 'image/png'` into the `pixelMapFolderId`.
-- Wrap in `try/catch` like the zip block so failures are non-fatal.
-
-To get the folder ID, change the `Promise.all([…])` (line 122–126) to capture all three IDs:
+### 1. `src/pages/AdminProposals.tsx` — auto-seed in `handleCreate`
+After creating the proposal row, when the admin didn't type any custom items, fetch the library and insert all 9 templates as `proposal_items`:
 ```ts
-const [creativeGuideFolderId, pixelMapFolderId, _assetCollectFolderId] = await Promise.all([…]);
+if (validItems.length === 0) {
+  const { data: tpls } = await supabase
+    .from('line_item_templates')
+    .select('category, title, description, price')
+    .order('category').order('title');
+  if (tpls?.length) {
+    await supabase.from('proposal_items').insert(
+      tpls.map((t, idx) => ({
+        proposal_id: proposal.id,
+        title: t.title,
+        description: t.description,
+        price: Number(t.price) || 0,
+        quantity: 1,
+        category: t.category,
+        unit: null,
+        is_flat_fee: false,
+        sort_order: idx,
+      }))
+    );
+  }
+}
 ```
+If the admin did type items, behavior is unchanged.
 
-### 3. Optional admin override
-Add nothing in the UI for now — admins can override later by inserting `pixel_map_url` into `site_settings` (same pattern as `creative_guide_template_url`). No DB migration required since the row is optional.
+### 2. Backfill the existing empty `Fudale TranformanTEST` proposal
+One-off insert of the 9 library templates into `proposal_items` for `proposal_id = ddce5aff-fb79-4e9a-a3d1-01e582ea596d` so the live link shows the menu immediately.
+
+### 3. (Optional copy tweak in `ProposalView.tsx`)
+The "Total" label for unsigned client view already says "Quote Total". No change needed — selection + quantity + live subtotal logic is already wired.
 
 ## Out of scope
-- No frontend UI changes.
-- No DB migration.
-- Existing client folders won't be retroactively populated unless `create-client-drive-folder` is re-invoked for them (it is idempotent and safe to re-run).
+- No schema migration.
+- No client-view UI rewrite.
 
 ## Files touched
-- `supabase/functions/create-client-drive-folder/index.ts`
-- New asset uploaded to `creative-guide-template` bucket: `SOLEIA-Pixel-Map.png`
+- `src/pages/AdminProposals.tsx`
+- One `proposal_items` data insert for the Fudale backfill

@@ -150,6 +150,28 @@ export default function AdminProposals() {
           }))
         );
         if (itemsErr) throw itemsErr;
+      } else {
+        // Auto-seed from Line Item Library so the client always sees the menu
+        const { data: tpls } = await supabase
+          .from('line_item_templates')
+          .select('category, title, description, price')
+          .order('category', { ascending: true })
+          .order('title', { ascending: true });
+        if (tpls?.length) {
+          await supabase.from('proposal_items').insert(
+            tpls.map((t: any, idx: number) => ({
+              proposal_id: proposal.id,
+              title: t.title,
+              description: t.description || null,
+              price: Number(t.price) || 0,
+              quantity: 1,
+              category: t.category || null,
+              unit: null,
+              is_flat_fee: false,
+              sort_order: idx,
+            }))
+          );
+        }
       }
 
       // Insert default timeline
