@@ -365,17 +365,7 @@ export async function generateProposalPdf(
     y += rowH;
   }
 
-  // Total row
-  y += 4;
-  doc.setFillColor(DARK);
-  doc.rect(MARGIN, y, CONTENT_W, 24, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor('#ffffff');
-  doc.text('TOTAL', COL_ITEM_X, y + 16);
-  const grandTotal = items.reduce((sum, i) => sum + (i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1)), 0);
-  doc.text(formatCurrency(grandTotal), COL_PRICE_RIGHT, y + 16, { align: 'right' });
-  y += 34;
+  y += 10;
 
   // === TIMELINE (horizontal dots) ===
   if (timeline.length > 0) {
