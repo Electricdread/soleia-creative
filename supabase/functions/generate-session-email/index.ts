@@ -233,7 +233,7 @@ ${formattedDate ? `<p style="margin:0;font-size:13px;color:#888888;">${esc(forma
   }
 
   const subject = type === 'proposal'
-    ? `Pre-Call Packet: ${title} — ${clientName}`
+    ? (isPreCallPacket ? `Pre-Call Packet: ${title} — ${clientName}` : `Proposal: ${title} — ${clientName}`)
     : `${typeLabel}: ${title} — ${clientName}`
   return new Response(JSON.stringify({ html, subject }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
