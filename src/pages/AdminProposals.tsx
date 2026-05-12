@@ -715,6 +715,13 @@ luisdreamslv@gmail.com`;
                   <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
                   <span className="text-xs font-medium text-white">Active</span>
                 </label>
+                <label
+                  className="flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-800 border border-zinc-700 cursor-pointer flex-shrink-0"
+                  title="Off = straight quote (no pre-call banner, resources, or pre-call wording in the email)"
+                >
+                  <Switch checked={p.is_pre_call_packet !== false} onCheckedChange={() => togglePreCallPacket(p.id, p.is_pre_call_packet !== false)} />
+                  <span className="text-xs font-medium text-white">Pre-call packet</span>
+                </label>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {p.status === 'draft' && (
                     <Button variant="ghost" size="sm" onClick={() => markSent(p.id)} className="text-blue-400 hover:text-blue-300 text-xs">
