@@ -449,6 +449,16 @@ luisdreamslv@gmail.com`;
                 <Label className="text-zinc-400 text-xs">Contact Email</Label>
                 <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white mt-1" />
               </div>
+              <div className="sm:col-span-2">
+                <Label className="text-zinc-400 text-xs">Creative Call Scheduling Link (optional)</Label>
+                <Input
+                  value={creativeCallUrl}
+                  onChange={e => setCreativeCallUrl(e.target.value)}
+                  placeholder="https://calendly.com/..."
+                  className="bg-zinc-800 border-zinc-700 text-white mt-1"
+                />
+                <p className="text-zinc-500 text-[11px] mt-1">If set, a "Schedule Our Creative Call" button is added to the proposal email.</p>
+              </div>
             </div>
 
             {/* Line Items */}
