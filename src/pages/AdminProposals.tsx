@@ -274,32 +274,6 @@ luisdreamslv@gmail.com`;
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
-  const copyEmailTemplate = async (token: string) => {
-    const proposal = proposals.find(p => p.token === token);
-    if (!proposal) return;
-    setEmailCopying(token);
-    try {
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-session-email?token=${token}&type=proposal`;
-      const res = await fetch(url);
-      const { html, subject } = await res.json();
-      if (!html) throw new Error('No HTML returned');
-      const plainText = buildPlainTextEmail(proposal);
-      const htmlBlob = new Blob([html], { type: 'text/html' });
-      const textBlob = new Blob([plainText], { type: 'text/plain' });
-      await navigator.clipboard.write([new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })]);
-      toast({ title: 'Email copied!', description: 'Paste into your email client (rich HTML on desktop, text + link on mobile)' });
-    } catch (e: any) {
-      toast({ title: 'Error copying email', description: e.message, variant: 'destructive' });
-    } finally {
-      setEmailCopying(null);
-    }
-  };
-
-  const openInMailApp = (p: { event_name: string; client_name: string; token: string }) => {
-    const subject = `Proposal: ${p.event_name} — ${p.client_name}`;
-    const body = buildPlainTextEmail(p);
-    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
 
   const statusColor = (s: string) => {
     switch (s) {
