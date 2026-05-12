@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
   } else if (type === 'proposal') {
     const { data } = await supabase
       .from('proposals')
-      .select('event_name, client_name, event_date, creative_call_url, drive_folder_url')
+      .select('event_name, client_name, event_date, creative_call_url, drive_folder_url, is_pre_call_packet')
       .eq('token', token)
       .single()
 
@@ -69,6 +69,7 @@ Deno.serve(async (req) => {
     pageUrl = `${siteUrl}/proposal/${token}`
     creativeCallUrl = data.creative_call_url || ''
     driveFolderUrl = data.drive_folder_url || ''
+    isPreCallPacket = (data as any).is_pre_call_packet !== false
   } else {
     const { data } = await supabase
       .from('client_links')
