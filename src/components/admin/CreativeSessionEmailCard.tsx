@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Copy, Check, Palette, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, Check, Palette, ChevronDown, ChevronUp, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { getPublicOrigin } from '@/lib/ogShare';
@@ -25,6 +27,29 @@ interface SessionOption {
   client_name: string;
   cover_images: CoverImage[] | null;
   event_date: string | null;
+  proposal_id: string | null;
+}
+
+function buildProjectFolderSection(folderUrl: string) {
+  if (!folderUrl) return '';
+  return `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+              <tr>
+                <td width="3" style="width:3px;background-color:#DAA520;font-size:0;line-height:0;">&nbsp;</td>
+                <td style="background-color:#faf8f3;padding:18px 22px;">
+                  <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#1a1a1a;">&#128193; Your Project Folder</p>
+                  <p style="margin:0 0 14px;font-size:13px;line-height:1.6;color:#555555;">
+                    Access your <strong>Soleia Creative Guide</strong>, <strong>Pixel Map</strong>, and the <strong>Asset Upload</strong> folder — all in one place.
+                  </p>
+                  <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    <tr>
+                      <td style="background-color:#1a1a1a;border-radius:6px;padding:11px 22px;text-align:center;">
+                        <a href="${folderUrl}" target="_blank" style="display:inline-block;color:#DAA520;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Open Project Folder &#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>`;
 }
 
 function buildCreativeSessionEmailHtml(
@@ -32,7 +57,8 @@ function buildCreativeSessionEmailHtml(
   clientName: string,
   coverImageUrl: string | null,
   sessionLink: string,
-  eventDate: string | null
+  eventDate: string | null,
+  folderUrl: string,
 ) {
   const logoUrl = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/email-assets/soleia-logo-color.png';
   const formattedDate = eventDate
@@ -74,6 +100,8 @@ function buildCreativeSessionEmailHtml(
             <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
               We're excited to share the curated design concepts for <strong style="color:#B8860B;">${projectName || '[Project Name]'}</strong>. Your personalized Creative Session is now available for review — browse through our mood boards, explore visual directions, and let us know what resonates with your vision.
             </p>
+
+            ${buildProjectFolderSection(folderUrl)}
 
             <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
               <tr>
@@ -154,12 +182,13 @@ export function CreativeSessionEmailCard() {
   const [selectedId, setSelectedId] = useState('');
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [folderUrl, setFolderUrl] = useState('');
 
   useEffect(() => {
     const fetchSessions = async () => {
       const { data } = await supabase
         .from('creative_sessions')
-        .select('id, token, project_name, client_name, cover_images, event_date')
+        .select('id, token, project_name, client_name, cover_images, event_date, proposal_id')
         .eq('is_active', true)
         .order('event_date', { ascending: true, nullsFirst: false });
       if (data) {
@@ -175,6 +204,26 @@ export function CreativeSessionEmailCard() {
   }, []);
 
   const selected = sessions.find((s) => s.id === selectedId);
+
+  // When a session is selected, auto-fetch the linked proposal's drive_folder_url
+  useEffect(() => {
+    let cancelled = false;
+    const loadFolder = async () => {
+      if (!selected?.proposal_id) {
+        setFolderUrl('');
+        return;
+      }
+      const { data } = await supabase
+        .from('proposals')
+        .select('drive_folder_url')
+        .eq('id', selected.proposal_id)
+        .maybeSingle();
+      if (!cancelled) setFolderUrl((data as any)?.drive_folder_url || '');
+    };
+    loadFolder();
+    return () => { cancelled = true; };
+  }, [selected?.proposal_id]);
+
   const coverImageUrl = selected?.cover_images?.[0]?.url || null;
   const sessionLink = selected
     ? `${getPublicOrigin()}/creative/${selected.token}`
@@ -186,7 +235,8 @@ export function CreativeSessionEmailCard() {
         selected.client_name,
         coverImageUrl,
         sessionLink,
-        selected.event_date
+        selected.event_date,
+        folderUrl.trim()
       )
     : '';
 
@@ -247,6 +297,24 @@ export function CreativeSessionEmailCard() {
             </SelectContent>
           </Select>
         </div>
+
+        {selected && (
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Folder className="w-3.5 h-3.5 text-[#c49a3c]" />
+              Project Folder Link {selected.proposal_id ? '(auto-filled from proposal)' : '(optional)'}
+            </Label>
+            <Input
+              value={folderUrl}
+              onChange={(e) => setFolderUrl(e.target.value)}
+              placeholder="https://drive.google.com/drive/folders/..."
+              className="font-mono text-xs"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              When set, the email shows a "Open Project Folder" CTA. Leave blank to omit.
+            </p>
+          </div>
+        )}
 
         {selected && (
           <button
