@@ -158,7 +158,7 @@ export default function ProposalGallery({ gallery, isAdmin, proposalId, onRefres
 
       {gallery.length > 0 && !isAdmin && (
         <p className="text-xs text-[#95a5a6] mt-4 italic">
-          These mockups are references for creative direction. The final design is rebuilt and realized for production.
+          These mockups are references only. The final design is rebuilt and realized for production.
         </p>
       )}
     </section>

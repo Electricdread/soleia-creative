@@ -154,10 +154,9 @@ export default function AdminProposals() {
 
       // Insert default timeline
       await supabase.from('proposal_timeline').insert([
-        { proposal_id: proposal.id, phase: 'Kickoff Conditions', duration: 'Sign-off + Assets', details: 'Work begins only after the proposal is signed and all client brand assets have been received.', sort_order: 0 },
-        { proposal_id: proposal.id, phase: 'Content Creation', duration: '14 Days', details: 'From kickoff, the first review cut is created and delivered within 14 days.', sort_order: 1 },
-        { proposal_id: proposal.id, phase: 'Client Review', duration: '3 Days', details: 'Client has 3 days from delivery to submit consolidated revision notes in writing.', sort_order: 2 },
-        { proposal_id: proposal.id, phase: 'Revision & Final Delivery', duration: '1 Revision', details: 'One revision round included. Final notes must be received no later than 4 days before the event.', sort_order: 3 },
+        { proposal_id: proposal.id, phase: 'Content Creation', duration: '14 Days', details: 'From kickoff, the first review cut is created and delivered within 14 days.', sort_order: 0 },
+        { proposal_id: proposal.id, phase: 'Client Review', duration: '3 Days', details: 'Client has 3 days from delivery to submit consolidated revision notes in writing.', sort_order: 1 },
+        { proposal_id: proposal.id, phase: 'Revision & Final Delivery', duration: '1 Revision', details: 'One revision round included. Final notes must be received no later than 4 days before the event.', sort_order: 2 },
       ]);
 
       toast({ title: 'Proposal created!' });
