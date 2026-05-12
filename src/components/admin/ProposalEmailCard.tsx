@@ -36,13 +36,14 @@ function buildProposalEmailHtml(
     ? new Date(eventDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     : null;
 
-  return `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;min-width:100%;border-collapse:collapse;background-color:#f3f1eb;font-family:'Helvetica Neue',Arial,sans-serif;">
+  return `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;min-width:100%;border-collapse:collapse;background-color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;">
   <tr>
-    <td align="center" style="padding:0;background-color:#f3f1eb;">
+    <td align="center" style="padding:0;background-color:#ffffff;">
       <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background-color:#ffffff;border:1px solid #e5e5e5;">
         <tr>
-          <td style="background-color:#111111;padding:48px 24px;text-align:center;">
-            <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="display:block;height:60px;width:auto;margin:0 auto;border:0;outline:none;text-decoration:none;" />
+          <td style="background-color:#faf8f4;padding:48px 24px 32px;text-align:center;border-bottom:1px solid #e8dfc9;">
+            <img src="${logoUrl}" alt="Soleia Las Vegas" width="180" style="display:block;height:60px;width:auto;margin:0 auto 12px;border:0;outline:none;text-decoration:none;" />
+            <p style="margin:0;font-size:11px;color:#B8860B;letter-spacing:2px;text-transform:uppercase;font-weight:600;">Creative Team</p>
           </td>
         </tr>
 
@@ -61,7 +62,7 @@ function buildProposalEmailHtml(
 
             ${venueName || formattedDate ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 20px;">
               <tr>
-                <td style="background-color:#faf8f4;border-left:3px solid #B8860B;padding:16px 20px;">
+                <td style="background-color:#fdfbf6;border-left:3px solid #B8860B;padding:16px 20px;">
                   <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 8px;">Event Details</p>
                   <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                     <tr>
@@ -87,7 +88,7 @@ function buildProposalEmailHtml(
 
             <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
               <tr>
-                <td style="background-color:#f9f9f9;padding:20px 24px;">
+                <td style="background-color:#faf8f4;padding:20px 24px;">
                   <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 12px;">What You'll Find Inside:</p>
                   <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
                     <tr>
@@ -164,11 +165,11 @@ function buildProposalEmailHtml(
         </tr>
 
         <tr>
-          <td style="background-color:#111111;padding:24px;text-align:center;">
-            <img src="${logoUrl}" alt="Soleia" width="84" style="display:block;height:28px;width:auto;margin:0 auto 8px;border:0;opacity:0.85;outline:none;text-decoration:none;" />
-            <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
-            <p style="margin:0;font-size:12px;color:#888888;">
-              <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
+          <td style="background-color:#faf8f4;padding:24px;text-align:center;border-top:1px solid #e8dfc9;">
+            <img src="${logoUrl}" alt="Soleia" width="84" style="display:block;height:28px;width:auto;margin:0 auto 8px;border:0;outline:none;text-decoration:none;" />
+            <p style="margin:0 0 4px;font-size:12px;color:#B8860B;letter-spacing:1px;">Creative Team</p>
+            <p style="margin:0;font-size:12px;color:#666666;">
+              <a href="mailto:luisdreamslv@gmail.com" style="color:#666666;text-decoration:none;">luisdreamslv@gmail.com</a>
             </p>
           </td>
         </tr>
