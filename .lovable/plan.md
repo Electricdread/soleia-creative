@@ -1,50 +1,51 @@
-## Goal
+# Fix: Proposal page missing menu items + folder links
 
-Reword the proposal's workflow/timeline language across the on-page proposal, the default timeline rows, the PDF, and the proposal email to clearly state the post–creative-call workflow:
+## Problem
 
-> Work begins only after (a) the proposal is signed and (b) all client brand assets are received. From that point: 14 days to create and deliver for review → client has 3 days to review → 1 included revision → all revision requests must reach us no later than 4 days before the event.
+On `/proposal/:token` the client sees:
+- An empty line-items table (just `Category / Line Item / Qty / Unit / Rate / Total` headers, no rows) and a `$0` Quote Total.
+- No clickable links out to the Creative Guide, the Collect Assets (Google Drive) folder, or a Line Item Menu — even though the email promises all of these "inside the packet".
 
-## Edits
+The code already supports both pieces, they just aren't surfaced on the page:
+- `proposals.drive_folder_url` exists and is auto-created on sign (and via `generateClientFolder` from `AdminProposals`).
+- `proposals.creative_call_url` exists and only renders as a small text link in the banner.
+- `/creative-guide` is a real route.
+- `proposal_items` exist in the DB but this proposal was created without any.
 
-### 1. `src/components/proposal/ProposalTerms.tsx`
-Rewrite the **Revisions** block and add a new **Production Workflow & Timeline** block at the top of Terms:
+## Changes (frontend only)
 
-- **Production Workflow & Timeline** (new, first block):
-  - Work does not begin until the proposal is signed off **and** all client brand assets have been received. Both must be in hand to start the clock.
-  - Once both conditions are met, we have **14 days** to create and deliver the first review cut.
-  - Client then has **3 days** from delivery to submit consolidated review notes.
-  - Final revision requests must reach us **no later than 4 days before the event** so we can apply, render, and deliver in time.
-- **Revisions** (rewrite):
-  - Includes **one** revision round within the approved creative direction.
-  - Notes must be submitted in writing within the 3-day review window.
-  - Requests received later than 4 days before the event cannot be guaranteed.
-  - Concept/direction changes or new components require a new quote.
+### 1. `src/components/proposal/ProposalView.tsx` — new "Pre-Call Resources" panel
 
-### 2. `src/components/proposal/ProposalView.tsx` — Asset Deadline section (≈ lines 859–870)
-Reword to match: "All client brand assets must be delivered before work can begin. Production starts only once the proposal is signed and assets are received — we then have 14 days to deliver the first review."
+Render a new card directly under the existing Pre-Call Packet banner (only when `!signed && !isProposalClosed(proposal)`). Four resource tiles in a responsive 2-col grid:
 
-### 3. `src/pages/AdminProposals.tsx` — default `proposal_timeline` rows (≈ lines 156–161)
-Replace defaults with:
-1. `Kickoff Conditions` — `Sign-off + Assets` — Work begins only after the proposal is signed and all brand assets are received.
-2. `Content Creation` — `14 Days` — From kickoff, first review cut delivered within 14 days.
-3. `Client Review` — `3 Days` — Client has 3 days from delivery to submit consolidated revision notes.
-4. `Revision & Final Delivery` — `1 Revision` — One revision round; final notes due no later than 4 days before the event.
+1. **Line Item Menu** — anchor scroll to the `#line-items` section on the same page (add `id="line-items"` to the items wrapper). Subtitle: "Browse services & pricing".
+2. **Creative Guide** — opens `/creative-guide` in a new tab. Subtitle: "Venue specs, LED zones, delivery standards".
+3. **Collect Assets Folder** — if `proposal.drive_folder_url` is set, opens it in a new tab. If not set:
+   - Admin viewing: show a "Generate folder" button that calls `supabase.functions.invoke('create-client-drive-folder', { body: { proposal_id } })` and refreshes via `onRefresh?.()`.
+   - Client viewing: show muted text "Folder will be shared after sign-off" (no broken button).
+4. **Schedule Creative Call** — only if `proposal.creative_call_url` is set; opens the URL in a new tab. Otherwise hide the tile.
 
-(Existing proposals keep their stored timeline; only new proposals get the new defaults.)
+Style to match the existing cream/gold palette (`bg-white`, `border-[#ecf0f1]`, `border-l-4 border-[#c49a3c]` accents, `lucide-react` icons: `ListChecks`, `BookOpen`, `FolderOpen`, `Calendar`).
 
-### 4. `src/lib/proposalPdfGenerator.ts` — terms array (≈ lines 429–436)
-Update the bullet list to mirror the new workflow:
-- Work begins only after sign-off and asset delivery.
-- 14 days from kickoff to first review cut.
-- Client review window: 3 days from delivery.
-- One included revision round.
-- Final revision requests due ≥ 4 days before event.
-- Creative licensing covers event duration only.
+Remove the now-redundant `Schedule our creative call →` text link inside the banner (replaced by the tile).
 
-### 5. `supabase/functions/generate-session-email/index.ts` — proposal email "What's inside" / Timeline row
-Update the "Timeline" line in the pre-call packet to read: *"After sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before event."* Mirror the same one-liner in the plain-text fallback in `AdminProposals.tsx` (`buildPlainTextEmail`) and `ProposalEmailCard.tsx`.
+### 2. `src/components/proposal/ProposalView.tsx` — items empty state
+
+When `items.length === 0` and not in `editingItems` mode:
+- For admins: show a dashed-border card inside the items section with "No line items yet" plus an "Add items" button that calls `setEditingItems(true)` (and an "Add from Library" shortcut).
+- For clients: show a muted note "Line items will be finalized together on our creative call." instead of an empty table.
+
+### 3. Anchor target
+
+Add `id="line-items"` to the `<div className="mb-10">` wrapper around the items table (line ~625) so the "Line Item Menu" tile can `href="#line-items"` smooth-scroll to it.
 
 ## Out of scope
-- No DB schema changes.
-- No changes to creative-session, delivery-guide, or creative-guide copy (those keep the legacy 21-day language used elsewhere).
-- No changes to existing proposals' stored timeline rows.
+
+- No DB migrations.
+- No edge function changes (the existing `create-client-drive-folder` already handles idempotency).
+- No email template changes (the email already lists these resources correctly).
+- Not seeding default items into the test proposal — that's user data.
+
+## Files touched
+
+- `src/components/proposal/ProposalView.tsx` (only file)
