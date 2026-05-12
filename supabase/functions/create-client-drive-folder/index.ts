@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
     const clientFolderId = await findOrCreateFolder(clientFolderName, rootId, lovableKey, driveKey);
 
     // 3 subfolders
-    const [creativeGuideFolderId] = await Promise.all([
+    const [creativeGuideFolderId, pixelMapFolderId, _assetCollectFolderId] = await Promise.all([
       findOrCreateFolder('01_Soleia Creative Guide', clientFolderId, lovableKey, driveKey),
       findOrCreateFolder('02_Pixel Map', clientFolderId, lovableKey, driveKey),
       findOrCreateFolder('03_Client Asset Collect', clientFolderId, lovableKey, driveKey),
