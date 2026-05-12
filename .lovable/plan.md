@@ -1,59 +1,50 @@
 ## Goal
 
-Reframe the proposal email so it reads as a pre-creative-call onboarding packet — a menu of line items, the Collect Assets folder, and the Creative Guide project file — rather than a "review and sign now" message. Add an optional scheduling link (Calendly/Google) per proposal that surfaces as a secondary CTA, and keep a soft fallback line for when scheduling is handled separately.
+Reword the proposal's workflow/timeline language across the on-page proposal, the default timeline rows, the PDF, and the proposal email to clearly state the post–creative-call workflow:
 
-## What changes
+> Work begins only after (a) the proposal is signed and (b) all client brand assets are received. From that point: 14 days to create and deliver for review → client has 3 days to review → 1 included revision → all revision requests must reach us no later than 4 days before the event.
 
-### 1. Add an optional `creative_call_url` field to proposals
+## Edits
 
-- New nullable `text` column on `public.proposals`: `creative_call_url`.
-- Edit UI in the proposal editor (where event name / venue / date are edited) gets a new input: **"Creative call scheduling link (optional)"** with placeholder `https://calendly.com/...`.
-- The field is purely informational — no validation beyond "looks like a URL".
+### 1. `src/components/proposal/ProposalTerms.tsx`
+Rewrite the **Revisions** block and add a new **Production Workflow & Timeline** block at the top of Terms:
 
-### 2. Rewrite proposal email copy (HTML + plain-text)
+- **Production Workflow & Timeline** (new, first block):
+  - Work does not begin until the proposal is signed off **and** all client brand assets have been received. Both must be in hand to start the clock.
+  - Once both conditions are met, we have **14 days** to create and deliver the first review cut.
+  - Client then has **3 days** from delivery to submit consolidated review notes.
+  - Final revision requests must reach us **no later than 4 days before the event** so we can apply, render, and deliver in time.
+- **Revisions** (rewrite):
+  - Includes **one** revision round within the approved creative direction.
+  - Notes must be submitted in writing within the 3-day review window.
+  - Requests received later than 4 days before the event cannot be guaranteed.
+  - Concept/direction changes or new components require a new quote.
 
-Edit `supabase/functions/generate-session-email/index.ts` (the `type === 'proposal'` branch) and `buildPlainTextEmail` in `src/pages/AdminProposals.tsx`.
+### 2. `src/components/proposal/ProposalView.tsx` — Asset Deadline section (≈ lines 859–870)
+Reword to match: "All client brand assets must be delivered before work can begin. Production starts only once the proposal is signed and assets are received — we then have 14 days to deliver the first review."
 
-New tone — pre-call onboarding packet:
+### 3. `src/pages/AdminProposals.tsx` — default `proposal_timeline` rows (≈ lines 156–161)
+Replace defaults with:
+1. `Kickoff Conditions` — `Sign-off + Assets` — Work begins only after the proposal is signed and all brand assets are received.
+2. `Content Creation` — `14 Days` — From kickoff, first review cut delivered within 14 days.
+3. `Client Review` — `3 Days` — Client has 3 days from delivery to submit consolidated revision notes.
+4. `Revision & Final Delivery` — `1 Revision` — One revision round; final notes due no later than 4 days before the event.
 
-- **Heading**: "Your Proposal & Pre-Call Packet" (replaces "Your Project Proposal").
-- **Intro**: "Ahead of our creative call, please take a few minutes to review the materials below. They'll get you acquainted with our process so we can hit the ground running on the call — choosing themes, line items, and content ideas for {event}."
-- **"What's inside" section** rewritten to 4 rows, no fake "sign now" framing:
-  - Line Item Menu — browse our full menu of services and pricing
-  - Creative Guide — venue specs, LED zones, content delivery standards
-  - Collect Assets folder — where you'll drop logos, references, brand assets
-  - Timeline — key milestones leading up to the event
-- **Primary CTA**: "Open Proposal & Menu →" (instead of "View Proposal").
-- **Secondary CTA (only if `creative_call_url` is set)**: "Schedule Our Creative Call →" rendered as an outlined gold pill below the primary button.
-- **Fallback line (only if `creative_call_url` is NOT set)**: small italic line under the primary CTA — "We'll reach out separately to schedule the creative call."
-- **Closing paragraph** changes from "Please review and sign…" to: "Once you've had a chance to look through everything, we'll meet on the creative call to finalize themes, content, and the line items you'd like to include. The on-page signature stays available for whenever you're ready to lock things in."
-- Keep the visible plain-URL fallback under the buttons. Keep header / footer branding unchanged.
-- Subject line changes to: `Pre-Call Packet: {event} — {client}`.
+(Existing proposals keep their stored timeline; only new proposals get the new defaults.)
 
-Plain-text version mirrors the same structure (header, intro, 4 bullet menu, primary URL, optional schedule URL or fallback line, signed off as Soleia Creative Team).
+### 4. `src/lib/proposalPdfGenerator.ts` — terms array (≈ lines 429–436)
+Update the bullet list to mirror the new workflow:
+- Work begins only after sign-off and asset delivery.
+- 14 days from kickoff to first review cut.
+- Client review window: 3 days from delivery.
+- One included revision round.
+- Final revision requests due ≥ 4 days before event.
+- Creative licensing covers event duration only.
 
-### 3. Soften the on-page proposal copy (light touch)
-
-`src/components/proposal/ProposalView.tsx` (and any "Sign now" affordances) gets a small banner at the top of the page:
-
-> "This is your pre-call packet. Browse the line item menu, creative guide, and timeline below. We'll discuss themes and final selections together on our creative call — sign whenever you're ready."
-
-The signature block itself is untouched (still functional). No layout or business-logic changes beyond the banner.
-
-### 4. Email tool card surface (`ProposalEmailCard.tsx`)
-
-Same copy + scheduling-link logic mirrored into the in-app "Copy Email" rich template card, so both entry points produce identical output.
+### 5. `supabase/functions/generate-session-email/index.ts` — proposal email "What's inside" / Timeline row
+Update the "Timeline" line in the pre-call packet to read: *"After sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before event."* Mirror the same one-liner in the plain-text fallback in `AdminProposals.tsx` (`buildPlainTextEmail`) and `ProposalEmailCard.tsx`.
 
 ## Out of scope
-
-- No backend logic changes (signing, drive-folder creation, status transitions, queue, providers).
-- No changes to creative-session emails, content delivery emails, or auth emails.
-- No marketing/list emails — this remains a 1:1 transactional pattern.
-
-## Verification
-
-1. From `/admin/proposals`, open a proposal, paste a Calendly URL into the new field, save.
-2. Tap **Copy Email** → paste into Gmail → see new heading, 4-row menu, primary "Open Proposal & Menu" button, secondary "Schedule Our Creative Call" pill, and visible fallback URL.
-3. Clear the Calendly field, copy again → secondary button is gone, replaced by the small italic "we'll reach out separately" line.
-4. Open the proposal page → new pre-call banner is visible at the top; signature block still works.
-5. iOS Mail (plain-text fallback) shows the same structure with both URLs (or just the proposal URL + fallback line) and a clean signature.
+- No DB schema changes.
+- No changes to creative-session, delivery-guide, or creative-guide copy (those keep the legacy 21-day language used elsewhere).
+- No changes to existing proposals' stored timeline rows.

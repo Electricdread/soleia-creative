@@ -4,6 +4,15 @@ export default function ProposalTerms() {
       <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Terms</h2>
       <div className="bg-white rounded-lg p-5 border border-[#ecf0f1] text-sm text-[#34495e] space-y-4">
         <div>
+          <h4 className="font-semibold mb-1">Production Workflow & Timeline</h4>
+          <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
+            <li>Production does <strong>not begin</strong> until the proposal has been signed off <strong>and</strong> all client brand assets have been received. Both must be in hand before the clock starts.</li>
+            <li>Once both conditions are met, our team has <strong>14 days</strong> to create and deliver the first review cut.</li>
+            <li>The client then has <strong>3 days</strong> from delivery to submit consolidated review notes.</li>
+            <li>Final revision requests must reach us <strong>no later than 4 days before the event date</strong> so we can apply, render, and deliver in time.</li>
+          </ul>
+        </div>
+        <div>
           <h4 className="font-semibold mb-1">New Assets</h4>
           <p className="text-[#7f8c8d]">New assets provided by the client will require a new estimate.</p>
         </div>
@@ -18,8 +27,8 @@ export default function ProposalTerms() {
           <h4 className="font-semibold mb-1">Revisions</h4>
           <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
             <li>Includes <strong>one</strong> revision round within the approved creative direction and existing elements.</li>
-            <li>Revision requests must be submitted in writing.</li>
-            <li>Requests must be received no later than <strong>7 days prior to the event date</strong>.</li>
+            <li>Notes must be submitted in writing within the <strong>3-day review window</strong> after delivery.</li>
+            <li>Requests received later than <strong>4 days before the event date</strong> cannot be guaranteed.</li>
             <li>Changes affecting the concept, direction, or new components require a new quote.</li>
           </ul>
         </div>
