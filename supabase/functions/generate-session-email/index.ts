@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
   } else if (type === 'proposal') {
     const { data } = await supabase
       .from('proposals')
-      .select('event_name, client_name, event_date')
+      .select('event_name, client_name, event_date, creative_call_url, drive_folder_url')
       .eq('token', token)
       .single()
 
@@ -66,6 +66,8 @@ Deno.serve(async (req) => {
     clientName = data.client_name
     eventDate = data.event_date || ''
     pageUrl = `${siteUrl}/proposal/${token}`
+    ;(globalThis as any).__creativeCallUrl = data.creative_call_url || ''
+    ;(globalThis as any).__driveFolderUrl = data.drive_folder_url || ''
   } else {
     const { data } = await supabase
       .from('client_links')
