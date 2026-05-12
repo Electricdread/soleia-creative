@@ -119,11 +119,76 @@ Deno.serve(async (req) => {
     const clientFolderId = await findOrCreateFolder(clientFolderName, rootId, lovableKey, driveKey);
 
     // 3 subfolders
-    await Promise.all([
+    const [creativeGuideFolderId] = await Promise.all([
       findOrCreateFolder('01_Soleia Creative Guide', clientFolderId, lovableKey, driveKey),
       findOrCreateFolder('02_Pixel Map', clientFolderId, lovableKey, driveKey),
       findOrCreateFolder('03_Client Asset Collect', clientFolderId, lovableKey, driveKey),
     ]);
+
+    // Upload the master Creative Guide Project zip into 01_Soleia Creative Guide
+    // (idempotent: skip if a file with the same name already exists in that folder)
+    try {
+      const zipName = 'SOLEIA - Creative Guide Project.zip';
+      const { data: settingRow } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'creative_guide_template_url')
+        .maybeSingle();
+      const zipUrl = (settingRow?.value && settingRow.value.trim().length > 0)
+        ? settingRow.value.trim()
+        : `${supabaseUrl}/storage/v1/object/public/creative-guide-template/${encodeURIComponent(zipName)}`;
+
+      const existsQ = encodeURIComponent(
+        `name='${zipName.replace(/'/g, "\\'")}' and '${creativeGuideFolderId}' in parents and trashed=false`,
+      );
+      const existing = await gw(
+        `/drive/v3/files?q=${existsQ}&fields=files(id)&pageSize=1`,
+        { method: 'GET' },
+        lovableKey,
+        driveKey,
+      );
+
+      if (!existing?.files?.length) {
+        const zipRes = await fetch(zipUrl);
+        if (!zipRes.ok) throw new Error(`Fetch template zip failed [${zipRes.status}]`);
+        const zipBytes = new Uint8Array(await zipRes.arrayBuffer());
+
+        const boundary = '----soleia-' + crypto.randomUUID();
+        const metadata = {
+          name: zipName,
+          parents: [creativeGuideFolderId],
+          mimeType: 'application/zip',
+        };
+        const enc = new TextEncoder();
+        const head = enc.encode(
+          `--${boundary}\r\n` +
+          `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+          JSON.stringify(metadata) + `\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Type: application/zip\r\n\r\n`,
+        );
+        const tail = enc.encode(`\r\n--${boundary}--`);
+        const body = new Uint8Array(head.length + zipBytes.length + tail.length);
+        body.set(head, 0);
+        body.set(zipBytes, head.length);
+        body.set(tail, head.length + zipBytes.length);
+
+        await fetch(`${GATEWAY}/upload/drive/v3/files?uploadType=multipart&fields=id`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${lovableKey}`,
+            'X-Connection-Api-Key': driveKey,
+            'Content-Type': `multipart/related; boundary=${boundary}`,
+          },
+          body,
+        }).then(async (r) => {
+          if (!r.ok) throw new Error(`Drive upload zip failed [${r.status}]: ${(await r.text()).slice(0, 300)}`);
+        });
+      }
+    } catch (zipErr) {
+      // Non-fatal: log and continue so the folder is still returned
+      console.error('Creative Guide zip upload failed:', zipErr instanceof Error ? zipErr.message : zipErr);
+    }
 
     // anyone-with-link → writer (idempotent: Drive accepts duplicate "anyone" permission)
     await gw(
