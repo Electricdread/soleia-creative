@@ -1084,6 +1084,7 @@ export type Database = {
           event_name: string
           id: string
           is_active: boolean
+          is_pre_call_packet: boolean
           notes: string | null
           quote_date: string
           signed_at: string | null
@@ -1106,6 +1107,7 @@ export type Database = {
           event_name: string
           id?: string
           is_active?: boolean
+          is_pre_call_packet?: boolean
           notes?: string | null
           quote_date?: string
           signed_at?: string | null
@@ -1128,6 +1130,7 @@ export type Database = {
           event_name?: string
           id?: string
           is_active?: boolean
+          is_pre_call_packet?: boolean
           notes?: string | null
           quote_date?: string
           signed_at?: string | null
