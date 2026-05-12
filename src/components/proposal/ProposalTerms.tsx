@@ -26,7 +26,7 @@ export default function ProposalTerms() {
         <div>
           <h4 className="font-semibold mb-1">Revisions</h4>
           <ul className="text-[#7f8c8d] list-disc pl-5 space-y-1">
-            <li>Includes <strong>one</strong> revision round within the approved creative direction and existing elements.</li>
+            <li>Includes <strong>one</strong> revision round within the agreed scope and existing elements.</li>
             <li>Notes must be submitted in writing within the <strong>3-day review window</strong> after delivery.</li>
             <li>Requests received later than <strong>4 days before the event date</strong> cannot be guaranteed.</li>
             <li>Changes affecting the concept, direction, or new components require a new quote.</li>

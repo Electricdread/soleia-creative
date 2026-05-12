@@ -481,7 +481,7 @@ export async function generateProposalPdf(
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(LIGHT_GRAY);
-    doc.text('Creative direction references — final designs are rebuilt for production', PAGE_W - MARGIN, 32, { align: 'right' });
+    doc.text('Reference mockups — final designs are rebuilt for production', PAGE_W - MARGIN, 32, { align: 'right' });
 
     let gridY = 65;
     const cols = 2;
