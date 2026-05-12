@@ -445,10 +445,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                   <span className="text-[#2c3e50] font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
                 </div>
               )}
-              <div className="mt-2">
-                <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Quote Date</span>
-                <span className="text-[#2c3e50] font-medium">{format(quoteDate, 'M/d/yyyy')}</span>
-              </div>
             </div>
           </div>
         )}
@@ -824,7 +820,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Total */}
         <div className="bg-white rounded-lg p-5 border border-[#ecf0f1] mb-4 flex items-center justify-between">
-          <span className="text-[#7f8c8d] font-medium">{isAdmin ? 'Total' : 'Quote Total'}</span>
+          <span className="text-[#7f8c8d] font-medium">Total</span>
           <span className="text-2xl font-bold text-[#2c3e50]">{formatCurrency(displayedTotal)}</span>
         </div>
 
