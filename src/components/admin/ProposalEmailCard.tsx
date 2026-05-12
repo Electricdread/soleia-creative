@@ -62,7 +62,7 @@ function buildProposalEmailHtml(
 
             ${venueName || formattedDate ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 20px;">
               <tr>
-                <td style="background-color:#faf8f4;border-left:3px solid #B8860B;padding:16px 20px;">
+                <td style="background-color:#fdfbf6;border-left:3px solid #B8860B;padding:16px 20px;">
                   <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 8px;">Event Details</p>
                   <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                     <tr>
