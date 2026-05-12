@@ -1,16 +1,12 @@
-# Remove auto-summed total from Proposal PDF
+# Remove "Quote Date" from proposal
 
-## Problem
-The downloadable PDF sums every line item into a `TOTAL` row, even though the client hasn't actually selected anything. The on-screen client view only totals *selected* items (live "Quote Total"), so the PDF is misleading.
+The proposal isn't a quote, so the "Quote Date" line shouldn't appear.
 
-## Fix
-In `src/lib/proposalPdfGenerator.ts`, remove the dark `TOTAL` bar that renders the auto-summed `grandTotal` after the line-item table. The menu of items + per-line prices stays; the bottom-line sum goes away.
+## Changes
 
-The signed-state total (when `proposal.signed_at && proposal.client_signature` exists) is unaffected — that path doesn't render a total either, just the green "Accepted by …" block.
-
-## Files touched
-- `src/lib/proposalPdfGenerator.ts` — delete the ~10 lines that draw the TOTAL row and compute `grandTotal`.
+1. **`src/components/proposal/ProposalView.tsx`** — remove the "Quote Date" block (lines 448–451) in the header meta column. Event Date stays.
+2. **`src/lib/proposalPdfGenerator.ts`** — remove the `Quote Date: … | Valid for N days` line under the event title (lines 249–250) and the now-unused `quoteDate` const.
+3. **`src/components/proposal/ProposalView.tsx`** (line 827) — rename the client-facing label `Quote Total` → `Total` so the wording is consistent with "not a quote". Admin label already says `Total`.
 
 ## Out of scope
-- No change to `ProposalView.tsx` (on-screen client view).
-- No change to data model or admin flow.
+- No DB schema change — `quote_date` column stays (still used internally for `expiryDate` calc in the on-screen view).

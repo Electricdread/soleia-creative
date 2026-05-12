@@ -243,11 +243,6 @@ export async function generateProposalPdf(
   if (proposal.event_date) metaParts.push(`· ${formatDate(proposal.event_date)}`);
   doc.text(metaParts.join(' '), MARGIN, y);
 
-  y += 12;
-  doc.setFontSize(8);
-  doc.setTextColor(LIGHT_GRAY);
-  const quoteDate = proposal.quote_date || new Date().toISOString().split('T')[0];
-  doc.text(`Quote Date: ${formatDate(quoteDate)}  |  Valid for ${proposal.validity_days || 7} days`, MARGIN, y);
 
   // === SCOPE TABLE ===
   y += 18;
