@@ -63,6 +63,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
     contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
+    creative_call_url: proposal.creative_call_url || '',
     linked_session_id: '',
   });
   const [linkedSessionId, setLinkedSessionId] = useState<string | null>(null);
