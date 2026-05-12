@@ -232,8 +232,26 @@ export default function AdminProposals() {
     toast({ title: next ? 'Proposal activated — link is live' : 'Proposal deactivated — link is no longer accessible' });
   };
 
-  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null }) => {
+  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
     const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
+    const isPrecall = p.is_pre_call_packet !== false;
+
+    if (!isPrecall) {
+      return `SOLEIA CREATIVE TEAM
+Your Proposal
+
+Hi ${p.client_name || 'there'},
+
+Please find your proposal for ${p.event_name} below.
+Review the details and sign when you're ready.
+
+Open your proposal:
+${proposalUrl}
+
+— Soleia Creative Team
+luisdreamslv@gmail.com`;
+    }
+
     const callUrl = p.creative_call_url?.trim();
     const callBlock = callUrl
       ? `Schedule our creative call:\n${callUrl}\n\n`
@@ -289,8 +307,10 @@ luisdreamslv@gmail.com`;
     }
   };
 
-  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null }) => {
-    const subject = `Pre-Call Packet: ${p.event_name} — ${p.client_name}`;
+  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
+    const subject = p.is_pre_call_packet === false
+      ? `Proposal: ${p.event_name} — ${p.client_name}`
+      : `Pre-Call Packet: ${p.event_name} — ${p.client_name}`;
     const body = buildPlainTextEmail(p);
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
