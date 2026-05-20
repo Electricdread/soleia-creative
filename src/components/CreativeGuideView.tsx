@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -29,7 +29,23 @@ const CreativeGuideView = () => {
   const isMobile = useIsMobile();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [selectedCategory, setSelectedCategory] = useState<CreativeGuideCategoryKey>('introduction');
+  const initialCategory = (() => {
+    if (typeof window === 'undefined') return 'introduction' as CreativeGuideCategoryKey;
+    const hash = window.location.hash.replace('#', '');
+    const match = creativeGuideCategories.find(c => c.key === hash);
+    return (match?.key ?? 'introduction') as CreativeGuideCategoryKey;
+  })();
+  const [selectedCategory, setSelectedCategory] = useState<CreativeGuideCategoryKey>(initialCategory);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      const match = creativeGuideCategories.find(c => c.key === hash);
+      if (match) setSelectedCategory(match.key as CreativeGuideCategoryKey);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
 
   const currentCategoryIndex = creativeGuideCategories.findIndex(c => c.key === selectedCategory);
