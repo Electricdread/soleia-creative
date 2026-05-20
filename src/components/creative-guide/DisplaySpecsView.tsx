@@ -314,6 +314,7 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
     if (hash === 'display-specs' || hash === 'ae-template') {
       setHighlightAE(true);
       setShowAEBanner(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       const t = setTimeout(() => setHighlightAE(false), 4000);
       return () => clearTimeout(t);
     }
