@@ -115,6 +115,12 @@ function buildProposalEmailHtml(
                         <strong>Digital Signature</strong> — Available on the proposal page when you're ready
                       </td>
                     </tr>
+                    <tr>
+                      <td width="36" style="padding:6px 12px 6px 0;vertical-align:top;font-size:20px;">&#127916;</td>
+                      <td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;">
+                        <strong><a href="https://soleiacreative.app/creative-guide#display-specs" target="_blank" style="color:#B8860B;text-decoration:underline;">Creative Guide &amp; AE Template</a></strong> — venue specs, LED zones, and downloadable After Effects project file
+                      </td>
+                    </tr>
                   </table>
                 </td>
               </tr>
