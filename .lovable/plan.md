@@ -1,25 +1,48 @@
-## Add Creative Guide AE Template link to proposal emails
+## Goal
 
-Add a new bullet inside the "What You'll Find Inside" block of both proposal-email surfaces, pointing clients to the Creative Guide page (Display Specs section) where the After Effects template + pixel maps live.
+1. When clients land on `/creative-guide#display-specs` from a proposal email, the page should explicitly draw attention to the **LED After Effects Template download card**.
+2. Collapse the standalone "Content Delivery" tab — its essentials (Resolume Alley download, DXV3 workflow, 21-day timeline) belong inside Display Specs, not as a separate section.
 
-### 1. `src/components/admin/ProposalEmailCard.tsx`
+---
 
-In `buildProposalEmailHtml`, inside the "What You'll Find Inside" `<table>` (currently 4 rows: Scope, Timeline, Pricing, Signature), add a 5th row:
+### 1. `src/components/creative-guide/DisplaySpecsView.tsx`
 
-- Icon: 🎬 (`&#127916;`) — matches the icon already used for Creative Guide in the session email
-- Label: **Creative Guide & AE Template** — venue specs, LED zones, and downloadable After Effects project file
-- The bold label is a link to `https://soleiacreative.app/creative-guide#display-specs` (opens in new tab)
+**Highlight the AE template on hash arrival**
 
-### 2. `supabase/functions/generate-session-email/index.ts`
+- On mount, read `window.location.hash`. If it equals `#display-specs` (or `#ae-template`):
+  - `scrollIntoView({ behavior: 'smooth', block: 'center' })` on the LED card.
+  - Apply a 4-second pulsing gold ring + glow (`ring-2 ring-primary shadow-[0_0_60px_-10px_hsl(var(--primary)/0.6)]` with `animate-pulse`) to the LED card, then fade off.
+- Inside the LED card, give the "Download After Effects Template" button a `ref` and `id="ae-template"`. Make it the visually primary button: switch from outline to filled gold (`bg-primary text-primary-foreground hover:bg-primary/90`), bump to default size, add Sparkles icon.
+- Above the existing card grid, insert a slim **"After Effects Template"** banner that appears only when the hash is present: gold border, Download icon, one-line label "Download the LED After Effects template", primary button that triggers the same `handleDownloadLEDTemplate`. Dismissible with an X.
 
-The "What's inside" list (line ~142) already has a plain-text Creative Guide row. Upgrade it to a hyperlinked row using the same URL so clients can jump straight to the AE template download.
+**Fold Content Delivery essentials in**
 
-### 3. Anchor on the Creative Guide page
+Add a compact "Content Delivery" block at the bottom of `DisplaySpecsView` (above the existing footer area), containing:
+- Single horizontal card: Resolume Alley download button + Resolume.com link (re-use copy from `ContentDeliveryView` / `DeliveryGuide`).
+- 4-step inline workflow (Export → Open Alley → Encode DXV3 → Submit) as a thin numbered row, not 4 large cards.
+- 21-business-day timeline note as a single-line callout.
 
-Verify `src/components/creative-guide/DisplaySpecsView.tsx` (or its wrapper section in `CreativeGuideView`) has an `id="display-specs"` anchor. If missing, add it to the section wrapper so the email hash link scrolls to the AE Template download card.
+Keep the new block under ~200px tall on desktop — the goal is minimal, not a second page.
+
+### 2. `src/components/CreativeGuideView.tsx`
+
+- Remove the `'content-delivery'` case from the `AnimatePresence` block.
+- Remove the `ContentDeliveryView` import.
+- Drop the `Send` icon from `categoryIcons`.
+
+### 3. `src/lib/creativeGuide.ts`
+
+- Remove the `content-delivery` entry from `creativeGuideCategories`. Resulting tabs: Introduction · Venue Overview · Display Specs.
+
+### 4. Leave alone
+
+- `src/components/creative-guide/ContentDeliveryView.tsx` (unused after removal, but keep the file for now — no deletion).
+- `src/pages/DeliveryGuide.tsx` (still served at `/delivery-guide` for per-session delivery flows).
+- Proposal email templates — the existing `#display-specs` link will now both land on Display Specs and trigger the AE highlight.
+- `PrintableCreativeGuide.tsx` and print routes — out of scope; print guide can keep its existing structure.
 
 ### Out of scope
 
-- No changes to the AE template file itself, the Creative Guide page content, or proposal PDF.
-- No new database fields, no edge-function secrets, no subdomain work.
-- Other email templates (asset collect, session invite, delivery guide) are untouched.
+- No changes to backend, edge functions, or DB.
+- No subdomain or routing changes.
+- No new assets — AE zip and Resolume URLs already exist.

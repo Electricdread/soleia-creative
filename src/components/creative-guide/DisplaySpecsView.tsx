@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Download, Printer, ExternalLink } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Download, Printer, ExternalLink, Sparkles, X, Clock, FileVideo } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,16 @@ const LED_AE_TEMPLATE_ZIP = '/creative-guide/After_Effects_Template.zip';
 const ELEVATOR_PIXELMAP_IMAGE = '/creative-guide/elevator-pixelmap.png';
 const TV_PIXELMAP_IMAGE = '/creative-guide/tv-pixelmap.png';
 const RESOLUME_URL = 'https://www.resolume.com';
+const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
+
+const downloadAETemplate = () => {
+  const link = document.createElement('a');
+  link.href = LED_AE_TEMPLATE_ZIP;
+  link.download = 'After_Effects_Template.zip';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 interface DisplaySpecsViewProps {
   onSelectDisplay?: (displayId: string) => void;
@@ -46,12 +56,20 @@ function SpecRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function DisplayCard({ display }: { display: DisplayType }) {
+function DisplayCard({ display, highlightAE = false }: { display: DisplayType; highlightAE?: boolean }) {
   const isTicker = display.category === 'ticker';
   const isLED = display.category === 'led';
   const isTV = display.category === 'tv';
   const isElevator = display.category === 'elevator';
-  
+  const cardRef = useRef<HTMLDivElement>(null);
+  const showHighlight = isLED && highlightAE;
+
+  useEffect(() => {
+    if (showHighlight && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [showHighlight]);
+
   const handleDownloadTickerAssets = () => {
     const link = document.createElement('a');
     link.href = TICKER_ASSETS_ZIP;
@@ -65,15 +83,6 @@ function DisplayCard({ display }: { display: DisplayType }) {
     const link = document.createElement('a');
     link.href = LED_PIXELMAP_IMAGE;
     link.download = 'LED-Main-Interior-Pixelmap.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleDownloadLEDTemplate = () => {
-    const link = document.createElement('a');
-    link.href = LED_AE_TEMPLATE_ZIP;
-    link.download = 'After_Effects_Template.zip';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -99,13 +108,15 @@ function DisplayCard({ display }: { display: DisplayType }) {
 
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -6, scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       className="h-full group cursor-pointer"
     >
-      <Card className="h-full glass border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4),0_0_80px_-20px_hsl(var(--primary)/0.2)]">
+      <Card className={`h-full glass border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4),0_0_80px_-20px_hsl(var(--primary)/0.2)] ${showHighlight ? 'ring-2 ring-primary border-primary/60 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.6)] animate-pulse' : ''}`}>
+
         {/* Image or Video Carousel */}
         <div className="relative aspect-video overflow-hidden">
           {isTicker ? (
@@ -217,12 +228,12 @@ function DisplayCard({ display }: { display: DisplayType }) {
                     Download Pixelmap
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadLEDTemplate}
-                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                    id={isLED ? 'ae-template' : undefined}
+                    size="default"
+                    onClick={downloadAETemplate}
+                    className={`w-full gap-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-md ${showHighlight ? 'ring-2 ring-primary/60 ring-offset-2 ring-offset-background' : ''}`}
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Sparkles className="w-3.5 h-3.5" />
                     Download After Effects Template
                   </Button>
                 </div>
@@ -301,6 +312,19 @@ function DisplayCard({ display }: { display: DisplayType }) {
 }
 
 export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
+  const [highlightAE, setHighlightAE] = useState(false);
+  const [showAEBanner, setShowAEBanner] = useState(false);
+
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'display-specs' || hash === 'ae-template') {
+      setHighlightAE(true);
+      setShowAEBanner(true);
+      const t = setTimeout(() => setHighlightAE(false), 4000);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   const handlePrintSpecs = () => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -405,6 +429,38 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
         </Card>
       </motion.div>
 
+      {/* AE Template Highlight Banner (hash-triggered) */}
+      <AnimatePresence>
+        {showAEBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <Card className="border-primary/60 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4)]">
+              <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/20 shrink-0">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 text-center sm:text-left">
+                  <p className="font-semibold text-foreground text-sm">After Effects Template Ready</p>
+                  <p className="text-xs text-muted-foreground">Download the LED After Effects template to start your build.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button onClick={downloadAETemplate} size="sm" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Download className="w-4 h-4" />
+                    Download Template
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setShowAEBanner(false)} className="h-8 w-8">
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {DISPLAY_TYPES.map((display, index) => (
           <motion.div
@@ -413,10 +469,68 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <DisplayCard display={display} />
+            <DisplayCard display={display} highlightAE={highlightAE} />
           </motion.div>
         ))}
       </div>
+
+      {/* Content Delivery — compact */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="pt-2"
+      >
+        <Card className="glass border-border/50">
+          <CardContent className="p-4 sm:p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <FileVideo className="w-4 h-4 text-primary" />
+              <h3 className="font-semibold text-foreground text-sm uppercase tracking-wider">Content Delivery</h3>
+            </div>
+
+            {/* Resolume row */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border/30">
+              <div className="text-sm">
+                <p className="font-medium text-foreground">DXV3 codec required</p>
+                <p className="text-xs text-muted-foreground">Use the free Resolume Alley encoder to convert your videos.</p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <Button size="sm" onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Resolume Alley
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => window.open(RESOLUME_URL, '_blank')} className="gap-2 border-primary/30">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  resolume.com
+                </Button>
+              </div>
+            </div>
+
+            {/* Inline 4-step workflow */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { n: 1, t: 'Export Source', d: 'ProRes or H264' },
+                { n: 2, t: 'Open Alley', d: 'Free encoder' },
+                { n: 3, t: 'Encode DXV3', d: 'Select & export' },
+                { n: 4, t: 'Submit', d: '21 business days prior' },
+              ].map(step => (
+                <div key={step.n} className="flex items-start gap-2 p-2 rounded-md border border-border/30">
+                  <div className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0">{step.n}</div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{step.t}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{step.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Timeline callout */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground border-l-2 border-primary/40 pl-3">
+              <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span>Submit final content at least <span className="text-foreground font-semibold">21 business days</span> before your event for testing and approval.</span>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
