@@ -64,12 +64,6 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
   const cardRef = useRef<HTMLDivElement>(null);
   const showHighlight = isLED && highlightAE;
 
-  useEffect(() => {
-    if (showHighlight && cardRef.current) {
-      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [showHighlight]);
-
   const handleDownloadTickerAssets = () => {
     const link = document.createElement('a');
     link.href = TICKER_ASSETS_ZIP;
@@ -320,6 +314,7 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
     if (hash === 'display-specs' || hash === 'ae-template') {
       setHighlightAE(true);
       setShowAEBanner(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       const t = setTimeout(() => setHighlightAE(false), 4000);
       return () => clearTimeout(t);
     }
