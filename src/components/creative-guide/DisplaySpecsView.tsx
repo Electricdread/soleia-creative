@@ -56,12 +56,20 @@ function SpecRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function DisplayCard({ display }: { display: DisplayType }) {
+function DisplayCard({ display, highlightAE = false }: { display: DisplayType; highlightAE?: boolean }) {
   const isTicker = display.category === 'ticker';
   const isLED = display.category === 'led';
   const isTV = display.category === 'tv';
   const isElevator = display.category === 'elevator';
-  
+  const cardRef = useRef<HTMLDivElement>(null);
+  const showHighlight = isLED && highlightAE;
+
+  useEffect(() => {
+    if (showHighlight && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [showHighlight]);
+
   const handleDownloadTickerAssets = () => {
     const link = document.createElement('a');
     link.href = TICKER_ASSETS_ZIP;
@@ -75,15 +83,6 @@ function DisplayCard({ display }: { display: DisplayType }) {
     const link = document.createElement('a');
     link.href = LED_PIXELMAP_IMAGE;
     link.download = 'LED-Main-Interior-Pixelmap.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleDownloadLEDTemplate = () => {
-    const link = document.createElement('a');
-    link.href = LED_AE_TEMPLATE_ZIP;
-    link.download = 'After_Effects_Template.zip';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -109,13 +108,15 @@ function DisplayCard({ display }: { display: DisplayType }) {
 
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -6, scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       className="h-full group cursor-pointer"
     >
-      <Card className="h-full glass border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4),0_0_80px_-20px_hsl(var(--primary)/0.2)]">
+      <Card className={`h-full glass border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4),0_0_80px_-20px_hsl(var(--primary)/0.2)] ${showHighlight ? 'ring-2 ring-primary border-primary/60 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.6)] animate-pulse' : ''}`}>
+
         {/* Image or Video Carousel */}
         <div className="relative aspect-video overflow-hidden">
           {isTicker ? (
