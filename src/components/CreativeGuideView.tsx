@@ -71,7 +71,6 @@ const CreativeGuideView = () => {
     'introduction': <BookOpen className="w-5 h-5" />,
     'venue-overview': <Building2 className="w-5 h-5" />,
     'display-specs': <FileText className="w-5 h-5" />,
-    'content-delivery': <Send className="w-5 h-5" />,
   };
 
   return (
