@@ -380,12 +380,6 @@ export const creativeGuideCategories = [
     description: 'Technical specifications by display type',
     icon: 'FileText'
   },
-  { 
-    key: 'content-delivery', 
-    label: 'Content Delivery', 
-    description: 'DXV3 encoding & submission guide',
-    icon: 'Send'
-  },
 ] as const;
 
 export type CreativeGuideCategoryKey = typeof creativeGuideCategories[number]['key'];
