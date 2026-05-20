@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Download, Printer, ExternalLink } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Download, Printer, ExternalLink, Sparkles, X, Clock, FileVideo } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,16 @@ const LED_AE_TEMPLATE_ZIP = '/creative-guide/After_Effects_Template.zip';
 const ELEVATOR_PIXELMAP_IMAGE = '/creative-guide/elevator-pixelmap.png';
 const TV_PIXELMAP_IMAGE = '/creative-guide/tv-pixelmap.png';
 const RESOLUME_URL = 'https://www.resolume.com';
+const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
+
+const downloadAETemplate = () => {
+  const link = document.createElement('a');
+  link.href = LED_AE_TEMPLATE_ZIP;
+  link.download = 'After_Effects_Template.zip';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 interface DisplaySpecsViewProps {
   onSelectDisplay?: (displayId: string) => void;
