@@ -312,6 +312,19 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
 }
 
 export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
+  const [highlightAE, setHighlightAE] = useState(false);
+  const [showAEBanner, setShowAEBanner] = useState(false);
+
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'display-specs' || hash === 'ae-template') {
+      setHighlightAE(true);
+      setShowAEBanner(true);
+      const t = setTimeout(() => setHighlightAE(false), 4000);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   const handlePrintSpecs = () => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
