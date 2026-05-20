@@ -228,12 +228,12 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
                     Download Pixelmap
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadLEDTemplate}
-                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                    id={isLED ? 'ae-template' : undefined}
+                    size="default"
+                    onClick={downloadAETemplate}
+                    className={`w-full gap-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-md ${showHighlight ? 'ring-2 ring-primary/60 ring-offset-2 ring-offset-background' : ''}`}
                   >
-                    <Download className="w-3.5 h-3.5" />
+                    <Sparkles className="w-3.5 h-3.5" />
                     Download After Effects Template
                   </Button>
                 </div>
