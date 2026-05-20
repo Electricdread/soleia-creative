@@ -997,12 +997,21 @@ function PreCallResources({ proposal, isAdmin, onRefresh }: PreCallResourcesProp
           subtitle="Venue specs, LED zones, delivery standards."
           href="/creative-guide"
         />
-        <Tile
-          icon={Sparkles}
-          title="After Effects Template"
-          subtitle="Download the LED AE project file."
-          href="/creative-guide#ae-template"
-        />
+        {driveUrl ? (
+          <Tile
+            icon={Sparkles}
+            title="After Effects Template"
+            subtitle="Open the shared Drive folder to grab the AE project file."
+            href={driveUrl}
+          />
+        ) : (
+          <Tile
+            icon={Sparkles}
+            title="After Effects Template"
+            subtitle="Available in your Drive folder after sign-off."
+            disabled
+          />
+        )}
         {driveUrl ? (
           <Tile
             icon={FolderOpen}

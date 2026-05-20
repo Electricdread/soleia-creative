@@ -1,32 +1,25 @@
 ## Goal
 
-1. Add an **After Effects Template** tile to the Pre-Call Resources grid in the client proposal view, matching the existing tile style.
-2. Fix the `#display-specs` / `#ae-template` navigation so it scrolls to the **top of the Display Specs page** (not centered on the LED card at the bottom).
+Point the **After Effects Template** tile in the proposal Pre-Call Resources to the client's Google Drive folder, so it no longer duplicates the Creative Guide tile.
 
 ---
 
-### 1. `src/components/proposal/ProposalView.tsx`
+### `src/components/proposal/ProposalView.tsx`
 
-- Import `Sparkles` (or `Download`) icon from lucide-react alongside the existing `BookOpen`, `FolderOpen`, etc.
-- Inside the Pre-Call Resources grid (around line 987), add a new `Tile` between **Creative Guide** and **Collect Assets Folder**:
-  - Icon: `Sparkles`
-  - Title: `After Effects Template`
-  - Subtitle: `Download the LED AE project file.`
-  - `href`: `/creative-guide#ae-template`
-- Keep the grid `grid-cols-1 sm:grid-cols-2 gap-3` — it already wraps cleanly with 4–5 tiles.
+In the Pre-Call Resources grid (around line 1000), change the AE tile behavior:
 
-### 2. `src/components/creative-guide/DisplaySpecsView.tsx`
+- **When `driveUrl` exists** (proposal signed → folder created):
+  - `href` = `driveUrl` (same root client folder as Collect Assets Folder, opens in new tab)
+  - Subtitle: `Open the shared Drive folder to grab the AE project file.`
+- **When no `driveUrl` yet**:
+  - Render `disabled` Tile (greyed, no link)
+  - Subtitle: `Available in your Drive folder after sign-off.`
+- **Admin special case** (`isAdmin && !driveUrl`): also disabled with the same copy (folder will appear once generated via the Collect Assets tile).
 
-Adjust the hash-arrival behavior so the page lands at the top with the AE card clearly highlighted, instead of centering on the LED card (which is far down the page).
-
-- In the `useEffect` that reads the hash (around line 315–322):
-  - Remove the LED-card `scrollIntoView` trigger (or set it to `block: 'start'` only for `#ae-template`, but easier: drop it entirely from `DisplayCard`).
-  - Instead, scroll the **window to top** (`window.scrollTo({ top: 0, behavior: 'smooth' })`) so the user sees the "After Effects Template Ready" banner first.
-- In `DisplayCard` (around line 59–70): remove the `cardRef.current.scrollIntoView(...)` call. Keep the `ring` + `shadow` highlight styling on the LED card so it still pulses visually when the user scrolls down.
-- Keep the dismissible AE banner at the top of the Display Specs page — it's the primary CTA on hash arrival.
+Keep icon `Sparkles`, title `After Effects Template`, and current grid placement between Creative Guide and Collect Assets Folder.
 
 ### Out of scope
 
-- No changes to proposal email templates (the `/creative-guide#display-specs` link in emails still works and now lands at the top of the page with the banner visible).
-- No changes to `CreativeGuideView.tsx`, `creativeGuide.ts`, or backend.
-- No new assets.
+- No changes to `DisplaySpecsView.tsx` — the `#ae-template` hash flow on `/creative-guide` stays as-is for internal admin use.
+- No changes to proposal emails, edge functions, or Drive folder layout.
+- No new database fields.
