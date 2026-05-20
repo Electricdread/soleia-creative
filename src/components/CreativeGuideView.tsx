@@ -19,7 +19,7 @@ import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { DisplaySpecsView } from '@/components/creative-guide/DisplaySpecsView';
 import { VenueOverviewView } from '@/components/creative-guide/VenueOverviewView';
 import { IntroductionView } from '@/components/creative-guide/IntroductionView';
-import { ContentDeliveryView } from '@/components/creative-guide/ContentDeliveryView';
+
 import { creativeGuideCategories, type CreativeGuideCategoryKey } from '@/lib/creativeGuide';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
