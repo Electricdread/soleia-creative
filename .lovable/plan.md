@@ -1,48 +1,32 @@
 ## Goal
 
-1. When clients land on `/creative-guide#display-specs` from a proposal email, the page should explicitly draw attention to the **LED After Effects Template download card**.
-2. Collapse the standalone "Content Delivery" tab — its essentials (Resolume Alley download, DXV3 workflow, 21-day timeline) belong inside Display Specs, not as a separate section.
+1. Add an **After Effects Template** tile to the Pre-Call Resources grid in the client proposal view, matching the existing tile style.
+2. Fix the `#display-specs` / `#ae-template` navigation so it scrolls to the **top of the Display Specs page** (not centered on the LED card at the bottom).
 
 ---
 
-### 1. `src/components/creative-guide/DisplaySpecsView.tsx`
+### 1. `src/components/proposal/ProposalView.tsx`
 
-**Highlight the AE template on hash arrival**
+- Import `Sparkles` (or `Download`) icon from lucide-react alongside the existing `BookOpen`, `FolderOpen`, etc.
+- Inside the Pre-Call Resources grid (around line 987), add a new `Tile` between **Creative Guide** and **Collect Assets Folder**:
+  - Icon: `Sparkles`
+  - Title: `After Effects Template`
+  - Subtitle: `Download the LED AE project file.`
+  - `href`: `/creative-guide#ae-template`
+- Keep the grid `grid-cols-1 sm:grid-cols-2 gap-3` — it already wraps cleanly with 4–5 tiles.
 
-- On mount, read `window.location.hash`. If it equals `#display-specs` (or `#ae-template`):
-  - `scrollIntoView({ behavior: 'smooth', block: 'center' })` on the LED card.
-  - Apply a 4-second pulsing gold ring + glow (`ring-2 ring-primary shadow-[0_0_60px_-10px_hsl(var(--primary)/0.6)]` with `animate-pulse`) to the LED card, then fade off.
-- Inside the LED card, give the "Download After Effects Template" button a `ref` and `id="ae-template"`. Make it the visually primary button: switch from outline to filled gold (`bg-primary text-primary-foreground hover:bg-primary/90`), bump to default size, add Sparkles icon.
-- Above the existing card grid, insert a slim **"After Effects Template"** banner that appears only when the hash is present: gold border, Download icon, one-line label "Download the LED After Effects template", primary button that triggers the same `handleDownloadLEDTemplate`. Dismissible with an X.
+### 2. `src/components/creative-guide/DisplaySpecsView.tsx`
 
-**Fold Content Delivery essentials in**
+Adjust the hash-arrival behavior so the page lands at the top with the AE card clearly highlighted, instead of centering on the LED card (which is far down the page).
 
-Add a compact "Content Delivery" block at the bottom of `DisplaySpecsView` (above the existing footer area), containing:
-- Single horizontal card: Resolume Alley download button + Resolume.com link (re-use copy from `ContentDeliveryView` / `DeliveryGuide`).
-- 4-step inline workflow (Export → Open Alley → Encode DXV3 → Submit) as a thin numbered row, not 4 large cards.
-- 21-business-day timeline note as a single-line callout.
-
-Keep the new block under ~200px tall on desktop — the goal is minimal, not a second page.
-
-### 2. `src/components/CreativeGuideView.tsx`
-
-- Remove the `'content-delivery'` case from the `AnimatePresence` block.
-- Remove the `ContentDeliveryView` import.
-- Drop the `Send` icon from `categoryIcons`.
-
-### 3. `src/lib/creativeGuide.ts`
-
-- Remove the `content-delivery` entry from `creativeGuideCategories`. Resulting tabs: Introduction · Venue Overview · Display Specs.
-
-### 4. Leave alone
-
-- `src/components/creative-guide/ContentDeliveryView.tsx` (unused after removal, but keep the file for now — no deletion).
-- `src/pages/DeliveryGuide.tsx` (still served at `/delivery-guide` for per-session delivery flows).
-- Proposal email templates — the existing `#display-specs` link will now both land on Display Specs and trigger the AE highlight.
-- `PrintableCreativeGuide.tsx` and print routes — out of scope; print guide can keep its existing structure.
+- In the `useEffect` that reads the hash (around line 315–322):
+  - Remove the LED-card `scrollIntoView` trigger (or set it to `block: 'start'` only for `#ae-template`, but easier: drop it entirely from `DisplayCard`).
+  - Instead, scroll the **window to top** (`window.scrollTo({ top: 0, behavior: 'smooth' })`) so the user sees the "After Effects Template Ready" banner first.
+- In `DisplayCard` (around line 59–70): remove the `cardRef.current.scrollIntoView(...)` call. Keep the `ring` + `shadow` highlight styling on the LED card so it still pulses visually when the user scrolls down.
+- Keep the dismissible AE banner at the top of the Display Specs page — it's the primary CTA on hash arrival.
 
 ### Out of scope
 
-- No changes to backend, edge functions, or DB.
-- No subdomain or routing changes.
-- No new assets — AE zip and Resolume URLs already exist.
+- No changes to proposal email templates (the `/creative-guide#display-specs` link in emails still works and now lands at the top of the page with the banner visible).
+- No changes to `CreativeGuideView.tsx`, `creativeGuide.ts`, or backend.
+- No new assets.
