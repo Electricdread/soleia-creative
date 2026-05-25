@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Trash2, Upload, Loader2, GripVertical, Image, Film, FileText, Pencil, Check, X, Plus, Layers } from 'lucide-react';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
   DndContext,
   closestCenter,
