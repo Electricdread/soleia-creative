@@ -332,7 +332,7 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full min-w-0">
       {/* Scenes Manager */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
