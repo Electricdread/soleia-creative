@@ -388,77 +388,81 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
         )}
       </div>
 
-      {/* Edit Item Panel */}
-      {editingItem && (
-      <div className="bg-secondary/50 border border-border rounded-lg p-4 space-y-3">
-          <h4 className="text-sm font-semibold">Edit Item</h4>
-          
-          {/* Thumbnail preview of current file */}
-          {(() => {
-            const previewSrc = editingItem.thumbnail_url || editingItem.file_url || editingItem.url;
-            if (!previewSrc) return null;
-            const isImage = /\.(jpg|jpeg|png|gif|webp|svg)/i.test(previewSrc);
-            const isVideo = editingItem.item_type === 'video';
-            if (isImage) {
-              return <img src={previewSrc} alt="" className="w-full max-h-40 object-contain rounded-md bg-muted" />;
-            }
-            if (isVideo && editingItem.file_url) {
-              return (
-                <video src={editingItem.file_url} className="w-full max-h-40 object-contain rounded-md bg-muted" muted playsInline preload="metadata" />
-              );
-            }
-            return null;
-          })()}
+      {/* Edit Item Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Item</DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-3">
+              {(() => {
+                const previewSrc = editingItem.thumbnail_url || editingItem.file_url || editingItem.url;
+                if (!previewSrc) return null;
+                const isImage = /\.(jpg|jpeg|png|gif|webp|svg)/i.test(previewSrc);
+                const isVideo = editingItem.item_type === 'video';
+                if (isImage) {
+                  return <img src={previewSrc} alt="" className="w-full max-h-48 object-contain rounded-md bg-muted" />;
+                }
+                if (isVideo && editingItem.file_url) {
+                  return (
+                    <video src={editingItem.file_url} className="w-full max-h-48 object-contain rounded-md bg-muted" muted playsInline preload="metadata" />
+                  );
+                }
+                return null;
+              })()}
 
-          <div>
-            <label className="text-xs text-muted-foreground">Title</label>
-            <Input
-              value={editTitle}
-              onChange={e => setEditTitle(e.target.value)}
-              className="mt-1 h-9 text-sm"
-              placeholder="Enter title..."
-            />
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground">Description</label>
-            <Textarea
-              value={editDescription}
-              onChange={e => setEditDescription(e.target.value)}
-              className="mt-1 text-sm min-h-[60px] resize-none"
-              placeholder="Add a description..."
-              rows={2}
-            />
-          </div>
-          {scenes.length > 0 && (
-            <div>
-              <label className="text-xs text-muted-foreground">Scene / Look</label>
-              <Select value={editSceneId || 'none'} onValueChange={v => setEditSceneId(v === 'none' ? null : v)}>
-                <SelectTrigger className="mt-1 h-9 text-sm">
-                  <SelectValue placeholder="No scene" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No scene</SelectItem>
-                  {scenes.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-xs text-muted-foreground">Title</label>
+                <Input
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  className="mt-1 h-9 text-sm"
+                  placeholder="Enter title..."
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Description</label>
+                <Textarea
+                  value={editDescription}
+                  onChange={e => setEditDescription(e.target.value)}
+                  className="mt-1 text-sm min-h-[100px] resize-none"
+                  placeholder="Add a description..."
+                  rows={4}
+                />
+              </div>
+              {scenes.length > 0 && (
+                <div>
+                  <label className="text-xs text-muted-foreground">Scene / Look</label>
+                  <Select value={editSceneId || 'none'} onValueChange={v => setEditSceneId(v === 'none' ? null : v)}>
+                    <SelectTrigger className="mt-1 h-9 text-sm">
+                      <SelectValue placeholder="No scene" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No scene</SelectItem>
+                      {scenes.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           )}
-          <div className="flex gap-2">
+          <DialogFooter>
+            <Button variant="ghost" size="sm" onClick={() => setEditingItem(null)}>
+              Cancel
+            </Button>
             <Button size="sm" onClick={saveEdit} disabled={savingItem} className="gap-1">
               {savingItem ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
               Save
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setEditingItem(null)}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Upload button */}
-      <div className="flex items-center gap-2">
+      {/* Sticky upload toolbar */}
+      <div className="sticky top-0 z-10 -mx-1 px-1 py-2 bg-background/95 backdrop-blur flex items-center gap-2 border-b border-border/50">
         <Button
           variant="outline"
           size="sm"
@@ -488,7 +492,7 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-1">
+            <div className="space-y-1.5 max-h-[55vh] overflow-y-auto pr-1">
               {items.map(item => (
                 <SortableContentRow
                   key={item.id}
@@ -503,6 +507,7 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
           </SortableContext>
         </DndContext>
       )}
+
     </div>
   );
 }
