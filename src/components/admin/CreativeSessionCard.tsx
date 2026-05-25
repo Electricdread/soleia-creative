@@ -380,11 +380,11 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-2xl lg:max-w-4xl w-[95vw] max-h-[90vh] overflow-hidden flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6">
             <DialogTitle>Edit Session</DialogTitle>
           </DialogHeader>
-          <Tabs defaultValue="details" className="w-full">
+          <Tabs defaultValue="details" className="w-full flex-1 overflow-y-auto px-6 pb-6">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details" className="gap-1.5 text-xs">
                 <Settings2 className="w-3.5 h-3.5" />
