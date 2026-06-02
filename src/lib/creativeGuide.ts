@@ -136,24 +136,28 @@ export const DISPLAY_TYPES: DisplayType[] = [
     category: 'ticker',
     description: 'Scrolling marquee displays for dynamic messaging and brand presence.',
     videoSpecs: {
-      resolution: '1280x768',
+      resolution: '3840x2160 (canvas) / 3792x192 active',
       format: 'MP4',
       codec: 'H264',
       duration: '15 sec',
     },
     graphicSpecs: {
-      resolution: '1280x768',
-      format: 'MP4',
+      resolution: '3840x2160 (canvas) / 3792x192 active',
+      format: 'PNG or JPG',
     },
+    creativeNotes: [
+      'Deliver on a 3840 x 2160 PC display canvas. Active LED area is 3792 x 192, top-aligned.',
+      'Split the active strip as West (Las Vegas Blvd) 1608 x 192 + South (Flamingo Rd) 2184 x 192.',
+      'Keep critical text and logos centered within each segment to avoid the seam between West and South.',
+    ],
     dimensions: [
-      { width: 672, height: 192, label: 'West 1' },
-      { width: 960, height: 192, label: 'West 2' },
-      { width: 960, height: 192, label: 'South 1' },
-      { width: 1200, height: 192, label: 'South 2' },
+      { width: 1608, height: 192, label: 'West (Las Vegas Blvd)' },
+      { width: 2184, height: 192, label: 'South (Flamingo Rd)' },
     ],
     image: '/creative-guide/ticker-specs.jpg',
     diagramImage: '/creative-guide/ticker-display.jpg',
   },
+
 ];
 
 // Outdoor LED Zones
