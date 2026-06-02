@@ -14,7 +14,7 @@ import solIcon from '@/assets/sol-icon.png';
 
 const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
 const LED_PIXELMAP_IMAGE = '/creative-guide/led-main-interior-pixelmap.png';
-const LED_AE_TEMPLATE_ZIP = '/creative-guide/After_Effects_Template.zip';
+const LED_AE_TEMPLATE_ZIP = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/creative-guide-template/CREATIVE_GUIDE_June2026_Soleia.zip';
 const ELEVATOR_PIXELMAP_IMAGE = '/creative-guide/elevator-pixelmap.png';
 const TV_PIXELMAP_IMAGE = '/creative-guide/tv-pixelmap.png';
 const RESOLUME_URL = 'https://www.resolume.com';
@@ -23,7 +23,7 @@ const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
 const downloadAETemplate = () => {
   const link = document.createElement('a');
   link.href = LED_AE_TEMPLATE_ZIP;
-  link.download = 'After_Effects_Template.zip';
+  link.download = 'CREATIVE_GUIDE_June2026_Soleia.zip';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

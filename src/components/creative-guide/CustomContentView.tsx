@@ -281,7 +281,7 @@ export function CustomContentView() {
           className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90"
           asChild
         >
-          <a href="/creative-guide/After_Effects_Template.zip" download>
+          <a href="https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/creative-guide-template/CREATIVE_GUIDE_June2026_Soleia.zip" download="CREATIVE_GUIDE_June2026_Soleia.zip">
             <Download className="w-5 h-5" />
             {CUSTOM_CONTENT_INFO.downloadLabel}
           </a>
