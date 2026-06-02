@@ -1,22 +1,28 @@
-## Change
+## Update
 
-Remove the introductory paragraph under the "Outdoor Arch — Creative Guidelines" heading that describes the entryway experience:
+Update the Marquee/Ticker Display specs in `src/lib/creativeGuide.ts` to match the new Caesars / Cromwell pixel map.
 
-> "The Outdoor Arch is the architectural LED archway that frames the venue's entry experience. Content displayed here is the first brand touchpoint for arriving guests, so visuals should be bold, high-contrast, and built for outdoor brightness."
+### New values
 
-## What stays the same
+- **PC Display canvas:** 3840 x 2160
+- **Active LED Video Display area:** 3792 x 192
+- **Segments (2 total, replacing the existing 4):**
+  - West Side (Las Vegas Blvd): 1608 x 192
+  - South Side (Flamingo Rd): 2184 x 192
 
-- Title: "Outdoor Arch — Creative Guidelines"
-- Subtitle: "SOLEIA CREATIVE TEAM | LED DISPLAY SPEC SHEET"
-- Technical Specifications table
-- Video Deliverables table
-- Still Graphic Deliverables table
-- Logo Assets section
-- Creative Notes section
-- Delivery Timeline section
-- Centered footer
-- All styling, colors, and typography
+### Changes in `DISPLAY_TYPES` → `ticker`
 
-## Approach
+- `videoSpecs.resolution`: `1280x768` → `3840x2160` (full canvas, with active 3792x192 ticker area noted)
+- `graphicSpecs.resolution`: `1280x768` → `3840x2160`
+- `dimensions` array: replace the 4 entries (`West 1`, `West 2`, `South 1`, `South 2`) with:
+  - `{ width: 1608, height: 192, label: 'West (Las Vegas Blvd)' }`
+  - `{ width: 2184, height: 192, label: 'South (Flamingo Rd)' }`
+- Add a creative note clarifying that content must be placed within the 3792 x 192 active area on a 3840 x 2160 canvas, split West (1608) + South (2184).
 
-Regenerate the PDF using the same `reportlab` script, simply omitting the intro `Paragraph` element. The spec sheet will begin immediately with the "Technical Specifications" heading after the title block.
+### Not changed
+
+- Format (MP4 / H264), duration (15 sec), and all other display types remain untouched.
+
+### Question
+
+Should I keep the H264 / MP4 / 15 sec spec, or also update encoding (e.g. to DXV3 like the LED zones)?
