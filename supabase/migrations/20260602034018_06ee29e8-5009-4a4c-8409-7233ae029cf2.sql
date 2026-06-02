@@ -1,0 +1,1 @@
+UPDATE public.site_settings SET value = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/creative-guide-template/SOLEIA%20-%20Creative%20Guide%20Project.zip', updated_at = now() WHERE key = 'creative_guide_template_url';

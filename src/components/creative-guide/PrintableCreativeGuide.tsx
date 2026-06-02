@@ -512,8 +512,8 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
               </div>
               <div className="text-right print:hidden">
                 <a 
-                  href="/creative-guide/After_Effects_Template.zip" 
-                  download
+                  href="https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/creative-guide-template/CREATIVE_GUIDE_June2026_Soleia.zip" 
+                  download="CREATIVE_GUIDE_June2026_Soleia.zip"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
                 >
                   <Download className="w-4 h-4" />
