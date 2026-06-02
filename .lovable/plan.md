@@ -1,15 +1,22 @@
-## Update Ticker Display Image
+## Update Creative Guide template to the new June 2026 project file
 
-Replace the existing Ticker reference images with the new Vanderpump Hotel render the user just uploaded.
+The uploaded `CREATIVE GUIDE June2026 Soleia.zip` (~25 MB) is the updated After Effects project + source assets. Two buttons in the Creative Guide already offer "Download After Effects Template" — they currently point to `/creative-guide/After_Effects_Template.zip` (an old in-repo file). We'll repoint them at the new zip.
 
-### Changes
+Because the zip is 25 MB (over the 5 MiB PWA cache cap and too large to commit), it goes to Cloud storage instead of `public/`.
 
-1. Save uploaded image (`Snapshot_20260513021313670.jpg`) into the project as the new Ticker visuals:
-   - `public/creative-guide/ticker-specs.jpg` (overwrite)
-   - `public/creative-guide/ticker-display.jpg` (overwrite)
+### Steps
 
-2. No code changes needed — `src/lib/creativeGuide.ts` already references those paths for the Ticker display.
+1. Upload the zip to the existing public `creative-guide-template` storage bucket as `CREATIVE_GUIDE_June2026_Soleia.zip`.
+2. In `src/components/creative-guide/DisplaySpecsView.tsx`:
+   - Change `LED_AE_TEMPLATE_ZIP` to the public bucket URL.
+   - Update the `link.download` filename to `CREATIVE_GUIDE_June2026_Soleia.zip`.
+3. In `src/components/creative-guide/CustomContentView.tsx`:
+   - Update the `<a href="/creative-guide/After_Effects_Template.zip" download>` to the same bucket URL with the new filename.
+4. Leave `TICKER-MARQUEE.zip` and the individual pixelmap downloads untouched — those are separate assets not in this upload.
+5. Optionally delete the stale `public/creative-guide/After_Effects_Template.zip` from the repo once the new link is verified.
 
-### Note
+### Notes
 
-The carousel at the top of the Marquee/Ticker section (`TickerVideoCarousel.tsx`) plays **videos** from the `marquee-ticker-media` bucket, not these images. If the goal is to replace what's labeled "Ticker Preview" in the carousel as well, that requires uploading a new video to that bucket — let me know and I'll handle it separately.
+- The bucket is already public, so the file will be reachable at `https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/creative-guide-template/CREATIVE_GUIDE_June2026_Soleia.zip` immediately after upload.
+- No database, RLS, or UI/copy changes required — only the underlying file the existing buttons fetch.
+- Button labels ("Download After Effects Template") remain unchanged.
