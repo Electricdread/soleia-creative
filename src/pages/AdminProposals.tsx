@@ -744,13 +744,33 @@ luisdreamslv@gmail.com`;
                   <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
                   <span className="text-xs font-medium text-white">Active</span>
                 </label>
-                <label
-                  className="flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-800 border border-zinc-700 cursor-pointer flex-shrink-0"
-                  title="Off = straight quote (no pre-call banner, resources, or pre-call wording in the email)"
-                >
-                  <Switch checked={p.is_pre_call_packet !== false} onCheckedChange={() => togglePreCallPacket(p.id, p.is_pre_call_packet !== false)} />
-                  <span className="text-xs font-medium text-white">Pre-call packet</span>
-                </label>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Select
+                    value={p.proposal_scenario ?? (p.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet')}
+                    onValueChange={(v) => setScenario(p.id, v as any)}
+                  >
+                    <SelectTrigger className="h-9 w-[170px] bg-zinc-800 border-zinc-700 text-xs text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
+                      <SelectItem value="pre_call_packet">Pre-Call Packet</SelectItem>
+                      <SelectItem value="pre_packet_no_call">Pre-Packet (No Call)</SelectItem>
+                      <SelectItem value="direct_quote">Direct Quote</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {(p.proposal_scenario === 'pre_packet_no_call') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => seedScenarioTwoDefaults(p.id)}
+                      title='Insert "Mapped to Spec by Client" line item'
+                      className="text-[#c49a3c] hover:text-[#d4aa4c] text-xs gap-1"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Seed defaults
+                    </Button>
+                  )}
+                </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {p.status === 'draft' && (
                     <Button variant="ghost" size="sm" onClick={() => markSent(p.id)} className="text-blue-400 hover:text-blue-300 text-xs">
