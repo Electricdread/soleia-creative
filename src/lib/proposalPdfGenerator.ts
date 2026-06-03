@@ -118,11 +118,11 @@ async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageU
   doc.setLineWidth(1);
   doc.line(PAGE_W / 2 - 40, 90, PAGE_W / 2 + 40, 90);
 
-  // PROPOSAL badge
+  // Scenario badge
   doc.setFontSize(10);
   doc.setTextColor(GOLD);
   doc.setFont('helvetica', 'bold');
-  doc.text('PROPOSAL', PAGE_W / 2, 108, { align: 'center' });
+  doc.text(scenarioLabel(proposal).toUpperCase(), PAGE_W / 2, 108, { align: 'center' });
 
   // === BOTTOM TEXT BLOCK (dynamically measured) ===
   const titleMaxW = CONTENT_W - 40;
