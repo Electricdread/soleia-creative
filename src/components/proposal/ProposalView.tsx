@@ -464,26 +464,43 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           </div>
         )}
 
-        {/* Pre-Call Packet Banner */}
-        {!signed && !isProposalClosed(proposal) && proposal.is_pre_call_packet !== false && (
-          <>
-            <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
-              <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
-              <p className="text-[#34495e] text-sm leading-relaxed">
-                This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
-                We'll discuss themes and final selections together on our creative call &mdash; sign whenever
-                you're ready.
-              </p>
-            </div>
+        {/* Contract Inclusions — always shown above line items */}
+        <ProposalContractInclusions />
 
-            {/* Pre-Call Resources */}
-            <PreCallResources
-              proposal={proposal}
-              isAdmin={!!isAdmin}
-              onRefresh={onRefresh}
-            />
-          </>
-        )}
+        {/* Scenario-specific banner + resources */}
+        {!signed && !isProposalClosed(proposal) && (() => {
+          const scenario = resolveScenario(proposal);
+          if (scenario === 'pre_call_packet') {
+            return (
+              <>
+                <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
+                  <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
+                  <p className="text-[#34495e] text-sm leading-relaxed">
+                    This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
+                    We'll discuss themes and final selections together on our creative call &mdash; sign whenever
+                    you're ready.
+                  </p>
+                </div>
+                <PreCallResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
+              </>
+            );
+          }
+          if (scenario === 'pre_packet_no_call') {
+            return (
+              <>
+                <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
+                  <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Packet</p>
+                  <p className="text-[#34495e] text-sm leading-relaxed">
+                    You're providing your own mapped content for this event. Review the additional services below,
+                    then send us your files &mdash; we'll handle loading, QC, and any extras you approve.
+                  </p>
+                </div>
+                <PrePacketResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
+              </>
+            );
+          }
+          return null;
+        })()}
 
         {/* Validity Notice — only after sign-off / closure */}
         {(signed || isProposalClosed(proposal)) && (
