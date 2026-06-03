@@ -273,7 +273,7 @@ export default function AdminProposals() {
     const { error } = await supabase.from('proposal_items').insert({
       proposal_id: proposalId,
       title: 'Mapped to Spec by Client',
-      description: 'Client-provided content is already mapped to venue spec. Soleia handles loading, QC, and playback on our servers and screens.',
+      description: 'Your content is already mapped to spec. Soleia loads, QCs, and plays it back on our servers and screens.',
       price: 0,
       quantity: 1,
       category: 'Content Operations',
