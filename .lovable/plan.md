@@ -1,83 +1,41 @@
 ## Goal
 
-For Scenario 2 (`pre_packet_no_call`), make the **Mapped to Spec by Client** line item unmistakably the headline item: pinned at the top of the proposal, pre-ticked, and visually distinct from the rest of the menu. While we're in there, tighten the overall proposal page layout so the hierarchy reads cleanly on the client side.
+Rewrite line item descriptions across the library and the Scenario 2 seeded item so they are short, direct, and skimmable — no marketing tone, no parenthetical asides mid-sentence.
 
-## What's wrong today
+## Scope
 
-- `seedScenarioTwoDefaults` inserts "Mapped to Spec by Client" with `sort_order = existing.length` → it lands at the **bottom** of the list.
-- Nothing pre-selects it for the client, so they open the proposal and see an unticked item with the same weight as every other add-on. Easy to miss, easy to forget to check.
-- The line-items section is a single flat table — no separation between "the core thing you're paying for" and "optional add-ons".
-- The scenario banner + contract inclusions + resources stack as three similar cream-colored cards in a row → muddy hierarchy.
+Two places hold these strings:
 
-## Changes
+1. `line_item_templates` table (9 rows) — used by the admin picker and seeded into proposals.
+2. `seedScenarioTwoDefaults` in `src/pages/AdminProposals.tsx` (the pinned "Mapped to Spec by Client" item).
 
-### 1. Pin Mapped-to-Spec to the top (data)
+No UI/layout changes. No schema changes. Existing already-inserted `proposal_items` are left alone (clients see what was sent); only templates and future seeds change.
 
-In `seedScenarioTwoDefaults` (`AdminProposals.tsx`):
+## Proposed rewrites
 
-- Before inserting, bump every existing item's `sort_order` by 1 (`update proposal_items set sort_order = sort_order + 1 where proposal_id = ...`).
-- Insert the new item with `sort_order = 0`.
-- Result: always first in any sorted query, no client-side reshuffle needed.
+| Title | New description |
+|---|---|
+| Immersive LED Environments & Branded Overlay Design | 1–3 transparent logo animations and 1–3 background animations, designed to your mood board and brand. Includes 1 revision. |
+| Additional Transparent Logo Animation | One extra transparent logo animation. |
+| Elevator Dynamic Animation | Three deliverables: static idle image, ride-up animation, ride-down animation. |
+| Individual dedicated Cabana / Bungalow Logo | One logo placed in a dedicated cabana or bungalow (up to 24). |
+| Elevator Static Logo (content to spec provided by client) | Static elevator logo. Client provides content to spec. |
+| Mapped by Soleia Creative Team | Soleia maps your animations to venue spec. Max 50 GB. Post-delivery revisions, re-exports, or new files are billed separately. |
+| Mapped to spec by Client | Client maps content to spec and delivers final files. No edits by Soleia. Max 50 GB. Post-delivery revisions are billed separately. |
+| Outside Arch Specific Video (content to spec provided by client.) | Outside arch video. Client provides content to spec. |
+| Performing Artist - Mapped by Soleia Creative Team | Performing artist content mapped to venue spec by Soleia. |
 
-For proposals that already have it seeded at the bottom, the same handler can be reused via a small "Pin to top" pass (detect existing row, move it to `sort_order = 0`, shift others). Cheap and idempotent.
+And in `seedScenarioTwoDefaults` (currently: *"Client-provided content is already mapped to venue spec. Soleia handles loading, QC, and playback on our servers and screens."*):
 
-### 2. Pre-tick + lock visual on the client (ProposalView)
+> **New:** Your content is already mapped to spec. Soleia loads, QCs, and plays it back on our servers and screens.
 
-In `ProposalView.tsx`:
+## Implementation
 
-- Add a helper `isMappedToSpec(item)` → matches title `/^mapped to spec by client/i`.
-- On mount, if `resolveScenario(proposal) === 'pre_packet_no_call'` and an item matches, seed `selectedIds` with its id so the client sees it already ticked.
-- Render that single item **above** the regular table as a dedicated **"Included Service"** card:
-  - Gold left border, soft cream background (matches contract-inclusions banner style).
-  - Heading: `INCLUDED IN THIS PROPOSAL`
-  - Title + description from the row.
-  - Right side: small "Selected ✓" pill (read-only on client; checkbox stays interactive so they *could* untick, but defaults to ticked).
-  - Price shown the same way as table rows.
-- The rest of the line items render in the existing table below, under a section label **"Optional Add-On Services"** instead of just sitting raw under the contract-inclusions banner.
-
-For non-Scenario-2 proposals, this card simply isn't rendered and the table behaves exactly as today.
-
-### 3. Layout tightening (scoped, no logic changes)
-
-`ProposalView.tsx` main column reorder + spacing:
-
-```text
-Header (logo + PDF) 
-   ↓ mb-12
-Scenario chip + Event title + client + countdown
-   ↓ mb-10
-Contract Inclusions  (neutral cream, gold accent)
-   ↓ mb-4
-Scenario banner       (collapses into a single slim strip — same gold accent)
-   ↓ mb-10
-[Scenario 2 only] "Included Service" pinned card
-   ↓ mb-3
-Section label: "Optional Add-On Services"  /  for other scenarios: "Additional Services"
-Line items table
-   ↓ mb-12
-Pre-Call / Pre-Packet resources panel  (moved below items so the menu reads first)
-   ↓ Timeline → Terms → Signature
-```
-
-Visual nudges (all CSS, no structural rewrites):
-
-- Tighter card paddings (`p-5` → `p-4`) on banners; bigger gap between **sections** (`mb-10`+) so groups breathe.
-- Section labels above the table get the same `text-[10px] tracking-[0.25em] uppercase text-[#c49a3c]` treatment as the scenario chip → consistent typographic rhythm.
-- Move the resources panel (Pre-Call/Pre-Packet) **below** the line items. Right now it sits above the menu and pushes pricing below the fold; clients should see what they're choosing first, then the supporting links.
-
-### 4. PDF mirror (light touch)
-
-`proposalPdfGenerator.ts`: when the proposal is `pre_packet_no_call` and a "Mapped to Spec by Client" row exists, render it as a small dark band labeled **Included Service** above the Additional Services table — same idea as the on-screen card, just typographic. No new sections, no layout rewrite.
+- One Supabase migration: `UPDATE line_item_templates SET description = ... WHERE title = ...` for each of the 9 rows (matched by exact title so re-runs are safe).
+- One edit in `src/pages/AdminProposals.tsx` line 276 to update the seeded description string.
 
 ## Out of scope
 
-- No schema changes (sort_order already exists).
-- No changes to signing flow, totals math, or scenario detection logic.
-- No edits to the Pre-Call scenario's content — purely Scenario 2 + shared layout polish.
-- No PDF redesign beyond the small Included Service band.
-
-## Files touched
-
-- `src/pages/AdminProposals.tsx` — bump sort_order on seed; add idempotent "move to top" if row exists.
-- `src/components/proposal/ProposalView.tsx` — pre-tick, pinned card, section labels, reorder, spacing.
-- `src/lib/proposalPdfGenerator.ts` — Included Service band for Scenario 2.
+- Titles stay as-is (changing them would break the Scenario 2 pin-to-top matcher and any references in the PDF generator).
+- No edits to existing `proposal_items` rows already attached to live proposals.
+- No visual/layout changes.
