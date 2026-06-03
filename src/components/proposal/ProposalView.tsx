@@ -60,6 +60,21 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     setClientQty(Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1])));
   }, [items]);
 
+  // Scenario 2: pre-tick the "Mapped to Spec by Client" item so the client doesn't miss it.
+  useEffect(() => {
+    if (signed || isAdmin) return;
+    if (resolveScenario(proposal) !== 'pre_packet_no_call') return;
+    const mapped = items.find(isMappedToSpec);
+    if (!mapped) return;
+    setSelectedIds(prev => {
+      if (prev.has(mapped.id)) return prev;
+      const next = new Set(prev);
+      next.add(mapped.id);
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, proposal?.id]);
+
   const isClientEditable = !isAdmin && !signed;
   const getEffectiveQty = (i: any) =>
     isClientEditable ? (clientQty[i.id] ?? (Number(i.quantity) || 1)) : (Number(i.quantity) || 1);
