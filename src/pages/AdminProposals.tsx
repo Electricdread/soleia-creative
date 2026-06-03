@@ -9,9 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, Sparkles } from 'lucide-react';
 import { downloadLineItemLibraryPdf, printLineItemLibraryPdf } from '@/lib/lineItemLibraryPdf';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
@@ -272,11 +273,17 @@ export default function AdminProposals() {
     toast({ title: '"Mapped to Spec by Client" added', description: 'Open the proposal to set the price.' });
   };
 
-  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
-    const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
-    const isPrecall = p.is_pre_call_packet !== false;
+  const resolveScenario = (p: { proposal_scenario?: string | null; is_pre_call_packet?: boolean | null }): 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' => {
+    const s = p.proposal_scenario;
+    if (s === 'pre_call_packet' || s === 'pre_packet_no_call' || s === 'direct_quote') return s;
+    return p.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet';
+  };
 
-    if (!isPrecall) {
+  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null; proposal_scenario?: string | null }) => {
+    const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
+    const scenario = resolveScenario(p);
+
+    if (scenario === 'direct_quote') {
       return `SOLEIA CREATIVE TEAM
 Your Proposal
 
@@ -287,6 +294,41 @@ Review the details and sign when you're ready.
 
 Open your proposal:
 ${proposalUrl}
+
+Included in your venue contract:
+  • Up to 10 static logos — LED screens
+  • 1 static logo — all TVs, Cabanas & Bungalows
+
+— Soleia Creative Team
+luisdreamslv@gmail.com`;
+    }
+
+    if (scenario === 'pre_packet_no_call') {
+      return `SOLEIA CREATIVE TEAM
+Your Pre-Packet
+
+Hi ${p.client_name || 'there'},
+
+Here is your Pre-Packet for ${p.event_name}.
+No creative call needed — review the menu below,
+then send us your already-mapped content and we'll
+handle loading, QC, and playback on our servers.
+
+Open your proposal & menu:
+${proposalUrl}
+
+What's included in your venue contract:
+  • Up to 10 static logos — LED screens
+  • 1 static logo — all TVs, Cabanas & Bungalows
+
+Send us your content:
+Drop your mapped files into the Collect Assets folder
+linked inside your proposal. Spec details live in the
+Content Delivery Guide (also linked in the proposal).
+
+Add-on services (dynamic elevator, custom design, etc.)
+are listed on the proposal — approve any you'd like
+and we'll fold them into the schedule.
 
 — Soleia Creative Team
 luisdreamslv@gmail.com`;
@@ -315,6 +357,10 @@ What's inside:
   • Creative Guide — venue specs, LED zones, delivery standards
   • Collect Assets folder — where to drop logos & brand assets
   • Timeline — after sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before the event
+
+Included in your venue contract:
+  • Up to 10 static logos — LED screens
+  • 1 static logo — all TVs, Cabanas & Bungalows
 
 ${callBlock}Once you've had a chance to look through everything,
 we'll meet on the creative call to finalize themes,
@@ -347,10 +393,12 @@ luisdreamslv@gmail.com`;
     }
   };
 
-  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
-    const subject = p.is_pre_call_packet === false
-      ? `Proposal: ${p.event_name} — ${p.client_name}`
-      : `Pre-Call Packet: ${p.event_name} — ${p.client_name}`;
+  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null; proposal_scenario?: string | null }) => {
+    const scenario = resolveScenario(p);
+    const prefix = scenario === 'pre_call_packet' ? 'Pre-Call Packet'
+      : scenario === 'pre_packet_no_call' ? 'Pre-Packet'
+      : 'Proposal';
+    const subject = `${prefix}: ${p.event_name} — ${p.client_name}`;
     const body = buildPlainTextEmail(p);
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
@@ -743,13 +791,33 @@ luisdreamslv@gmail.com`;
                   <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
                   <span className="text-xs font-medium text-white">Active</span>
                 </label>
-                <label
-                  className="flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-800 border border-zinc-700 cursor-pointer flex-shrink-0"
-                  title="Off = straight quote (no pre-call banner, resources, or pre-call wording in the email)"
-                >
-                  <Switch checked={p.is_pre_call_packet !== false} onCheckedChange={() => togglePreCallPacket(p.id, p.is_pre_call_packet !== false)} />
-                  <span className="text-xs font-medium text-white">Pre-call packet</span>
-                </label>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Select
+                    value={p.proposal_scenario ?? (p.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet')}
+                    onValueChange={(v) => setScenario(p.id, v as any)}
+                  >
+                    <SelectTrigger className="h-9 w-[170px] bg-zinc-800 border-zinc-700 text-xs text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
+                      <SelectItem value="pre_call_packet">Pre-Call Packet</SelectItem>
+                      <SelectItem value="pre_packet_no_call">Pre-Packet (No Call)</SelectItem>
+                      <SelectItem value="direct_quote">Direct Quote</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {(p.proposal_scenario === 'pre_packet_no_call') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => seedScenarioTwoDefaults(p.id)}
+                      title='Insert "Mapped to Spec by Client" line item'
+                      className="text-[#c49a3c] hover:text-[#d4aa4c] text-xs gap-1"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Seed defaults
+                    </Button>
+                  )}
+                </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {p.status === 'draft' && (
                     <Button variant="ghost" size="sm" onClick={() => markSent(p.id)} className="text-blue-400 hover:text-blue-300 text-xs">
