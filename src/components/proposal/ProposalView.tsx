@@ -742,7 +742,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                   </p>
                 </div>
               )
-            ) : (
+            ) : tableItems.length === 0 ? null : (
             <>
             {/* Desktop Table - hidden on mobile */}
             <div className="hidden sm:block bg-white rounded-lg border border-[#ecf0f1] overflow-hidden">
