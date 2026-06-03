@@ -229,13 +229,15 @@ export async function generateProposalPdf(
   // Logo in header
   drawSoleiaText(doc, 80, 30, 16, '#ffffff');
 
-  // PROPOSAL badge
+  // Scenario badge
+  const badgeLabel = scenarioLabel(proposal).toUpperCase();
+  const badgeW = Math.max(80, doc.getTextWidth(badgeLabel) + 24);
   doc.setFillColor(GOLD);
-  doc.roundedRect(PAGE_W - MARGIN - 80, 22, 80, 24, 4, 4, 'F');
+  doc.roundedRect(PAGE_W - MARGIN - badgeW, 22, badgeW, 24, 4, 4, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor('#ffffff');
-  doc.text('PROPOSAL', PAGE_W - MARGIN - 40, 38, { align: 'center' });
+  doc.text(badgeLabel, PAGE_W - MARGIN - badgeW / 2, 38, { align: 'center' });
 
   // Event info below header
   y = 95;
@@ -254,15 +256,38 @@ export async function generateProposalPdf(
   doc.text(metaParts.join(' '), MARGIN, y);
 
 
-  // === SCOPE TABLE ===
+  // === CONTRACT INCLUSIONS BAND ===
   y += 18;
+  const inclH = 56;
+  doc.setFillColor('#faf8f4');
+  doc.rect(MARGIN, y, CONTENT_W, inclH, 'F');
+  doc.setFillColor(GOLD);
+  doc.rect(MARGIN, y, 3, inclH, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(GOLD);
+  doc.text('INCLUDED IN YOUR VENUE CONTRACT', MARGIN + 12, y + 14);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(TEXT);
+  doc.text('• Up to 10 static logos — LED screens', MARGIN + 12, y + 28);
+  doc.text('• 1 static logo — all TVs, Cabanas & Bungalows', MARGIN + 12, y + 40);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.setTextColor(LIGHT_GRAY);
+  doc.text('Standard inclusions — no charge.', PAGE_W - MARGIN - 6, y + 50, { align: 'right' });
+  y += inclH + 12;
+
+  // === SCOPE TABLE (Additional Services) ===
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(TEXT);
+  doc.text('ADDITIONAL SERVICES', MARGIN, y);
+  y += 8;
   doc.setDrawColor('#ecf0f1');
   doc.setLineWidth(0.5);
 
   // Column geometry — fixed anchors so columns never collide
-  // Item: left edge -> 58% (text wraps inside this column)
-  // Type: 58% -> 78% (right-aligned at 78%)
-  // Price: 78% -> 100% (right-aligned at right margin)
   const COL_ITEM_X = MARGIN + 6;
   const COL_ITEM_W = CONTENT_W * 0.58 - 12;
   const COL_TYPE_RIGHT = MARGIN + CONTENT_W * 0.78;
