@@ -273,11 +273,17 @@ export default function AdminProposals() {
     toast({ title: '"Mapped to Spec by Client" added', description: 'Open the proposal to set the price.' });
   };
 
-  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
-    const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
-    const isPrecall = p.is_pre_call_packet !== false;
+  const resolveScenario = (p: { proposal_scenario?: string | null; is_pre_call_packet?: boolean | null }): 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' => {
+    const s = p.proposal_scenario;
+    if (s === 'pre_call_packet' || s === 'pre_packet_no_call' || s === 'direct_quote') return s;
+    return p.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet';
+  };
 
-    if (!isPrecall) {
+  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null; proposal_scenario?: string | null }) => {
+    const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
+    const scenario = resolveScenario(p);
+
+    if (scenario === 'direct_quote') {
       return `SOLEIA CREATIVE TEAM
 Your Proposal
 
@@ -288,6 +294,41 @@ Review the details and sign when you're ready.
 
 Open your proposal:
 ${proposalUrl}
+
+Included in your venue contract:
+  • Up to 10 static logos — LED screens
+  • 1 static logo — all TVs, Cabanas & Bungalows
+
+— Soleia Creative Team
+luisdreamslv@gmail.com`;
+    }
+
+    if (scenario === 'pre_packet_no_call') {
+      return `SOLEIA CREATIVE TEAM
+Your Pre-Packet
+
+Hi ${p.client_name || 'there'},
+
+Here is your Pre-Packet for ${p.event_name}.
+No creative call needed — review the menu below,
+then send us your already-mapped content and we'll
+handle loading, QC, and playback on our servers.
+
+Open your proposal & menu:
+${proposalUrl}
+
+What's included in your venue contract:
+  • Up to 10 static logos — LED screens
+  • 1 static logo — all TVs, Cabanas & Bungalows
+
+Send us your content:
+Drop your mapped files into the Collect Assets folder
+linked inside your proposal. Spec details live in the
+Content Delivery Guide (also linked in the proposal).
+
+Add-on services (dynamic elevator, custom design, etc.)
+are listed on the proposal — approve any you'd like
+and we'll fold them into the schedule.
 
 — Soleia Creative Team
 luisdreamslv@gmail.com`;
@@ -316,6 +357,10 @@ What's inside:
   • Creative Guide — venue specs, LED zones, delivery standards
   • Collect Assets folder — where to drop logos & brand assets
   • Timeline — after sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before the event
+
+Included in your venue contract:
+  • Up to 10 static logos — LED screens
+  • 1 static logo — all TVs, Cabanas & Bungalows
 
 ${callBlock}Once you've had a chance to look through everything,
 we'll meet on the creative call to finalize themes,
@@ -348,10 +393,12 @@ luisdreamslv@gmail.com`;
     }
   };
 
-  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
-    const subject = p.is_pre_call_packet === false
-      ? `Proposal: ${p.event_name} — ${p.client_name}`
-      : `Pre-Call Packet: ${p.event_name} — ${p.client_name}`;
+  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null; proposal_scenario?: string | null }) => {
+    const scenario = resolveScenario(p);
+    const prefix = scenario === 'pre_call_packet' ? 'Pre-Call Packet'
+      : scenario === 'pre_packet_no_call' ? 'Pre-Packet'
+      : 'Proposal';
+    const subject = `${prefix}: ${p.event_name} — ${p.client_name}`;
     const body = buildPlainTextEmail(p);
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
