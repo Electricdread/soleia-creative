@@ -249,12 +249,27 @@ export default function AdminProposals() {
   };
 
   const seedScenarioTwoDefaults = async (proposalId: string) => {
-    const { data: existing } = await supabase.from('proposal_items').select('id, title').eq('proposal_id', proposalId);
-    if (existing?.some(i => /mapped to spec by client/i.test(i.title))) {
-      toast({ title: 'Already added', description: '"Mapped to Spec by Client" is already on this proposal.' });
+    const { data: existing } = await supabase.from('proposal_items').select('id, title, sort_order').eq('proposal_id', proposalId);
+    const mapped = existing?.find(i => /^mapped to spec by client/i.test(i.title));
+
+    // Shift every other row down by 1 so the mapped item can take sort_order = 0.
+    const others = (existing || []).filter(i => i.id !== mapped?.id);
+    await Promise.all(
+      others.map((i, idx) =>
+        supabase.from('proposal_items').update({ sort_order: idx + 1 }).eq('id', i.id)
+      )
+    );
+
+    if (mapped) {
+      const { error } = await supabase.from('proposal_items').update({ sort_order: 0 }).eq('id', mapped.id);
+      if (error) {
+        toast({ title: 'Failed to pin line item', description: error.message, variant: 'destructive' });
+        return;
+      }
+      toast({ title: '"Mapped to Spec by Client" pinned to top' });
       return;
     }
-    const sortOrder = existing?.length || 0;
+
     const { error } = await supabase.from('proposal_items').insert({
       proposal_id: proposalId,
       title: 'Mapped to Spec by Client',
@@ -264,13 +279,13 @@ export default function AdminProposals() {
       category: 'Content Operations',
       unit: 'Project',
       is_flat_fee: true,
-      sort_order: sortOrder,
+      sort_order: 0,
     });
     if (error) {
       toast({ title: 'Failed to add line item', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: '"Mapped to Spec by Client" added', description: 'Open the proposal to set the price.' });
+    toast({ title: '"Mapped to Spec by Client" added', description: 'Pinned to top and pre-ticked for the client.' });
   };
 
   const resolveScenario = (p: { proposal_scenario?: string | null; is_pre_call_packet?: boolean | null }): 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' => {
