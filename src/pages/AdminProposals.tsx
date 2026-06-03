@@ -765,10 +765,6 @@ luisdreamslv@gmail.com`;
                     <Badge className={`${statusColor(p.status)} text-white text-[10px] px-2`}>
                       {p.status}
                     </Badge>
-                    <Badge className={`${p.is_active ? 'bg-emerald-600' : 'bg-red-600'} text-white text-[10px] px-2 gap-1`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-emerald-300' : 'bg-red-300'}`} />
-                      {p.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
                     {p.is_active && !isProposalClosed(p) && (
                       <CountdownBadge eventDate={p.event_date} />
                     )}
