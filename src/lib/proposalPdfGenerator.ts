@@ -11,9 +11,17 @@ interface ProposalData {
   signed_at?: string | null;
   client_signature?: string | null;
   status?: string;
+  proposal_scenario?: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' | null;
+  is_pre_call_packet?: boolean | null;
 }
 
-interface ProposalItem {
+function scenarioLabel(p: ProposalData) {
+  const s = p.proposal_scenario;
+  if (s === 'pre_call_packet') return 'Pre-Call Packet';
+  if (s === 'pre_packet_no_call') return 'Pre-Packet';
+  if (s === 'direct_quote') return 'Proposal';
+  return p.is_pre_call_packet === false ? 'Pre-Packet' : 'Pre-Call Packet';
+}
   title: string;
   description?: string | null;
   price: number;
