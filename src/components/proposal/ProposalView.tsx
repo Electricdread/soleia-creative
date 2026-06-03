@@ -34,6 +34,8 @@ const SCENARIO_CHIP_LABEL: Record<ProposalScenario, string> = {
   direct_quote: 'Quote',
 };
 
+const isMappedToSpec = (i: any) => typeof i?.title === 'string' && /^mapped to spec by client/i.test(i.title);
+
 interface ProposalViewProps {
   proposal: any;
   items: any[];
