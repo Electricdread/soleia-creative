@@ -47,6 +47,7 @@ interface ProposalRow {
   drive_folder_url: string | null;
   creative_call_url: string | null;
   is_pre_call_packet: boolean;
+  proposal_scenario: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' | null;
 }
 
 export default function AdminProposals() {
