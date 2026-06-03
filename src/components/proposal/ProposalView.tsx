@@ -496,40 +496,26 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         {/* Contract Inclusions — always shown above line items */}
         <ProposalContractInclusions />
 
-        {/* Scenario-specific banner + resources */}
-        {!signed && !isProposalClosed(proposal) && (() => {
-          const scenario = resolveScenario(proposal);
-          if (scenario === 'pre_call_packet') {
-            return (
-              <>
-                <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
-                  <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
-                  <p className="text-[#34495e] text-sm leading-relaxed">
-                    This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
-                    We'll discuss themes and final selections together on our creative call &mdash; sign whenever
-                    you're ready.
-                  </p>
-                </div>
-                <PreCallResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
-              </>
-            );
-          }
-          if (scenario === 'pre_packet_no_call') {
-            return (
-              <>
-                <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
-                  <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Packet</p>
-                  <p className="text-[#34495e] text-sm leading-relaxed">
-                    You're providing your own mapped content for this event. Review the additional services below,
-                    then send us your files &mdash; we'll handle loading, QC, and any extras you approve.
-                  </p>
-                </div>
-                <PrePacketResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
-              </>
-            );
-          }
-          return null;
-        })()}
+        {/* Scenario-specific banner (resources panel moved below items) */}
+        {!signed && !isProposalClosed(proposal) && scenario === 'pre_call_packet' && (
+          <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-4 mb-8 print:hidden">
+            <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
+            <p className="text-[#34495e] text-sm leading-relaxed">
+              This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
+              We'll discuss themes and final selections together on our creative call &mdash; sign whenever
+              you're ready.
+            </p>
+          </div>
+        )}
+        {!signed && !isProposalClosed(proposal) && scenario === 'pre_packet_no_call' && (
+          <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-4 mb-8 print:hidden">
+            <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Packet</p>
+            <p className="text-[#34495e] text-sm leading-relaxed">
+              You're providing your own mapped content for this event. The core service below is already
+              included &amp; ticked. Add any optional services you'd like, then send us your files.
+            </p>
+          </div>
+        )}
 
         {/* Validity Notice — only after sign-off / closure */}
         {(signed || isProposalClosed(proposal)) && (
@@ -545,6 +531,64 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             </p>
           </div>
         )}
+
+        {/* Scenario 2 pinned card — "Included Service" */}
+        {!editingItems && scenario === 'pre_packet_no_call' && mappedItem && (
+          <div className="mb-6">
+            <p className="text-[10px] tracking-[0.25em] uppercase text-[#c49a3c] font-semibold mb-2">
+              Included in this Proposal
+            </p>
+            <div
+              className={`rounded-lg border-l-4 border-[#c49a3c] border border-[#ecf0f1] p-5 transition-colors ${
+                selectedIds.has(mappedItem.id) || isAdmin || signed ? 'bg-[#faf8f4]' : 'bg-white'
+              }`}
+              onClick={(event) => handleItemRowClick(event, mappedItem.id)}
+            >
+              <div className="flex items-start gap-4">
+                {!signed && !isAdmin && (
+                  <div className="pt-1" onClick={e => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedIds.has(mappedItem.id)}
+                      aria-label={`Select ${mappedItem.title}`}
+                      onCheckedChange={(checked) => setItemSelected(mappedItem.id, checked === true)}
+                      onClick={handleCheckboxClick}
+                      onPointerDown={(event) => event.stopPropagation()}
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
+                      <h3 className="text-base font-semibold text-[#2c3e50] leading-snug">{mappedItem.title}</h3>
+                      {mappedItem.description && (
+                        <p className="text-sm text-[#7f8c8d] mt-1.5 leading-relaxed whitespace-pre-line">
+                          {mappedItem.description}
+                        </p>
+                      )}
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#c49a3c]/10 text-[#c49a3c] text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 flex-shrink-0">
+                      <Check className="w-3 h-3" /> Selected
+                    </span>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-[#ecf0f1] flex items-center justify-between text-sm">
+                    <span className="text-[#95a5a6]">
+                      {mappedItem.is_flat_fee ? 'Flat Fee' : `Qty: ${getEffectiveQty(mappedItem)}${mappedItem.unit ? ` · ${mappedItem.unit}` : ''}`}
+                    </span>
+                    <span className="font-bold text-[#2c3e50]">{formatCurrency(calcLineTotal(mappedItem))}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section label for the menu of optional services */}
+        {!editingItems && tableItems.length > 0 && (
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[#c49a3c] font-semibold mb-3">
+            {additionalServicesLabel}
+          </p>
+        )}
+
 
         {/* Line Items */}
         {editingItems ? (
