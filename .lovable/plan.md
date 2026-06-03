@@ -1,99 +1,83 @@
 ## Goal
 
-Overhaul the client proposal so it cleanly reflects the real sales workflow: what the venue contract already covers, which scenario the client is in, and what Soleia is adding on top. Also fill the missing Scenario 2 email and refresh the proposal page + PDF look.
+For Scenario 2 (`pre_packet_no_call`), make the **Mapped to Spec by Client** line item unmistakably the headline item: pinned at the top of the proposal, pre-ticked, and visually distinct from the rest of the menu. While we're in there, tighten the overall proposal page layout so the hierarchy reads cleanly on the client side.
 
-## Current state (verified)
+## What's wrong today
 
-- `proposals.is_pre_call_packet` exists (boolean toggle).
-- `generate-session-email` already branches on that boolean, but the "off" path is a stripped Scenario 1 — not a real Scenario 2 email.
-- Proposal page (`ProposalView.tsx`) and PDF (`proposalPdfGenerator.ts`) have no "what's in your venue contract" header.
-- No Scenario 2 line-item preset.
+- `seedScenarioTwoDefaults` inserts "Mapped to Spec by Client" with `sort_order = existing.length` → it lands at the **bottom** of the list.
+- Nothing pre-selects it for the client, so they open the proposal and see an unticked item with the same weight as every other add-on. Easy to miss, easy to forget to check.
+- The line-items section is a single flat table — no separation between "the core thing you're paying for" and "optional add-ons".
+- The scenario banner + contract inclusions + resources stack as three similar cream-colored cards in a row → muddy hierarchy.
 
-## Workflow recap
+## Changes
 
-- **Scenario 1 — Pre-Call Packet:** sales hands off → I send Pre-Call Packet → creative call → proposal signed. (Already exists.)
-- **Scenario 2 — Pre-Packet, No Creative Call:** sales hands off → I send Pre-Packet (NEW email) → client supplies their own already-mapped content → I load/QC it and add any extras (dynamic elevator, etc.).
-- **Venue contract baseline (always true):** up to 10 static logos on LED screens + 1 static logo across all TVs, Cabanas, and Bungalows.
+### 1. Pin Mapped-to-Spec to the top (data)
 
-## Plan
+In `seedScenarioTwoDefaults` (`AdminProposals.tsx`):
 
-### 1. Scenario field (DB)
+- Before inserting, bump every existing item's `sort_order` by 1 (`update proposal_items set sort_order = sort_order + 1 where proposal_id = ...`).
+- Insert the new item with `sort_order = 0`.
+- Result: always first in any sorted query, no client-side reshuffle needed.
 
-Add `proposal_scenario` text column on `proposals` with values:
+For proposals that already have it seeded at the bottom, the same handler can be reused via a small "Pin to top" pass (detect existing row, move it to `sort_order = 0`, shift others). Cheap and idempotent.
 
-- `pre_call_packet` — Scenario 1 (default for existing rows where `is_pre_call_packet = true`)
-- `pre_packet_no_call` — Scenario 2 (default for existing rows where `is_pre_call_packet = false`)
-- `direct_quote` — plain quote, no packet
+### 2. Pre-tick + lock visual on the client (ProposalView)
 
-`is_pre_call_packet` stays as-is for back-compat; all new code reads `proposal_scenario`.
+In `ProposalView.tsx`:
 
-### 2. Contract Inclusions Header
+- Add a helper `isMappedToSpec(item)` → matches title `/^mapped to spec by client/i`.
+- On mount, if `resolveScenario(proposal) === 'pre_packet_no_call'` and an item matches, seed `selectedIds` with its id so the client sees it already ticked.
+- Render that single item **above** the regular table as a dedicated **"Included Service"** card:
+  - Gold left border, soft cream background (matches contract-inclusions banner style).
+  - Heading: `INCLUDED IN THIS PROPOSAL`
+  - Title + description from the row.
+  - Right side: small "Selected ✓" pill (read-only on client; checkbox stays interactive so they *could* untick, but defaults to ticked).
+  - Price shown the same way as table rows.
+- The rest of the line items render in the existing table below, under a section label **"Optional Add-On Services"** instead of just sitting raw under the contract-inclusions banner.
 
-New shared component `ProposalContractInclusions.tsx` — always rendered above the line items on every proposal:
+For non-Scenario-2 proposals, this card simply isn't rendered and the table behaves exactly as today.
 
-> **Included in your venue contract**
-> • Up to 10 static logos — LED screens
-> • 1 static logo — all TVs, Cabanas & Bungalows
-> *Standard inclusions — no charge*
+### 3. Layout tightening (scoped, no logic changes)
 
-Gold left-border accent, dark headline, matches the Creative Director Notes / Asset Due Date pattern. Copy lives in one file, easy to edit.
+`ProposalView.tsx` main column reorder + spacing:
 
-Mirrored in `proposalPdfGenerator.ts` as a dark band with gold accent placed above the scope table. The scope-table header changes to "Additional Services" so the distinction is obvious.
+```text
+Header (logo + PDF) 
+   ↓ mb-12
+Scenario chip + Event title + client + countdown
+   ↓ mb-10
+Contract Inclusions  (neutral cream, gold accent)
+   ↓ mb-4
+Scenario banner       (collapses into a single slim strip — same gold accent)
+   ↓ mb-10
+[Scenario 2 only] "Included Service" pinned card
+   ↓ mb-3
+Section label: "Optional Add-On Services"  /  for other scenarios: "Additional Services"
+Line items table
+   ↓ mb-12
+Pre-Call / Pre-Packet resources panel  (moved below items so the menu reads first)
+   ↓ Timeline → Terms → Signature
+```
 
-### 3. Scenario picker in admin
+Visual nudges (all CSS, no structural rewrites):
 
-In `AdminProposals.tsx`:
+- Tighter card paddings (`p-5` → `p-4`) on banners; bigger gap between **sections** (`mb-10`+) so groups breathe.
+- Section labels above the table get the same `text-[10px] tracking-[0.25em] uppercase text-[#c49a3c]` treatment as the scenario chip → consistent typographic rhythm.
+- Move the resources panel (Pre-Call/Pre-Packet) **below** the line items. Right now it sits above the menu and pushes pricing below the fold; clients should see what they're choosing first, then the supporting links.
 
-- Replace the current pre-call switch with a 3-option scenario selector (chips or dropdown) on both the new-proposal form and the existing list row.
-- Selecting `pre_packet_no_call` exposes a "Load Scenario 2 defaults" button that inserts the line item **Mapped to Spec by Client** (pulled from `line_item_templates` if it exists, otherwise created inline) — admin can then edit/add freely.
-- Mail subject + plain-text body switch on scenario.
+### 4. PDF mirror (light touch)
 
-### 4. Scenario 2 email
-
-New branch in `supabase/functions/generate-session-email/index.ts` for `pre_packet_no_call`:
-
-- Subject: `Pre-Packet: {event} — {client}`
-- Headline: "Your Pre-Packet"
-- Body emphasizes: review the menu, send us your already-mapped content (links to existing Content Delivery Guide for DXV3 spec), we handle loading/QC and any add-on services you approve.
-- CTA: "Open Proposal & Menu" only — no creative-call CTA, no calendar link.
-- Replaces the "Schedule Our Creative Call" block with a "Send Us Your Content" block.
-
-Mirror in `AdminProposals.tsx` `buildPlainTextEmail` / `openInMailApp`.
-
-### 5. Proposal page UI refresh (scoped, low-risk)
-
-`ProposalView.tsx`:
-
-- Header gets a small gold uppercase **scenario chip** (Pre-Call Packet / Pre-Packet / Quote) next to the event name.
-- New section order: Header → Scenario Chip → **Contract Inclusions banner** → Cover Gallery → Scope (line items, now titled "Additional Services") → Timeline → Terms → Signature.
-- Tighten spacing, replace flat white cards with gold-accented dividers consistent with the rest of the app.
-- Pre-Call Resources block only renders when scenario = `pre_call_packet`. For `pre_packet_no_call` it's replaced with a "Send Us Your Content" panel linking to the Content Delivery Guide.
-- All existing logic (selection, qty, signing, drive folder creation) stays intact.
-
-### 6. PDF refresh
-
-`proposalPdfGenerator.ts`:
-
-- Cover subtitle reads the scenario label.
-- Contract Inclusions band on the scope page above the line-item table.
-- Scope-table header becomes "Additional Services".
-
-### 7. Memory
-
-Save: scenario model, contract-inclusions wording, Scenario 2 default line items.
-
-## Files
-
-- `supabase/migrations/...` — add `proposal_scenario` text column + backfill from `is_pre_call_packet`
-- `src/components/proposal/ProposalContractInclusions.tsx` (new)
-- `src/components/proposal/ProposalView.tsx` — scenario chip, inclusions banner, scenario-aware resources panel, section order
-- `src/lib/proposalPdfGenerator.ts` — inclusions band + scenario subtitle + "Additional Services" header
-- `supabase/functions/generate-session-email/index.ts` — new `pre_packet_no_call` template
-- `src/pages/AdminProposals.tsx` — scenario selector replaces toggle, "Load Scenario 2 defaults" button, updated mail subject/body
-- `src/components/admin/ProposalEmailCard.tsx` — scenario-aware copy
-- `mem://features/client-proposal/proposal-scenarios` (new memory)
+`proposalPdfGenerator.ts`: when the proposal is `pre_packet_no_call` and a "Mapped to Spec by Client" row exists, render it as a small dark band labeled **Included Service** above the Additional Services table — same idea as the on-screen card, just typographic. No new sections, no layout rewrite.
 
 ## Out of scope
 
-- No changes to signing, drive-folder creation, line-item library schema, or pricing logic.
-- No editable-per-proposal inclusions (hard-coded copy by design).
+- No schema changes (sort_order already exists).
+- No changes to signing flow, totals math, or scenario detection logic.
+- No edits to the Pre-Call scenario's content — purely Scenario 2 + shared layout polish.
+- No PDF redesign beyond the small Included Service band.
+
+## Files touched
+
+- `src/pages/AdminProposals.tsx` — bump sort_order on seed; add idempotent "move to top" if row exists.
+- `src/components/proposal/ProposalView.tsx` — pre-tick, pinned card, section labels, reorder, spacing.
+- `src/lib/proposalPdfGenerator.ts` — Included Service band for Scenario 2.

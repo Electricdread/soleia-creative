@@ -278,11 +278,50 @@ export async function generateProposalPdf(
   doc.text('Standard inclusions — no charge.', PAGE_W - MARGIN - 6, y + 50, { align: 'right' });
   y += inclH + 12;
 
+  // === SCENARIO 2: Pinned "Included Service" band ===
+  const scenarioKey = proposal.proposal_scenario
+    ?? (proposal.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet');
+  const mappedIdx = items.findIndex(i => /^mapped to spec by client/i.test(i.title || ''));
+  const mappedItem = scenarioKey === 'pre_packet_no_call' && mappedIdx >= 0 ? items[mappedIdx] : null;
+  const tableItems = mappedItem ? items.filter((_, idx) => idx !== mappedIdx) : items;
+
+  if (mappedItem) {
+    const mappedPrice = mappedItem.is_flat_fee
+      ? Number(mappedItem.price)
+      : Number(mappedItem.price) * Number(mappedItem.quantity || 1);
+    const descLinesMapped: string[] = mappedItem.description
+      ? doc.splitTextToSize(mappedItem.description, CONTENT_W - 24)
+      : [];
+    const bandH = 38 + descLinesMapped.length * 9;
+    doc.setFillColor('#faf8f4');
+    doc.rect(MARGIN, y, CONTENT_W, bandH, 'F');
+    doc.setFillColor(GOLD);
+    doc.rect(MARGIN, y, 3, bandH, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(GOLD);
+    doc.text('INCLUDED IN THIS PROPOSAL', MARGIN + 12, y + 13);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(TEXT);
+    doc.text(mappedItem.title, MARGIN + 12, y + 27);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(formatCurrency(mappedPrice), PAGE_W - MARGIN - 6, y + 27, { align: 'right' });
+    if (descLinesMapped.length) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(GRAY);
+      descLinesMapped.forEach((line, i) => doc.text(line, MARGIN + 12, y + 38 + i * 9));
+    }
+    y += bandH + 14;
+  }
+
   // === SCOPE TABLE (Additional Services) ===
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(TEXT);
-  doc.text('ADDITIONAL SERVICES', MARGIN, y);
+  doc.text(mappedItem ? 'OPTIONAL ADD-ON SERVICES' : 'ADDITIONAL SERVICES', MARGIN, y);
   y += 8;
   doc.setDrawColor('#ecf0f1');
   doc.setLineWidth(0.5);
@@ -316,7 +355,7 @@ export async function generateProposalPdf(
 
   let lastCategory = '';
 
-  for (const item of items) {
+  for (const item of tableItems) {
     const lineTotal = item.is_flat_fee ? Number(item.price) : Number(item.price) * Number(item.quantity || 1);
     const needsCategory = !!item.category && item.category !== lastCategory;
     if (item.category) lastCategory = item.category;
