@@ -426,6 +426,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         ) : (
           <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
             <div className="min-w-0 flex-1">
+              <p className="text-[10px] tracking-[0.25em] uppercase text-[#c49a3c] font-bold mb-2">
+                {SCENARIO_CHIP_LABEL[resolveScenario(proposal)]}
+              </p>
               <div className="flex items-center gap-2">
                 <h1 className="text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
                 {isAdmin && (
