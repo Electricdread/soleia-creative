@@ -758,8 +758,8 @@ luisdreamslv@gmail.com`;
         ) : (
           <div className="space-y-3">
             {proposals.map(p => (
-              <div key={p.id} className={`bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 flex items-center justify-between gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
-                <div className="min-w-0 flex-1">
+              <div key={p.id} className={`bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
+                <div className="w-full min-w-0 xl:w-48 xl:flex-[0_0_12rem] overflow-hidden">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="text-white font-medium truncate">{p.event_name}</h3>
                     <Badge className={`${statusColor(p.status)} text-white text-[10px] px-2`}>
@@ -780,41 +780,42 @@ luisdreamslv@gmail.com`;
                     </p>
                   )}
                 </div>
-                <label
-                  className="flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-800 border border-zinc-700 cursor-pointer flex-shrink-0"
-                  title="Toggle off to disable client access to this link"
-                >
-                  <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
-                  <span className="text-xs font-medium text-white">Active</span>
-                </label>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Select
-                    value={p.proposal_scenario ?? (p.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet')}
-                    onValueChange={(v) => setScenario(p.id, v as any)}
+                <div className="flex w-full flex-wrap items-center gap-3 xl:flex-1 xl:justify-end">
+                  <label
+                    className="flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-800 border border-zinc-700 cursor-pointer flex-shrink-0"
+                    title="Toggle off to disable client access to this link"
                   >
-                    <SelectTrigger className="h-9 w-[170px] bg-zinc-800 border-zinc-700 text-xs text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
-                      <SelectItem value="pre_call_packet">Pre-Call Packet</SelectItem>
-                      <SelectItem value="pre_packet_no_call">Pre-Packet (No Call)</SelectItem>
-                      <SelectItem value="direct_quote">Direct Quote</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {(p.proposal_scenario === 'pre_packet_no_call') && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => seedScenarioTwoDefaults(p.id)}
-                      title='Insert "Mapped to Spec by Client" line item'
-                      className="text-[#c49a3c] hover:text-[#d4aa4c] text-xs gap-1"
+                    <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
+                    <span className="text-xs font-medium text-white">Active</span>
+                  </label>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Select
+                      value={p.proposal_scenario ?? (p.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet')}
+                      onValueChange={(v) => setScenario(p.id, v as any)}
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Seed defaults
-                    </Button>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
+                      <SelectTrigger className="h-9 w-[170px] bg-zinc-800 border-zinc-700 text-xs text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
+                        <SelectItem value="pre_call_packet">Pre-Call Packet</SelectItem>
+                        <SelectItem value="pre_packet_no_call">Pre-Packet (No Call)</SelectItem>
+                        <SelectItem value="direct_quote">Direct Quote</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(p.proposal_scenario === 'pre_packet_no_call') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => seedScenarioTwoDefaults(p.id)}
+                        title='Insert "Mapped to Spec by Client" line item'
+                        className="text-[#c49a3c] hover:text-[#d4aa4c] text-xs gap-1"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Seed defaults
+                      </Button>
+                    )}
+                  </div>
+                <div className="flex flex-wrap items-center justify-end gap-1 flex-shrink-0">
                   {p.status === 'draft' && (
                     <Button variant="ghost" size="sm" onClick={() => markSent(p.id)} className="text-blue-400 hover:text-blue-300 text-xs">
                       Mark Sent
@@ -871,6 +872,7 @@ luisdreamslv@gmail.com`;
                     description={`This will permanently delete the proposal for "${p.event_name}". This action cannot be undone.`}
                     onConfirm={() => deleteProposal(p.id)}
                   />
+                  </div>
                 </div>
               </div>
             ))}
