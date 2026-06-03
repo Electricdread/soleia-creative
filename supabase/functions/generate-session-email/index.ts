@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   )
 
   let title = '', clientName = '', coverUrl = '', eventDate = '', pageUrl = '', creativeCallUrl = '', driveFolderUrl = ''
-  let isPreCallPacket = true
+  let scenario: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' = 'pre_call_packet'
   const siteUrl = 'https://soleiacreative.app'
 
   if (type === 'creative') {
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
   } else if (type === 'proposal') {
     const { data } = await supabase
       .from('proposals')
-      .select('event_name, client_name, event_date, creative_call_url, drive_folder_url, is_pre_call_packet')
+      .select('event_name, client_name, event_date, creative_call_url, drive_folder_url, is_pre_call_packet, proposal_scenario')
       .eq('token', token)
       .single()
 
@@ -69,7 +69,12 @@ Deno.serve(async (req) => {
     pageUrl = `${siteUrl}/proposal/${token}`
     creativeCallUrl = data.creative_call_url || ''
     driveFolderUrl = data.drive_folder_url || ''
-    isPreCallPacket = (data as any).is_pre_call_packet !== false
+    const rawScenario = (data as any).proposal_scenario
+    if (rawScenario === 'pre_call_packet' || rawScenario === 'pre_packet_no_call' || rawScenario === 'direct_quote') {
+      scenario = rawScenario
+    } else {
+      scenario = (data as any).is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet'
+    }
   } else {
     const { data } = await supabase
       .from('client_links')
@@ -104,6 +109,81 @@ Deno.serve(async (req) => {
   let html: string
 
   if (type === 'proposal') {
+    const isPreCallPacket = scenario === 'pre_call_packet'
+    const isPrePacketNoCall = scenario === 'pre_packet_no_call'
+
+    const headline = isPreCallPacket
+      ? 'Your Proposal &amp; Pre-Call Packet'
+      : isPrePacketNoCall
+        ? 'Your Pre-Packet'
+        : 'Your Proposal'
+
+    const intro = isPreCallPacket
+      ? `Ahead of our creative call, please take a few minutes to review the materials below. They&rsquo;ll get you acquainted with our process so we can hit the ground running on the call &mdash; choosing themes, line items, and content ideas for <strong style="color:#B8860B;">${esc(title)}</strong>.`
+      : isPrePacketNoCall
+        ? `Since you&rsquo;re providing your own mapped content for <strong style="color:#B8860B;">${esc(title)}</strong>, please review the menu of additional services below and follow the Content Delivery Guide when sending us your files. We&rsquo;ll handle loading, QC, and any add-ons you approve.`
+        : `Please find your proposal for <strong style="color:#B8860B;">${esc(title)}</strong> below. Review the details and sign whenever you&rsquo;re ready.`
+
+    const ctaLabel = isPreCallPacket ? 'Open Proposal &amp; Menu' : isPrePacketNoCall ? 'Open Pre-Packet &amp; Menu' : 'Open Proposal'
+
+    const eventDetailsBlock = formattedDate ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+              <tr><td style="background-color:#faf8f4;border-left:3px solid #B8860B;padding:16px 20px;">
+                <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 8px;">Event Details</p>
+                <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                  <tr><td style="padding:3px 0;font-size:14px;color:#666666;width:90px;">Event:</td><td style="padding:3px 0;font-size:14px;color:#333333;font-weight:600;">${esc(title)}</td></tr>
+                  <tr><td style="padding:3px 0;font-size:14px;color:#666666;width:90px;">Date:</td><td style="padding:3px 0;font-size:14px;color:#333333;font-weight:600;">${esc(formattedDate)}</td></tr>
+                </table>
+              </td></tr>
+            </table>` : ''
+
+    const inclusionsBlock = `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+              <tr><td style="background-color:#faf8f4;border-left:3px solid #B8860B;padding:16px 20px;">
+                <p style="font-size:13px;font-weight:700;color:#B8860B;margin:0 0 8px;letter-spacing:1px;">INCLUDED IN YOUR VENUE CONTRACT</p>
+                <p style="margin:0 0 4px;font-size:14px;color:#333333;line-height:1.6;">&bull; <strong>Up to 10 static logos</strong> &mdash; LED screens</p>
+                <p style="margin:0;font-size:14px;color:#333333;line-height:1.6;">&bull; <strong>1 static logo</strong> &mdash; all TVs, Cabanas &amp; Bungalows</p>
+                <p style="margin:8px 0 0;font-size:11px;color:#999999;font-style:italic;">Standard inclusions — no charge. Items below are additional services.</p>
+              </td></tr>
+            </table>`
+
+    const packetContentsBlock = isPreCallPacket ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+              <tr><td style="background-color:#f9f9f9;padding:20px 24px;">
+                <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 12px;">What's inside the packet:</p>
+                <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128221;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Line Item Menu</strong> &mdash; browse our full menu of additional services and pricing</td></tr>
+                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#127916;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong><a href="https://soleiacreative.app/creative-guide#display-specs" target="_blank" style="color:#B8860B;text-decoration:underline;">Creative Guide &amp; AE Template</a></strong> &mdash; venue specs, LED zones, and downloadable After Effects project file</td></tr>
+                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128193;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Collect Assets folder</strong> &mdash; where you&rsquo;ll drop logos, references, brand assets</td></tr>
+                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128197;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Timeline</strong> &mdash; after sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before the event</td></tr>
+                </table>
+              </td></tr>
+            </table>` : ''
+
+    const sendUsContentBlock = isPrePacketNoCall ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
+              <tr><td style="background-color:#f9f9f9;padding:20px 24px;">
+                <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 12px;">Send us your content:</p>
+                <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#127916;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong><a href="https://soleiacreative.app/delivery-guide" target="_blank" style="color:#B8860B;text-decoration:underline;">Content Delivery Guide</a></strong> &mdash; DXV3 encoding spec, resolutions per zone, and how to package your files</td></tr>
+                  ${driveFolderUrl ? `<tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128193;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong><a href="${esc(driveFolderUrl)}" target="_blank" style="color:#B8860B;text-decoration:underline;">Your Drive Folder</a></strong> &mdash; drop your mapped, encoded content here when it&rsquo;s ready</td></tr>` : `<tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128193;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Drive Folder</strong> &mdash; we&rsquo;ll share a folder for your final mapped content</td></tr>`}
+                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128221;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Additional Services Menu</strong> &mdash; select any extras (loading & QC, dynamic elevator, on-site op) from the proposal below</td></tr>
+                </table>
+              </td></tr>
+            </table>` : ''
+
+    const scheduleCallBlock = isPreCallPacket ? (creativeCallUrl ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr><td align="center" style="padding:0 0 12px;">
+                <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                  <tr><td style="background-color:#ffffff;border:1.5px solid #B8860B;border-radius:8px;padding:12px 32px;text-align:center;">
+                    <a href="${esc(creativeCallUrl)}" target="_blank" style="display:inline-block;color:#B8860B;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Schedule Our Creative Call &#8594;</a>
+                  </td></tr>
+                </table>
+              </td></tr>
+            </table>` : `<p style="font-size:13px;line-height:1.6;color:#888888;font-style:italic;text-align:center;margin:0 0 12px;">We'll reach out separately to schedule the creative call.</p>`) : ''
+
+    const closingNote = isPreCallPacket
+      ? `<p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">Once you&rsquo;ve had a chance to look through everything, we&rsquo;ll meet on the creative call to finalize themes, content, and the line items you&rsquo;d like to include. The on-page signature stays available for whenever you&rsquo;re ready to lock things in.</p>`
+      : isPrePacketNoCall
+        ? `<p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">When your content is ready, send it through using the Delivery Guide above. Approve the additional services you need on the proposal page and sign whenever you&rsquo;re ready.</p>`
+        : ''
+
     html = `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;min-width:100%;border-collapse:collapse;background-color:#f3f1eb;font-family:'Helvetica Neue',Arial,sans-serif;">
   <tr>
     <td align="center" style="padding:0;background-color:#f3f1eb;">
@@ -115,54 +195,24 @@ Deno.serve(async (req) => {
         </tr>
         <tr>
           <td style="padding:32px 28px;background-color:#ffffff;">
-            <h2 style="font-size:22px;font-weight:700;color:#1a1a1a;margin:0 0 6px;">${isPreCallPacket ? 'Your Proposal &amp; Pre-Call Packet' : 'Your Proposal'}</h2>
+            <h2 style="font-size:22px;font-weight:700;color:#1a1a1a;margin:0 0 6px;">${headline}</h2>
             ${formattedDate ? `<p style="font-size:13px;color:#B8860B;margin:0 0 20px;letter-spacing:0.5px;font-weight:600;">${esc(formattedDate)}</p>` : '<div style="height:14px;"></div>'}
             <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">Dear ${esc(clientName) || 'Valued Client'},</p>
-            ${isPreCallPacket
-              ? `<p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
-              Ahead of our creative call, please take a few minutes to review the materials below. They&rsquo;ll get you acquainted with our process so we can hit the ground running on the call &mdash; choosing themes, line items, and content ideas for <strong style="color:#B8860B;">${esc(title)}</strong>.
-            </p>`
-              : `<p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">
-              Please find your proposal for <strong style="color:#B8860B;">${esc(title)}</strong> below. Review the details and sign whenever you&rsquo;re ready.
-            </p>`}
-            ${formattedDate ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 20px;">
-              <tr><td style="background-color:#faf8f4;border-left:3px solid #B8860B;padding:16px 20px;">
-                <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 8px;">Event Details</p>
-                <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
-                  <tr><td style="padding:3px 0;font-size:14px;color:#666666;width:90px;">Event:</td><td style="padding:3px 0;font-size:14px;color:#333333;font-weight:600;">${esc(title)}</td></tr>
-                  <tr><td style="padding:3px 0;font-size:14px;color:#666666;width:90px;">Date:</td><td style="padding:3px 0;font-size:14px;color:#333333;font-weight:600;">${esc(formattedDate)}</td></tr>
-                </table>
-              </td></tr>
-            </table>` : ''}
-            ${isPreCallPacket ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
-              <tr><td style="background-color:#f9f9f9;padding:20px 24px;">
-                <p style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 12px;">What's inside the packet:</p>
-                <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
-                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128221;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Line Item Menu</strong> &mdash; browse our full menu of services and pricing</td></tr>
-                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#127916;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong><a href="https://soleiacreative.app/creative-guide#display-specs" target="_blank" style="color:#B8860B;text-decoration:underline;">Creative Guide &amp; AE Template</a></strong> &mdash; venue specs, LED zones, and downloadable After Effects project file</td></tr>
-                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128193;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Collect Assets folder</strong> &mdash; where you&rsquo;ll drop logos, references, brand assets</td></tr>
-                  <tr><td width="32" style="padding:6px 12px 6px 0;vertical-align:top;font-size:18px;">&#128197;</td><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555555;"><strong>Timeline</strong> &mdash; after sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before the event</td></tr>
-                </table>
-              </td></tr>
-            </table>` : ''}
+            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">${intro}</p>
+            ${eventDetailsBlock}
+            ${inclusionsBlock}
+            ${packetContentsBlock}
+            ${sendUsContentBlock}
             <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
               <tr><td align="center" style="padding:8px 0 12px;">
                 <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                   <tr><td style="background-color:#B8860B;border-radius:8px;padding:14px 36px;text-align:center;">
-                    <a href="${esc(pageUrl)}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">${isPreCallPacket ? 'Open Proposal &amp; Menu' : 'Open Proposal'} &#8594;</a>
+                    <a href="${esc(pageUrl)}" target="_blank" style="display:inline-block;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">${ctaLabel} &#8594;</a>
                   </td></tr>
                 </table>
               </td></tr>
             </table>
-            ${isPreCallPacket ? (creativeCallUrl ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
-              <tr><td align="center" style="padding:0 0 12px;">
-                <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
-                  <tr><td style="background-color:#ffffff;border:1.5px solid #B8860B;border-radius:8px;padding:12px 32px;text-align:center;">
-                    <a href="${esc(creativeCallUrl)}" target="_blank" style="display:inline-block;color:#B8860B;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Schedule Our Creative Call &#8594;</a>
-                  </td></tr>
-                </table>
-              </td></tr>
-            </table>` : `<p style="font-size:13px;line-height:1.6;color:#888888;font-style:italic;text-align:center;margin:0 0 12px;">We'll reach out separately to schedule the creative call.</p>`) : ''}
+            ${scheduleCallBlock}
             <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
               <tr><td style="padding:0 0 24px;text-align:center;">
                 <p style="font-size:11px;color:#999999;margin:0 0 4px;">If the button above doesn't work, copy and paste this link into your browser:</p>
@@ -172,7 +222,7 @@ Deno.serve(async (req) => {
                 ${isPreCallPacket && creativeCallUrl ? `<p style="font-size:11px;color:#B8860B;margin:6px 0 0;word-break:break-all;"><a href="${esc(creativeCallUrl)}" style="color:#B8860B;text-decoration:underline;">${esc(creativeCallUrl)}</a></p>` : ''}
               </td></tr>
             </table>
-            ${isPreCallPacket ? `<p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 16px;">Once you&rsquo;ve had a chance to look through everything, we&rsquo;ll meet on the creative call to finalize themes, content, and the line items you&rsquo;d like to include. The on-page signature stays available for whenever you&rsquo;re ready to lock things in.</p>` : ''}
+            ${closingNote}
             <p style="font-size:15px;line-height:1.7;color:#333333;margin:0;">Looking forward to creating something memorable together.</p>
           </td>
         </tr>
@@ -232,8 +282,9 @@ ${formattedDate ? `<p style="margin:0;font-size:13px;color:#888888;">${esc(forma
 </html>`
   }
 
+  const proposalSubjectPrefix = scenario === 'pre_call_packet' ? 'Pre-Call Packet' : scenario === 'pre_packet_no_call' ? 'Pre-Packet' : 'Proposal'
   const subject = type === 'proposal'
-    ? (isPreCallPacket ? `Pre-Call Packet: ${title} — ${clientName}` : `Proposal: ${title} — ${clientName}`)
+    ? `${proposalSubjectPrefix}: ${title} — ${clientName}`
     : `${typeLabel}: ${title} — ${clientName}`
   return new Response(JSON.stringify({ html, subject }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -16,8 +16,23 @@ import ProposalGallery from './ProposalGallery';
 import ProposalTimeline from './ProposalTimeline';
 import ProposalTerms from './ProposalTerms';
 import ProposalApprovedClips from './ProposalApprovedClips';
+import ProposalContractInclusions from './ProposalContractInclusions';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
+
+type ProposalScenario = 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote';
+
+function resolveScenario(proposal: any): ProposalScenario {
+  const s = proposal?.proposal_scenario as ProposalScenario | undefined;
+  if (s === 'pre_call_packet' || s === 'pre_packet_no_call' || s === 'direct_quote') return s;
+  return proposal?.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet';
+}
+
+const SCENARIO_CHIP_LABEL: Record<ProposalScenario, string> = {
+  pre_call_packet: 'Pre-Call Packet',
+  pre_packet_no_call: 'Pre-Packet',
+  direct_quote: 'Quote',
+};
 
 interface ProposalViewProps {
   proposal: any;
@@ -411,6 +426,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         ) : (
           <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
             <div className="min-w-0 flex-1">
+              <p className="text-[10px] tracking-[0.25em] uppercase text-[#c49a3c] font-bold mb-2">
+                {SCENARIO_CHIP_LABEL[resolveScenario(proposal)]}
+              </p>
               <div className="flex items-center gap-2">
                 <h1 className="text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
                 {isAdmin && (
@@ -449,26 +467,43 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           </div>
         )}
 
-        {/* Pre-Call Packet Banner */}
-        {!signed && !isProposalClosed(proposal) && proposal.is_pre_call_packet !== false && (
-          <>
-            <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
-              <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
-              <p className="text-[#34495e] text-sm leading-relaxed">
-                This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
-                We'll discuss themes and final selections together on our creative call &mdash; sign whenever
-                you're ready.
-              </p>
-            </div>
+        {/* Contract Inclusions — always shown above line items */}
+        <ProposalContractInclusions />
 
-            {/* Pre-Call Resources */}
-            <PreCallResources
-              proposal={proposal}
-              isAdmin={!!isAdmin}
-              onRefresh={onRefresh}
-            />
-          </>
-        )}
+        {/* Scenario-specific banner + resources */}
+        {!signed && !isProposalClosed(proposal) && (() => {
+          const scenario = resolveScenario(proposal);
+          if (scenario === 'pre_call_packet') {
+            return (
+              <>
+                <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
+                  <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
+                  <p className="text-[#34495e] text-sm leading-relaxed">
+                    This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
+                    We'll discuss themes and final selections together on our creative call &mdash; sign whenever
+                    you're ready.
+                  </p>
+                </div>
+                <PreCallResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
+              </>
+            );
+          }
+          if (scenario === 'pre_packet_no_call') {
+            return (
+              <>
+                <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-5 mb-6 print:hidden">
+                  <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Packet</p>
+                  <p className="text-[#34495e] text-sm leading-relaxed">
+                    You're providing your own mapped content for this event. Review the additional services below,
+                    then send us your files &mdash; we'll handle loading, QC, and any extras you approve.
+                  </p>
+                </div>
+                <PrePacketResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
+              </>
+            );
+          }
+          return null;
+        })()}
 
         {/* Validity Notice — only after sign-off / closure */}
         {(signed || isProposalClosed(proposal)) && (
@@ -1051,3 +1086,110 @@ function PreCallResources({ proposal, isAdmin, onRefresh }: PreCallResourcesProp
     </div>
   );
 }
+
+interface PrePacketResourcesProps {
+  proposal: any;
+  isAdmin: boolean;
+  onRefresh?: () => void;
+}
+
+function PrePacketResources({ proposal, isAdmin, onRefresh }: PrePacketResourcesProps) {
+  const { toast } = useToast();
+  const [generating, setGenerating] = useState(false);
+  const driveUrl: string | null = proposal.drive_folder_url || null;
+
+  const generateFolder = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
+        body: { proposal_id: proposal.id },
+      });
+      if (error) throw error;
+      const url = (data as any)?.folderUrl;
+      if (!url) throw new Error('No folder URL returned');
+      toast({ title: (data as any)?.existing ? 'Folder already exists' : 'Client folder created' });
+      onRefresh?.();
+    } catch (e: any) {
+      toast({ title: 'Folder generation failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const tileBase = 'block bg-white border-l-4 border-[#c49a3c] border border-[#ecf0f1] rounded-r-lg p-4 transition-all';
+
+  return (
+    <div className="mb-8 print:hidden">
+      <p className="text-[10px] tracking-[0.2em] uppercase text-[#95a5a6] font-semibold mb-3">Send Us Your Content</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <a
+          href="/delivery-guide"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${tileBase} hover:shadow-md hover:-translate-y-0.5 cursor-pointer`}
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+              <BookOpen className="w-5 h-5 text-[#c49a3c]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Content Delivery Guide</p>
+              <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">
+                DXV3 encoding spec, resolutions per zone, and how to package your files.
+              </p>
+            </div>
+          </div>
+        </a>
+        {driveUrl ? (
+          <a
+            href={driveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${tileBase} hover:shadow-md hover:-translate-y-0.5 cursor-pointer`}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
+                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">
+                  Open the shared Drive folder and upload your mapped, encoded content.
+                </p>
+              </div>
+            </div>
+          </a>
+        ) : isAdmin ? (
+          <div className={`${tileBase} opacity-90`}>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
+                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">No client folder yet.</p>
+                <Button size="sm" variant="outline" onClick={generateFolder} disabled={generating} className="mt-2 h-7 text-xs gap-1.5 border-[#c49a3c] text-[#c49a3c] hover:bg-[#faf8f4]">
+                  {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                  Generate folder
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className={`${tileBase} opacity-60`}>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
+                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">Folder will be shared shortly.</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

@@ -47,6 +47,7 @@ interface ProposalRow {
   drive_folder_url: string | null;
   creative_call_url: string | null;
   is_pre_call_packet: boolean;
+  proposal_scenario: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' | null;
 }
 
 export default function AdminProposals() {
@@ -233,15 +234,42 @@ export default function AdminProposals() {
     toast({ title: next ? 'Proposal activated — link is live' : 'Proposal deactivated — link is no longer accessible' });
   };
 
-  const togglePreCallPacket = async (id: string, current: boolean) => {
-    const next = !current;
-    const { error } = await supabase.from('proposals').update({ is_pre_call_packet: next }).eq('id', id);
+  const setScenario = async (id: string, next: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote') => {
+    const { error } = await supabase.from('proposals').update({
+      proposal_scenario: next,
+      is_pre_call_packet: next === 'pre_call_packet',
+    } as any).eq('id', id);
     if (error) {
-      toast({ title: 'Failed to update pre-call packet setting', variant: 'destructive' });
+      toast({ title: 'Failed to update scenario', variant: 'destructive' });
       return;
     }
-    setProposals(prev => prev.map(p => p.id === id ? { ...p, is_pre_call_packet: next } : p));
-    toast({ title: next ? 'Pre-call packet enabled' : 'Pre-call packet disabled — straight quote mode' });
+    setProposals(prev => prev.map(p => p.id === id ? { ...p, proposal_scenario: next, is_pre_call_packet: next === 'pre_call_packet' } : p));
+    toast({ title: `Scenario set: ${next === 'pre_call_packet' ? 'Pre-Call Packet' : next === 'pre_packet_no_call' ? 'Pre-Packet (No Call)' : 'Direct Quote'}` });
+  };
+
+  const seedScenarioTwoDefaults = async (proposalId: string) => {
+    const { data: existing } = await supabase.from('proposal_items').select('id, title').eq('proposal_id', proposalId);
+    if (existing?.some(i => /mapped to spec by client/i.test(i.title))) {
+      toast({ title: 'Already added', description: '"Mapped to Spec by Client" is already on this proposal.' });
+      return;
+    }
+    const sortOrder = existing?.length || 0;
+    const { error } = await supabase.from('proposal_items').insert({
+      proposal_id: proposalId,
+      title: 'Mapped to Spec by Client',
+      description: 'Client-provided content is already mapped to venue spec. Soleia handles loading, QC, and playback on our servers and screens.',
+      price: 0,
+      quantity: 1,
+      category: 'Content Operations',
+      unit: 'Project',
+      is_flat_fee: true,
+      sort_order: sortOrder,
+    });
+    if (error) {
+      toast({ title: 'Failed to add line item', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: '"Mapped to Spec by Client" added', description: 'Open the proposal to set the price.' });
   };
 
   const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null }) => {
