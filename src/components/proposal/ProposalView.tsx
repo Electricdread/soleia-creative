@@ -1086,3 +1086,110 @@ function PreCallResources({ proposal, isAdmin, onRefresh }: PreCallResourcesProp
     </div>
   );
 }
+
+interface PrePacketResourcesProps {
+  proposal: any;
+  isAdmin: boolean;
+  onRefresh?: () => void;
+}
+
+function PrePacketResources({ proposal, isAdmin, onRefresh }: PrePacketResourcesProps) {
+  const { toast } = useToast();
+  const [generating, setGenerating] = useState(false);
+  const driveUrl: string | null = proposal.drive_folder_url || null;
+
+  const generateFolder = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
+        body: { proposal_id: proposal.id },
+      });
+      if (error) throw error;
+      const url = (data as any)?.folderUrl;
+      if (!url) throw new Error('No folder URL returned');
+      toast({ title: (data as any)?.existing ? 'Folder already exists' : 'Client folder created' });
+      onRefresh?.();
+    } catch (e: any) {
+      toast({ title: 'Folder generation failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const tileBase = 'block bg-white border-l-4 border-[#c49a3c] border border-[#ecf0f1] rounded-r-lg p-4 transition-all';
+
+  return (
+    <div className="mb-8 print:hidden">
+      <p className="text-[10px] tracking-[0.2em] uppercase text-[#95a5a6] font-semibold mb-3">Send Us Your Content</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <a
+          href="/delivery-guide"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${tileBase} hover:shadow-md hover:-translate-y-0.5 cursor-pointer`}
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+              <BookOpen className="w-5 h-5 text-[#c49a3c]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Content Delivery Guide</p>
+              <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">
+                DXV3 encoding spec, resolutions per zone, and how to package your files.
+              </p>
+            </div>
+          </div>
+        </a>
+        {driveUrl ? (
+          <a
+            href={driveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${tileBase} hover:shadow-md hover:-translate-y-0.5 cursor-pointer`}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
+                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">
+                  Open the shared Drive folder and upload your mapped, encoded content.
+                </p>
+              </div>
+            </div>
+          </a>
+        ) : isAdmin ? (
+          <div className={`${tileBase} opacity-90`}>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
+                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">No client folder yet.</p>
+                <Button size="sm" variant="outline" onClick={generateFolder} disabled={generating} className="mt-2 h-7 text-xs gap-1.5 border-[#c49a3c] text-[#c49a3c] hover:bg-[#faf8f4]">
+                  {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                  Generate folder
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className={`${tileBase} opacity-60`}>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
+                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
+                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">Folder will be shared shortly.</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
