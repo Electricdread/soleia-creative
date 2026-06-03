@@ -282,8 +282,9 @@ ${formattedDate ? `<p style="margin:0;font-size:13px;color:#888888;">${esc(forma
 </html>`
   }
 
+  const proposalSubjectPrefix = scenario === 'pre_call_packet' ? 'Pre-Call Packet' : scenario === 'pre_packet_no_call' ? 'Pre-Packet' : 'Proposal'
   const subject = type === 'proposal'
-    ? (isPreCallPacket ? `Pre-Call Packet: ${title} — ${clientName}` : `Proposal: ${title} — ${clientName}`)
+    ? `${proposalSubjectPrefix}: ${title} — ${clientName}`
     : `${typeLabel}: ${title} — ${clientName}`
   return new Response(JSON.stringify({ html, subject }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
