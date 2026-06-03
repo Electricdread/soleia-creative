@@ -355,6 +355,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 
+  const scenario = resolveScenario(proposal);
+  const mappedItem = items.find(isMappedToSpec);
+  const tableItems = scenario === 'pre_packet_no_call' && mappedItem
+    ? items.filter(i => i.id !== mappedItem.id)
+    : items;
+  const additionalServicesLabel = scenario === 'pre_packet_no_call'
+    ? 'Optional Add-On Services'
+    : 'Additional Services';
+
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
       <div className="max-w-3xl mx-auto px-6 py-10">
