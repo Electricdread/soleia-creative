@@ -1086,6 +1086,7 @@ export type Database = {
           is_active: boolean
           is_pre_call_packet: boolean
           notes: string | null
+          proposal_scenario: string
           quote_date: string
           signed_at: string | null
           status: string
@@ -1109,6 +1110,7 @@ export type Database = {
           is_active?: boolean
           is_pre_call_packet?: boolean
           notes?: string | null
+          proposal_scenario?: string
           quote_date?: string
           signed_at?: string | null
           status?: string
@@ -1132,6 +1134,7 @@ export type Database = {
           is_active?: boolean
           is_pre_call_packet?: boolean
           notes?: string | null
+          proposal_scenario?: string
           quote_date?: string
           signed_at?: string | null
           status?: string
