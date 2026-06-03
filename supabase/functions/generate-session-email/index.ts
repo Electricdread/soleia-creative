@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   )
 
   let title = '', clientName = '', coverUrl = '', eventDate = '', pageUrl = '', creativeCallUrl = '', driveFolderUrl = ''
-  let isPreCallPacket = true
+  let scenario: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' = 'pre_call_packet'
   const siteUrl = 'https://soleiacreative.app'
 
   if (type === 'creative') {
