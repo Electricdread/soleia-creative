@@ -22,6 +22,8 @@ function scenarioLabel(p: ProposalData) {
   if (s === 'direct_quote') return 'Proposal';
   return p.is_pre_call_packet === false ? 'Pre-Packet' : 'Pre-Call Packet';
 }
+
+interface ProposalItem {
   title: string;
   description?: string | null;
   price: number;
