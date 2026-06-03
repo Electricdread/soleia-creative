@@ -16,8 +16,23 @@ import ProposalGallery from './ProposalGallery';
 import ProposalTimeline from './ProposalTimeline';
 import ProposalTerms from './ProposalTerms';
 import ProposalApprovedClips from './ProposalApprovedClips';
+import ProposalContractInclusions from './ProposalContractInclusions';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
+
+type ProposalScenario = 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote';
+
+function resolveScenario(proposal: any): ProposalScenario {
+  const s = proposal?.proposal_scenario as ProposalScenario | undefined;
+  if (s === 'pre_call_packet' || s === 'pre_packet_no_call' || s === 'direct_quote') return s;
+  return proposal?.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet';
+}
+
+const SCENARIO_CHIP_LABEL: Record<ProposalScenario, string> = {
+  pre_call_packet: 'Pre-Call Packet',
+  pre_packet_no_call: 'Pre-Packet',
+  direct_quote: 'Quote',
+};
 
 interface ProposalViewProps {
   proposal: any;
