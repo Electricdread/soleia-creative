@@ -837,7 +837,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             <div className="sm:hidden space-y-3">
               {(() => {
                 let lastCategory = '';
-                return items.map(item => {
+                return tableItems.map(item => {
                   const showCategory = item.category && item.category !== lastCategory;
                   if (item.category) lastCategory = item.category;
                   const lineTotal = calcLineTotal(item);
