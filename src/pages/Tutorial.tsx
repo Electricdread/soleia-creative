@@ -673,7 +673,7 @@ function CreativeGuideSection() {
         <FeatureCard
           icon={<Monitor className="w-6 h-6 text-white" />}
           title="Display Specifications"
-          description="Technical requirements for each display type: TV, Elevator, LED Master, and Ticker. Includes resolution, codec, and frame rates."
+          description="Technical requirements for each display type: TV, Elevator, and LED Master. Includes resolution, codec, and frame rates."
           color="bg-gradient-to-br from-cyan-500 to-blue-600"
           delay={0.2}
         />
