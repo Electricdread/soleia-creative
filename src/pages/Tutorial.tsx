@@ -361,7 +361,7 @@ function LooksCollectionSection() {
             description="Map selections to specific venue screens."
             details={[
               "Open the placement dialog for each selection",
-              "Choose from TV displays, LED walls, elevators, or tickers",
+              "Choose from TV displays, LED walls, or elevators",
               "View the venue diagram to understand screen locations",
               "Multiple clips can be assigned to the same screen"
             ]}
