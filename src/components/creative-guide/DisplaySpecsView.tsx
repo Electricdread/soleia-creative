@@ -37,14 +37,12 @@ const categoryIcons: Record<string, React.ReactNode> = {
   'tv': <img src={solIcon} alt="" className="w-5 h-5 object-contain" />,
   'elevator': <img src={solIcon} alt="" className="w-5 h-5 object-contain" />,
   'led': <img src={solIcon} alt="" className="w-5 h-5 object-contain" />,
-  'ticker': <img src={solIcon} alt="" className="w-5 h-5 object-contain" />,
 };
 
 const categoryColors: Record<string, string> = {
   'tv': 'bg-primary/20 text-primary border-primary/30',
   'elevator': 'bg-accent/20 text-accent border-accent/30',
   'led': 'bg-primary/25 text-primary border-primary/40',
-  'ticker': 'bg-success/20 text-success border-success/30',
 };
 
 function SpecRow({ label, value }: { label: string; value: string }) {
