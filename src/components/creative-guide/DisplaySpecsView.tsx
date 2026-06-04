@@ -181,20 +181,6 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
                 </div>
               )}
 
-              {/* Ticker Pixelmap & Work Comp download */}
-              {isTicker && (
-                <div className="pt-3 mt-2 border-t border-border/30">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadTickerAssets}
-                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download Pixelmap & Work Comp
-                  </Button>
-                </div>
-              )}
 
               {/* LED Pixelmap & AE Template downloads */}
               {isLED && (
