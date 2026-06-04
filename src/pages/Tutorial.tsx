@@ -507,12 +507,11 @@ function CreativeGuideSection() {
           <p className="text-zinc-500 font-tech text-sm uppercase tracking-widest">Technical specifications overview</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
             { icon: <Tv className="w-6 h-6" />, name: 'TV Displays', res: '1920×1080', codec: 'H.264/H.265', fps: '30fps' },
             { icon: <Monitor className="w-6 h-6" />, name: 'Elevator', res: '1080×1920', codec: 'H.264', fps: '30fps' },
             { icon: <Maximize2 className="w-6 h-6" />, name: 'LED Master', res: 'Varies by zone', codec: 'DXV3', fps: '30fps' },
-            { icon: <Layout className="w-6 h-6" />, name: 'Ticker/Marquee', res: '7680×64', codec: 'PNG sequence', fps: '30fps' },
           ].map((display, idx) => (
             <motion.div
               key={display.name}
