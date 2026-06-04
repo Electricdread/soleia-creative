@@ -614,7 +614,7 @@ function CreativeGuideSection() {
             <ul className="space-y-2 text-sm text-zinc-400">
               <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-amber-400" /> Arrival Screens</li>
               <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-amber-400" /> Street-Facing Displays</li>
-              <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-amber-400" /> Marquee/Ticker</li>
+              
               <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-amber-400" /> Architectural Arch</li>
             </ul>
           </div>
