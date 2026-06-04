@@ -383,8 +383,6 @@ export const GUIDE_IMAGES = {
   elevatorDisplay: '/creative-guide/elevator-display.jpg',
   ledSpecs: '/creative-guide/led-specs.jpg',
   ledDisplays: '/creative-guide/led-displays.jpg',
-  tickerSpecs: '/creative-guide/ticker-specs.jpg',
-  tickerDisplay: '/creative-guide/ticker-display.jpg',
   customContent: '/creative-guide/custom-content.jpg',
   examples: '/creative-guide/examples.jpg',
 };
