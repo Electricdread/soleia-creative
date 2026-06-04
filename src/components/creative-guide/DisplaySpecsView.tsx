@@ -55,21 +55,12 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 }
 
 function DisplayCard({ display, highlightAE = false }: { display: DisplayType; highlightAE?: boolean }) {
-  const isTicker = display.category === 'ticker';
   const isLED = display.category === 'led';
   const isTV = display.category === 'tv';
   const isElevator = display.category === 'elevator';
   const cardRef = useRef<HTMLDivElement>(null);
   const showHighlight = isLED && highlightAE;
 
-  const handleDownloadTickerAssets = () => {
-    const link = document.createElement('a');
-    link.href = TICKER_ASSETS_ZIP;
-    link.download = 'TICKER-MARQUEE.zip';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const handleDownloadLEDPixelmap = () => {
     const link = document.createElement('a');
