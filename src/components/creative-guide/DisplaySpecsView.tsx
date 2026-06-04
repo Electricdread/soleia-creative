@@ -55,7 +55,8 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 }
 
 function DisplayCard({ display, highlightAE = false }: { display: DisplayType; highlightAE?: boolean }) {
-  const isLED = display.category === 'led';
+  const isDLVMarquee = display.id === 'dlv-marquee';
+  const isLED = display.category === 'led' && !isDLVMarquee;
   const isTV = display.category === 'tv';
   const isElevator = display.category === 'elevator';
   const cardRef = useRef<HTMLDivElement>(null);
@@ -84,6 +85,15 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
     const link = document.createElement('a');
     link.href = TV_PIXELMAP_IMAGE;
     link.download = 'TV-Pixelmap.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadDLVMarqueePixelmap = () => {
+    const link = document.createElement('a');
+    link.href = '/creative-guide/dlv-marquee-pixelmap.png';
+    link.download = 'DLV-Marquee-Ticker-Pixelmap.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -213,6 +223,21 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
                     variant="outline"
                     size="sm"
                     onClick={handleDownloadElevatorPixelmap}
+                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download Pixelmap
+                  </Button>
+                </div>
+              )}
+
+              {/* DLV Marquee/Ticker Pixelmap download */}
+              {isDLVMarquee && (
+                <div className="pt-3 mt-2 border-t border-border/30">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadDLVMarqueePixelmap}
                     className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
                   >
                     <Download className="w-3.5 h-3.5" />

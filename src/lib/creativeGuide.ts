@@ -130,7 +130,40 @@ export const DISPLAY_TYPES: DisplayType[] = [
     image: '/creative-guide/led-specs.jpg',
     diagramImage: '/creative-guide/led-displays.jpg',
   },
-
+  {
+    id: 'dlv-marquee',
+    name: 'DLV Marquee / Ticker LED Display',
+    category: 'led',
+    description: 'Exterior wraparound LED ribbon facing Las Vegas Blvd and Flamingo Rd.',
+    videoSpecs: {
+      resolution: '3792x192 (Full) — 1608x192 West / 2184x192 South',
+      format: 'MOV',
+      codec: 'DXV3',
+      frameRate: '30 or 60 fps',
+      duration: '10–30 sec loop',
+    },
+    graphicSpecs: {
+      resolution: '3792x192 PNG (or per-segment 1608x192 / 2184x192)',
+      format: 'PNG (RGB, no alpha required)',
+    },
+    dimensions: [
+      { width: 3792, height: 192, label: 'Full Ribbon' },
+      { width: 1608, height: 192, label: 'West (LV Blvd)' },
+      { width: 2184, height: 192, label: 'South (Flamingo)' },
+    ],
+    deliverables: [
+      '(1) Full 3792×192 ribbon video or graphic',
+      '(1) 1608×192 West Side (Las Vegas Blvd) segment',
+      '(1) 2184×192 South Side (Flamingo Rd) segment',
+    ],
+    creativeNotes: [
+      'Ultra-wide 19.75:1 aspect — design horizontally; avoid centered text-only compositions.',
+      'Keep critical content within a safe area; the West and South segments can run synced or independently.',
+      'High brightness exterior placement — favor bold, high-contrast typography and avoid fine detail.',
+    ],
+    image: '/creative-guide/dlv-marquee-pixelmap.png',
+    diagramImage: '/creative-guide/dlv-marquee-pixelmap.png',
+  },
 ];
 
 // Outdoor LED Zones
