@@ -275,7 +275,7 @@ const DeliveryGuide = () => {
             <p className="text-amber-900/60 mt-1">Technical requirements for each display type</p>
           </div>
           
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {displaySpecs.map((spec, index) => (
               <motion.div
                 key={spec.id}

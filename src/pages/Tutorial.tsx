@@ -26,7 +26,7 @@ import {
   Tv,
   Sun,
   MousePointer,
-  Smartphone,
+  
   Check,
   MapPin,
   Video,

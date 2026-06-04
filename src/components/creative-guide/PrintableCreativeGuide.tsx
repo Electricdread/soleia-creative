@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Download, Printer, FileText, Monitor, Tv, Layers, Building2, Palette, BookOpen, ExternalLink } from 'lucide-react';
+import { Download, Printer, FileText, Monitor, Tv, Layers, Building2, BookOpen, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DISPLAY_TYPES, 

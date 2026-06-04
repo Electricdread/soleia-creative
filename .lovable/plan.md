@@ -1,29 +1,21 @@
-# Remove Marquee/Ticker references site-wide
-
-The Marquee/Ticker display type is referenced across the Content Delivery Guide, Creative Guide (Display Specs + printable PDF), data model, and Tutorial page. I'll remove all of it.
+All ticker/marquee code and copy is already gone from the source files (verified via `rg` — zero remaining matches in `src/` and `public/`). What's left is dead imports and a few layouts that still budget grid space for a 4th item that no longer exists.
 
 ## Changes
 
-**1. `src/lib/creativeGuide.ts`**
-- Remove the `ticker` entry from `DISPLAY_SPECS` (lines 133–159).
-- Remove `'ticker'` from the `category` union type (line 15).
-- Remove `tickerSpecs` / `tickerDisplay` entries from the assets map (lines 413–414).
+**1. `src/components/creative-guide/PrintableCreativeGuide.tsx`**
+- Drop unused `Palette` from the lucide-react import.
+- Section 3 "Screen Specifications by Zone" already uses `grid-cols-3` (Indoor / Outdoor / Sunray) — no layout change needed. Confirmed Section 2 (Display Specifications) iterates `DISPLAY_TYPES` which no longer contains ticker, so the PDF output already matches the on-site removal.
 
 **2. `src/pages/DeliveryGuide.tsx`**
-- Remove the `ticker` entry from the specs array (lines 61–69).
+- The 3-item `displaySpecs` array currently renders in `grid sm:grid-cols-2`, leaving one orphan card on the second row. Switch to `grid sm:grid-cols-2 lg:grid-cols-3` so TV / LED / Elevator each get an equal column on wider screens and the reclaimed marquee space is filled cleanly.
 
-**3. `src/components/creative-guide/DisplaySpecsView.tsx`**
-- Remove `TickerVideoCarousel` import, `TICKER_ASSETS_ZIP`, `isTicker` branch, ticker icon/badge map entries, `handleDownloadTickerAssets`, and the conditional ticker carousel + download button blocks.
+**3. `src/pages/Tutorial.tsx`**
+- Drop unused `Smartphone` from the lucide-react import.
+- The Display Types grid (currently 3 cards in `lg:grid-cols-3`) and the LED Zones / Outdoor Zones lists no longer reference a ticker entry — already balanced, no further layout change needed.
 
-**4. `src/components/creative-guide/PrintableCreativeGuide.tsx`**
-- Remove the `'ticker'` entry from `categoryIcons`.
-
-**5. `src/components/creative-guide/TickerVideoCarousel.tsx`**
-- Delete the file (only consumer was DisplaySpecsView).
-
-**6. `src/pages/Tutorial.tsx`**
-- Remove ticker mentions: bullet at line 364, description at line 452, spec card at line 515, video carousels copy at line 555, list item at line 618, description at line 677. Reword adjacent copy so lists/sentences still read naturally.
+**4. `src/components/creative-guide/DisplaySpecsView.tsx`**
+- All current imports (`AnimatePresence`, `Clock`, `FileVideo`, `X`) are still in use after the ticker removal — no edits required.
 
 ## Out of scope
-- No DB migrations (no ticker rows in DB).
-- Public asset files under `/public/creative-guide/` (ticker-specs.jpg, ticker-display.jpg, TICKER-MARQUEE.zip, marquee-ticker-media/) are left on disk — unreferenced after this change. Say the word if you want them deleted too.
+- Unused public assets under `/public/creative-guide/` (`ticker-specs.jpg`, `ticker-display.jpg`, `TICKER-MARQUEE.zip`, `marquee-ticker-media/`) remain on disk. Say the word and I'll delete them too.
+- No DB or edge-function changes.
