@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
-import { TickerVideoCarousel } from './TickerVideoCarousel';
+
 import { LEDPixelMapCarousel } from './LEDPixelMapCarousel';
 import { TVVideoCarousel } from './TVVideoCarousel';
 import { ElevatorVideoPreview } from './ElevatorVideoPreview';
