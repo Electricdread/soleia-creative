@@ -449,7 +449,7 @@ function LooksCollectionSection() {
         <FeatureCard
           icon={<MapPin className="w-6 h-6 text-white" />}
           title="Screen Placement"
-          description="Interactive venue diagram allows assigning graphics to specific screens: TVs, LEDs, elevators, and tickers."
+          description="Interactive venue diagram allows assigning graphics to specific screens: TVs, LEDs, and elevators."
           color="bg-gradient-to-br from-amber-400 to-orange-500"
           delay={0.3}
         />
