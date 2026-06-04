@@ -1,21 +1,36 @@
-All ticker/marquee code and copy is already gone from the source files (verified via `rg` — zero remaining matches in `src/` and `public/`). What's left is dead imports and a few layouts that still budget grid space for a 4th item that no longer exists.
+## Goal
 
-## Changes
+Add a single new pixelmap card titled **"DLV Marquee/Ticker LED Display"** to the Creative Guide → Display Specs view. The card displays a Soleia-styled pixelmap diagram (dark background, gold accents, JetBrains Mono labels) based on the attached reference, with downloadable PNG. No other surfaces (Delivery Guide, Tutorial, Printable PDF) are touched in this pass.
 
-**1. `src/components/creative-guide/PrintableCreativeGuide.tsx`**
-- Drop unused `Palette` from the lucide-react import.
-- Section 3 "Screen Specifications by Zone" already uses `grid-cols-3` (Indoor / Outdoor / Sunray) — no layout change needed. Confirmed Section 2 (Display Specifications) iterates `DISPLAY_TYPES` which no longer contains ticker, so the PDF output already matches the on-site removal.
+## Specs (from reference)
 
-**2. `src/pages/DeliveryGuide.tsx`**
-- The 3-item `displaySpecs` array currently renders in `grid sm:grid-cols-2`, leaving one orphan card on the second row. Switch to `grid sm:grid-cols-2 lg:grid-cols-3` so TV / LED / Elevator each get an equal column on wider screens and the reclaimed marquee space is filled cleanly.
+- **Total LED Video Display:** W 3792 × H 192 px
+- **West Side (Las Vegas Blvd):** W 1608 × H 192 px
+- **South Side (Flamingo Rd):** W 2184 × H 192 px
+- Pixel aspect: 19.75:1 (ultra-wide ribbon)
 
-**3. `src/pages/Tutorial.tsx`**
-- Drop unused `Smartphone` from the lucide-react import.
-- The Display Types grid (currently 3 cards in `lg:grid-cols-3`) and the LED Zones / Outdoor Zones lists no longer reference a ticker entry — already balanced, no further layout change needed.
+## Implementation
 
-**4. `src/components/creative-guide/DisplaySpecsView.tsx`**
-- All current imports (`AnimatePresence`, `Clock`, `FileVideo`, `X`) are still in use after the ticker removal — no edits required.
+### 1. Generate Soleia-styled pixelmap PNG
+Create `public/creative-guide/dlv-marquee-pixelmap.png` using `imagegen` — dark charcoal background, gold (#c49a3c) outlined rectangles, JetBrains Mono dimension labels matching the reference layout (one full ribbon split into West/South segments with bracketed measurements underneath).
+
+### 2. Add DisplayType entry in `src/lib/creativeGuide.ts`
+New entry appended to `DISPLAY_TYPES`:
+- `id: 'dlv-marquee'`
+- `category: 'led'`
+- `name: 'DLV Marquee / Ticker LED Display'`
+- `description: 'Exterior wraparound LED ribbon facing Las Vegas Blvd and Flamingo Rd.'`
+- `videoSpecs`: 3792×192, DXV3 MOV, 30/60fps, 10–30s
+- `graphicSpecs`: 3792×192 PNG (with separate West 1608×192 / South 2184×192 deliverables noted)
+- `dimensions`: `[{label:'Full', 3792, 192}, {label:'West (LV Blvd)', 1608, 192}, {label:'South (Flamingo)', 2184, 192}]`
+- `deliverables`: Full ribbon + West and South segments
+- `creativeNotes`: Ultra-wide aspect — design horizontally with safe edges; avoid centered text-only compositions; West and South segments can run synced or independent
+
+### 3. Add dedicated pixelmap download in `DisplaySpecsView.tsx`
+Since the existing LED card hard-codes a single pixelmap, add a small branch: when `display.id === 'dlv-marquee'`, render its own "Download Pixelmap" button pointing to `/creative-guide/dlv-marquee-pixelmap.png` (no AE template button, no main LED carousel — use a simple `<img>` of the new pixelmap as the card visual).
 
 ## Out of scope
-- Unused public assets under `/public/creative-guide/` (`ticker-specs.jpg`, `ticker-display.jpg`, `TICKER-MARQUEE.zip`, `marquee-ticker-media/`) remain on disk. Say the word and I'll delete them too.
-- No DB or edge-function changes.
+
+- No changes to Delivery Guide, Tutorial, or Printable Creative Guide PDF
+- No AE template for this display
+- No DB / edge function changes
