@@ -551,7 +551,7 @@ function CreativeGuideSection() {
           {[
             { icon: <Hand className="w-5 h-5" />, title: 'Swipe Navigation', desc: 'Horizontal swipe gestures navigate between main guide sections on mobile and iPad.' },
             { icon: <MousePointer className="w-5 h-5" />, title: 'Zone-Screen Sync', desc: 'Clicking zone cards highlights corresponding screens on the venue diagram, and vice versa.' },
-            { icon: <Play className="w-5 h-5" />, title: 'Video Carousels', desc: 'Ticker and LED preview videos with swipe navigation, muted autoplay, and fullscreen modals.' },
+            { icon: <Play className="w-5 h-5" />, title: 'Video Carousels', desc: 'LED and TV preview videos with swipe navigation, muted autoplay, and fullscreen modals.' },
             { icon: <ImageIcon className="w-5 h-5" />, title: 'Pixel Map Carousel', desc: 'Three venue mapping images (Interior, Outdoor View, Outdoor Arch) with swipe navigation.' },
             { icon: <Printer className="w-5 h-5" />, title: 'Print Specs', desc: 'Generate printable quick-reference sheets for all technical requirements.' },
             { icon: <Download className="w-5 h-5" />, title: 'Asset Downloads', desc: 'After Effects templates, pixel maps (PNG), and production files available for download.' },
