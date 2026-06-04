@@ -12,7 +12,7 @@ export interface DisplaySpec {
 export interface DisplayType {
   id: string;
   name: string;
-  category: 'tv' | 'elevator' | 'led' | 'ticker';
+  category: 'tv' | 'elevator' | 'led';
   description: string;
   videoSpecs: DisplaySpec;
   graphicSpecs: DisplaySpec;
@@ -129,33 +129,6 @@ export const DISPLAY_TYPES: DisplayType[] = [
     ],
     image: '/creative-guide/led-specs.jpg',
     diagramImage: '/creative-guide/led-displays.jpg',
-  },
-  {
-    id: 'ticker',
-    name: 'Marquee/Ticker Display',
-    category: 'ticker',
-    description: 'Scrolling marquee displays for dynamic messaging and brand presence.',
-    videoSpecs: {
-      resolution: '3840x2160 (canvas) / 3792x192 active',
-      format: 'MP4',
-      codec: 'H264',
-      duration: '15 sec',
-    },
-    graphicSpecs: {
-      resolution: '3840x2160 (canvas) / 3792x192 active',
-      format: 'PNG or JPG',
-    },
-    creativeNotes: [
-      'Deliver on a 3840 x 2160 PC display canvas. Active LED area is 3792 x 192, top-aligned.',
-      'Split the active strip as West (Las Vegas Blvd) 1608 x 192 + South (Flamingo Rd) 2184 x 192.',
-      'Keep critical text and logos centered within each segment to avoid the seam between West and South.',
-    ],
-    dimensions: [
-      { width: 1608, height: 192, label: 'West (Las Vegas Blvd)' },
-      { width: 2184, height: 192, label: 'South (Flamingo Rd)' },
-    ],
-    image: '/creative-guide/ticker-specs.jpg',
-    diagramImage: '/creative-guide/ticker-display.jpg',
   },
 
 ];
@@ -410,8 +383,6 @@ export const GUIDE_IMAGES = {
   elevatorDisplay: '/creative-guide/elevator-display.jpg',
   ledSpecs: '/creative-guide/led-specs.jpg',
   ledDisplays: '/creative-guide/led-displays.jpg',
-  tickerSpecs: '/creative-guide/ticker-specs.jpg',
-  tickerDisplay: '/creative-guide/ticker-display.jpg',
   customContent: '/creative-guide/custom-content.jpg',
   examples: '/creative-guide/examples.jpg',
 };

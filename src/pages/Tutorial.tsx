@@ -361,7 +361,7 @@ function LooksCollectionSection() {
             description="Map selections to specific venue screens."
             details={[
               "Open the placement dialog for each selection",
-              "Choose from TV displays, LED walls, elevators, or tickers",
+              "Choose from TV displays, LED walls, or elevators",
               "View the venue diagram to understand screen locations",
               "Multiple clips can be assigned to the same screen"
             ]}
@@ -449,7 +449,7 @@ function LooksCollectionSection() {
         <FeatureCard
           icon={<MapPin className="w-6 h-6 text-white" />}
           title="Screen Placement"
-          description="Interactive venue diagram allows assigning graphics to specific screens: TVs, LEDs, elevators, and tickers."
+          description="Interactive venue diagram allows assigning graphics to specific screens: TVs, LEDs, and elevators."
           color="bg-gradient-to-br from-amber-400 to-orange-500"
           delay={0.3}
         />
@@ -507,12 +507,11 @@ function CreativeGuideSection() {
           <p className="text-zinc-500 font-tech text-sm uppercase tracking-widest">Technical specifications overview</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
             { icon: <Tv className="w-6 h-6" />, name: 'TV Displays', res: '1920×1080', codec: 'H.264/H.265', fps: '30fps' },
             { icon: <Monitor className="w-6 h-6" />, name: 'Elevator', res: '1080×1920', codec: 'H.264', fps: '30fps' },
             { icon: <Maximize2 className="w-6 h-6" />, name: 'LED Master', res: 'Varies by zone', codec: 'DXV3', fps: '30fps' },
-            { icon: <Layout className="w-6 h-6" />, name: 'Ticker/Marquee', res: '7680×64', codec: 'PNG sequence', fps: '30fps' },
           ].map((display, idx) => (
             <motion.div
               key={display.name}
@@ -552,7 +551,7 @@ function CreativeGuideSection() {
           {[
             { icon: <Hand className="w-5 h-5" />, title: 'Swipe Navigation', desc: 'Horizontal swipe gestures navigate between main guide sections on mobile and iPad.' },
             { icon: <MousePointer className="w-5 h-5" />, title: 'Zone-Screen Sync', desc: 'Clicking zone cards highlights corresponding screens on the venue diagram, and vice versa.' },
-            { icon: <Play className="w-5 h-5" />, title: 'Video Carousels', desc: 'Ticker and LED preview videos with swipe navigation, muted autoplay, and fullscreen modals.' },
+            { icon: <Play className="w-5 h-5" />, title: 'Video Carousels', desc: 'LED and TV preview videos with swipe navigation, muted autoplay, and fullscreen modals.' },
             { icon: <ImageIcon className="w-5 h-5" />, title: 'Pixel Map Carousel', desc: 'Three venue mapping images (Interior, Outdoor View, Outdoor Arch) with swipe navigation.' },
             { icon: <Printer className="w-5 h-5" />, title: 'Print Specs', desc: 'Generate printable quick-reference sheets for all technical requirements.' },
             { icon: <Download className="w-5 h-5" />, title: 'Asset Downloads', desc: 'After Effects templates, pixel maps (PNG), and production files available for download.' },
@@ -615,7 +614,7 @@ function CreativeGuideSection() {
             <ul className="space-y-2 text-sm text-zinc-400">
               <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-amber-400" /> Arrival Screens</li>
               <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-amber-400" /> Street-Facing Displays</li>
-              <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-amber-400" /> Marquee/Ticker</li>
+              
               <li className="flex items-center gap-2"><ChevronRight className="w-4 h-4 text-amber-400" /> Architectural Arch</li>
             </ul>
           </div>
@@ -674,7 +673,7 @@ function CreativeGuideSection() {
         <FeatureCard
           icon={<Monitor className="w-6 h-6 text-white" />}
           title="Display Specifications"
-          description="Technical requirements for each display type: TV, Elevator, LED Master, and Ticker. Includes resolution, codec, and frame rates."
+          description="Technical requirements for each display type: TV, Elevator, and LED Master. Includes resolution, codec, and frame rates."
           color="bg-gradient-to-br from-cyan-500 to-blue-600"
           delay={0.2}
         />

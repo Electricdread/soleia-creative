@@ -23,7 +23,6 @@ const categoryIcons: Record<string, React.ReactNode> = {
   'tv': <Tv className="w-4 h-4" />,
   'elevator': <Layers className="w-4 h-4" />,
   'led': <Monitor className="w-4 h-4" />,
-  'ticker': <FileText className="w-4 h-4" />,
 };
 
 interface PrintableCreativeGuideProps {

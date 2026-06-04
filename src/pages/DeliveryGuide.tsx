@@ -58,15 +58,6 @@ const displaySpecs = [
     frameRate: '30 fps',
     duration: '30 sec',
   },
-  {
-    id: 'ticker',
-    name: 'Marquee/Ticker',
-    icon: Monitor,
-    resolution: '1280×768',
-    format: 'MP4',
-    codec: 'H264',
-    duration: '15 sec',
-  },
 ];
 
 const workflowSteps = [

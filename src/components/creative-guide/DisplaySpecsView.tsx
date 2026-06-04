@@ -6,13 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DISPLAY_TYPES, type DisplayType } from '@/lib/creativeGuide';
-import { TickerVideoCarousel } from './TickerVideoCarousel';
+
 import { LEDPixelMapCarousel } from './LEDPixelMapCarousel';
 import { TVVideoCarousel } from './TVVideoCarousel';
 import { ElevatorVideoPreview } from './ElevatorVideoPreview';
 import solIcon from '@/assets/sol-icon.png';
 
-const TICKER_ASSETS_ZIP = '/creative-guide/TICKER-MARQUEE.zip';
+
 const LED_PIXELMAP_IMAGE = '/creative-guide/led-main-interior-pixelmap.png';
 const LED_AE_TEMPLATE_ZIP = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/creative-guide-template/CREATIVE_GUIDE_June2026_Soleia.zip';
 const ELEVATOR_PIXELMAP_IMAGE = '/creative-guide/elevator-pixelmap.png';
@@ -37,14 +37,12 @@ const categoryIcons: Record<string, React.ReactNode> = {
   'tv': <img src={solIcon} alt="" className="w-5 h-5 object-contain" />,
   'elevator': <img src={solIcon} alt="" className="w-5 h-5 object-contain" />,
   'led': <img src={solIcon} alt="" className="w-5 h-5 object-contain" />,
-  'ticker': <img src={solIcon} alt="" className="w-5 h-5 object-contain" />,
 };
 
 const categoryColors: Record<string, string> = {
   'tv': 'bg-primary/20 text-primary border-primary/30',
   'elevator': 'bg-accent/20 text-accent border-accent/30',
   'led': 'bg-primary/25 text-primary border-primary/40',
-  'ticker': 'bg-success/20 text-success border-success/30',
 };
 
 function SpecRow({ label, value }: { label: string; value: string }) {
@@ -57,21 +55,12 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 }
 
 function DisplayCard({ display, highlightAE = false }: { display: DisplayType; highlightAE?: boolean }) {
-  const isTicker = display.category === 'ticker';
   const isLED = display.category === 'led';
   const isTV = display.category === 'tv';
   const isElevator = display.category === 'elevator';
   const cardRef = useRef<HTMLDivElement>(null);
   const showHighlight = isLED && highlightAE;
 
-  const handleDownloadTickerAssets = () => {
-    const link = document.createElement('a');
-    link.href = TICKER_ASSETS_ZIP;
-    link.download = 'TICKER-MARQUEE.zip';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const handleDownloadLEDPixelmap = () => {
     const link = document.createElement('a');
@@ -113,9 +102,7 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
 
         {/* Image or Video Carousel */}
         <div className="relative aspect-video overflow-hidden">
-          {isTicker ? (
-            <TickerVideoCarousel />
-          ) : isLED ? (
+          {isLED ? (
             <LEDPixelMapCarousel />
           ) : isTV ? (
             <TVVideoCarousel />
@@ -194,20 +181,6 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
                 </div>
               )}
 
-              {/* Ticker Pixelmap & Work Comp download */}
-              {isTicker && (
-                <div className="pt-3 mt-2 border-t border-border/30">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadTickerAssets}
-                    className="w-full gap-2 text-xs border-primary/30 hover:bg-primary/10"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download Pixelmap & Work Comp
-                  </Button>
-                </div>
-              )}
 
               {/* LED Pixelmap & AE Template downloads */}
               {isLED && (
