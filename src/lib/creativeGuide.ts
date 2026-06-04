@@ -12,7 +12,7 @@ export interface DisplaySpec {
 export interface DisplayType {
   id: string;
   name: string;
-  category: 'tv' | 'elevator' | 'led' | 'ticker';
+  category: 'tv' | 'elevator' | 'led';
   description: string;
   videoSpecs: DisplaySpec;
   graphicSpecs: DisplaySpec;
