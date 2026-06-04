@@ -102,9 +102,7 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
 
         {/* Image or Video Carousel */}
         <div className="relative aspect-video overflow-hidden">
-          {isTicker ? (
-            <TickerVideoCarousel />
-          ) : isLED ? (
+          {isLED ? (
             <LEDPixelMapCarousel />
           ) : isTV ? (
             <TVVideoCarousel />
