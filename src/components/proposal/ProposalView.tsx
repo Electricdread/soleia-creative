@@ -185,22 +185,13 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         .map(i => ({ id: i.id, qty: clientQty[i.id] ?? (Number(i.quantity) || 1) }))
         .filter(u => u.qty !== Number(items.find(i => i.id === u.id)?.quantity || 1));
 
-      if (qtyUpdates.length) {
-        await Promise.all(
-          qtyUpdates.map(u =>
-            supabase.from('proposal_items').update({ quantity: u.qty }).eq('id', u.id)
-          )
-        );
-      }
-
-      const { error } = await supabase
-        .from('proposals')
-        .update({
-          client_signature: clientName,
-          signed_at: new Date().toISOString(),
-          status: 'accepted',
-        })
-        .eq('id', proposal.id);
+      // Sign via security-definer RPC so visitors can only set signature/status
+      // and adjust quantities on items belonging to this proposal.
+      const { error } = await supabase.rpc('sign_proposal_by_token', {
+        p_token: proposal.token,
+        p_signature: clientName,
+        p_item_quantities: qtyUpdates as any,
+      });
       if (error) throw error;
       setSigned(true);
       toast({ title: 'Proposal accepted!', description: 'Thank you for signing.' });
