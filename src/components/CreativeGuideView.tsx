@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Menu, X, Compass, Maximize2, ExternalLink, BookOpen, Eye, FileVideo, Printer } from 'lucide-react';
+import { Menu, X, Compass, Maximize2, Printer, Download, FileVideo, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
@@ -10,8 +10,30 @@ import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import solIcon from '@/assets/sol-icon.png';
 
 const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
-const EVENTS_DECK_URL = 'https://soleia.aflip.in/CorporateEventsDeck';
 const RESOLUME_URL = 'https://resolume.com';
+const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
+const AE_PROJECT_URL = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/creative-guide-template/CREATIVE_GUIDE_June2026_Soleia.zip';
+const PIXELMAP_URL = '/creative-guide/soleia-pixelmap.png';
+
+const CONTENT_DELIVERY = [
+  { title: 'After Effects Project', desc: 'Pre-built AE template mapped to every screen — drop in your content and render.', cta: 'Download .zip', href: AE_PROJECT_URL, icon: FileVideo, download: true },
+  { title: 'Pixelmap', desc: 'Master pixel map of the full venue display layout.', cta: 'Download .png', href: PIXELMAP_URL, icon: Download, download: true },
+  { title: 'Resolume Alley', desc: 'Free encoder to convert your renders to the required DXV3 codec.', cta: 'resolume.com', href: RESOLUME_ALLEY_URL, icon: ExternalLink, download: false },
+];
+
+// Content Delivery Guide — DXV3 for Resolume media servers
+const DELIVERY_STEPS = [
+  { n: '1', t: 'Prepare your video', d: 'Export your final video from After Effects, Premiere, or your editing tool in ProRes 422 or high-quality H.264.' },
+  { n: '2', t: 'Download Resolume Alley (free)', d: 'Our venue runs on Resolume media servers, which require DXV3-encoded files. Download the free encoder.' },
+  { n: '3', t: 'Encode to DXV3', d: 'Open your video in Resolume Alley and encode using the DXV3 codec. For content with transparency, select “DXV3 Alpha.”' },
+  { n: '4', t: 'Check specs', d: 'TV Displays: 1920×1080 or 3840×2160 · MOV · DXV3 · Max 8GB.  LED Pixel Map: 3840×2160 · MOV w/ Alpha · DXV3 · 60fps · Max 30GB.' },
+  { n: '5', t: 'Submit content', d: 'Submit your encoded files at least 21 business days before your event so we can test and approve playback.' },
+];
+
+const DELIVERY_SPECS = [
+  { type: 'Television Displays', res: '1920×1080 or 3840×2160', format: 'MOV', codec: 'DXV3', fps: '—' },
+  { type: 'LED Pixel Map', res: '3840×2160', format: 'MOV with Alpha', codec: 'DXV3', fps: '60 fps' },
+];
 
 const NAV_LINKS = [
   { href: '#venue', label: 'Venue' },
@@ -100,12 +122,6 @@ const VIDEO_SPECS: { k: string; v: React.ReactNode }[] = [
   },
   { k: 'Lead Time', v: '21 Business Days prior to event' },
   { k: 'Creative Spec', v: 'Latest Pixelmap specifications & After Effects template provided following your Creative Call' },
-];
-
-const DOWNLOADS = [
-  { href: EVENTS_DECK_URL, title: 'Events Deck', desc: 'Open the full interactive flipbook presentation.', cta: 'Open flipbook', icon: BookOpen },
-  { href: TOUR_360_URL, title: '360° Virtual Tour', desc: 'The full 18-scene walkthrough.', cta: 'Open tour', icon: Eye },
-  { href: RESOLUME_URL, title: 'Video Spec', desc: '3840×2160 · .MOV · DXV3 codec.', cta: 'resolume.com', icon: FileVideo },
 ];
 
 function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -230,6 +246,28 @@ const CreativeGuideView = () => {
               To truly harness the power of these screens and immerse your audience in your brand's narrative, it's crucial to tailor content to the precise screen dimensions. Recognizing that this can be technically demanding, Soleia provides expertise to bridge any creative gaps and create custom content for your event — whether it's adapting your existing visuals or crafting bespoke animations that resonate with your brand ethos.
             </p>
           </Reveal>
+
+          <Reveal className="mt-14">
+            <h3 className="font-display text-2xl text-foreground mb-6">Rooftop venue specifications</h3>
+            <div className="grid gap-14 lg:grid-cols-2 items-start">
+              <div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <span className="text-foreground font-medium">Square feet:</span> 60,000 &nbsp;·&nbsp; Group buyouts available from 300–4,000 guests.
+                </p>
+                <ul className="mt-6 space-y-3.5">
+                  {SPEC_LIST.map(([b, rest]) => (
+                    <li key={b} className="relative pl-6 text-[15px] text-foreground">
+                      <span className="absolute left-0 top-2.5 w-1.5 h-1.5 bg-primary" />
+                      <span className="font-medium">{b}</span> {rest}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Soleia, conveniently located at the fifty yard line of the Las Vegas Strip, offers unrivaled views and exceptional service with state of the art technology perfect for custom branding. Soleia is built upon the fundamental principles of sophistication, innovation, and authenticity. Designed and operated by lifetime industry professionals from the most revered venues in the world, Soleia redefines the corporate event experience. Every aspect is curated to deliver unparalleled service and entertainment.
+              </p>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -247,37 +285,10 @@ const CreativeGuideView = () => {
         </Reveal>
       </div>
 
-      {/* 02 — ROOFTOP VENUE SPECS */}
-      <section id="venue-specs" className="py-24 scroll-mt-20">
-        <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="02 — Rooftop Venue" title="Specifications" />
-          <div className="grid gap-14 lg:grid-cols-2 items-start">
-            <Reveal>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                <span className="text-foreground font-medium">Square feet:</span> 60,000 &nbsp;·&nbsp; Group buyouts available from 300–4,000 guests.
-              </p>
-              <ul className="mt-6 space-y-3.5">
-                {SPEC_LIST.map(([b, rest]) => (
-                  <li key={b} className="relative pl-6 text-[15px] text-foreground">
-                    <span className="absolute left-0 top-2.5 w-1.5 h-1.5 bg-primary" />
-                    <span className="font-medium">{b}</span> {rest}
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
-            <Reveal delay={0.05}>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Soleia, conveniently located at the fifty yard line of the Las Vegas Strip, offers unrivaled views and exceptional service with state of the art technology perfect for custom branding. Soleia is built upon the fundamental principles of sophistication, innovation, and authenticity. Designed and operated by lifetime industry professionals from the most revered venues in the world, Soleia redefines the corporate event experience. Every aspect is curated to deliver unparalleled service and entertainment.
-              </p>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* 03 — VENUE LAYOUT */}
+      {/* VENUE LAYOUT */}
       <section id="layout" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="03 — Venue Layout" title="One venue, two worlds." />
+          <SectionHead eyebrow="02 — Venue Layout" title="One venue, two worlds." />
 
           <Reveal className="mb-6">
             <InteractiveVenueMap />
@@ -310,44 +321,13 @@ const CreativeGuideView = () => {
               See the full venue floor plan — production booth, every bar, stage, screen and table — in the interactive deck below.
             </p>
           </Reveal>
-
-          <Reveal delay={0.12} className="mt-8">
-            <div className="border border-primary/15">
-              <div className="px-5 py-3 border-b border-primary/15 text-[11px] uppercase tracking-[0.2em] text-primary">
-                LED Display Specifications · pixel maps
-              </div>
-              {ALL_LED_ZONES.map((z, i) => (
-                <div key={z.id} className={`grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-1 sm:gap-4 ${i < ALL_LED_ZONES.length - 1 ? 'border-b border-primary/15' : ''}`}>
-                  <div className="px-5 py-3 text-sm text-foreground">
-                    {z.name}
-                    <span className="ml-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground/60">{z.category}</span>
-                  </div>
-                  <div className="px-5 py-3 text-[13.5px] text-primary font-mono text-left sm:text-right">
-                    {z.panels ? (
-                      <div className="space-y-0.5">
-                        {z.panels.map((p) => (
-                          <div key={p.label}>
-                            <span className="text-muted-foreground/70">{p.label}</span> {p.w} × {p.h}
-                          </div>
-                        ))}
-                      </div>
-                    ) : z.resolution ? (
-                      `${z.resolution.replace('x', ' × ')} px`
-                    ) : (
-                      '—'
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Reveal>
         </div>
       </section>
 
       {/* 04 — 360 TOUR */}
       <section id="tour" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="04 — Soleia 360° Tour" title="Step inside." />
+          <SectionHead eyebrow="03 — Soleia 360° Tour" title="Step inside." />
           <Reveal>
             <div className="relative border border-primary/15 bg-black overflow-hidden">
               <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-10 pointer-events-none" />
@@ -385,7 +365,7 @@ const CreativeGuideView = () => {
       {/* 05 — BUYOUT INCLUSIONS */}
       <section id="branding" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="05 — Buyout Inclusions" title="Branding, built in." />
+          <SectionHead eyebrow="04 — Buyout Inclusions" title="Branding, built in." />
           <div className="grid gap-4 md:grid-cols-2">
             {INCLUSIONS.map((inc, i) => (
               <Reveal key={inc.title} delay={i * 0.05}>
@@ -412,7 +392,7 @@ const CreativeGuideView = () => {
       {/* 06 — CUSTOM CONTENT + VIDEO SPECS */}
       <section id="specs" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="06 — Custom Content Creation" title="Take control of every pixel." />
+          <SectionHead eyebrow="05 — Custom Content Creation" title="Take control of every pixel." />
           <Reveal>
             <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed mb-9">
               By using the “Pixelmap” that will be provided, you can take control of every pixel we display throughout our venue.
@@ -444,73 +424,116 @@ const CreativeGuideView = () => {
               ))}
             </div>
           </Reveal>
-        </div>
-      </section>
 
-      {/* 07 — DECK + DOWNLOADS */}
-      <section id="deck" className="py-24 scroll-mt-20">
-        <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="07 — The Presentation" title="The Soleia events deck." />
-          <Reveal>
-            <div className="border border-primary/15 bg-card/40 overflow-hidden">
-              <div className="w-full" style={{ aspectRatio: '16 / 10' }}>
-                <iframe src={EVENTS_DECK_URL} title="SOLEIA Corporate Events Deck" className="w-full h-full border-0" allow="fullscreen" loading="lazy" />
+          {/* Content Delivery Guide — DXV3 workflow */}
+          <Reveal delay={0.1}>
+            <div className="mt-12 mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-primary">
+              <FileVideo className="w-4 h-4" /> Content Delivery Guide
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-4xl mb-6">
+              We provide an After Effects project file prepared specifically for our LED video configuration mapping — pre-built to match the venue's exact screen layout, so you can drop in your content and export with confidence.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {DELIVERY_STEPS.map((s) => (
+                <div key={s.n} className="border border-primary/15 bg-card/40 p-4">
+                  <div className="w-7 h-7 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center mb-2.5">{s.n}</div>
+                  <h4 className="text-[13px] font-semibold text-foreground mb-1">{s.t}</h4>
+                  <p className="text-[11.5px] text-muted-foreground/80 leading-relaxed">{s.d}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 border border-primary/15 overflow-x-auto">
+              <div className="grid grid-cols-[1.4fr_1.6fr_1.1fr_0.8fr_0.8fr] min-w-[640px] text-[11px] uppercase tracking-[0.14em] text-primary bg-primary/5">
+                <div className="px-4 py-2.5">Display Type</div>
+                <div className="px-4 py-2.5">Resolution</div>
+                <div className="px-4 py-2.5">Format</div>
+                <div className="px-4 py-2.5">Codec</div>
+                <div className="px-4 py-2.5">Frame Rate</div>
               </div>
+              {DELIVERY_SPECS.map((r) => (
+                <div key={r.type} className="grid grid-cols-[1.4fr_1.6fr_1.1fr_0.8fr_0.8fr] min-w-[640px] text-[13.5px] border-t border-primary/15">
+                  <div className="px-4 py-3 text-foreground font-medium">{r.type}</div>
+                  <div className="px-4 py-3 text-muted-foreground font-mono">{r.res}</div>
+                  <div className="px-4 py-3 text-muted-foreground">{r.format}</div>
+                  <div className="px-4 py-3 text-muted-foreground">{r.codec}</div>
+                  <div className="px-4 py-3 text-muted-foreground">{r.fps}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex items-center gap-3 text-xs text-muted-foreground border-l-2 border-primary/40 pl-4 py-1">
+              <span className="font-display text-3xl text-primary leading-none">21</span>
+              <span>business days minimum — submit your content at least 21 business days before your event for testing and approval.</span>
             </div>
           </Reveal>
-          <div className="grid gap-4 md:grid-cols-3 mt-7">
-            {DOWNLOADS.map((d, i) => (
-              <Reveal key={d.title} delay={i * 0.05}>
-                <a href={d.href} target="_blank" rel="noopener noreferrer" className="group block h-full border border-primary/15 bg-card/40 p-6 hover:border-primary/30 transition-colors">
-                  <d.icon className="w-5 h-5 text-primary mb-3" />
-                  <h3 className="font-display text-xl text-foreground mb-1.5 group-hover:text-gradient-gold transition-colors">{d.title}</h3>
-                  <p className="text-[12.5px] text-muted-foreground/80 mb-3">{d.desc}</p>
-                  <span className="text-[10.5px] uppercase tracking-[0.18em] text-primary inline-flex items-center gap-1">
-                    {d.cta} <ExternalLink className="w-3 h-3" />
-                  </span>
+
+          <Reveal delay={0.1}>
+            <div className="mt-10 mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-primary">
+              <Download className="w-4 h-4" /> Downloads
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {CONTENT_DELIVERY.map((c) => (
+                <a
+                  key={c.title}
+                  href={c.href}
+                  {...(c.download ? { download: '' } : { target: '_blank', rel: 'noopener noreferrer' })}
+                  className="group block h-full border border-primary/15 bg-card/40 p-6 hover:border-primary/30 transition-colors"
+                >
+                  <c.icon className="w-5 h-5 text-primary mb-3" />
+                  <h3 className="font-display text-xl text-foreground mb-1.5 group-hover:text-gradient-gold transition-colors">{c.title}</h3>
+                  <p className="text-[12.5px] text-muted-foreground/80 mb-3">{c.desc}</p>
+                  <span className="text-[10.5px] uppercase tracking-[0.18em] text-primary inline-flex items-center gap-1">{c.cta} →</span>
                 </a>
-              </Reveal>
-            ))}
-          </div>
+              ))}
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.15} className="mt-12">
+            <div className="border border-primary/15">
+              <div className="px-5 py-3 border-b border-primary/15 text-[11px] uppercase tracking-[0.2em] text-primary">
+                LED Display Specifications · pixel maps
+              </div>
+              {ALL_LED_ZONES.map((z, i) => (
+                <div key={z.id} className={`grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-1 sm:gap-4 ${i < ALL_LED_ZONES.length - 1 ? 'border-b border-primary/15' : ''}`}>
+                  <div className="px-5 py-3 text-sm text-foreground">
+                    {z.name}
+                    <span className="ml-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground/60">{z.category}</span>
+                  </div>
+                  <div className="px-5 py-3 text-[13.5px] text-primary font-mono text-left sm:text-right">
+                    {z.panels ? (
+                      <div className="space-y-0.5">
+                        {z.panels.map((p) => (
+                          <div key={p.label}>
+                            <span className="text-muted-foreground/70">{p.label}</span> {p.w} × {p.h}
+                          </div>
+                        ))}
+                      </div>
+                    ) : z.resolution ? (
+                      `${z.resolution.replace('x', ' × ')} px`
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* 09 — CONTACT */}
-      <section id="contact" className="py-24 scroll-mt-20">
-        <div className="container mx-auto max-w-5xl px-6">
-          <div className="grid gap-14 lg:grid-cols-2 items-center">
-            <Reveal>
-              <span className="block text-[11px] uppercase tracking-[0.34em] text-primary mb-3.5">08 — Book Your Event</span>
-              <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-foreground leading-tight">Let's plan your buyout.</h2>
-              <p className="mt-5 text-sm text-muted-foreground leading-relaxed max-w-xl">
-                Group buyouts from 300 to 4,000 guests. Tell us about your event and our team will be in touch with availability, pricing and a custom branding plan.
-              </p>
-              <p className="mt-6 text-[13.5px] text-muted-foreground/70 leading-loose">
-                Soleia Las Vegas · The Las Vegas Strip<br />
-                Las Vegas, Nevada
-              </p>
-            </Reveal>
-            <Reveal delay={0.05}>
-              <ContactForm />
-            </Reveal>
-          </div>
-        </div>
-      </section>
 
       {/* FOOTER */}
       <footer className="border-t border-primary/15 pt-14 pb-9">
         <div className="container mx-auto max-w-5xl px-6">
           <div className="flex flex-wrap justify-between gap-9">
             <div className="max-w-sm">
-              <div className="font-display text-3xl tracking-[0.3em] pl-[0.3em] text-gradient-gold">SOLEIA</div>
-              <p className="font-display italic text-base text-muted-foreground mt-3">
+              <img src={soleiaWideLogo} alt="Soleia Las Vegas" className="h-12 w-auto" />
+              <p className="font-sans text-[13.5px] font-light leading-relaxed text-muted-foreground mt-4 max-w-xs">
                 Sophistication, innovation, and authenticity — at the fifty yard line of the Las Vegas Strip.
               </p>
             </div>
             <div className="flex gap-12 flex-wrap">
               <div>
                 <h4 className="text-[10.5px] uppercase tracking-[0.2em] text-primary mb-3.5">Venue</h4>
-                <a href="#specs" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Specifications</a>
                 <a href="#layout" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Layout</a>
                 <a href="#tour" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">360° Tour</a>
                 <a href="#specs" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Specs</a>
@@ -518,8 +541,7 @@ const CreativeGuideView = () => {
               <div>
                 <h4 className="text-[10.5px] uppercase tracking-[0.2em] text-primary mb-3.5">Plan</h4>
                 <a href="#branding" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Buyout Inclusions</a>
-                <a href="#contact" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Book your event</a>
-                <a href={EVENTS_DECK_URL} target="_blank" rel="noopener noreferrer" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Events Deck</a>
+                <a href="#specs" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Specs</a>
                 <a href={TOUR_360_URL} target="_blank" rel="noopener noreferrer" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Virtual Tour</a>
               </div>
             </div>
@@ -539,45 +561,5 @@ const CreativeGuideView = () => {
   );
 };
 
-function ContactForm() {
-  const [sent, setSent] = useState(false);
-  return (
-    <form
-      className="grid gap-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        setSent(true);
-        (e.target as HTMLFormElement).reset();
-      }}
-    >
-      <div className="grid grid-cols-2 gap-4">
-        <input required placeholder="First name" className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm placeholder:text-muted-foreground/60 transition-colors" />
-        <input required placeholder="Last name" className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm placeholder:text-muted-foreground/60 transition-colors" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <input required type="email" placeholder="Email address" className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm placeholder:text-muted-foreground/60 transition-colors" />
-        <input type="tel" placeholder="Phone" className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm placeholder:text-muted-foreground/60 transition-colors" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <input placeholder="Company / brand" className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm placeholder:text-muted-foreground/60 transition-colors" />
-        <input placeholder="Guests (300–4,000)" className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm placeholder:text-muted-foreground/60 transition-colors" />
-      </div>
-      <input placeholder="Preferred date(s)" className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm placeholder:text-muted-foreground/60 transition-colors" />
-      <select className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm text-muted-foreground transition-colors">
-        <option value="">Event type…</option>
-        <option>Corporate buyout</option>
-        <option>Product launch / activation</option>
-        <option>Conference after-party</option>
-        <option>Brand / sponsor event</option>
-        <option>Private celebration</option>
-      </select>
-      <textarea rows={3} placeholder="Tell us about your event & branding goals" className="bg-transparent border-b border-primary/15 focus:border-primary outline-none py-2.5 text-sm placeholder:text-muted-foreground/60 resize-none transition-colors" />
-      <button type="submit" className="justify-self-start px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] border border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary transition-colors">
-        Send enquiry
-      </button>
-      {sent && <p className="text-sm text-primary">Thank you — our events team will be in touch shortly.</p>}
-    </form>
-  );
-}
 
 export default CreativeGuideView;
