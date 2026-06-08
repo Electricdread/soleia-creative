@@ -1351,6 +1351,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_lookbook_share_view: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -1367,6 +1371,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      sign_proposal_by_token: {
+        Args: { p_item_quantities?: Json; p_signature: string; p_token: string }
+        Returns: string
       }
     }
     Enums: {
