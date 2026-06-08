@@ -32,6 +32,7 @@ export interface LEDZone {
   description: string;
   useCases: string[];
   resolution?: string;
+  panels?: { label: string; w: number; h: number }[];
   specs?: {
     aspectRatio?: string;
     resolution?: string;
@@ -231,12 +232,20 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'Sol Rays',
     category: 'indoor',
     subcategory: 'main-feature',
-    description: 'Main ceiling LED display acting as the visual anchor of the venue. Supports immersive scale and cinematic motion.',
+    description: 'Ceiling LED sun — six radiating sunray panels acting as the visual anchor of the venue. Supports immersive scale and cinematic motion.',
     useCases: [
       'Full-screen branded environments',
       'Animated logo reveals',
       'Themed motion backgrounds',
       'Sponsor integrations and transitions',
+    ],
+    panels: [
+      { label: 'Sunray #1', w: 1920, h: 128 },
+      { label: 'Sunray #2', w: 1536, h: 128 },
+      { label: 'Sunray #3', w: 1792, h: 128 },
+      { label: 'Sunray #4', w: 1792, h: 128 },
+      { label: 'Sunray #5', w: 1792, h: 128 },
+      { label: 'Sunray #6', w: 1536, h: 128 },
     ],
   },
   {
@@ -381,8 +390,14 @@ export const creativeGuideCategories = [
   { 
     key: 'venue-overview', 
     label: 'Venue Overview', 
-    description: 'Layout and 3D visualization',
+    description: 'Layout and venue insights',
     icon: 'Building2'
+  },
+  { 
+    key: 'virtual-tour',
+    label: '360° Tour',
+    description: 'Interactive 360° venue walkthrough',
+    icon: 'Eye'
   },
   { 
     key: 'display-specs', 

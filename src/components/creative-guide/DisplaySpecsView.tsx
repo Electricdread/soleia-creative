@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Printer, ExternalLink, Sparkles, X, Clock, FileVideo } from 'lucide-react';
+import { Download, Printer, ExternalLink, Sparkles, X, Clock, FileVideo, CheckCircle2, Tv, Monitor } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,41 @@ const ELEVATOR_PIXELMAP_IMAGE = '/creative-guide/elevator-pixelmap.png';
 const TV_PIXELMAP_IMAGE = '/creative-guide/tv-pixelmap.png';
 const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
+
+const BUYOUT_INCLUSIONS = [
+  {
+    sub: 'Included',
+    title: 'LED Screens',
+    icon: Monitor,
+    intro: '10 Static Logos displayed across 5 Main LED Screens:',
+    items: [
+      '2 Large Horizontal — Nightclub',
+      '2 Large Vertical — Beachclub / Outside',
+      '1 Beachclub Arch — Beachclub / Stage',
+    ],
+    fine: 'All other LED screens are activated with in-house visual animations and motion graphics from the club library, mixed in real-time by a visual operator.',
+  },
+  {
+    sub: 'Included · Pricing on request',
+    title: 'TV Screens / Narrowcasting',
+    icon: Tv,
+    intro: '1 Static Logo displayed across the TV / narrowcasting network:',
+    items: [
+      '4 Front Door Entry — Casino Level',
+      '9 Bungalows — Beachclub / Outside',
+      '15 Cabanas — Beachclub / Outside',
+    ],
+    fine: 'All TVs share one content feed by default; individual player setup is required per TV for different content (e.g. different client logos per cabana). Pricing provided on request.',
+  },
+];
+
+const VIDEO_DELIVERY_SPECS = [
+  { k: 'Media Server', v: 'Resolume (MediaServer)' },
+  { k: 'Resolution', v: '3840 × 2160' },
+  { k: 'Format', v: '.MOV' },
+  { k: 'Preferred Codec', v: 'DXV3' },
+  { k: 'Lead Time', v: '21 business days prior to event' },
+];
 
 const downloadAETemplate = () => {
   const link = document.createElement('a');
@@ -454,6 +489,47 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
         )}
       </AnimatePresence>
 
+      {/* Buyout Inclusions — branding built in */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-3"
+      >
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+            Buyout Inclusions
+          </Badge>
+          <h3 className="text-lg font-semibold text-foreground">Branding, built in.</h3>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {BUYOUT_INCLUSIONS.map((inc) => (
+            <Card key={inc.title} className="glass border-border/50">
+              <CardContent className="p-5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg shadow-primary/10">
+                    <inc.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-primary">{inc.sub}</p>
+                    <h4 className="font-semibold text-foreground">{inc.title}</h4>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">{inc.intro}</p>
+                <ul className="space-y-1.5">
+                  {inc.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                      <span className="text-foreground/80">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-3">{inc.fine}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </motion.div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {DISPLAY_TYPES.map((display, index) => (
           <motion.div
@@ -478,6 +554,19 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
             <div className="flex items-center gap-2">
               <FileVideo className="w-4 h-4 text-primary" />
               <h3 className="font-semibold text-foreground text-sm uppercase tracking-wider">Content Delivery</h3>
+            </div>
+
+            {/* Video delivery spec sheet */}
+            <div className="rounded-lg border border-border/40 overflow-hidden">
+              {VIDEO_DELIVERY_SPECS.map((spec, i) => (
+                <div
+                  key={spec.k}
+                  className={`grid grid-cols-[120px_1fr] sm:grid-cols-[180px_1fr] ${i < VIDEO_DELIVERY_SPECS.length - 1 ? 'border-b border-border/30' : ''}`}
+                >
+                  <div className="px-3 py-2.5 text-[11px] uppercase tracking-wider text-primary bg-primary/5">{spec.k}</div>
+                  <div className="px-3 py-2.5 text-sm text-foreground font-mono">{spec.v}</div>
+                </div>
+              ))}
             </div>
 
             {/* Resolume row */}

@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Dev-only Unreal pipeline (not needed for the live site)
+tools/
+public/creative-guide/venue-actors.json
