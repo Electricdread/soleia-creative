@@ -10,55 +10,39 @@ const corsHeaders = {
 // UUID validation regex
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const json = (status: number, body: unknown) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    let userId: string | null = null;
-    let action: string | null = null;
-
-    // Support both query params (from email links) and POST body (from app)
+    // GET requests come from email links; redirect to the app where the
+    // signed-in admin will trigger the protected POST call.
     if (req.method === "GET") {
       const url = new URL(req.url);
-      userId = url.searchParams.get("userId");
-      action = url.searchParams.get("action");
-      
-      // For GET requests (email links), redirect to the app management page
+      const userId = url.searchParams.get("userId");
+      const action = url.searchParams.get("action");
       if (userId && action) {
         const appUrl = `https://soleiacreative.app/admin/users?userId=${userId}&action=${action}`;
         return Response.redirect(appUrl, 302);
       }
-    } else if (req.method === "POST") {
-      const body = await req.json();
-      userId = body.userId;
-      action = body.action;
+      return json(400, { error: "Missing userId or action parameter" });
     }
 
-    console.log("Received request - userId:", userId, "action:", action);
-
-    if (!userId || !action) {
-      return new Response(
-        JSON.stringify({ error: "Missing userId or action parameter" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+    if (req.method !== "POST") {
+      return json(405, { error: "Method not allowed" });
     }
 
-    // Validate UUID format
-    if (!UUID_REGEX.test(userId)) {
-      console.error("Invalid UUID format:", userId);
-      return new Response(
-        JSON.stringify({ error: "Invalid user ID format" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    if (action !== "approve" && action !== "deny") {
-      return new Response(
-        JSON.stringify({ error: "Action must be 'approve' or 'deny'" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+    // Verify the caller is an authenticated admin.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.toLowerCase().startsWith("bearer ")) {
+      return json(401, { error: "Authentication required" });
     }
 
     const supabaseAdmin = createClient(
@@ -67,8 +51,38 @@ const handler = async (req: Request): Promise<Response> => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
+    const token = authHeader.slice(7).trim();
+    const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
+    if (userErr || !userData?.user) {
+      return json(401, { error: "Invalid or expired session" });
+    }
+    const callerId = userData.user.id;
+
+    const { data: roleRow, error: roleLookupErr } = await supabaseAdmin
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", callerId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (roleLookupErr || !roleRow) {
+      return json(403, { error: "Admin privileges required" });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const userId: string | null = body?.userId ?? null;
+    const action: string | null = body?.action ?? null;
+
+    if (!userId || !action) {
+      return json(400, { error: "Missing userId or action parameter" });
+    }
+    if (!UUID_REGEX.test(userId)) {
+      return json(400, { error: "Invalid user ID format" });
+    }
+    if (action !== "approve" && action !== "deny") {
+      return json(400, { error: "Action must be 'approve' or 'deny'" });
+    }
+
     if (action === "approve") {
-      // Check if user already has admin role
       const { data: existingRole } = await supabaseAdmin
         .from("user_roles")
         .select("id")
@@ -77,64 +91,37 @@ const handler = async (req: Request): Promise<Response> => {
         .maybeSingle();
 
       if (existingRole) {
-        return new Response(
-          JSON.stringify({ success: true, message: "User already has admin access" }),
-          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
+        return json(200, { success: true, message: "User already has admin access" });
       }
 
-      // Add admin role to user - using upsert to handle edge cases
       const { error: roleError } = await supabaseAdmin
         .from("user_roles")
         .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
 
       if (roleError) {
         console.error("Error adding admin role:", roleError);
-        return new Response(
-          JSON.stringify({ error: roleError.message }),
-          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
+        return json(500, { error: roleError.message });
       }
 
-      console.log(`User ${userId} approved as admin`);
-      return new Response(
-        JSON.stringify({ success: true, message: "User approved successfully" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    } else {
-      // Deny - delete the user account
-      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-
-      if (deleteError) {
-        // If user not found, that's okay - they may have been already deleted
-        if (deleteError.message.includes("not found")) {
-          console.log(`User ${userId} not found - may have been already deleted`);
-          return new Response(
-            JSON.stringify({ success: true, message: "User already removed" }),
-            { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-          );
-        }
-        
-        console.error("Error deleting user:", deleteError);
-        return new Response(
-          JSON.stringify({ error: deleteError.message }),
-          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
-      }
-
-      console.log(`User ${userId} denied and deleted`);
-      return new Response(
-        JSON.stringify({ success: true, message: "User denied and removed" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      console.log(`User ${userId} approved as admin by ${callerId}`);
+      return json(200, { success: true, message: "User approved successfully" });
     }
+
+    // Deny – delete the user account
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (deleteError) {
+      if (deleteError.message.includes("not found")) {
+        return json(200, { success: true, message: "User already removed" });
+      }
+      console.error("Error deleting user:", deleteError);
+      return json(500, { error: deleteError.message });
+    }
+    console.log(`User ${userId} denied and deleted by ${callerId}`);
+    return json(200, { success: true, message: "User denied and removed" });
   } catch (error: unknown) {
     console.error("Error in approve-user:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return json(500, { error: errorMessage });
   }
 };
 
