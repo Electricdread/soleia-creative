@@ -74,8 +74,8 @@ const App = () => (
               {/* ShowBlox Content Preview */}
               <Route path="/preview/:token" element={<ShowBloxPreview />} />
               
-              {/* Operator Office Portal - Email-locked to luisdreams@me.com */}
-              <Route path="/office" element={<OfficePortal />} />
+              {/* Operator Office Portal - Admin role required + email-locked to operator */}
+              <Route path="/office" element={<ProtectedRoute requireAdmin><OfficePortal /></ProtectedRoute>} />
               
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
