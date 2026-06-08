@@ -86,12 +86,8 @@ export default function SharedLookBook() {
         setCategoryName(cat?.name ?? null);
       }
 
-      // increment view count (best-effort)
-      supabase
-        .from('lookbook_shares')
-        .update({ view_count: (s.view_count || 0) + 1 })
-        .eq('id', s.id)
-        .then(() => {});
+      // increment view count via security-definer RPC (best-effort)
+      supabase.rpc('increment_lookbook_share_view', { p_token: token }).then(() => {});
 
       setLoading(false);
     })();

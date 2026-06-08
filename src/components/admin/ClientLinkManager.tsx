@@ -45,10 +45,11 @@ export function ClientLinkManager() {
   const [viewingUploadsFor, setViewingUploadsFor] = useState<{ id: string; name: string } | null>(null);
   const [viewingPrevizFor, setViewingPrevizFor] = useState<{ id: string; token: string; name: string } | null>(null);
 
-  // Generate a unique token
+  // Generate a cryptographically secure unique token
   const generateToken = () => {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
   };
 
   // Fetch existing links with clip counts
