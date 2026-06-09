@@ -5,10 +5,9 @@ import { ALL_LED_ZONES, DISPLAY_TYPES } from '@/lib/creativeGuide';
 // Cinematic top-down render exported from Unreal.
 const RENDER_SRC = '/creative-guide/venue-render.jpg';
 
-// Reference pixel-map / mapping cards exported for the venue.
-const MAP_INTERIOR = '/creative-guide/led-interior-mapping.png';
-const MAP_OUTDOOR = '/creative-guide/led-outdoor-mapping.png';
-const MAP_TV = '/creative-guide/tv-pixelmap.png';
+// Per-zone schematic thumbnails (light + dark colorways) — generated in the
+// Soleia "LED Video Display" style. Resolved from the zone id at render time.
+const ZONE_CARD_BASE = '/creative-guide/zone-cards';
 
 const zoneById = new Map(ALL_LED_ZONES.map((z) => [z.id, z]));
 const tvDisplay = DISPLAY_TYPES.find((d) => d.id === 'television');
@@ -31,7 +30,6 @@ interface ZonePin {
   y: number;
   screenIds?: string[];
   tv?: boolean;
-  mapImage: string;
   blurb: string;
   members?: { x: number; y: number }[];
 }
@@ -43,7 +41,6 @@ const ZONE_PINS: ZonePin[] = [
     kind: 'Interior LED · Curves',
     x: 73.0, y: 31.2,
     screenIds: ['curves-sr'],
-    mapImage: MAP_INTERIOR,
     blurb: 'Stage-right curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },
   {
@@ -52,7 +49,6 @@ const ZONE_PINS: ZonePin[] = [
     kind: 'Interior LED · Stage Wall',
     x: 81.5, y: 55.2,
     screenIds: ['imag-sr', 'center', 'imag-sl'],
-    mapImage: MAP_INTERIOR,
     blurb: 'The primary stage wall — IMAG side panels flanking the center focal screen for hero moments, logo reveals and live camera.',
     members: [{ x: 81.0, y: 43.6 }, { x: 82.7, y: 55.2 }, { x: 80.9, y: 66.7 }],
   },
@@ -62,7 +58,6 @@ const ZONE_PINS: ZonePin[] = [
     kind: 'Interior LED · Curves',
     x: 72.7, y: 78.9,
     screenIds: ['curves-sl'],
-    mapImage: MAP_INTERIOR,
     blurb: 'Stage-left curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },
   {
@@ -71,7 +66,6 @@ const ZONE_PINS: ZonePin[] = [
     kind: 'Exterior LED · Open-air',
     x: 52.5, y: 60.5,
     screenIds: ['outdoor-sr', 'outdoor-sl', 'outdoor-arch'],
-    mapImage: MAP_OUTDOOR,
     blurb: 'Open-air entry screens facing the Las Vegas Strip — the first brand touchpoint for arriving guests.',
     members: [{ x: 58.1, y: 41.1 }, { x: 58.1, y: 69.0 }, { x: 39.5, y: 72.8 }],
   },
@@ -81,7 +75,6 @@ const ZONE_PINS: ZonePin[] = [
     kind: 'TV / Narrowcasting',
     x: 40.7, y: 25.4,
     tv: true,
-    mapImage: MAP_TV,
     blurb: 'High-definition TV displays throughout the venue for branded content and event visuals.',
   },
 ];
@@ -90,7 +83,8 @@ const ZONE_PINS: ZonePin[] = [
 interface MappingCard {
   label: string;
   kind: string;
-  mapImage: string;
+  light: string;
+  dark: string;
   blurb: string;
   screens: { name: string; res: string }[];
   uses: string[];
@@ -98,11 +92,14 @@ interface MappingCard {
 
 // Resolve the explanatory mapping card for an immersive zone.
 function getCard(zone: ZonePin): MappingCard {
+  const light = `${ZONE_CARD_BASE}/${zone.id}-light.png`;
+  const dark = `${ZONE_CARD_BASE}/${zone.id}-dark.png`;
   if (zone.tv && tvDisplay) {
     return {
       label: zone.label,
       kind: zone.kind,
-      mapImage: zone.mapImage,
+      light,
+      dark,
       blurb: zone.blurb,
       screens: [{ name: 'TV / Narrowcasting', res: tvDisplay.videoSpecs.resolution }],
       uses: [],
@@ -119,7 +116,7 @@ function getCard(zone: ZonePin): MappingCard {
       if (!uses.includes(u)) uses.push(u);
     });
   });
-  return { label: zone.label, kind: zone.kind, mapImage: zone.mapImage, blurb: zone.blurb, screens, uses };
+  return { label: zone.label, kind: zone.kind, light, dark, blurb: zone.blurb, screens, uses };
 }
 
 const MIN = 1;
@@ -309,8 +306,8 @@ export function InteractiveVenueMap() {
       {activeCard && (
         <div className="absolute top-3 left-3 z-30 w-[min(20rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-xl border border-primary/30 bg-black/85 backdrop-blur-md shadow-[0_8px_40px_-8px_rgba(0,0,0,0.8)]">
           <div className="relative h-28 w-full overflow-hidden rounded-t-xl">
-            <img src={activeCard.mapImage} alt={`${activeCard.label} zone mapping`} className="h-full w-full object-cover" draggable={false} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+            <img src={activeCard.light} alt={`${activeCard.label} zone screens`} className="block dark:hidden h-full w-full object-cover" draggable={false} />
+            <img src={activeCard.dark} alt={`${activeCard.label} zone screens`} className="hidden dark:block h-full w-full object-cover" draggable={false} />
           </div>
           <button
             type="button"
