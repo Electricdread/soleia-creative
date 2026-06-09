@@ -8,75 +8,118 @@ const RENDER_SRC = '/creative-guide/venue-render.jpg';
 // Reference pixel-map / mapping cards exported for the venue.
 const MAP_INTERIOR = '/creative-guide/led-interior-mapping.png';
 const MAP_OUTDOOR = '/creative-guide/led-outdoor-mapping.png';
-const MAP_OUTDOOR_ARCH = '/creative-guide/led-outdoor-arch-mapping.png';
 const MAP_TV = '/creative-guide/tv-pixelmap.png';
-
-interface Pin {
-  t: string;
-  x: number;
-  y: number;
-  // Links the pin to a mapping card. `zoneId` resolves against the LED zone
-  // specs; `tv` pulls from the TV display type. Pins with neither are plain
-  // location labels (pools, lily pad).
-  zoneId?: string;
-  tv?: boolean;
-  mapImage?: string;
-}
-
-// Zone pins, positioned as % of the render (projected from real Unreal coordinates).
-const PINS: Pin[] = [
-  { t: 'Lily Pad', x: 19.0, y: 33.0 },
-  { t: 'TV Displays', x: 40.7, y: 25.4, tv: true, mapImage: MAP_TV },
-  { t: 'Pool 2', x: 31.0, y: 55.0 },
-  { t: 'Pool', x: 46.9, y: 55.0 },
-  { t: 'Outdoor SR', x: 58.1, y: 41.1, zoneId: 'outdoor-sr', mapImage: MAP_OUTDOOR },
-  { t: 'Outdoor SL', x: 58.1, y: 69.0, zoneId: 'outdoor-sl', mapImage: MAP_OUTDOOR },
-  { t: 'Outdoor Arch', x: 39.5, y: 72.8, zoneId: 'outdoor-arch', mapImage: MAP_OUTDOOR_ARCH },
-  { t: 'SR Curves', x: 73.0, y: 31.2, zoneId: 'curves-sr', mapImage: MAP_INTERIOR },
-  { t: 'SR IMAG', x: 81.0, y: 43.6, zoneId: 'imag-sr', mapImage: MAP_INTERIOR },
-  { t: 'Center', x: 82.7, y: 55.2, zoneId: 'center', mapImage: MAP_INTERIOR },
-  { t: 'SL IMAG', x: 80.9, y: 66.7, zoneId: 'imag-sl', mapImage: MAP_INTERIOR },
-  { t: 'SL Curves', x: 72.7, y: 78.9, zoneId: 'curves-sl', mapImage: MAP_INTERIOR },
-];
-
-// Mapping card shown when a screen pin is selected.
-interface MappingCard {
-  name: string;
-  kind: string;
-  resolution: string;
-  description: string;
-  useCases?: string[];
-  mapImage?: string;
-}
 
 const zoneById = new Map(ALL_LED_ZONES.map((z) => [z.id, z]));
 const tvDisplay = DISPLAY_TYPES.find((d) => d.id === 'television');
 
-// Resolve the explanatory mapping card for a pin, or null for plain labels.
-function getCard(pin: Pin): MappingCard | null {
-  if (pin.tv && tvDisplay) {
+// Plain location labels — no mapping card.
+const LABEL_PINS: { t: string; x: number; y: number }[] = [
+  { t: 'Lily Pad', x: 19.0, y: 33.0 },
+  { t: 'Pool 2', x: 31.0, y: 55.0 },
+  { t: 'Pool', x: 46.9, y: 55.0 },
+];
+
+// Immersive zones. Each is one clickable pin (placed at the zone centroid)
+// plus optional member dots at each screen it groups. `screenIds` resolve
+// against the LED zone specs; `tv` pulls from the TV display type.
+interface ZonePin {
+  id: string;
+  label: string;
+  kind: string;
+  x: number;
+  y: number;
+  screenIds?: string[];
+  tv?: boolean;
+  mapImage: string;
+  blurb: string;
+  members?: { x: number; y: number }[];
+}
+
+const ZONE_PINS: ZonePin[] = [
+  {
+    id: 'right',
+    label: 'Right',
+    kind: 'Interior LED · Curves',
+    x: 73.0, y: 31.2,
+    screenIds: ['curves-sr'],
+    mapImage: MAP_INTERIOR,
+    blurb: 'Stage-right curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
+  },
+  {
+    id: 'main',
+    label: 'Main',
+    kind: 'Interior LED · Stage Wall',
+    x: 81.5, y: 55.2,
+    screenIds: ['imag-sr', 'center', 'imag-sl'],
+    mapImage: MAP_INTERIOR,
+    blurb: 'The primary stage wall — IMAG side panels flanking the center focal screen for hero moments, logo reveals and live camera.',
+    members: [{ x: 81.0, y: 43.6 }, { x: 82.7, y: 55.2 }, { x: 80.9, y: 66.7 }],
+  },
+  {
+    id: 'left',
+    label: 'Left',
+    kind: 'Interior LED · Curves',
+    x: 72.7, y: 78.9,
+    screenIds: ['curves-sl'],
+    mapImage: MAP_INTERIOR,
+    blurb: 'Stage-left curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
+  },
+  {
+    id: 'arrival',
+    label: 'Arrival',
+    kind: 'Exterior LED · Open-air',
+    x: 52.5, y: 60.5,
+    screenIds: ['outdoor-sr', 'outdoor-sl', 'outdoor-arch'],
+    mapImage: MAP_OUTDOOR,
+    blurb: 'Open-air entry screens facing the Las Vegas Strip — the first brand touchpoint for arriving guests.',
+    members: [{ x: 58.1, y: 41.1 }, { x: 58.1, y: 69.0 }, { x: 39.5, y: 72.8 }],
+  },
+  {
+    id: 'tv',
+    label: 'TV Displays',
+    kind: 'TV / Narrowcasting',
+    x: 40.7, y: 25.4,
+    tv: true,
+    mapImage: MAP_TV,
+    blurb: 'High-definition TV displays throughout the venue for branded content and event visuals.',
+  },
+];
+
+// Mapping card shown when an immersive zone is selected.
+interface MappingCard {
+  label: string;
+  kind: string;
+  mapImage: string;
+  blurb: string;
+  screens: { name: string; res: string }[];
+  uses: string[];
+}
+
+// Resolve the explanatory mapping card for an immersive zone.
+function getCard(zone: ZonePin): MappingCard {
+  if (zone.tv && tvDisplay) {
     return {
-      name: 'TV Displays',
-      kind: 'TV / Narrowcasting',
-      resolution: tvDisplay.videoSpecs.resolution,
-      description: tvDisplay.description,
-      mapImage: pin.mapImage,
+      label: zone.label,
+      kind: zone.kind,
+      mapImage: zone.mapImage,
+      blurb: zone.blurb,
+      screens: [{ name: 'TV / Narrowcasting', res: tvDisplay.videoSpecs.resolution }],
+      uses: [],
     };
   }
-  if (pin.zoneId) {
-    const z = zoneById.get(pin.zoneId);
-    if (z) {
-      return {
-        name: z.name,
-        kind: z.category === 'outdoor' ? 'Exterior LED' : 'Interior LED',
-        resolution: z.resolution ?? z.specs?.resolution ?? '—',
-        description: z.description,
-        useCases: z.useCases,
-        mapImage: pin.mapImage,
-      };
-    }
-  }
-  return null;
+  const ids = zone.screenIds ?? [];
+  const screens = ids.map((id) => {
+    const z = zoneById.get(id);
+    return { name: z?.name ?? id, res: z?.resolution ?? z?.specs?.resolution ?? '—' };
+  });
+  const uses: string[] = [];
+  ids.forEach((id) => {
+    zoneById.get(id)?.useCases?.forEach((u) => {
+      if (!uses.includes(u)) uses.push(u);
+    });
+  });
+  return { label: zone.label, kind: zone.kind, mapImage: zone.mapImage, blurb: zone.blurb, screens, uses };
 }
 
 const MIN = 1;
@@ -90,7 +133,8 @@ export function InteractiveVenueMap() {
   const [dragging, setDragging] = useState(false);
   const [activePin, setActivePin] = useState<string | null>(null);
 
-  const activeCard = activePin ? getCard(PINS.find((p) => p.t === activePin)!) : null;
+  const activeZone = ZONE_PINS.find((z) => z.id === activePin) ?? null;
+  const activeCard = activeZone ? getCard(activeZone) : null;
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
@@ -193,44 +237,61 @@ export function InteractiveVenueMap() {
             </div>
           )}
 
-          {/* zone pins */}
-          {renderOk && PINS.map((p) => {
-            const hasCard = !!getCard(p);
-            const isActive = activePin === p.t;
+          {/* member screen dots — show that a zone spans multiple screens */}
+          {renderOk && ZONE_PINS.flatMap((z) =>
+            (z.members ?? []).map((m, i) => {
+              const isActive = activePin === z.id;
+              return (
+                <div key={`${z.id}-m${i}`} className="absolute pointer-events-none" style={{ left: `${m.x}%`, top: `${m.y}%` }}>
+                  <span
+                    className={`block rounded-full ring-1 ring-black/50 transition-all ${isActive ? 'w-1.5 h-1.5 bg-amber-300' : 'w-1 h-1 bg-primary/70'}`}
+                    style={{ transform: `translate(-50%, -50%) scale(${1 / t.s})` }}
+                  />
+                </div>
+              );
+            })
+          )}
+
+          {/* immersive zone pins (clickable) */}
+          {renderOk && ZONE_PINS.map((z) => {
+            const isActive = activePin === z.id;
             return (
-              <div key={p.t} className={`absolute ${hasCard ? '' : 'pointer-events-none'}`} style={{ left: `${p.x}%`, top: `${p.y}%` }}>
+              <div key={z.id} className="absolute" style={{ left: `${z.x}%`, top: `${z.y}%` }}>
                 <div className="flex items-center gap-1" style={{ transform: `translate(-50%, -50%) scale(${1 / t.s})`, transformOrigin: 'left center' }}>
-                  {hasCard ? (
-                    <button
-                      type="button"
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => { e.stopPropagation(); setActivePin((cur) => (cur === p.t ? null : p.t)); }}
-                      className="flex items-center gap-1 rounded-full pl-0.5 pr-2 py-0.5 -ml-0.5 cursor-pointer hover:bg-primary/15 transition-colors"
-                      aria-label={`Show mapping card for ${p.t}`}
+                  <button
+                    type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); setActivePin((cur) => (cur === z.id ? null : z.id)); }}
+                    className="flex items-center gap-1 rounded-full pl-0.5 pr-2 py-0.5 -ml-0.5 cursor-pointer hover:bg-primary/15 transition-colors"
+                    aria-label={`Show mapping card for ${z.label} zone`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ring-2 ring-black/50 shrink-0 transition-all ${isActive ? 'bg-amber-300 ring-amber-300/60 scale-125' : 'bg-primary'}`} />
+                    <span
+                      className={`whitespace-nowrap text-[11px] font-semibold transition-colors ${isActive ? 'text-amber-200' : 'text-white'}`}
+                      style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)' }}
                     >
-                      <span className={`w-2 h-2 rounded-full ring-2 ring-black/50 shrink-0 transition-all ${isActive ? 'bg-amber-300 ring-amber-300/60 scale-125' : 'bg-primary'}`} />
-                      <span
-                        className={`whitespace-nowrap text-[11px] font-semibold transition-colors ${isActive ? 'text-amber-200' : 'text-white'}`}
-                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)' }}
-                      >
-                        {p.t}
-                      </span>
-                    </button>
-                  ) : (
-                    <>
-                      <span className="w-1.5 h-1.5 rounded-full bg-white/60 ring-2 ring-black/40 shrink-0" />
-                      <span
-                        className="whitespace-nowrap text-[11px] font-medium text-white/80"
-                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)' }}
-                      >
-                        {p.t}
-                      </span>
-                    </>
-                  )}
+                      {z.label}
+                    </span>
+                  </button>
                 </div>
               </div>
             );
           })}
+
+          {/* plain location labels */}
+          {renderOk && LABEL_PINS.map((p) => (
+            <div key={p.t} className="absolute pointer-events-none" style={{ left: `${p.x}%`, top: `${p.y}%` }}>
+              <div className="flex items-center gap-1" style={{ transform: `translate(-50%, -50%) scale(${1 / t.s})`, transformOrigin: 'left center' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-white/60 ring-2 ring-black/40 shrink-0" />
+                <span
+                  className="whitespace-nowrap text-[11px] font-medium text-white/80"
+                  style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)' }}
+                >
+                  {p.t}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -241,18 +302,16 @@ export function InteractiveVenueMap() {
         <MapBtn onClick={() => setFs((f) => !f)} label={fs ? 'Exit fullscreen' : 'Fullscreen'}>{fs ? <X className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}</MapBtn>
       </div>
       <div className="absolute bottom-3 left-3 z-20 hidden sm:flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-sm px-3 py-1.5 text-[10.5px] text-white/75 pointer-events-none">
-        <MousePointerClick className="w-3 h-3" /> Tap a screen pin for specs · drag to pan · pinch or scroll to zoom
+        <MousePointerClick className="w-3 h-3" /> Tap a zone for specs · drag to pan · pinch or scroll to zoom
       </div>
 
-      {/* Mapping card for the selected screen pin */}
+      {/* Mapping card for the selected immersive zone */}
       {activeCard && (
         <div className="absolute top-3 left-3 z-30 w-[min(20rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-xl border border-primary/30 bg-black/85 backdrop-blur-md shadow-[0_8px_40px_-8px_rgba(0,0,0,0.8)]">
-          {activeCard.mapImage && (
-            <div className="relative h-28 w-full overflow-hidden rounded-t-xl">
-              <img src={activeCard.mapImage} alt={`${activeCard.name} mapping`} className="h-full w-full object-cover" draggable={false} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-            </div>
-          )}
+          <div className="relative h-28 w-full overflow-hidden rounded-t-xl">
+            <img src={activeCard.mapImage} alt={`${activeCard.label} zone mapping`} className="h-full w-full object-cover" draggable={false} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          </div>
           <button
             type="button"
             onClick={() => setActivePin(null)}
@@ -264,15 +323,30 @@ export function InteractiveVenueMap() {
           <div className="p-4 space-y-3">
             <div className="space-y-1">
               <span className="text-[10px] uppercase tracking-[0.22em] text-primary">{activeCard.kind}</span>
-              <h4 className="text-base font-semibold text-white leading-tight">{activeCard.name}</h4>
-              <span className="inline-block rounded-md bg-primary/15 px-2 py-0.5 text-[11px] font-mono text-primary">{activeCard.resolution}</span>
+              <h4 className="text-base font-semibold text-white leading-tight">{activeCard.label} <span className="text-white/40 font-normal">Zone</span></h4>
             </div>
-            <p className="text-xs leading-relaxed text-white/70">{activeCard.description}</p>
-            {activeCard.useCases && activeCard.useCases.length > 0 && (
+            <p className="text-xs leading-relaxed text-white/70">{activeCard.blurb}</p>
+
+            {/* Screens grouped in this zone */}
+            <div className="space-y-1.5 border-t border-white/10 pt-3">
+              <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold">
+                {activeCard.screens.length > 1 ? `${activeCard.screens.length} Screens in this zone` : 'Screen'}
+              </p>
+              <ul className="space-y-1">
+                {activeCard.screens.map((s) => (
+                  <li key={s.name} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="text-white/85">{s.name}</span>
+                    <span className="rounded-md bg-primary/15 px-2 py-0.5 font-mono text-[11px] text-primary shrink-0">{s.res}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {activeCard.uses.length > 0 && (
               <div className="space-y-1.5 border-t border-white/10 pt-3">
                 <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold">Best for</p>
                 <ul className="space-y-1">
-                  {activeCard.useCases.map((u) => (
+                  {activeCard.uses.slice(0, 5).map((u) => (
                     <li key={u} className="flex items-start gap-1.5 text-xs text-white/75">
                       <span className="mt-0.5 text-primary">•</span>
                       <span>{u}</span>
