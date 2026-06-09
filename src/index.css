@@ -256,7 +256,47 @@ button, a, [role="button"] {
     background: linear-gradient(180deg, hsl(30 20% 12% / 0.9) 0%, hsl(30 20% 8% / 0.95) 100%);
     box-shadow: none;
   }
-  
+
+  /* ── Design-system schema (src/content/designSystem.ts) ──────────────── */
+  /* Elevation & Depth — reusable layered shadow shared by hero panels,
+     cards and controls so the page reads as one material system. */
+  .surface-elevated {
+    box-shadow:
+      rgba(0, 0, 0, 0.035) 0px 2.8px 2.2px 0px,
+      rgba(0, 0, 0, 0.047) 0px 6.7px 5.3px 0px,
+      rgba(0, 0, 0, 0.06) 0px 12.5px 10px 0px,
+      rgba(0, 0, 0, 0.07) 0px 22.3px 17.9px 0px,
+      rgba(0, 0, 0, 0.086) 0px 41.8px 33.4px 0px,
+      rgba(0, 0, 0, 0.12) 0px 100px 80px 0px;
+  }
+  .dark .surface-elevated {
+    box-shadow:
+      rgba(0, 0, 0, 0.25) 0px 12.5px 10px 0px,
+      rgba(0, 0, 0, 0.35) 0px 41.8px 33.4px 0px,
+      rgba(0, 0, 0, 0.45) 0px 100px 80px 0px;
+  }
+
+  /* Gradient border shell — Soleia gold hairline edge as the hero treatment.
+     Drawn on a masked pseudo-element so it never disturbs the surface fill and
+     follows the element's (24px) radius. */
+  .edge-gold {
+    position: relative;
+  }
+  .edge-gold::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+  }
+
   /* Sun goddess glows */
   .glow-gold {
     box-shadow: 

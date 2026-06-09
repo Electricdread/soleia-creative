@@ -207,7 +207,7 @@ export function InteractiveVenueMap() {
   const onDoubleClick = (e: React.MouseEvent) => { if (t.s > 1) reset(); else zoomAt(2.4, e.clientX, e.clientY); };
 
   const stage = (
-    <div className={`relative overflow-hidden bg-black select-none ${fs ? 'flex-1' : 'border border-primary/15'}`}>
+    <div className={`relative overflow-hidden bg-black select-none ${fs ? 'flex-1' : 'rounded-3xl edge-gold surface-elevated'}`}>
       <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-20 pointer-events-none" />
       <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 z-20 pointer-events-none" />
       <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 z-20 pointer-events-none" />
@@ -309,8 +309,8 @@ export function InteractiveVenueMap() {
 
       {/* Mapping card for the selected immersive zone */}
       {activeCard && (
-        <div className="absolute top-3 left-3 z-30 w-[min(20rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-xl border border-primary/30 bg-black/85 backdrop-blur-md shadow-[0_8px_40px_-8px_rgba(0,0,0,0.8)]">
-          <div className="relative h-28 w-full overflow-hidden rounded-t-xl">
+        <div className="absolute top-3 left-3 z-30 w-[min(20rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-3xl edge-gold surface-elevated bg-black/85 backdrop-blur-md">
+          <div className="relative h-28 w-full overflow-hidden rounded-t-3xl">
             <img src={activeCard.light} alt={`${activeCard.label} zone screens`} className="block dark:hidden h-full w-full object-cover" draggable={false} />
             <img src={activeCard.dark} alt={`${activeCard.label} zone screens`} className="hidden dark:block h-full w-full object-cover" draggable={false} />
           </div>
