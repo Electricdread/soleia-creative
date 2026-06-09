@@ -2,8 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X, MousePointerClick } from 'lucide-react';
 import { ALL_LED_ZONES, DISPLAY_TYPES } from '@/lib/creativeGuide';
 
-// Cinematic top-down render exported from Unreal.
-const RENDER_SRC = '/creative-guide/venue-render.jpg';
+// Top-down venue blueprint, drawn in the mapping-card style (light + dark
+// colorways). Authored at 16:9 so the zone pins line up exactly.
+const BLUEPRINT_LIGHT = '/creative-guide/venue-blueprint-light.png';
+const BLUEPRINT_DARK = '/creative-guide/venue-blueprint-dark.png';
 
 // Per-zone schematic thumbnails (light + dark colorways) — generated in the
 // Soleia "LED Video Display" style. Resolved from the zone id at render time.
@@ -227,10 +229,13 @@ export function InteractiveVenueMap() {
           style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, transformOrigin: 'center', transition: dragging ? 'none' : 'transform 0.18s ease-out' }}
         >
           {renderOk ? (
-            <img src={RENDER_SRC} alt="Soleia venue — top-down render" draggable={false} className="w-full h-full object-contain" onError={() => setRenderOk(false)} />
+            <>
+              <img src={BLUEPRINT_LIGHT} alt="Soleia venue — top-down blueprint" draggable={false} className="block dark:hidden w-full h-full object-contain" onError={() => setRenderOk(false)} />
+              <img src={BLUEPRINT_DARK} alt="Soleia venue — top-down blueprint" draggable={false} className="hidden dark:block w-full h-full object-contain" />
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-center px-6">
-              <p className="text-xs text-white/55 max-w-xs">Add a top-down render to <span className="text-primary">/public/creative-guide/venue-render.jpg</span>.</p>
+              <p className="text-xs text-white/55 max-w-xs">Add the venue blueprint to <span className="text-primary">/public/creative-guide/venue-blueprint-&#123;light,dark&#125;.png</span>.</p>
             </div>
           )}
 
