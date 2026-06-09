@@ -335,7 +335,7 @@ const CreativeGuideView = () => {
           <SectionHead eyebrow="05 — Creative Content Design" title="We design every pixel." />
           <Reveal>
             <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed mb-9">
-              Our creative team designs branded content mapped to every pixel of the venue — from logo placement to fully bespoke motion built around your brand. You bring the brand; we make it move across every screen.
+              Our creative team designs branded content mapped to every pixel of the venue — from logo placement to fully bespoke motion built around your brand.
             </p>
           </Reveal>
           <div className="grid gap-4 md:grid-cols-3 mb-10">
