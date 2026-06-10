@@ -41,32 +41,17 @@ interface ZonePin {
 
 const ZONE_PINS: ZonePin[] = [
   {
-    id: 'right',
-    label: 'Right',
-    kind: 'Interior LED · Curves',
-    x: 74.0, y: 19.5,
-    regions: [{ cx: 74, cy: 19.5, rx: 9, ry: 8 }],
-    screenIds: ['curves-sr'],
-    blurb: 'Stage-right curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
-  },
-  {
     id: 'main',
-    label: 'Main',
-    kind: 'Interior LED · Stage Wall',
+    label: 'Main Interior',
+    kind: 'Interior LED · Full Wall',
     x: 83.0, y: 50.0,
-    regions: [{ cx: 85, cy: 40, rx: 6.5, ry: 19 }],
-    screenIds: ['imag-sr', 'center', 'imag-sl'],
-    blurb: 'The primary stage wall — IMAG side panels flanking the center focal screen for hero moments, logo reveals and live camera.',
-    members: [{ x: 81.0, y: 38.0 }, { x: 85.0, y: 50.0 }, { x: 81.0, y: 62.0 }],
-  },
-  {
-    id: 'left',
-    label: 'Left',
-    kind: 'Interior LED · Curves',
-    x: 79.5, y: 68.0,
-    regions: [{ cx: 78, cy: 68, rx: 9.5, ry: 10.5 }],
-    screenIds: ['curves-sl'],
-    blurb: 'Stage-left curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
+    regions: [
+      { cx: 74, cy: 19.5, rx: 9, ry: 8 },     // SR Curve — upper arc
+      { cx: 85, cy: 40, rx: 6.5, ry: 19 },    // IMAG SR / Center / IMAG SL
+      { cx: 78, cy: 68, rx: 9.5, ry: 10.5 },  // SL Curve — lower arc
+    ],
+    screenIds: ['curves-sr', 'imag-sr', 'center', 'imag-sl', 'curves-sl'],
+    blurb: 'The full main-room LED system — SR and SL curves wrapping the room into the IMAG side panels and center focal screen, for hero moments, logo reveals and live camera.',
   },
   {
     id: 'arrival',
