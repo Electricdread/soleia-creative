@@ -1,36 +1,26 @@
 ## Goal
 
-Add a single new pixelmap card titled **"DLV Marquee/Ticker LED Display"** to the Creative Guide → Display Specs view. The card displays a Soleia-styled pixelmap diagram (dark background, gold accents, JetBrains Mono labels) based on the attached reference, with downloadable PNG. No other surfaces (Delivery Guide, Tutorial, Printable PDF) are touched in this pass.
+Swap the Interactive Venue Map's blueprint to the newly uploaded Soleia Las Vegas top-down render, and re-align the clickable zone pins (Right, Main, Left, Arrival, TV) plus location labels (Lily Pad, Pool 2, Pool) to the new layout.
 
-## Specs (from reference)
+## Steps
 
-- **Total LED Video Display:** W 3792 × H 192 px
-- **West Side (Las Vegas Blvd):** W 1608 × H 192 px
-- **South Side (Flamingo Rd):** W 2184 × H 192 px
-- Pixel aspect: 19.75:1 (ultra-wide ribbon)
+1. **Upload new blueprint as light variant**
+   - Take uploaded `venue-layout2.jpg`, save to `public/creative-guide/venue-blueprint-light.png` (overwrite existing).
 
-## Implementation
+2. **Generate dark variant**
+   - Use `imagegen--edit_image` on the new image to produce a dark-mode version (deep charcoal background replacing cream, preserving architectural detail and red accents). Save to `public/creative-guide/venue-blueprint-dark.png`.
 
-### 1. Generate Soleia-styled pixelmap PNG
-Create `public/creative-guide/dlv-marquee-pixelmap.png` using `imagegen` — dark charcoal background, gold (#c49a3c) outlined rectangles, JetBrains Mono dimension labels matching the reference layout (one full ribbon split into West/South segments with bracketed measurements underneath).
-
-### 2. Add DisplayType entry in `src/lib/creativeGuide.ts`
-New entry appended to `DISPLAY_TYPES`:
-- `id: 'dlv-marquee'`
-- `category: 'led'`
-- `name: 'DLV Marquee / Ticker LED Display'`
-- `description: 'Exterior wraparound LED ribbon facing Las Vegas Blvd and Flamingo Rd.'`
-- `videoSpecs`: 3792×192, DXV3 MOV, 30/60fps, 10–30s
-- `graphicSpecs`: 3792×192 PNG (with separate West 1608×192 / South 2184×192 deliverables noted)
-- `dimensions`: `[{label:'Full', 3792, 192}, {label:'West (LV Blvd)', 1608, 192}, {label:'South (Flamingo)', 2184, 192}]`
-- `deliverables`: Full ribbon + West and South segments
-- `creativeNotes`: Ultra-wide aspect — design horizontally with safe edges; avoid centered text-only compositions; West and South segments can run synced or independent
-
-### 3. Add dedicated pixelmap download in `DisplaySpecsView.tsx`
-Since the existing LED card hard-codes a single pixelmap, add a small branch: when `display.id === 'dlv-marquee'`, render its own "Download Pixelmap" button pointing to `/creative-guide/dlv-marquee-pixelmap.png` (no AE template button, no main LED carousel — use a simple `<img>` of the new pixelmap as the card visual).
+3. **Re-tune pin coordinates in `InteractiveVenueMap.tsx`**
+   - In the new image the venue is centered with whitespace margins (~10% left, ~5% right). Recompute `x/y` % for each `ZONE_PINS` entry and `LABEL_PINS` entry against the new image:
+     - `right` (stage-right curves) — upper interior of the right-side amphitheater
+     - `main` (stage wall, 3 IMAG members) — center of the curved stage on the right half
+     - `left` (stage-left curves) — lower interior of the right-side amphitheater
+     - `arrival` (3 outdoor screens) — pinned at the bottom-center outdoor strip + members on the wraparound red ribbon
+     - `tv` — upper cabanas / interior area
+     - Labels: `Lily Pad` (upper-left round pool), `Pool` (large central palm pool), `Pool 2` (second pool basin)
+   - Keep all other logic, mapping cards, and zone metadata untouched.
 
 ## Out of scope
 
-- No changes to Delivery Guide, Tutorial, or Printable Creative Guide PDF
-- No AE template for this display
-- No DB / edge function changes
+- No changes to zone metadata, mapping-card thumbnails (`/zone-cards/*`), display specs, or any other surface.
+- No layout/UI changes to the map controls.

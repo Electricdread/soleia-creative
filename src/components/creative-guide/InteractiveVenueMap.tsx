@@ -16,9 +16,9 @@ const tvDisplay = DISPLAY_TYPES.find((d) => d.id === 'television');
 
 // Plain location labels — no mapping card.
 const LABEL_PINS: { t: string; x: number; y: number }[] = [
-  { t: 'Lily Pad', x: 19.0, y: 33.0 },
-  { t: 'Pool 2', x: 31.0, y: 55.0 },
-  { t: 'Pool', x: 46.9, y: 55.0 },
+  { t: 'Lily Pad', x: 20.0, y: 19.0 },
+  { t: 'Pool 2', x: 33.0, y: 47.0 },
+  { t: 'Pool', x: 50.0, y: 47.0 },
 ];
 
 // Immersive zones. Each is one clickable pin (placed at the zone centroid)
@@ -41,7 +41,7 @@ const ZONE_PINS: ZonePin[] = [
     id: 'right',
     label: 'Right',
     kind: 'Interior LED · Curves',
-    x: 73.0, y: 31.2,
+    x: 72.0, y: 38.0,
     screenIds: ['curves-sr'],
     blurb: 'Stage-right curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },
@@ -49,16 +49,16 @@ const ZONE_PINS: ZonePin[] = [
     id: 'main',
     label: 'Main',
     kind: 'Interior LED · Stage Wall',
-    x: 81.5, y: 55.2,
+    x: 83.0, y: 50.0,
     screenIds: ['imag-sr', 'center', 'imag-sl'],
     blurb: 'The primary stage wall — IMAG side panels flanking the center focal screen for hero moments, logo reveals and live camera.',
-    members: [{ x: 81.0, y: 43.6 }, { x: 82.7, y: 55.2 }, { x: 80.9, y: 66.7 }],
+    members: [{ x: 81.0, y: 38.0 }, { x: 85.0, y: 50.0 }, { x: 81.0, y: 62.0 }],
   },
   {
     id: 'left',
     label: 'Left',
     kind: 'Interior LED · Curves',
-    x: 72.7, y: 78.9,
+    x: 72.0, y: 63.0,
     screenIds: ['curves-sl'],
     blurb: 'Stage-left curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },
@@ -66,16 +66,16 @@ const ZONE_PINS: ZonePin[] = [
     id: 'arrival',
     label: 'Arrival',
     kind: 'Exterior LED · Open-air',
-    x: 52.5, y: 60.5,
+    x: 90.0, y: 22.0,
     screenIds: ['outdoor-sr', 'outdoor-sl', 'outdoor-arch'],
     blurb: 'Open-air entry screens facing the Las Vegas Strip — the first brand touchpoint for arriving guests.',
-    members: [{ x: 58.1, y: 41.1 }, { x: 58.1, y: 69.0 }, { x: 39.5, y: 72.8 }],
+    members: [{ x: 75.0, y: 12.0 }, { x: 95.0, y: 50.0 }, { x: 88.0, y: 80.0 }],
   },
   {
     id: 'tv',
     label: 'TV Displays',
     kind: 'TV / Narrowcasting',
-    x: 40.7, y: 25.4,
+    x: 45.0, y: 14.0,
     tv: true,
     blurb: 'High-definition TV displays throughout the venue for branded content and event visuals.',
   },
