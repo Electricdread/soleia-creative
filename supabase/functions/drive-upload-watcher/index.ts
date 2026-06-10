@@ -90,10 +90,21 @@ Deno.serve(async (req) => {
     // Find every proposal that has a drive folder linked
     const { data: proposals, error } = await supabase
       .from('proposals')
-      .select('id, client_name, event_name, event_date, drive_folder_id, drive_folder_url, link_id, client_links(token)')
+      .select('id, client_name, event_name, event_date, drive_folder_id, drive_folder_url, link_id')
       .not('drive_folder_id', 'is', null);
 
     if (error) throw error;
+
+    // Fetch link tokens separately (no FK relationship between proposals.link_id and client_links)
+    const linkIds = (proposals ?? []).map((p: any) => p.link_id).filter(Boolean);
+    const tokenMap = new Map<string, string>();
+    if (linkIds.length) {
+      const { data: links } = await supabase
+        .from('client_links')
+        .select('id, token')
+        .in('id', linkIds);
+      for (const l of links ?? []) tokenMap.set((l as any).id, (l as any).token);
+    }
 
     const summary = {
       scanned_folders: 0,
