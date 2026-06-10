@@ -90,20 +90,19 @@ Deno.serve(async (req) => {
     // Find every proposal that has a drive folder linked
     const { data: proposals, error } = await supabase
       .from('proposals')
-      .select('id, client_name, event_name, event_date, drive_folder_id, drive_folder_url, link_id')
+      .select('id, token, client_name, event_name, event_date, drive_folder_id, drive_folder_url')
       .not('drive_folder_id', 'is', null);
 
     if (error) throw error;
 
-    // Fetch link tokens separately (no FK relationship between proposals.link_id and client_links)
-    const linkIds = (proposals ?? []).map((p: any) => p.link_id).filter(Boolean);
-    const tokenMap = new Map<string, string>();
-    if (linkIds.length) {
-      const { data: links } = await supabase
-        .from('client_links')
-        .select('id, token')
-        .in('id', linkIds);
-      for (const l of links ?? []) tokenMap.set((l as any).id, (l as any).token);
+    // Best-effort: match a client_link by client + event for a session URL
+    const { data: links } = await supabase
+      .from('client_links')
+      .select('token, client_name, event_name');
+    const linkLookup = new Map<string, string>();
+    for (const l of links ?? []) {
+      const key = `${(l as any).client_name}||${(l as any).event_name}`.toLowerCase();
+      linkLookup.set(key, (l as any).token);
     }
 
     const summary = {
