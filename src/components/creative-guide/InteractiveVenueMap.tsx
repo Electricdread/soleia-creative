@@ -34,8 +34,9 @@ interface ZonePin {
   tv?: boolean;
   blurb: string;
   members?: { x: number; y: number }[];
-  // Elliptical footprint highlighted on the blueprint when the zone is active.
-  region: { cx: number; cy: number; rx: number; ry: number };
+  // Elliptical footprints highlighted on the blueprint when the zone is active.
+  // A zone may span multiple disjoint areas (e.g. Arrival).
+  regions: { cx: number; cy: number; rx: number; ry: number }[];
 }
 
 const ZONE_PINS: ZonePin[] = [
@@ -44,7 +45,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Right',
     kind: 'Interior LED · Curves',
     x: 80.0, y: 67.0,
-    region: { cx: 80, cy: 67.5, rx: 9, ry: 10.5 },
+    regions: [{ cx: 79.5, cy: 68, rx: 8, ry: 10 }],
     screenIds: ['curves-sr'],
     blurb: 'Stage-right curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },
@@ -53,7 +54,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Main',
     kind: 'Interior LED · Stage Wall',
     x: 83.0, y: 50.0,
-    region: { cx: 84, cy: 50, rx: 7, ry: 13 },
+    regions: [{ cx: 85, cy: 40, rx: 6.5, ry: 19 }],
     screenIds: ['imag-sr', 'center', 'imag-sl'],
     blurb: 'The primary stage wall — IMAG side panels flanking the center focal screen for hero moments, logo reveals and live camera.',
     members: [{ x: 81.0, y: 38.0 }, { x: 85.0, y: 50.0 }, { x: 81.0, y: 62.0 }],
@@ -63,7 +64,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Left',
     kind: 'Interior LED · Curves',
     x: 86.0, y: 32.0,
-    region: { cx: 86, cy: 32, rx: 7, ry: 13 },
+    regions: [{ cx: 74, cy: 19.5, rx: 9, ry: 8 }],
     screenIds: ['curves-sl'],
     blurb: 'Stage-left curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },
@@ -72,7 +73,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Arrival',
     kind: 'Exterior LED · Open-air',
     x: 90.0, y: 22.0,
-    region: { cx: 87, cy: 42, rx: 11, ry: 30 },
+    regions: [{ cx: 60.5, cy: 45, rx: 3.5, ry: 16 }, { cx: 36, cy: 61.5, rx: 7, ry: 7.5 }],
     screenIds: ['outdoor-sr', 'outdoor-sl', 'outdoor-arch'],
     blurb: 'Open-air entry screens facing the Las Vegas Strip — the first brand touchpoint for arriving guests.',
     members: [{ x: 75.0, y: 12.0 }, { x: 95.0, y: 50.0 }, { x: 88.0, y: 80.0 }],
@@ -82,7 +83,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'TV Displays',
     kind: 'TV / Narrowcasting',
     x: 45.0, y: 14.0,
-    region: { cx: 45, cy: 14, rx: 8, ry: 7 },
+    regions: [{ cx: 45, cy: 14, rx: 8, ry: 7 }],
     tv: true,
     blurb: 'High-definition TV displays throughout the venue for branded content and event visuals.',
   },
@@ -157,9 +158,18 @@ export function InteractiveVenueMap() {
     if (!el) return;
     if (!activeZone) { setT({ s: 1, x: 0, y: 0 }); return; }
     const W = el.clientWidth, H = el.clientHeight;
-    const s = 1.7;
-    const px = (activeZone.region.cx / 100) * W;
-    const py = (activeZone.region.cy / 100) * H;
+    // Frame the union of the zone's footprints; zoom adapts to the union's
+    // size so multi-area zones (e.g. Arrival) stay fully in frame.
+    const u = activeZone.regions.reduce(
+      (a, r) => ({
+        x0: Math.min(a.x0, r.cx - r.rx), y0: Math.min(a.y0, r.cy - r.ry),
+        x1: Math.max(a.x1, r.cx + r.rx), y1: Math.max(a.y1, r.cy + r.ry),
+      }),
+      { x0: 100, y0: 100, x1: 0, y1: 0 }
+    );
+    const s = Math.max(1.2, Math.min(1.8, Math.min(45 / (u.x1 - u.x0), 60 / (u.y1 - u.y0))));
+    const px = (((u.x0 + u.x1) / 2) / 100) * W;
+    const py = (((u.y0 + u.y1) / 2) / 100) * H;
     const targetX = (188 + (W - 300)) / 2; // midpoint between HUD edge and card edge
     const tx = targetX - W / 2 - (px - W / 2) * s;
     const ty = (H / 2) - H / 2 - (py - H / 2) * s;
@@ -264,15 +274,16 @@ export function InteractiveVenueMap() {
             </div>
           )}
 
-          {/* highlight the active zone's footprint on the blueprint */}
-          {renderOk && activeZone && (
+          {/* highlight the active zone's footprint(s) on the blueprint */}
+          {renderOk && activeZone && activeZone.regions.map((r, i) => (
             <div
+              key={`${activeZone.id}-r${i}`}
               className="absolute pointer-events-none"
               style={{
-                left: `${activeZone.region.cx}%`,
-                top: `${activeZone.region.cy}%`,
-                width: `${activeZone.region.rx * 2}%`,
-                height: `${activeZone.region.ry * 2}%`,
+                left: `${r.cx}%`,
+                top: `${r.cy}%`,
+                width: `${r.rx * 2}%`,
+                height: `${r.ry * 2}%`,
                 transform: 'translate(-50%, -50%)',
               }}
             >
@@ -281,7 +292,7 @@ export function InteractiveVenueMap() {
                 style={{ background: 'radial-gradient(closest-side, hsl(var(--primary) / 0.30), hsl(var(--primary) / 0.06) 70%, transparent)' }}
               />
             </div>
-          )}
+          ))}
 
           {/* plain location labels */}
           {renderOk && LABEL_PINS.map((p) => (
