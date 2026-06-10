@@ -137,7 +137,8 @@ Deno.serve(async (req) => {
       const newFiles = files.filter((f) => !seen.has(f.id));
       if (newFiles.length === 0) continue;
 
-      const sessionToken = p.link_id ? tokenMap.get(p.link_id) : undefined;
+      const lookupKey = `${p.client_name}||${p.event_name}`.toLowerCase();
+      const sessionToken = linkLookup.get(lookupKey);
       const sessionUrl = sessionToken
         ? `${APP_ORIGIN}/session/${sessionToken}`
         : `${APP_ORIGIN}/admin/proposals`;
