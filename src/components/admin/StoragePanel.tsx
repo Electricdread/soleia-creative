@@ -94,6 +94,51 @@ export function StoragePanel() {
   const [results, setResults] = useState<MigrationResult[]>([]);
   const [progress, setProgress] = useState({ migrated: 0, total: 0, remaining: 0 });
 
+  // Drive upload watcher (Zapier notifications)
+  const [watcher, setWatcher] = useState<{
+    tracked: number;
+    notified: number;
+    lastNotifiedAt: string | null;
+  } | null>(null);
+  const [watcherRunning, setWatcherRunning] = useState(false);
+
+  const refreshWatcher = useCallback(async () => {
+    const total = await supabase
+      .from('drive_seen_files')
+      .select('id', { count: 'exact', head: true });
+    const notified = await supabase
+      .from('drive_seen_files')
+      .select('id', { count: 'exact', head: true })
+      .eq('notified', true);
+    const last = await supabase
+      .from('drive_seen_files')
+      .select('notified_at')
+      .eq('notified', true)
+      .not('notified_at', 'is', null)
+      .order('notified_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setWatcher({
+      tracked: total.count ?? 0,
+      notified: notified.count ?? 0,
+      lastNotifiedAt: (last.data as any)?.notified_at ?? null,
+    });
+  }, []);
+
+  const runWatcherNow = useCallback(async () => {
+    setWatcherRunning(true);
+    try {
+      const { error } = await supabase.functions.invoke('drive-upload-watcher', { body: {} });
+      if (error) throw error;
+      toast({ title: 'Drive watcher ran', description: 'Checked all client folders for new uploads.' });
+      await refreshWatcher();
+    } catch (e: any) {
+      toast({ title: 'Watcher failed', description: e?.message ?? String(e), variant: 'destructive' });
+    } finally {
+      setWatcherRunning(false);
+    }
+  }, [refreshWatcher, toast]);
+
   const refreshStats = useCallback(async () => {
     setStatsLoading(true);
     try {
