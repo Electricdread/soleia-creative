@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Venue Layout blueprint generated from the Unreal geometry export.
+"""Venue Layout map generated from the Unreal geometry export.
 
 Single source of truth: scripts/data/venue_plan.json (world-space footprints +
 LED mesh vertices from scripts/ue_export_plan.py). Renders:
@@ -9,48 +9,49 @@ LED mesh vertices from scripts/ue_export_plan.py). Renders:
   public/creative-guide/zone-glows/{main,arrival,tv}.png
 
 …all through the same world->image projection, so the zone glow overlays are
-pixel-registered with the blueprint by construction. Also prints the zone
-region extents (percent) for ZONE_PINS auto-focus framing.
+pixel-registered with the map by construction.
 
-Style: the site's gold technical-blueprint language (grid, double frame,
-serif title block, street labels), bright + dark colorways.
+Style: the client's luxury isometric render language — charcoal (or cream)
+decks, red seating, gold lattice accents, teal pools, green palms, gold
+Soleia wordmark. No text labels; the interactive HUD carries the naming.
 """
 import json
 import math
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+import re
+from PIL import Image, ImageDraw, ImageFilter
 
 W, H = 1376, 768
 SS = 2  # supersample
 DATA = 'scripts/data/venue_plan.json'
-F_SERIF = '/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf'
-F_MONO = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
-F_MONO_B = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'
+LOGO = 'src/assets/soleia-wide-logo.png'
 
 GOLD_GLOW = (255, 186, 60)
 
 CW = {
-    'light': dict(bg=(250, 244, 230), grid=(160, 106, 16, 20), line=(160, 106, 16),
-                  dim=(160, 106, 16, 140), faint=(160, 106, 16, 70), fill=(160, 106, 16, 38),
-                  screen=(160, 106, 16, 95), water=(96, 160, 175, 60), text=(58, 42, 16),
-                  sub=(58, 42, 16, 160)),
-    'dark': dict(bg=(14, 12, 8), grid=(232, 165, 31, 14), line=(232, 165, 31),
-                 dim=(232, 165, 31, 130), faint=(232, 165, 31, 60), fill=(232, 165, 31, 26),
-                 screen=(232, 165, 31, 95), water=(110, 190, 205, 55), text=(243, 227, 189),
-                 sub=(243, 227, 189, 150)),
+    'dark': dict(
+        bg=(10, 10, 11), plate=(31, 31, 34), plate_edge=(66, 64, 60), room_floor=(38, 38, 42),
+        lattice=(164, 127, 58, 130), gold=(201, 160, 78), gold_dim=(146, 116, 58),
+        red=(166, 38, 30), red_hi=(208, 64, 50), red_dk=(108, 24, 19),
+        water=(36, 104, 122), water_hi=(96, 178, 192), water_rim=(150, 118, 62),
+        unit=(46, 46, 51), unit_edge=(96, 92, 84),
+        screen=(15, 15, 18), spoke=(24, 24, 28), spoke_edge=(74, 72, 68),
+        palm1=(44, 106, 58), palm2=(74, 148, 84), pot=(58, 44, 30),
+    ),
+    'light': dict(
+        bg=(233, 222, 202), plate=(243, 234, 216), plate_edge=(189, 172, 138), room_floor=(247, 240, 226),
+        lattice=(193, 156, 84, 150), gold=(168, 126, 48), gold_dim=(196, 166, 110),
+        red=(178, 44, 34), red_hi=(214, 76, 60), red_dk=(124, 28, 22),
+        water=(108, 188, 202), water_hi=(168, 224, 232), water_rim=(168, 132, 66),
+        unit=(236, 226, 206), unit_edge=(168, 148, 108),
+        screen=(56, 52, 48), spoke=(228, 218, 198), spoke_edge=(178, 162, 128),
+        palm1=(56, 124, 66), palm2=(88, 164, 94), pot=(122, 92, 60),
+    ),
 }
 
 ZONES = {
     'main': ['LED_SR_Curves', 'LED_SL_Curves', 'LED_SR_IMAG', 'LED_SL_IMAG', 'LED_Center', 'LED_DJ_Booth'],
     'arrival': ['outdoor_sr_box', 'outdoor_sl_box', 'LED_Outdoor_Screen', 'LED_Outdoor_Arch_Screen'],
     'tv': [],  # filled with TV_* actors at load time
-}
-
-SCREEN_LABELS = {
-    'LED_SR_Curves': 'SR CURVE', 'LED_SL_Curves': 'SL CURVE', 'LED_SR_IMAG': 'IMAG SR',
-    'LED_SL_IMAG': 'IMAG SL', 'LED_Center': 'CENTER', 'LED_DJ_Booth': 'DJ BOOTH',
-    'LED_Outdoor_Screen': 'OUTDOOR SCREEN', 'LED_Outdoor_Arch_Screen': 'OUTDOOR ARCH',
-    'outdoor_sr_box': 'OUTDOOR SR', 'outdoor_sl_box': 'OUTDOOR SL',
-    'LED_Stage_Arch': 'STAGE ARCH',
 }
 
 
@@ -82,7 +83,6 @@ class Plan:
             self.by_prefix.setdefault(self._pre(a['label']), []).append(a)
         ZONES['tv'] = [a['label'] for a in d['actors'] if self._pre(a['label']) == 'TV']
 
-        # bounds from floors + rooms + pools + screens (ignore stray props)
         keep = []
         for a in d['actors']:
             p = self._pre(a['label'])
@@ -102,7 +102,6 @@ class Plan:
 
     @staticmethod
     def _pre(label):
-        import re
         return re.sub(r'[_\s]*\d+$', '', label)
 
     def P(self, wx, wy):
@@ -118,139 +117,192 @@ class Plan:
         return hull([self.P(x, y) for x, y, z in a['verts']]) if a.get('verts') else None
 
 
-def draw_blueprint(plan, mode):
+def palm(d, x, y, c, r):
+    """Stylized palm: two-tone fronds + dark center."""
+    for k in range(8):
+        ang = k * math.pi / 4 + 0.3
+        col = c['palm1'] if k % 2 else c['palm2']
+        tip = (x + r * math.cos(ang), y + r * math.sin(ang))
+        side = 0.32
+        a1 = (x + r * 0.45 * math.cos(ang - side), y + r * 0.45 * math.sin(ang - side))
+        a2 = (x + r * 0.45 * math.cos(ang + side), y + r * 0.45 * math.sin(ang + side))
+        d.polygon([(x, y), a1, tip, a2], fill=col)
+    rr = max(2 * SS, r * 0.14)
+    d.ellipse([x - rr, y - rr, x + rr, y + rr], fill=c['pot'])
+
+
+def lattice(img, mask, c, spacing):
+    """Gold diagonal cross-hatch clipped to mask."""
+    lay = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    ld = ImageDraw.Draw(lay)
+    w, h = img.size
+    for x0 in range(-h, w + h, spacing):
+        ld.line([(x0, 0), (x0 + h, h)], fill=c['lattice'], width=SS)
+        ld.line([(x0 + h, 0), (x0, h)], fill=c['lattice'], width=SS)
+    img.paste(lay, (0, 0), Image.composite(mask, Image.new('L', img.size, 0), lay.split()[3]))
+
+
+def draw_layout(plan, mode):
     c = CW[mode]
     img = Image.new('RGB', (W * SS, H * SS), c['bg'])
     d = ImageDraw.Draw(img, 'RGBA')
+    A, pre = plan.acts, plan.by_prefix
 
-    # grid + frame
-    for gx in range(0, W * SS, 48 * SS):
-        d.line([(gx, 0), (gx, H * SS)], fill=c['grid'], width=SS)
-    for gy in range(0, H * SS, 48 * SS):
-        d.line([(0, gy), (W * SS, gy)], fill=c['grid'], width=SS)
-
-    A = plan.acts
-    pre = plan.by_prefix
-
-    # floors — faint footprint slabs
-    for label in ('floor_inside', 'floor_inside_002', 'Floor_outside'):
+    # ---- venue plate (union of floor slabs + main-room disc) ----
+    plate = Image.new('L', img.size, 0)
+    pd = ImageDraw.Draw(plate)
+    for label in ('floor_inside', 'Floor_outside', 'floor_inside_002'):
         if label in A:
-            d.rounded_rectangle(plan.rect(A[label]), radius=14 * SS, fill=c['fill'], outline=c['faint'], width=SS)
-
-    # main-room circle (roof footprint as room outline)
+            pd.rounded_rectangle(plan.rect(A[label]), radius=26 * SS, fill=255)
     if 'Roof' in A:
-        d.ellipse(plan.rect(A['Roof']), outline=c['dim'], width=2 * SS)
+        pd.ellipse(plan.rect(A['Roof']), fill=255)
+    # edge: plate silhouette stroked slightly larger
+    edge = plate.filter(ImageFilter.MaxFilter(5))
+    img.paste(Image.new('RGB', img.size, c['plate_edge']), (0, 0), edge)
+    img.paste(Image.new('RGB', img.size, c['plate']), (0, 0), plate)
+    d = ImageDraw.Draw(img, 'RGBA')
 
-    # pools
-    for label, name in (('pool', 'POOL'), ('pool2', 'POOL 2'), ('Circle', 'STAGE')):
+    # gold lattice on the west terrace + outer deck
+    if 'Floor_outside' in A:
+        lat = Image.new('L', img.size, 0)
+        ld = ImageDraw.Draw(lat)
+        ld.rounded_rectangle(plan.rect(A['Floor_outside']), radius=26 * SS, fill=255)
+        # clear the inner beach deck so the lattice reads as a border terrace
+        if 'floor_inside' in A:
+            r = plan.rect(A['floor_inside'])
+            ld.rounded_rectangle([r[0] + 30 * SS, r[1] + 30 * SS, r[2] - 30 * SS, r[3] - 30 * SS],
+                                 radius=26 * SS, fill=0)
+        lattice(img, lat, c, 26 * SS)
+        d = ImageDraw.Draw(img, 'RGBA')
+
+    # main-room floor disc
+    if 'Roof' in A:
+        d.ellipse(plan.rect(A['Roof'], grow=-6 * SS), fill=c['room_floor'], outline=c['plate_edge'], width=2 * SS)
+
+    # ---- sunray ceiling spokes (subtle) ----
+    for a in pre.get('LED_Sol_Rays_Sunray', []):
+        ph = plan.vhull(a)
+        if ph:
+            d.polygon(ph, fill=c['spoke'], outline=c['spoke_edge'], width=SS)
+
+    # ---- pools ----
+    for label in ('pool', 'pool2'):
         if label not in A:
             continue
         r = plan.rect(A[label])
-        if label == 'Circle':
-            d.rounded_rectangle(r, radius=8 * SS, fill=c['fill'], outline=c['dim'], width=2 * SS)
-        else:
-            d.rounded_rectangle(r, radius=20 * SS, fill=c['water'], outline=c['dim'], width=2 * SS)
-        f = ImageFont.truetype(F_MONO, 11 * SS)
-        tb = d.textbbox((0, 0), name, font=f)
-        d.text(((r[0] + r[2]) / 2 - (tb[2] - tb[0]) / 2, (r[1] + r[3]) / 2 - (tb[3] - tb[1]) / 2),
-               name, font=f, fill=c['sub'])
+        d.rounded_rectangle(r, radius=34 * SS, fill=c['water'], outline=c['water_rim'], width=2 * SS)
+        inset = 12 * SS
+        d.rounded_rectangle([r[0] + inset, r[1] + inset, r[2] - inset, r[3] - inset],
+                            radius=26 * SS, outline=c['water_hi'] + (110,), width=SS)
+        # ripple arcs
+        for i in range(3):
+            rx0 = r[0] + (r[2] - r[0]) * (0.2 + 0.22 * i)
+            ry0 = r[1] + (r[3] - r[1]) * (0.3 + 0.16 * i)
+            d.arc([rx0, ry0, rx0 + 60 * SS, ry0 + 24 * SS], 200, 340, fill=c['water_hi'] + (150,), width=SS)
 
-    # cabana / bungalow rooms
+    # ---- beach stage platform ----
+    if 'Circle' in A:
+        r = plan.rect(A['Circle'])
+        d.rounded_rectangle(r, radius=10 * SS, fill=c['unit'], outline=c['gold_dim'], width=2 * SS)
+
+    # ---- cabana / bungalow rooms ----
     for a in pre.get('Rooms', []):
-        d.rectangle(plan.rect(a), outline=c['dim'], width=SS)
+        d.rectangle(plan.rect(a), fill=c['unit'], outline=c['unit_edge'], width=SS)
 
     # stairs
     if 'Stairs' in A:
         r = plan.rect(A['Stairs'])
-        d.rectangle(r, outline=c['faint'], width=SS)
+        d.rectangle(r, fill=c['unit'], outline=c['unit_edge'], width=SS)
         for i in range(1, 5):
             yy = r[1] + (r[3] - r[1]) * i / 5
-            d.line([(r[0], yy), (r[2], yy)], fill=c['faint'], width=SS)
+            d.line([(r[0], yy), (r[2], yy)], fill=c['unit_edge'], width=SS)
 
-    # furniture — seating, beds, tables
-    for p in ('Couch_APPLYSUBD', 'sofa_short4', 'sofa_short', 'sofa_long', 'SOFA_ROUNDED_FRAME', 'SOFA_INDOOR_L_SHAPE', 'bed', 'BED_TABLE'):
+    # DJ stage risers
+    for label in ('Cube_30', 'Cube_43'):
+        if label in A:
+            d.rounded_rectangle(plan.rect(A[label]), radius=8 * SS, fill=c['unit'], outline=c['gold_dim'], width=SS)
+
+    # ---- furniture: red seating, beds, loungers; tables gold-rimmed ----
+    red_kinds = ('Couch_APPLYSUBD', 'sofa_short4', 'sofa_short', 'sofa_long',
+                 'SOFA_ROUNDED_FRAME', 'SOFA_INDOOR_L_SHAPE', 'bed', 'lowpCube8')
+    for p in red_kinds:
         for a in pre.get(p, []):
             r = plan.rect(a)
-            if (r[2] - r[0]) * (r[3] - r[1]) < (260 * SS) ** 2:
-                d.rectangle(r, outline=c['faint'], width=SS)
-    for p in ('table', 'INDOOR_TABLE'):
+            if (r[2] - r[0]) * (r[3] - r[1]) >= (260 * SS) ** 2:
+                continue
+            rad = 5 * SS if p != 'lowpCube8' else 12 * SS
+            if r[2] - r[0] < 3 * SS or r[3] - r[1] < 3 * SS:
+                continue
+            d.rounded_rectangle(r, radius=min(rad, (r[2]-r[0])/2, (r[3]-r[1])/2), fill=c['red'], outline=c['red_dk'], width=SS)
+            # seat highlight
+            hi = [r[0] + 2 * SS, r[1] + 2 * SS, r[2] - 2 * SS, r[1] + (r[3] - r[1]) * 0.45]
+            if hi[2] > hi[0] and hi[3] > hi[1]:
+                d.rounded_rectangle(hi, radius=min(rad, (hi[2]-hi[0])/2, (hi[3]-hi[1])/2), fill=c['red_hi'] + (70,))
+    for p in ('table', 'INDOOR_TABLE', 'BED_TABLE'):
         for a in pre.get(p, []):
             r = plan.rect(a)
-            if (r[2] - r[0]) < 80 * SS:
-                d.ellipse(r, outline=c['faint'], width=SS)
+            if (r[2] - r[0]) < 70 * SS:
+                d.ellipse(r, fill=c['unit'], outline=c['gold_dim'], width=SS)
 
-    # palms
-    for p in ('SM_Windmill_Palm', 'SM_Coconut_Tree'):
+    # ---- palms (planters + trees) ----
+    for p in ('SM_Windmill_Palm', 'SM_Coconut_Tree', 'Wood_pot'):
         for a in pre.get(p, []):
             x, y = plan.P(a['bbox'][0], a['bbox'][1])
-            rr = 9 * SS
-            for k in range(6):
-                ang = k * math.pi / 3
-                d.line([(x, y), (x + rr * math.cos(ang), y + rr * math.sin(ang))], fill=c['dim'], width=SS)
-            d.ellipse([x - 2 * SS, y - 2 * SS, x + 2 * SS, y + 2 * SS], fill=c['dim'])
+            palm(d, x, y, c, (19 if p != 'Wood_pot' else 13) * SS)
 
-    # TVs — small solid markers
+    # ---- mirror ball ----
+    if 'Mirror_ball1' in A:
+        x, y = plan.P(A['Mirror_ball1']['bbox'][0], A['Mirror_ball1']['bbox'][1])
+        rr = 7 * SS
+        d.ellipse([x - rr, y - rr, x + rr, y + rr], outline=c['gold'], width=SS)
+        d.line([(x - rr, y), (x + rr, y)], fill=c['gold_dim'], width=SS)
+        d.line([(x, y - rr), (x, y + rr)], fill=c['gold_dim'], width=SS)
+
+    # ---- TVs ----
     for label in ZONES['tv']:
         a = A[label]
         x, y = plan.P(a['bbox'][0], a['bbox'][1])
-        d.rectangle([x - 3 * SS, y - 3 * SS, x + 3 * SS, y + 3 * SS], fill=c['screen'], outline=c['line'], width=SS)
+        d.rectangle([x - 3 * SS, y - 3 * SS, x + 3 * SS, y + 3 * SS], fill=c['gold'])
 
-    # sunray ceiling blades — faint spokes
-    for a in pre.get('LED_Sol_Rays_Sunray', []):
-        ph = plan.vhull(a)
-        if ph:
-            d.polygon(ph, fill=(c['faint'][0], c['faint'][1], c['faint'][2], 22), outline=c['faint'], width=SS)
-
-    # mirror ball
-    if 'Mirror_ball' in A:
-        x, y = plan.P(A['Mirror_ball']['bbox'][0], A['Mirror_ball']['bbox'][1])
-        d.ellipse([x - 6 * SS, y - 6 * SS, x + 6 * SS, y + 6 * SS], outline=c['line'], width=SS)
-
-    # LED screens — prominent
-    def draw_screen(label):
+    # ---- LED screens ----
+    def screen_shape(label):
         a = A.get(label)
         if not a:
             return None
         ph = plan.vhull(a)
         if ph and len(ph) >= 3:
-            d.polygon(ph, fill=c['screen'], outline=c['line'], width=2 * SS)
-            xs = [p[0] for p in ph]; ys = [p[1] for p in ph]
+            return ('poly', ph)
+        return ('rect', plan.rect(a, grow=2 * SS))
+
+    # curves get the gold diamond-lattice treatment like the reference band
+    for label in ('LED_SR_Curves', 'LED_SL_Curves'):
+        sh = screen_shape(label)
+        if not sh:
+            continue
+        mask = Image.new('L', img.size, 0)
+        ImageDraw.Draw(mask).polygon(sh[1], fill=255)
+        img.paste(Image.new('RGB', img.size, c['screen']), (0, 0), mask)
+        lattice(img, mask, c, 10 * SS)
+        d = ImageDraw.Draw(img, 'RGBA')
+        d.polygon(sh[1], outline=c['gold'], width=2 * SS)
+
+    for label in ('LED_SR_IMAG', 'LED_SL_IMAG', 'LED_Center', 'LED_Stage_Arch',
+                  'LED_Outdoor_Screen', 'LED_Outdoor_Arch_Screen', 'outdoor_sr_box', 'outdoor_sl_box',
+                  'LED_DJ_Booth'):
+        sh = screen_shape(label)
+        if not sh:
+            continue
+        if sh[0] == 'poly':
+            d.polygon(sh[1], fill=c['screen'], outline=c['gold'], width=2 * SS)
         else:
-            r = plan.rect(a, grow=2 * SS)
-            d.rectangle(r, fill=c['screen'], outline=c['line'], width=2 * SS)
-            xs = [r[0], r[2]]; ys = [r[1], r[3]]
-        return (min(xs), min(ys), max(xs), max(ys))
+            d.rectangle(sh[1], fill=c['screen'], outline=c['gold'], width=2 * SS)
 
-    boxes = {}
-    for label in SCREEN_LABELS:
-        b = draw_screen(label)
-        if b:
-            boxes[label] = b
-
-    # screen labels with small offsets to avoid overlap
-    f = ImageFont.truetype(F_MONO_B, 11 * SS)
-    OFF = {'LED_SR_Curves': (0, -16), 'LED_SL_Curves': (0, 16), 'LED_SR_IMAG': (30, -12),
-           'LED_SL_IMAG': (30, 12), 'LED_Center': (44, 0), 'LED_DJ_Booth': (-52, 0),
-           'LED_Outdoor_Screen': (0, -18), 'LED_Outdoor_Arch_Screen': (0, 16),
-           'outdoor_sr_box': (0, -16), 'outdoor_sl_box': (0, 16), 'LED_Stage_Arch': (0, -20)}
-    for label, b in boxes.items():
-        t = SCREEN_LABELS[label]
-        ox_, oy_ = OFF.get(label, (0, -14))
-        mx = (b[0] + b[2]) / 2 + ox_ * SS
-        my = (b[1] + b[3]) / 2 + oy_ * SS
-        tb = d.textbbox((0, 0), t, font=f)
-        d.text((mx - (tb[2] - tb[0]) / 2, my - (tb[3] - tb[1]) / 2), t, font=f, fill=c['text'])
-
-    # frame + title block + street labels
-    d.rectangle([24 * SS, 24 * SS, W * SS - 24 * SS, H * SS - 24 * SS], outline=c['line'], width=2 * SS)
-    d.rectangle([32 * SS, 32 * SS, W * SS - 32 * SS, H * SS - 32 * SS], outline=c['faint'], width=SS)
-    d.text((48 * SS, 46 * SS), 'SOLEIA · LAS VEGAS', font=ImageFont.truetype(F_MONO, 11 * SS), fill=c['sub'])
-    d.text((46 * SS, 64 * SS), 'Venue Layout', font=ImageFont.truetype(F_SERIF, 27 * SS), fill=c['line'])
-    d.text((48 * SS, 102 * SS), 'TOP-DOWN PLAN · GENERATED FROM UE GEOMETRY · NOT TO SCALE',
-           font=ImageFont.truetype(F_MONO, 9 * SS), fill=c['sub'])
-    fs = ImageFont.truetype(F_MONO, 10 * SS)
-    d.text((48 * SS, H * SS - 44 * SS), 'FLAMINGO ROAD', font=fs, fill=c['sub'])
-    d.text((W * SS - 220 * SS, H * SS - 44 * SS), 'SOLEIA CREATIVE GUIDE', font=fs, fill=c['sub'])
+    # ---- Soleia wordmark ----
+    logo = Image.open(LOGO).convert('RGBA')
+    lw = 220 * SS
+    lh = int(logo.height * lw / logo.width)
+    logo = logo.resize((lw, lh), Image.LANCZOS)
+    img.paste(logo, ((W * SS - lw) // 2, 18 * SS), logo)
 
     return img.resize((W, H), Image.LANCZOS)
 
@@ -266,13 +318,11 @@ def draw_glows(plan):
             ph = plan.vhull(a)
             if ph and len(ph) >= 3:
                 d.polygon(ph, fill=255)
+            elif zone == 'tv':
+                x, y = plan.P(a['bbox'][0], a['bbox'][1])
+                d.rectangle([x - 4 * SS, y - 4 * SS, x + 4 * SS, y + 4 * SS], fill=255)
             else:
-                r = plan.rect(a, grow=2 * SS)
-                if zone == 'tv':
-                    x, y = plan.P(a['bbox'][0], a['bbox'][1])
-                    d.rectangle([x - 4 * SS, y - 4 * SS, x + 4 * SS, y + 4 * SS], fill=255)
-                else:
-                    d.rectangle(r, fill=255)
+                d.rectangle(plan.rect(a, grow=2 * SS), fill=255)
         mask = mask.resize((W, H), Image.LANCZOS)
         core = mask.filter(ImageFilter.GaussianBlur(1.2))
         halo = mask.filter(ImageFilter.GaussianBlur(9))
@@ -280,8 +330,6 @@ def draw_glows(plan):
         out.paste(Image.new('RGBA', (W, H), GOLD_GLOW + (255,)), (0, 0), halo.point(lambda v: int(v * 0.55)))
         out.paste(Image.new('RGBA', (W, H), GOLD_GLOW + (255,)), (0, 0), core.point(lambda v: int(v * 0.9)))
         out.save(f'public/creative-guide/zone-glows/{zone}.png')
-
-        # region extents (percent) for auto-focus framing
         bbox = mask.getbbox()
         if bbox:
             x0, y0, x1, y1 = bbox
@@ -292,15 +340,9 @@ def draw_glows(plan):
 def main():
     plan = Plan()
     for mode in CW:
-        draw_blueprint(plan, mode).save(f'public/creative-guide/venue-blueprint-{mode}.png')
-        print('blueprint', mode, 'written')
+        draw_layout(plan, mode).save(f'public/creative-guide/venue-blueprint-{mode}.png')
+        print('layout', mode, 'written')
     draw_glows(plan)
-    # context label positions
-    for label in ('pool', 'pool2'):
-        a = plan.acts.get(label)
-        if a:
-            x, y = plan.P(a['bbox'][0], a['bbox'][1])
-            print(f"label {label}: x={x/SS/W*100*SS:.1f}% y={y/SS/H*100*SS:.1f}%")
 
 
 if __name__ == '__main__':
