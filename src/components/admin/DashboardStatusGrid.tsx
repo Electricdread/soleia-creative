@@ -124,6 +124,23 @@ export function DashboardStatusGrid() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  const cards = [
+    {
+      title: 'Proposals',
+      icon: FileText,
+      tone: 'text-blue-500',
+      ring: 'hover:border-blue-500/40',
+      primary: stats.proposalsActive,
+      primaryLabel: 'active',
+      sub: [
+        { label: 'sent', value: stats.proposalsSent, color: 'text-amber-500' },
+        { label: 'signed', value: stats.proposalsSigned, color: 'text-emerald-500' },
+        { label: 'draft', value: stats.proposalsDraft, color: 'text-muted-foreground' },
+      ],
+      href: '/admin/proposals' as string | undefined,
+      onClick: undefined as ((e: React.MouseEvent) => void) | undefined,
+      busy: false,
+    },
     {
       title: 'Creative Sessions',
       icon: Palette,
@@ -135,7 +152,9 @@ export function DashboardStatusGrid() {
         { label: 'public', value: stats.sessionsPublic, color: 'text-emerald-500' },
         { label: 'mood items / 7d', value: stats.moodWeek, color: 'text-blue-500' },
       ],
-      href: '/admin/creative',
+      href: '/admin/creative' as string | undefined,
+      onClick: undefined as ((e: React.MouseEvent) => void) | undefined,
+      busy: false,
     },
     {
       title: 'Content Previz',
@@ -148,19 +167,24 @@ export function DashboardStatusGrid() {
         { label: 'with selections', value: stats.linksWithSelections, color: 'text-emerald-500' },
         { label: 'awaiting', value: Math.max(0, stats.linksActive - stats.linksWithSelections), color: 'text-amber-500' },
       ],
-      href: '/admin/looks',
+      href: '/admin/looks' as string | undefined,
+      onClick: undefined as ((e: React.MouseEvent) => void) | undefined,
+      busy: false,
     },
     {
-      title: 'Asset Uploads',
-      icon: Upload,
+      title: 'Client Uploads',
+      icon: scanning ? RefreshCw : CloudDownload,
       tone: 'text-purple-500',
       ring: 'hover:border-purple-500/40',
-      primary: stats.uploadsWeek,
+      primary: stats.driveWeek,
       primaryLabel: 'this week',
       sub: [
-        { label: 'all-time', value: stats.uploadsTotal, color: 'text-muted-foreground' },
+        { label: 'all-time', value: stats.driveTotal, color: 'text-muted-foreground' },
+        { label: `last scan ${relativeTime(stats.driveLastAt)}`, value: '', color: 'text-muted-foreground' },
       ],
-      href: '/admin/looks',
+      href: undefined as string | undefined,
+      onClick: runScan,
+      busy: scanning,
     },
   ];
 
@@ -171,15 +195,19 @@ export function DashboardStatusGrid() {
         return (
           <button
             key={card.title}
-            onClick={() => navigate(card.href)}
+            onClick={(e) => {
+              if (card.onClick) card.onClick(e);
+              else if (card.href) navigate(card.href);
+            }}
+            disabled={card.busy}
             className={cn(
-              'group relative bg-card border border-border rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] flex flex-col',
+              'group relative bg-card border border-border rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] flex flex-col disabled:opacity-70 disabled:cursor-wait',
               card.ring,
             )}
           >
             <div className="flex items-start justify-between mb-3">
               <div className={cn('w-9 h-9 rounded-lg bg-muted flex items-center justify-center', card.tone)}>
-                <Icon className="w-4.5 h-4.5" />
+                <Icon className={cn('w-4.5 h-4.5', card.busy && 'animate-spin')} />
               </div>
               <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-foreground transition-colors" />
             </div>
@@ -197,7 +225,7 @@ export function DashboardStatusGrid() {
             <div className="mt-auto flex flex-wrap gap-x-2 gap-y-0.5">
               {card.sub.map((s) => (
                 <span key={s.label} className="text-[10px] text-muted-foreground">
-                  <span className={cn('font-semibold', s.color)}>{s.value}</span> {s.label}
+                  {s.value !== '' && <span className={cn('font-semibold', s.color)}>{s.value}</span>} {s.label}
                 </span>
               ))}
             </div>
@@ -207,3 +235,4 @@ export function DashboardStatusGrid() {
     </div>
   );
 }
+
