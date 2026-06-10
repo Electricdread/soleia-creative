@@ -278,10 +278,9 @@ button, a, [role="button"] {
 
   /* Gradient border shell — Soleia gold hairline edge as the hero treatment.
      Drawn on a masked pseudo-element so it never disturbs the surface fill and
-     follows the element's (24px) radius. */
-  .edge-gold {
-    position: relative;
-  }
+     follows the element's (24px) radius. The host element must already be
+     positioned (relative/absolute) — do not set position here, or it would
+     override Tailwind's positioning utilities declared earlier in the layer. */
   .edge-gold::before {
     content: "";
     position: absolute;
