@@ -64,7 +64,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Left',
     kind: 'Interior LED · Curves',
     x: 79.5, y: 68.0,
-    regions: [{ cx: 79.5, cy: 68, rx: 8, ry: 10 }],
+    regions: [{ cx: 78, cy: 68, rx: 9.5, ry: 10.5 }],
     screenIds: ['curves-sl'],
     blurb: 'Stage-left curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },

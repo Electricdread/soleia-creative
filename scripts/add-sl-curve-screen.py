@@ -16,10 +16,11 @@ from PIL import Image, ImageDraw
 # Points along the existing SR screen strip (upper arc) — used for color sampling.
 SR_SAMPLES = [(1000, 115), (1045, 133), (1090, 159)]
 
-# Centerline of the replica strip: the inner edge of the lower red band, from
-# beside the round terrace up to where the band meets the outer ring.
-SL_PATH = [(962, 588), (1005, 608), (1055, 614), (1100, 604), (1140, 578), (1175, 540), (1200, 498), (1216, 455), (1222, 428)]
-HALF_W = 3.5  # strip half-width (the SR screen reads ~7px wide)
+# Centerline of the replica strip: the curved curb wall under the tiered
+# seating (client-marked), from the round terrace up to where it merges by the
+# Main screens.
+SL_PATH = [(952, 582), (985, 571), (1020, 562), (1055, 552), (1090, 539), (1125, 525), (1155, 508), (1180, 488), (1196, 468)]
+HALF_W = 4  # strip half-width (matches the curb band ~8px wide)
 
 
 def catmull_rom(pts, steps_per_seg=16):
