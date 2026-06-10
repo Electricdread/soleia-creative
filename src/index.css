@@ -728,16 +728,6 @@ button, a, [role="button"] {
     animation: subtle-flare 4s ease-in-out infinite;
   }
 
-  /* Venue map — pulsating glow for the selected zone's screens */
-  @keyframes zone-glow {
-    0%, 100% { opacity: 0.45; }
-    50% { opacity: 1; }
-  }
-
-  .zone-glow-pulse {
-    animation: zone-glow 2.4s ease-in-out infinite;
-  }
-
   .palm-sway {
     animation: palm-sway 6s ease-in-out infinite;
     transform-origin: bottom center;
