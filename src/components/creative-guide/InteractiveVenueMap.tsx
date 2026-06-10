@@ -35,8 +35,12 @@ interface ZonePin {
   blurb: string;
   members?: { x: number; y: number }[];
   // Elliptical footprints highlighted on the blueprint when the zone is active.
-  // A zone may span multiple disjoint areas (e.g. Arrival).
+  // A zone may span multiple disjoint areas (e.g. Arrival). Zones with
+  // `glowOverlay` instead pulse an exact screen silhouette (projected from the
+  // venue's UE screen meshes) at /creative-guide/zone-glows/{id}.png; their
+  // regions are then only used to frame the auto-focus zoom.
   regions: { cx: number; cy: number; rx: number; ry: number }[];
+  glowOverlay?: boolean;
 }
 
 const ZONE_PINS: ZonePin[] = [
@@ -50,6 +54,7 @@ const ZONE_PINS: ZonePin[] = [
       { cx: 85, cy: 40, rx: 6.5, ry: 19 },    // IMAG SR / Center / IMAG SL
       { cx: 78, cy: 68, rx: 9.5, ry: 10.5 },  // SL Curve — lower arc
     ],
+    glowOverlay: true,
     screenIds: ['curves-sr', 'imag-sr', 'center', 'imag-sl', 'curves-sl'],
     blurb: 'The full main-room LED system — SR and SL curves wrapping the room into the IMAG side panels and center focal screen, for hero moments, logo reveals and live camera.',
   },
@@ -259,8 +264,19 @@ export function InteractiveVenueMap() {
             </div>
           )}
 
+          {/* exact screen silhouette (from the UE screen meshes), pulsing */}
+          {renderOk && activeZone?.glowOverlay && (
+            <img
+              src={`/creative-guide/zone-glows/${activeZone.id}.png`}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none zone-glow-pulse"
+            />
+          )}
+
           {/* highlight the active zone's footprint(s) on the blueprint */}
-          {renderOk && activeZone && activeZone.regions.map((r, i) => (
+          {renderOk && activeZone && !activeZone.glowOverlay && activeZone.regions.map((r, i) => (
             <div
               key={`${activeZone.id}-r${i}`}
               className="absolute pointer-events-none"
