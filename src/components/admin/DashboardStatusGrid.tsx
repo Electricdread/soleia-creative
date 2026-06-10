@@ -51,17 +51,20 @@ export function DashboardStatusGrid() {
   const [stats, setStats] = useState<Stats>(ZERO);
   const [loading, setLoading] = useState(true);
 
+  const [scanning, setScanning] = useState(false);
+
   const load = async () => {
     try {
       const since = weekAgo();
-      const [proposals, sessions, mood, links, selections, uploadsAll, uploadsWk] = await Promise.all([
+      const [proposals, sessions, mood, links, selections, driveAll, driveWk, driveLast] = await Promise.all([
         supabase.from('proposals').select('id, status, is_active, signed_at'),
         supabase.from('creative_sessions').select('id, is_active, is_public'),
         supabase.from('mood_board_items').select('id, created_at').gte('created_at', since),
         supabase.from('client_links').select('id, is_active'),
         supabase.from('link_selections').select('link_id'),
-        supabase.from('session_uploads').select('id', { count: 'exact', head: true }),
-        supabase.from('session_uploads').select('id', { count: 'exact', head: true }).gte('created_at', since),
+        supabase.from('drive_seen_files').select('id', { count: 'exact', head: true }),
+        supabase.from('drive_seen_files').select('id', { count: 'exact', head: true }).gte('seen_at', since),
+        supabase.from('drive_seen_files').select('seen_at').order('seen_at', { ascending: false }).limit(1),
       ]);
 
       const activeProposals = (proposals.data || []).filter(p => p.is_active);
@@ -78,13 +81,32 @@ export function DashboardStatusGrid() {
         moodWeek: mood.data?.length || 0,
         linksActive: linksActiveList.length,
         linksWithSelections: linksActiveList.filter(l => linksWithSel.has(l.id)).length,
-        uploadsTotal: uploadsAll.count || 0,
-        uploadsWeek: uploadsWk.count || 0,
+        driveTotal: driveAll.count || 0,
+        driveWeek: driveWk.count || 0,
+        driveLastAt: (driveLast.data?.[0] as any)?.seen_at ?? null,
       });
     } catch (e) {
       console.error('DashboardStatusGrid load error', e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const runScan = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (scanning) return;
+    setScanning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('drive-upload-watcher');
+      if (error) throw error;
+      const newCount = (data as any)?.new_files ?? (data as any)?.newFiles ?? (data as any)?.count;
+      toast.success(typeof newCount === 'number' ? `Scan complete — ${newCount} new file(s)` : 'Scan complete');
+      await load();
+    } catch (err: any) {
+      console.error('drive-upload-watcher invoke failed', err);
+      toast.error(err?.message || 'Scan failed');
+    } finally {
+      setScanning(false);
     }
   };
 
@@ -95,28 +117,13 @@ export function DashboardStatusGrid() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'creative_sessions' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'client_links' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_uploads' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'drive_seen_files' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'link_selections' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mood_board_items' }, load)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  const cards = [
-    {
-      title: 'Proposals',
-      icon: FileText,
-      tone: 'text-blue-500',
-      ring: 'hover:border-blue-500/40',
-      primary: stats.proposalsActive,
-      primaryLabel: 'active',
-      sub: [
-        { label: 'sent', value: stats.proposalsSent, color: 'text-amber-500' },
-        { label: 'signed', value: stats.proposalsSigned, color: 'text-emerald-500' },
-        { label: 'draft', value: stats.proposalsDraft, color: 'text-muted-foreground' },
-      ],
-      href: '/admin/proposals',
-    },
     {
       title: 'Creative Sessions',
       icon: Palette,
