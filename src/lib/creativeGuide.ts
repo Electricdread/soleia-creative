@@ -121,8 +121,8 @@ export const DISPLAY_TYPES: DisplayType[] = [
       { width: 588, height: 840, label: 'Outdoor SR' },
       { width: 588, height: 840, label: 'Outdoor SL' },
       { width: 1512, height: 504, label: 'Outdoor Arch' },
-      { width: 2304, height: 592, label: 'SR Curves' },
-      { width: 2304, height: 592, label: 'SL Curves' },
+      { width: 2304, height: 272, label: 'SR Curves' },
+      { width: 2304, height: 272, label: 'SL Curves' },
       { width: 640, height: 272, label: 'Center' },
       { width: 1092, height: 168, label: 'DJ Booth' },
       { width: 1216, height: 592, label: 'IMAG SR' },
@@ -287,7 +287,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'SL Curves',
     category: 'indoor',
     subcategory: 'curves',
-    resolution: '2304x592',
+    resolution: '2304x272',
     description: 'Stage left curved screens (2 sections) integrated into architectural elements enhancing spatial immersion.',
     useCases: [
       'Ambient brand color washes',
@@ -295,7 +295,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
       'Pattern-based visuals that complement main content',
     ],
     specs: {
-      resolution: '2304x592',
+      resolution: '2304x272',
     },
   },
   {
@@ -303,7 +303,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'SR Curves',
     category: 'indoor',
     subcategory: 'curves',
-    resolution: '2304x592',
+    resolution: '2304x272',
     description: 'Stage right curved screens (2 sections) integrated into architectural elements enhancing spatial immersion.',
     useCases: [
       'Ambient brand color washes',
@@ -311,7 +311,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
       'Pattern-based visuals that complement main content',
     ],
     specs: {
-      resolution: '2304x592',
+      resolution: '2304x272',
     },
   },
   {

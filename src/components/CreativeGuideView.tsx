@@ -24,11 +24,11 @@ const ZONE_GROUPS = [
     group: 'Main Room — Interior LED',
     note: 'The primary nightclub LED wall, left to right.',
     zones: [
-      { name: 'SR Curves', res: '2304 × 592', role: 'Stage-right curved LED — wraparound ambient visuals and brand washes.' },
+      { name: 'SR Curves', res: '2304 × 272', role: 'Stage-right curved LED — wraparound ambient visuals and brand washes.' },
       { name: 'IMAG SR', res: '1216 × 592', role: 'Stage-right vertical screen — directional branding and portrait content.' },
       { name: 'Center', res: '640 × 272', role: 'Center focal screen — logo reveals and hero moments.' },
       { name: 'IMAG SL', res: '1216 × 592', role: 'Stage-left vertical screen — directional branding and portrait content.' },
-      { name: 'SL Curves', res: '2304 × 592', role: 'Stage-left curved LED — wraparound ambient visuals and brand washes.' },
+      { name: 'SL Curves', res: '2304 × 272', role: 'Stage-left curved LED — wraparound ambient visuals and brand washes.' },
     ],
   },
   {
