@@ -16,6 +16,7 @@ import {
   ExternalLink,
   PlayCircle,
   StopCircle,
+  Bell,
 } from 'lucide-react';
 
 type StatusReport = {
