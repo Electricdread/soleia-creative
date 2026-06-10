@@ -1,26 +1,81 @@
 ## Goal
+When a client drops a file into their assigned Google Drive folder, fire a Zapier webhook so you get a notification (Email, Slack, SMS — whatever you wire up in the Zap).
 
-Swap the Interactive Venue Map's blueprint to the newly uploaded Soleia Las Vegas top-down render, and re-align the clickable zone pins (Right, Main, Left, Arrival, TV) plus location labels (Lily Pad, Pool 2, Pool) to the new layout.
+## How it works
 
-## Steps
+```text
+pg_cron (every 2 min)
+   └─► edge fn: drive-upload-watcher
+         ├─ for each client_link with drive_folder_id:
+         │    1. List Drive folder children (via google_drive connector gateway)
+         │    2. Compare against drive_seen_files table
+         │    3. For each NEW file:
+         │         - insert into drive_seen_files
+         │         - POST to ZAPIER_WEBHOOK_URL
+         └─ done
+```
 
-1. **Upload new blueprint as light variant**
-   - Take uploaded `venue-layout2.jpg`, save to `public/creative-guide/venue-blueprint-light.png` (overwrite existing).
+## Setup steps (one-time)
 
-2. **Generate dark variant**
-   - Use `imagegen--edit_image` on the new image to produce a dark-mode version (deep charcoal background replacing cream, preserving architectural detail and red accents). Save to `public/creative-guide/venue-blueprint-dark.png`.
+1. **You create the Zap** in Zapier:
+   - Trigger: *Webhooks by Zapier → Catch Hook*
+   - Action: whatever notification you want (email, Slack, push)
+   - Copy the "Catch Hook" URL.
+2. **Add `ZAPIER_WEBHOOK_URL` secret** — I'll request it once the plan is approved.
 
-3. **Re-tune pin coordinates in `InteractiveVenueMap.tsx`**
-   - In the new image the venue is centered with whitespace margins (~10% left, ~5% right). Recompute `x/y` % for each `ZONE_PINS` entry and `LABEL_PINS` entry against the new image:
-     - `right` (stage-right curves) — upper interior of the right-side amphitheater
-     - `main` (stage wall, 3 IMAG members) — center of the curved stage on the right half
-     - `left` (stage-left curves) — lower interior of the right-side amphitheater
-     - `arrival` (3 outdoor screens) — pinned at the bottom-center outdoor strip + members on the wraparound red ribbon
-     - `tv` — upper cabanas / interior area
-     - Labels: `Lily Pad` (upper-left round pool), `Pool` (large central palm pool), `Pool 2` (second pool basin)
-   - Keep all other logic, mapping cards, and zone metadata untouched.
+## Implementation
+
+### 1. New table `drive_seen_files`
+Tracks which Drive file IDs we've already notified on (prevents duplicate Zaps).
+
+```sql
+create table public.drive_seen_files (
+  id uuid primary key default gen_random_uuid(),
+  link_id uuid references public.client_links(id) on delete cascade,
+  drive_file_id text not null,
+  file_name text,
+  seen_at timestamptz default now(),
+  unique (link_id, drive_file_id)
+);
+-- GRANTs to service_role only (no client access)
+-- RLS enabled, no policies (locked to service role)
+```
+
+### 2. New edge function `drive-upload-watcher`
+- `verify_jwt = false` (called by pg_cron)
+- For each active `client_links` row with a non-null `drive_folder_id`:
+  - GET `connector-gateway/google_drive/drive/v3/files?q='{folderId}'+in+parents&fields=files(id,name,mimeType,size,webViewLink,createdTime)`
+  - Diff against `drive_seen_files`
+  - For each new file, POST to `ZAPIER_WEBHOOK_URL`:
+    ```json
+    {
+      "client_name": "...",
+      "event_name": "...",
+      "event_date": "...",
+      "file_name": "...",
+      "file_type": "...",
+      "file_size": 12345,
+      "file_url": "https://drive.google.com/...",
+      "session_link": "https://soleiacreative.app/admin/sessions/{id}",
+      "timestamp": "2026-06-10T..."
+    }
+    ```
+  - Insert into `drive_seen_files`
+- On first run for a given folder: seed `drive_seen_files` with existing files but DO NOT fire webhook (avoids notification flood on backfill).
+
+### 3. pg_cron schedule
+Every 2 minutes, invoke `drive-upload-watcher`. (Uses `pg_net` + the service role via existing pattern.)
+
+### 4. Admin UI tweak (small)
+In **/admin/looks → Storage** panel, show a "Drive Watcher" status row: last run time, total files tracked, last-fired webhook timestamp (read from `drive_seen_files`). No new page.
+
+## Technical notes
+- Uses existing `google_drive` connector gateway (already linked — `GOOGLE_DRIVE_API_KEY` is configured).
+- Assumes `client_links.drive_folder_id` exists. If not, I'll add it as a nullable column and surface it in the session manager.
+- Webhook fires server-side from the edge function (no CORS, full visibility into success/failure logged to `email_send_log`-style or just edge function logs).
+- Backfill-safe: first scan of a folder just records IDs without notifying.
 
 ## Out of scope
-
-- No changes to zone metadata, mapping-card thumbnails (`/zone-cards/*`), display specs, or any other surface.
-- No layout/UI changes to the map controls.
+- Changing where original files are stored (still Drive cold storage).
+- In-app notification UI — Zapier handles delivery.
+- Notifications for `session_uploads` (in-app uploads) — separate flow already exists via `notify-upload` function.
