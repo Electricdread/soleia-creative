@@ -34,7 +34,8 @@ interface ZonePin {
   tv?: boolean;
   blurb: string;
   members?: { x: number; y: number }[];
-  // Elliptical footprints highlighted on the blueprint when the zone is active.
+  // Footprint extents used to frame the auto-focus zoom (the visual highlight
+  // itself is the screen-shaped overlay at /creative-guide/zone-glows/{id}.png).
   // A zone may span multiple disjoint areas (e.g. Arrival).
   regions: { cx: number; cy: number; rx: number; ry: number }[];
 }
@@ -259,25 +260,17 @@ export function InteractiveVenueMap() {
             </div>
           )}
 
-          {/* highlight the active zone's footprint(s) on the blueprint */}
-          {renderOk && activeZone && activeZone.regions.map((r, i) => (
-            <div
-              key={`${activeZone.id}-r${i}`}
-              className="absolute pointer-events-none"
-              style={{
-                left: `${r.cx}%`,
-                top: `${r.cy}%`,
-                width: `${r.rx * 2}%`,
-                height: `${r.ry * 2}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              <div
-                className="w-full h-full rounded-[50%] border border-amber-300/70 animate-pulse"
-                style={{ background: 'radial-gradient(closest-side, hsl(var(--primary) / 0.30), hsl(var(--primary) / 0.06) 70%, transparent)' }}
-              />
-            </div>
-          ))}
+          {/* pulsating screen glow for the active zone — the overlay PNG shares
+              the blueprint's canvas, so object-contain keeps it pixel-aligned */}
+          {renderOk && activeZone && (
+            <img
+              src={`/creative-guide/zone-glows/${activeZone.id}.png`}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none zone-glow-pulse"
+            />
+          )}
 
           {/* plain location labels */}
           {renderOk && LABEL_PINS.map((p) => (
