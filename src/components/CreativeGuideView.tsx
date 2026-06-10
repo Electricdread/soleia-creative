@@ -247,7 +247,7 @@ const CreativeGuideView = () => {
           <div className="grid gap-4 md:grid-cols-3">
             {WORLDS.map((w, i) => (
               <Reveal key={w.title} delay={i * 0.05}>
-                <div className="h-full border border-primary/15 bg-card/40 p-7 hover:border-primary/30 transition-colors">
+                <div className="h-full rounded-3xl surface-elevated border border-primary/15 bg-card/40 p-7 hover:border-primary/30 transition-colors">
                   <div className="text-[10px] uppercase tracking-[0.24em] text-primary">{w.k}</div>
                   <h3 className="font-display text-2xl text-foreground mt-2 mb-3">{w.title}</h3>
                   <p className="text-[13.5px] text-muted-foreground leading-relaxed">{w.body}</p>
@@ -263,7 +263,7 @@ const CreativeGuideView = () => {
         <div className="container mx-auto max-w-5xl px-6">
           <SectionHead eyebrow="03 — Soleia 360° Tour" title="Step inside." />
           <Reveal>
-            <div className="relative border border-primary/15 bg-black overflow-hidden">
+            <div className="relative rounded-3xl surface-elevated border border-primary/15 bg-black overflow-hidden">
               <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-10 pointer-events-none" />
               <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 z-10 pointer-events-none" />
               <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 z-10 pointer-events-none" />
@@ -303,7 +303,7 @@ const CreativeGuideView = () => {
           <div className="grid gap-4 md:grid-cols-2">
             {INCLUSIONS.map((inc, i) => (
               <Reveal key={inc.title} delay={i * 0.05}>
-                <div className="h-full border border-primary/15 bg-card/40 p-8">
+                <div className="h-full rounded-3xl surface-elevated border border-primary/15 bg-card/40 p-8">
                   <div className="text-[10.5px] uppercase tracking-[0.2em] text-primary mb-3">{inc.sub}</div>
                   <h3 className="font-display text-2xl text-foreground mb-2">{inc.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{inc.intro}</p>
@@ -341,7 +341,7 @@ const CreativeGuideView = () => {
           <div className="grid gap-4 md:grid-cols-3 mb-10">
             {STEPS.map((s, i) => (
               <Reveal key={s.n} delay={i * 0.05}>
-                <div className="h-full border border-primary/15 bg-card/40 p-7">
+                <div className="h-full rounded-3xl surface-elevated border border-primary/15 bg-card/40 p-7">
                   <div className="font-display text-3xl text-primary">{s.n}</div>
                   <h4 className="font-display text-xl text-foreground mt-2 mb-2">{s.t}</h4>
                   <p className="text-[13.5px] text-muted-foreground leading-relaxed">{s.d}</p>
@@ -373,7 +373,7 @@ const CreativeGuideView = () => {
                   <h3 className="font-display text-2xl text-foreground">{g.group}</h3>
                   <span className="text-[11px] text-muted-foreground/70">{g.note}</span>
                 </div>
-                <div className="border border-primary/15">
+                <div className="rounded-3xl surface-elevated border border-primary/15 overflow-hidden">
                   {g.zones.map((z, zi) => (
                     <div key={z.name} className={`grid grid-cols-1 sm:grid-cols-[180px_1fr_auto] gap-1 sm:gap-4 items-center ${zi < g.zones.length - 1 ? 'border-b border-primary/15' : ''}`}>
                       <div className="px-5 py-3.5 text-sm font-medium text-foreground">{z.name}</div>
@@ -397,7 +397,7 @@ const CreativeGuideView = () => {
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/creative-guide/content-delivery')}
-              className="group cursor-pointer border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/5 p-7 sm:p-8 hover:border-primary/50 transition-colors"
+              className="group cursor-pointer rounded-3xl surface-elevated border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/5 p-7 sm:p-8 hover:border-primary/50 transition-colors"
             >
               <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-primary mb-2"><FileVideo className="w-4 h-4" /> Providing your own content?</div>
               <h3 className="font-display text-2xl text-foreground mb-2 group-hover:text-gradient-gold transition-colors">Content Delivery Guide</h3>

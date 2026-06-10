@@ -143,7 +143,7 @@ function DisplayCard({ display, highlightAE = false }: { display: DisplayType; h
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       className="h-full group cursor-pointer"
     >
-      <Card className={`h-full glass border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4),0_0_80px_-20px_hsl(var(--primary)/0.2)] ${showHighlight ? 'ring-2 ring-primary border-primary/60 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.6)] animate-pulse' : ''}`}>
+      <Card className={`h-full glass rounded-3xl surface-elevated border-border/50 overflow-hidden transition-all duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4),0_0_80px_-20px_hsl(var(--primary)/0.2)] ${showHighlight ? 'ring-2 ring-primary border-primary/60 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.6)] animate-pulse' : ''}`}>
 
         {/* Image or Video Carousel */}
         <div className="relative aspect-video overflow-hidden">
@@ -431,7 +431,7 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Card className="glass border-primary/30 overflow-hidden group hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4)]">
+        <Card className="glass rounded-3xl surface-elevated border-primary/30 overflow-hidden group hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4)]">
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -465,7 +465,7 @@ export function DisplaySpecsView({ onSelectDisplay }: DisplaySpecsViewProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <Card className="border-primary/60 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 shadow-[0_0_40px_-10px_hsl(var(--primary)/0.4)]">
+            <Card className="rounded-3xl surface-elevated border-primary/60 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10">
               <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/20 shrink-0">
                   <Sparkles className="w-5 h-5 text-primary" />
