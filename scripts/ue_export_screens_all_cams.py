@@ -36,6 +36,26 @@ def target_actors(sub):
             if isinstance(a, unreal.StaticMeshActor) and rx.search(a.get_actor_label())]
 
 
+def world_transform(comp, actor):
+    # the python name of K2_GetComponentToWorld varies across UE versions
+    for name in ('get_world_transform', 'get_component_transform', 'get_component_to_world',
+                 'k2_get_component_to_world'):
+        fn = getattr(comp, name, None)
+        if fn:
+            try:
+                return fn()
+            except Exception:
+                pass
+    return actor.get_actor_transform()
+
+
+def xform_point(xf, v):
+    try:
+        return xf.transform_location(v)
+    except Exception:
+        return unreal.MathLibrary.transform_location(xf, v)
+
+
 def mesh_world_vertices(actor):
     pts = []
     pml = unreal.ProceduralMeshLibrary
@@ -43,7 +63,7 @@ def mesh_world_vertices(actor):
         mesh = comp.static_mesh
         if not mesh:
             continue
-        xf = comp.get_component_transform()
+        xf = world_transform(comp, actor)
         got = False
         for section in range(8):
             try:
@@ -54,13 +74,13 @@ def mesh_world_vertices(actor):
                 break
             got = True
             for v in verts:
-                pts.append(xf.transform_location(v))
+                pts.append(xform_point(xf, v))
         if not got:
             origin, ext = comp.get_local_bounds()
             for sx in (-1, 1):
                 for sy in (-1, 1):
                     for sz in (-1, 1):
-                        pts.append(xf.transform_location(unreal.Vector(
+                        pts.append(xform_point(xf, unreal.Vector(
                             origin.x + sx * ext.x, origin.y + sy * ext.y, origin.z + sz * ext.z)))
     return pts
 
