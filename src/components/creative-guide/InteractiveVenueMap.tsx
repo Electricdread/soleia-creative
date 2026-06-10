@@ -2,10 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X, MousePointerClick } from 'lucide-react';
 import { ALL_LED_ZONES, DISPLAY_TYPES } from '@/lib/creativeGuide';
 
-// Top-down venue blueprint generated from the Unreal geometry export by
-// scripts/venue-blueprint-from-ue.py (light + dark colorways). The zone glow
-// overlays are rendered through the same projection, so they are
-// pixel-registered with the blueprint.
+// Top-down venue blueprint, drawn in the mapping-card style (light + dark
+// colorways). Authored at 16:9 so the zone pins line up exactly.
 const BLUEPRINT_LIGHT = '/creative-guide/venue-blueprint-light.png';
 const BLUEPRINT_DARK = '/creative-guide/venue-blueprint-dark.png';
 
@@ -15,6 +13,13 @@ const ZONE_CARD_BASE = '/creative-guide/zone-cards';
 
 const zoneById = new Map(ALL_LED_ZONES.map((z) => [z.id, z]));
 const tvDisplay = DISPLAY_TYPES.find((d) => d.id === 'television');
+
+// Plain location labels — no mapping card.
+const LABEL_PINS: { t: string; x: number; y: number }[] = [
+  { t: 'Lily Pad', x: 20.0, y: 19.0 },
+  { t: 'Pool 2', x: 33.0, y: 47.0 },
+  { t: 'Pool', x: 50.0, y: 47.0 },
+];
 
 // Immersive zones. Each is one clickable pin (placed at the zone centroid)
 // plus optional member dots at each screen it groups. `screenIds` resolve
@@ -44,8 +49,11 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Main Interior',
     kind: 'Interior LED · Full Wall',
     x: 83.0, y: 50.0,
-    regions: [{ cx: 73.7, cy: 57.6, rx: 8.8, ry: 27.3 }],
-    glowOverlay: true,
+    regions: [
+      { cx: 74, cy: 19.5, rx: 9, ry: 8 },     // SR Curve — upper arc
+      { cx: 85, cy: 40, rx: 6.5, ry: 19 },    // IMAG SR / Center / IMAG SL
+      { cx: 78, cy: 68, rx: 9.5, ry: 10.5 },  // SL Curve — lower arc
+    ],
     screenIds: ['curves-sr', 'imag-sr', 'center', 'imag-sl', 'curves-sl'],
     blurb: 'The full main-room LED system — SR and SL curves wrapping the room into the IMAG side panels and center focal screen, for hero moments, logo reveals and live camera.',
   },
@@ -54,8 +62,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Arrival',
     kind: 'Exterior LED · Open-air',
     x: 90.0, y: 22.0,
-    regions: [{ cx: 45.2, cy: 59.9, rx: 11.7, ry: 18.9 }],
-    glowOverlay: true,
+    regions: [{ cx: 60.5, cy: 45, rx: 3.5, ry: 16 }, { cx: 36, cy: 61.5, rx: 7, ry: 7.5 }],
     screenIds: ['outdoor-sr', 'outdoor-sl', 'outdoor-arch'],
     blurb: 'Open-air entry screens facing the Las Vegas Strip — the first brand touchpoint for arriving guests.',
     members: [{ x: 75.0, y: 12.0 }, { x: 95.0, y: 50.0 }, { x: 88.0, y: 80.0 }],
@@ -65,8 +72,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'TV Displays',
     kind: 'TV / Narrowcasting',
     x: 45.0, y: 14.0,
-    regions: [{ cx: 39, cy: 30, rx: 17.8, ry: 8 }],
-    glowOverlay: true,
+    regions: [{ cx: 45, cy: 14, rx: 8, ry: 7 }],
     tv: true,
     blurb: 'High-definition TV displays throughout the venue for branded content and event visuals.',
   },
@@ -288,6 +294,20 @@ export function InteractiveVenueMap() {
             </div>
           ))}
 
+          {/* plain location labels */}
+          {renderOk && LABEL_PINS.map((p) => (
+            <div key={p.t} className="absolute pointer-events-none" style={{ left: `${p.x}%`, top: `${p.y}%` }}>
+              <div className="flex items-center gap-1" style={{ transform: `translate(-50%, -50%) scale(${1 / t.s})`, transformOrigin: 'left center' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-white/60 ring-2 ring-black/40 shrink-0" />
+                <span
+                  className="whitespace-nowrap text-[11px] font-medium text-white/80"
+                  style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)' }}
+                >
+                  {p.t}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
