@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Palette, Video, Upload, Loader2, ArrowRight } from 'lucide-react';
+import { FileText, Palette, Video, CloudDownload, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface Stats {
   proposalsActive: number;
