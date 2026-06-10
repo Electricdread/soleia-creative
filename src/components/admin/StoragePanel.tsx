@@ -214,7 +214,8 @@ export function StoragePanel() {
     refreshStats();
     runStatus();
     refreshOrphans();
-  }, [refreshStats, runStatus, refreshOrphans]);
+    refreshWatcher();
+  }, [refreshStats, runStatus, refreshOrphans, refreshWatcher]);
 
   const runOrphanBatch = async (size: number) => {
     const { data, error } = await supabase.functions.invoke('migrate-clips-to-drive', {
