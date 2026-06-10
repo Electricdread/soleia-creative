@@ -1,81 +1,44 @@
-## Goal
-When a client drops a file into their assigned Google Drive folder, fire a Zapier webhook so you get a notification (Email, Slack, SMS — whatever you wire up in the Zap).
+# Replace "Asset Uploads" with "Client Uploads" on the dashboard
 
-## How it works
+Swap the existing **Asset Uploads** tile in `DashboardStatusGrid.tsx` for a new **Client Uploads** tile sourced from the `drive_seen_files` table (populated by the `drive-upload-watcher` edge function). Clicking the card triggers an immediate Drive scan and refreshes the count — no navigation.
 
-```text
-pg_cron (every 2 min)
-   └─► edge fn: drive-upload-watcher
-         ├─ for each client_link with drive_folder_id:
-         │    1. List Drive folder children (via google_drive connector gateway)
-         │    2. Compare against drive_seen_files table
-         │    3. For each NEW file:
-         │         - insert into drive_seen_files
-         │         - POST to ZAPIER_WEBHOOK_URL
-         └─ done
-```
+## What the card shows
 
-## Setup steps (one-time)
+- **Primary stat**: count of `drive_seen_files` rows with `created_at >= now() - 7 days` ("new this week").
+- **Sub-stats**:
+  - `all-time` — total rows in `drive_seen_files`.
+  - `last scan` — relative time of the most recent `created_at` (e.g. "12m ago", or "—" if none).
+- **Icon / tone**: keep purple accent + `Upload` icon for visual continuity (or switch to `CloudDownload` — purple stays).
+- **Title**: "Client Uploads".
 
-1. **You create the Zap** in Zapier:
-   - Trigger: *Webhooks by Zapier → Catch Hook*
-   - Action: whatever notification you want (email, Slack, push)
-   - Copy the "Catch Hook" URL.
-2. **Add `ZAPIER_WEBHOOK_URL` secret** — I'll request it once the plan is approved.
+## Click behavior
 
-## Implementation
+Replace the `navigate(href)` action with an inline async handler:
 
-### 1. New table `drive_seen_files`
-Tracks which Drive file IDs we've already notified on (prevents duplicate Zaps).
+1. Set a local `scanning` state → spinner overlay on the icon, card disables.
+2. Invoke the `drive-upload-watcher` edge function via `supabase.functions.invoke('drive-upload-watcher')`.
+3. On success: toast `"Scan complete — N new file(s)"` (using the function's return payload if available, else re-query the table) and re-run the existing `load()` to refresh counts.
+4. On error: toast `"Scan failed"` with the error message.
 
-```sql
-create table public.drive_seen_files (
-  id uuid primary key default gen_random_uuid(),
-  link_id uuid references public.client_links(id) on delete cascade,
-  drive_file_id text not null,
-  file_name text,
-  seen_at timestamptz default now(),
-  unique (link_id, drive_file_id)
-);
--- GRANTs to service_role only (no client access)
--- RLS enabled, no policies (locked to service role)
-```
+Other cards keep their normal navigate-on-click behavior — the click-to-scan pattern is unique to this tile (cards array gains an optional `onClick` that overrides `href`).
 
-### 2. New edge function `drive-upload-watcher`
-- `verify_jwt = false` (called by pg_cron)
-- For each active `client_links` row with a non-null `drive_folder_id`:
-  - GET `connector-gateway/google_drive/drive/v3/files?q='{folderId}'+in+parents&fields=files(id,name,mimeType,size,webViewLink,createdTime)`
-  - Diff against `drive_seen_files`
-  - For each new file, POST to `ZAPIER_WEBHOOK_URL`:
-    ```json
-    {
-      "client_name": "...",
-      "event_name": "...",
-      "event_date": "...",
-      "file_name": "...",
-      "file_type": "...",
-      "file_size": 12345,
-      "file_url": "https://drive.google.com/...",
-      "session_link": "https://soleiacreative.app/admin/sessions/{id}",
-      "timestamp": "2026-06-10T..."
-    }
-    ```
-  - Insert into `drive_seen_files`
-- On first run for a given folder: seed `drive_seen_files` with existing files but DO NOT fire webhook (avoids notification flood on backfill).
+## Realtime
 
-### 3. pg_cron schedule
-Every 2 minutes, invoke `drive-upload-watcher`. (Uses `pg_net` + the service role via existing pattern.)
+Add `drive_seen_files` to the existing realtime subscription in `DashboardStatusGrid` so counts update automatically when the cron-driven watcher fires between manual scans.
 
-### 4. Admin UI tweak (small)
-In **/admin/looks → Storage** panel, show a "Drive Watcher" status row: last run time, total files tracked, last-fired webhook timestamp (read from `drive_seen_files`). No new page.
+## Files touched
 
-## Technical notes
-- Uses existing `google_drive` connector gateway (already linked — `GOOGLE_DRIVE_API_KEY` is configured).
-- Assumes `client_links.drive_folder_id` exists. If not, I'll add it as a nullable column and surface it in the session manager.
-- Webhook fires server-side from the edge function (no CORS, full visibility into success/failure logged to `email_send_log`-style or just edge function logs).
-- Backfill-safe: first scan of a folder just records IDs without notifying.
+- `src/components/admin/DashboardStatusGrid.tsx` — only file changed.
+  - Drop `uploadsTotal` / `uploadsWeek` from `Stats` / `ZERO` / `load()`; replace with `driveTotal`, `driveWeek`, `driveLastAt`.
+  - Replace the `session_uploads` queries with two `drive_seen_files` queries (head+count, week-filtered count, and a tiny `select('created_at').order('created_at',{ascending:false}).limit(1)` for "last scan").
+  - Update the realtime channel: swap `session_uploads` for `drive_seen_files`.
+  - Update the 4th card definition: new title/stats and an `onClick` that invokes the edge function.
+  - Add `useToast` for feedback and a local `scanning` boolean.
+
+No DB migration, no edge-function changes, no other UI files affected.
 
 ## Out of scope
-- Changing where original files are stored (still Drive cold storage).
-- In-app notification UI — Zapier handles delivery.
-- Notifications for `session_uploads` (in-app uploads) — separate flow already exists via `notify-upload` function.
+
+- Building a dedicated `/admin/client-uploads` page.
+- Surfacing per-file detail on the dashboard (the Storage panel at `/admin/looks` already handles that).
+- Changing the watcher's schedule or webhook payload.
