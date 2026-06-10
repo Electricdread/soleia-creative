@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Palette, Video, Upload, Loader2, ArrowRight } from 'lucide-react';
+import { FileText, Palette, Video, CloudDownload, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface Stats {
   proposalsActive: number;
@@ -14,15 +15,16 @@ interface Stats {
   moodWeek: number;
   linksActive: number;
   linksWithSelections: number;
-  uploadsTotal: number;
-  uploadsWeek: number;
+  driveTotal: number;
+  driveWeek: number;
+  driveLastAt: string | null;
 }
 
 const ZERO: Stats = {
   proposalsActive: 0, proposalsSent: 0, proposalsSigned: 0, proposalsDraft: 0,
   sessionsActive: 0, sessionsPublic: 0, moodWeek: 0,
   linksActive: 0, linksWithSelections: 0,
-  uploadsTotal: 0, uploadsWeek: 0,
+  driveTotal: 0, driveWeek: 0, driveLastAt: null,
 };
 
 function weekAgo(): string {
@@ -31,22 +33,38 @@ function weekAgo(): string {
   return d.toISOString();
 }
 
+function relativeTime(iso: string | null): string {
+  if (!iso) return '—';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
+
+
 export function DashboardStatusGrid() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats>(ZERO);
   const [loading, setLoading] = useState(true);
 
+  const [scanning, setScanning] = useState(false);
+
   const load = async () => {
     try {
       const since = weekAgo();
-      const [proposals, sessions, mood, links, selections, uploadsAll, uploadsWk] = await Promise.all([
+      const [proposals, sessions, mood, links, selections, driveAll, driveWk, driveLast] = await Promise.all([
         supabase.from('proposals').select('id, status, is_active, signed_at'),
         supabase.from('creative_sessions').select('id, is_active, is_public'),
         supabase.from('mood_board_items').select('id, created_at').gte('created_at', since),
         supabase.from('client_links').select('id, is_active'),
         supabase.from('link_selections').select('link_id'),
-        supabase.from('session_uploads').select('id', { count: 'exact', head: true }),
-        supabase.from('session_uploads').select('id', { count: 'exact', head: true }).gte('created_at', since),
+        supabase.from('drive_seen_files').select('id', { count: 'exact', head: true }),
+        supabase.from('drive_seen_files').select('id', { count: 'exact', head: true }).gte('seen_at', since),
+        supabase.from('drive_seen_files').select('seen_at').order('seen_at', { ascending: false }).limit(1),
       ]);
 
       const activeProposals = (proposals.data || []).filter(p => p.is_active);
@@ -63,13 +81,32 @@ export function DashboardStatusGrid() {
         moodWeek: mood.data?.length || 0,
         linksActive: linksActiveList.length,
         linksWithSelections: linksActiveList.filter(l => linksWithSel.has(l.id)).length,
-        uploadsTotal: uploadsAll.count || 0,
-        uploadsWeek: uploadsWk.count || 0,
+        driveTotal: driveAll.count || 0,
+        driveWeek: driveWk.count || 0,
+        driveLastAt: (driveLast.data?.[0] as any)?.seen_at ?? null,
       });
     } catch (e) {
       console.error('DashboardStatusGrid load error', e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const runScan = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (scanning) return;
+    setScanning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('drive-upload-watcher');
+      if (error) throw error;
+      const newCount = (data as any)?.new_files ?? (data as any)?.newFiles ?? (data as any)?.count;
+      toast.success(typeof newCount === 'number' ? `Scan complete — ${newCount} new file(s)` : 'Scan complete');
+      await load();
+    } catch (err: any) {
+      console.error('drive-upload-watcher invoke failed', err);
+      toast.error(err?.message || 'Scan failed');
+    } finally {
+      setScanning(false);
     }
   };
 
@@ -80,7 +117,7 @@ export function DashboardStatusGrid() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'creative_sessions' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'client_links' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_uploads' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'drive_seen_files' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'link_selections' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mood_board_items' }, load)
       .subscribe();
@@ -100,7 +137,9 @@ export function DashboardStatusGrid() {
         { label: 'signed', value: stats.proposalsSigned, color: 'text-emerald-500' },
         { label: 'draft', value: stats.proposalsDraft, color: 'text-muted-foreground' },
       ],
-      href: '/admin/proposals',
+      href: '/admin/proposals' as string | undefined,
+      onClick: undefined as ((e: React.MouseEvent) => void) | undefined,
+      busy: false,
     },
     {
       title: 'Creative Sessions',
@@ -113,7 +152,9 @@ export function DashboardStatusGrid() {
         { label: 'public', value: stats.sessionsPublic, color: 'text-emerald-500' },
         { label: 'mood items / 7d', value: stats.moodWeek, color: 'text-blue-500' },
       ],
-      href: '/admin/creative',
+      href: '/admin/creative' as string | undefined,
+      onClick: undefined as ((e: React.MouseEvent) => void) | undefined,
+      busy: false,
     },
     {
       title: 'Content Previz',
@@ -126,19 +167,24 @@ export function DashboardStatusGrid() {
         { label: 'with selections', value: stats.linksWithSelections, color: 'text-emerald-500' },
         { label: 'awaiting', value: Math.max(0, stats.linksActive - stats.linksWithSelections), color: 'text-amber-500' },
       ],
-      href: '/admin/looks',
+      href: '/admin/looks' as string | undefined,
+      onClick: undefined as ((e: React.MouseEvent) => void) | undefined,
+      busy: false,
     },
     {
-      title: 'Asset Uploads',
-      icon: Upload,
+      title: 'Client Uploads',
+      icon: scanning ? RefreshCw : CloudDownload,
       tone: 'text-purple-500',
       ring: 'hover:border-purple-500/40',
-      primary: stats.uploadsWeek,
+      primary: stats.driveWeek,
       primaryLabel: 'this week',
       sub: [
-        { label: 'all-time', value: stats.uploadsTotal, color: 'text-muted-foreground' },
+        { label: 'all-time', value: stats.driveTotal, color: 'text-muted-foreground' },
+        { label: `last scan ${relativeTime(stats.driveLastAt)}`, value: '', color: 'text-muted-foreground' },
       ],
-      href: '/admin/looks',
+      href: undefined as string | undefined,
+      onClick: runScan,
+      busy: scanning,
     },
   ];
 
@@ -149,15 +195,19 @@ export function DashboardStatusGrid() {
         return (
           <button
             key={card.title}
-            onClick={() => navigate(card.href)}
+            onClick={(e) => {
+              if (card.onClick) card.onClick(e);
+              else if (card.href) navigate(card.href);
+            }}
+            disabled={card.busy}
             className={cn(
-              'group relative bg-card border border-border rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] flex flex-col',
+              'group relative bg-card border border-border rounded-xl p-4 text-left transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] flex flex-col disabled:opacity-70 disabled:cursor-wait',
               card.ring,
             )}
           >
             <div className="flex items-start justify-between mb-3">
               <div className={cn('w-9 h-9 rounded-lg bg-muted flex items-center justify-center', card.tone)}>
-                <Icon className="w-4.5 h-4.5" />
+                <Icon className={cn('w-4.5 h-4.5', card.busy && 'animate-spin')} />
               </div>
               <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-foreground transition-colors" />
             </div>
@@ -175,7 +225,7 @@ export function DashboardStatusGrid() {
             <div className="mt-auto flex flex-wrap gap-x-2 gap-y-0.5">
               {card.sub.map((s) => (
                 <span key={s.label} className="text-[10px] text-muted-foreground">
-                  <span className={cn('font-semibold', s.color)}>{s.value}</span> {s.label}
+                  {s.value !== '' && <span className={cn('font-semibold', s.color)}>{s.value}</span>} {s.label}
                 </span>
               ))}
             </div>
@@ -185,3 +235,4 @@ export function DashboardStatusGrid() {
     </div>
   );
 }
+
