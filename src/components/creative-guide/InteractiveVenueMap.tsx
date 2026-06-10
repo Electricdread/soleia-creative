@@ -34,6 +34,8 @@ interface ZonePin {
   tv?: boolean;
   blurb: string;
   members?: { x: number; y: number }[];
+  // Elliptical footprint highlighted on the blueprint when the zone is active.
+  region: { cx: number; cy: number; rx: number; ry: number };
 }
 
 const ZONE_PINS: ZonePin[] = [
@@ -42,6 +44,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Right',
     kind: 'Interior LED · Curves',
     x: 72.0, y: 38.0,
+    region: { cx: 73, cy: 36, rx: 9, ry: 8 },
     screenIds: ['curves-sr'],
     blurb: 'Stage-right curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },
@@ -50,6 +53,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Main',
     kind: 'Interior LED · Stage Wall',
     x: 83.0, y: 50.0,
+    region: { cx: 84, cy: 50, rx: 7, ry: 13 },
     screenIds: ['imag-sr', 'center', 'imag-sl'],
     blurb: 'The primary stage wall — IMAG side panels flanking the center focal screen for hero moments, logo reveals and live camera.',
     members: [{ x: 81.0, y: 38.0 }, { x: 85.0, y: 50.0 }, { x: 81.0, y: 62.0 }],
@@ -59,6 +63,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Left',
     kind: 'Interior LED · Curves',
     x: 72.0, y: 63.0,
+    region: { cx: 73, cy: 64, rx: 9, ry: 8 },
     screenIds: ['curves-sl'],
     blurb: 'Stage-left curved LED wall — wraparound ambient visuals and brand washes that wrap the room.',
   },
@@ -67,6 +72,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'Arrival',
     kind: 'Exterior LED · Open-air',
     x: 90.0, y: 22.0,
+    region: { cx: 87, cy: 42, rx: 11, ry: 30 },
     screenIds: ['outdoor-sr', 'outdoor-sl', 'outdoor-arch'],
     blurb: 'Open-air entry screens facing the Las Vegas Strip — the first brand touchpoint for arriving guests.',
     members: [{ x: 75.0, y: 12.0 }, { x: 95.0, y: 50.0 }, { x: 88.0, y: 80.0 }],
@@ -76,6 +82,7 @@ const ZONE_PINS: ZonePin[] = [
     label: 'TV Displays',
     kind: 'TV / Narrowcasting',
     x: 45.0, y: 14.0,
+    region: { cx: 45, cy: 14, rx: 8, ry: 7 },
     tv: true,
     blurb: 'High-definition TV displays throughout the venue for branded content and event visuals.',
   },
@@ -142,6 +149,24 @@ export function InteractiveVenueMap() {
 
   const reset = useCallback(() => setT({ s: 1, x: 0, y: 0 }), []);
   useEffect(() => { reset(); }, [fs, reset]);
+
+  // Focus the map on the selected zone, framing its footprint in the open space
+  // between the left HUD and the right detail card. Resets when deselected.
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    if (!activeZone) { setT({ s: 1, x: 0, y: 0 }); return; }
+    const W = el.clientWidth, H = el.clientHeight;
+    const s = 1.7;
+    const px = (activeZone.region.cx / 100) * W;
+    const py = (activeZone.region.cy / 100) * H;
+    const targetX = (188 + (W - 300)) / 2; // midpoint between HUD edge and card edge
+    const tx = targetX - W / 2 - (px - W / 2) * s;
+    const ty = (H / 2) - H / 2 - (py - H / 2) * s;
+    const c = clampXY(tx, ty, s);
+    setT({ s, x: c.x, y: c.y });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePin]);
 
   const clampXY = useCallback((x: number, y: number, s: number) => {
     const el = wrapRef.current;
@@ -239,46 +264,24 @@ export function InteractiveVenueMap() {
             </div>
           )}
 
-          {/* member screen dots — show that a zone spans multiple screens */}
-          {renderOk && ZONE_PINS.flatMap((z) =>
-            (z.members ?? []).map((m, i) => {
-              const isActive = activePin === z.id;
-              return (
-                <div key={`${z.id}-m${i}`} className="absolute pointer-events-none" style={{ left: `${m.x}%`, top: `${m.y}%` }}>
-                  <span
-                    className={`block rounded-full ring-1 ring-black/50 transition-all ${isActive ? 'w-1.5 h-1.5 bg-amber-300' : 'w-1 h-1 bg-primary/70'}`}
-                    style={{ transform: `translate(-50%, -50%) scale(${1 / t.s})` }}
-                  />
-                </div>
-              );
-            })
+          {/* highlight the active zone's footprint on the blueprint */}
+          {renderOk && activeZone && (
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                left: `${activeZone.region.cx}%`,
+                top: `${activeZone.region.cy}%`,
+                width: `${activeZone.region.rx * 2}%`,
+                height: `${activeZone.region.ry * 2}%`,
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              <div
+                className="w-full h-full rounded-[50%] border border-amber-300/70 animate-pulse"
+                style={{ background: 'radial-gradient(closest-side, hsl(var(--primary) / 0.30), hsl(var(--primary) / 0.06) 70%, transparent)' }}
+              />
+            </div>
           )}
-
-          {/* immersive zone pins (clickable) */}
-          {renderOk && ZONE_PINS.map((z) => {
-            const isActive = activePin === z.id;
-            return (
-              <div key={z.id} className="absolute" style={{ left: `${z.x}%`, top: `${z.y}%` }}>
-                <div className="flex items-center gap-1" style={{ transform: `translate(-50%, -50%) scale(${1 / t.s})`, transformOrigin: 'left center' }}>
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => { e.stopPropagation(); setActivePin((cur) => (cur === z.id ? null : z.id)); }}
-                    className="flex items-center gap-1 rounded-full pl-0.5 pr-2 py-0.5 -ml-0.5 cursor-pointer hover:bg-primary/15 transition-colors"
-                    aria-label={`Show mapping card for ${z.label} zone`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ring-2 ring-black/50 shrink-0 transition-all ${isActive ? 'bg-amber-300 ring-amber-300/60 scale-125' : 'bg-primary'}`} />
-                    <span
-                      className={`whitespace-nowrap text-[11px] font-semibold transition-colors ${isActive ? 'text-amber-200' : 'text-white'}`}
-                      style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)' }}
-                    >
-                      {z.label}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
 
           {/* plain location labels */}
           {renderOk && LABEL_PINS.map((p) => (
@@ -304,12 +307,43 @@ export function InteractiveVenueMap() {
         <MapBtn onClick={() => setFs((f) => !f)} label={fs ? 'Exit fullscreen' : 'Fullscreen'}>{fs ? <X className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}</MapBtn>
       </div>
       <div className="absolute bottom-3 left-3 z-20 hidden sm:flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-sm px-3 py-1.5 text-[10.5px] text-white/75 pointer-events-none">
-        <MousePointerClick className="w-3 h-3" /> Tap a zone for specs · drag to pan · pinch or scroll to zoom
+        <MousePointerClick className="w-3 h-3" /> Select a zone · drag to pan · pinch or scroll to zoom
       </div>
 
-      {/* Mapping card for the selected immersive zone */}
+      {/* Zone HUD — pick a zone to inspect (highlights its footprint on the map) */}
+      <div className={`absolute top-3 left-3 z-30 w-40 sm:w-44 max-w-[46%] max-h-[calc(100%-1.5rem)] flex flex-col rounded-3xl edge-gold surface-elevated bg-black/80 backdrop-blur-md overflow-hidden ${activeCard ? 'hidden sm:flex' : 'flex'}`}>
+        <div className="px-3 pt-3 pb-2 shrink-0">
+          <p className="text-[10px] uppercase tracking-[0.22em] text-primary">Zones</p>
+          <p className="text-[10px] text-white/45 mt-0.5">Select to inspect</p>
+        </div>
+        <ul className="px-1.5 pb-2 space-y-0.5 overflow-y-auto">
+          {ZONE_PINS.map((z) => {
+            const isActive = activePin === z.id;
+            const count = z.tv ? 1 : (z.screenIds?.length ?? 0);
+            return (
+              <li key={z.id}>
+                <button
+                  type="button"
+                  onClick={() => setActivePin((cur) => (cur === z.id ? null : z.id))}
+                  aria-pressed={isActive}
+                  className={`w-full text-left rounded-xl pl-2.5 pr-2 py-2 flex items-center gap-2 border-l-2 transition-colors ${isActive ? 'bg-primary/15 border-primary' : 'border-transparent hover:bg-white/5'}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${isActive ? 'bg-amber-300' : 'bg-primary/70'}`} />
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-xs font-semibold leading-tight truncate ${isActive ? 'text-amber-200' : 'text-white'}`}>{z.label}</span>
+                    <span className="block text-[10px] text-white/45 leading-tight truncate">{z.kind}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-primary/80 shrink-0">{count}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Mapping card for the selected immersive zone (right side) */}
       {activeCard && (
-        <div className="absolute top-3 left-3 z-30 w-[min(20rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-3xl edge-gold surface-elevated bg-black/85 backdrop-blur-md">
+        <div className="absolute top-3 right-3 z-30 w-[min(18rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-3xl edge-gold surface-elevated bg-black/85 backdrop-blur-md">
           <div className="relative h-28 w-full overflow-hidden rounded-t-3xl">
             <img src={activeCard.light} alt={`${activeCard.label} zone screens`} className="block dark:hidden h-full w-full object-cover" draggable={false} />
             <img src={activeCard.dark} alt={`${activeCard.label} zone screens`} className="hidden dark:block h-full w-full object-cover" draggable={false} />
