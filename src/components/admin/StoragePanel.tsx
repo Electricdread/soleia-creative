@@ -16,6 +16,7 @@ import {
   ExternalLink,
   PlayCircle,
   StopCircle,
+  Bell,
 } from 'lucide-react';
 
 type StatusReport = {
@@ -93,6 +94,51 @@ export function StoragePanel() {
   const [results, setResults] = useState<MigrationResult[]>([]);
   const [progress, setProgress] = useState({ migrated: 0, total: 0, remaining: 0 });
 
+  // Drive upload watcher (Zapier notifications)
+  const [watcher, setWatcher] = useState<{
+    tracked: number;
+    notified: number;
+    lastNotifiedAt: string | null;
+  } | null>(null);
+  const [watcherRunning, setWatcherRunning] = useState(false);
+
+  const refreshWatcher = useCallback(async () => {
+    const total = await supabase
+      .from('drive_seen_files')
+      .select('id', { count: 'exact', head: true });
+    const notified = await supabase
+      .from('drive_seen_files')
+      .select('id', { count: 'exact', head: true })
+      .eq('notified', true);
+    const last = await supabase
+      .from('drive_seen_files')
+      .select('notified_at')
+      .eq('notified', true)
+      .not('notified_at', 'is', null)
+      .order('notified_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setWatcher({
+      tracked: total.count ?? 0,
+      notified: notified.count ?? 0,
+      lastNotifiedAt: (last.data as any)?.notified_at ?? null,
+    });
+  }, []);
+
+  const runWatcherNow = useCallback(async () => {
+    setWatcherRunning(true);
+    try {
+      const { error } = await supabase.functions.invoke('drive-upload-watcher', { body: {} });
+      if (error) throw error;
+      toast({ title: 'Drive watcher ran', description: 'Checked all client folders for new uploads.' });
+      await refreshWatcher();
+    } catch (e: any) {
+      toast({ title: 'Watcher failed', description: e?.message ?? String(e), variant: 'destructive' });
+    } finally {
+      setWatcherRunning(false);
+    }
+  }, [refreshWatcher, toast]);
+
   const refreshStats = useCallback(async () => {
     setStatsLoading(true);
     try {
@@ -168,7 +214,8 @@ export function StoragePanel() {
     refreshStats();
     runStatus();
     refreshOrphans();
-  }, [refreshStats, runStatus, refreshOrphans]);
+    refreshWatcher();
+  }, [refreshStats, runStatus, refreshOrphans, refreshWatcher]);
 
   const runOrphanBatch = async (size: number) => {
     const { data, error } = await supabase.functions.invoke('migrate-clips-to-drive', {
@@ -428,6 +475,47 @@ export function StoragePanel() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Drive upload watcher → Zapier */}
+      <section className="rounded-xl border border-border/50 bg-card p-5">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-[#c49a3c]" />
+            <div>
+              <h3 className="text-sm font-semibold">Client Upload Notifications</h3>
+              <p className="text-xs text-muted-foreground">
+                Polls every client's Drive folder every 2 minutes. New files fire a Zapier webhook.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={runWatcherNow}
+            disabled={watcherRunning}
+            className="gap-2"
+          >
+            {watcherRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+            Check now
+          </Button>
+        </div>
+        <div className="grid grid-cols-3 gap-3 text-xs">
+          <div className="rounded-lg border border-border/40 bg-muted/30 p-3">
+            <p className="text-muted-foreground">Files tracked</p>
+            <p className="text-lg font-semibold mt-1">{watcher?.tracked ?? '—'}</p>
+          </div>
+          <div className="rounded-lg border border-border/40 bg-muted/30 p-3">
+            <p className="text-muted-foreground">Webhooks fired</p>
+            <p className="text-lg font-semibold mt-1">{watcher?.notified ?? '—'}</p>
+          </div>
+          <div className="rounded-lg border border-border/40 bg-muted/30 p-3">
+            <p className="text-muted-foreground">Last notification</p>
+            <p className="text-xs font-mono mt-1 truncate">
+              {watcher?.lastNotifiedAt ? new Date(watcher.lastNotifiedAt).toLocaleString() : 'Never'}
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Orphan files in clips bucket */}

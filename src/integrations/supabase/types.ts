@@ -503,6 +503,56 @@ export type Database = {
           },
         ]
       }
+      drive_seen_files: {
+        Row: {
+          drive_file_id: string
+          drive_folder_id: string
+          file_name: string | null
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          notified: boolean
+          notified_at: string | null
+          proposal_id: string | null
+          seen_at: string
+          web_view_link: string | null
+        }
+        Insert: {
+          drive_file_id: string
+          drive_folder_id: string
+          file_name?: string | null
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          notified?: boolean
+          notified_at?: string | null
+          proposal_id?: string | null
+          seen_at?: string
+          web_view_link?: string | null
+        }
+        Update: {
+          drive_file_id?: string
+          drive_folder_id?: string
+          file_name?: string | null
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          notified?: boolean
+          notified_at?: string | null
+          proposal_id?: string | null
+          seen_at?: string
+          web_view_link?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drive_seen_files_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
