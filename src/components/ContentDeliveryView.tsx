@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { ArrowLeft, FileVideo, Download, ExternalLink, Sparkles } from 'lucide-react';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { ALL_LED_ZONES } from '@/lib/creativeGuide';
+import { Reveal } from '@/components/motion/Reveal';
 import solIcon from '@/assets/sol-icon.png';
 
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
@@ -36,14 +36,6 @@ const SERVICES = [
   { t: 'Dedicated Cabana / Bungalow Logos', d: 'A unique logo per screen with individual player feeds — set the quantity on your proposal.' },
   { t: 'Content Production & Mapping', d: 'We render, encode and pixel-map your assets to spec, so you don\'t have to.' },
 ];
-
-function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.6, delay }} className={className}>
-      {children}
-    </motion.div>
-  );
-}
 
 export function ContentDeliveryView() {
   const navigate = useNavigate();

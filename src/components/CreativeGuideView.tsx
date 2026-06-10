@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Menu, X, Compass, Maximize2, Printer, FileVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
+import { TechnicalBackdrop } from '@/components/motion/TechnicalBackdrop';
+import { Reveal } from '@/components/motion/Reveal';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import solIcon from '@/assets/sol-icon.png';
 
@@ -99,20 +100,6 @@ const STEPS = [
   { n: '03', t: 'Pixel-Perfect Mapping', d: 'We map every asset to the exact dimensions of each screen so your visuals land flawlessly, venue-wide.' },
 ];
 
-function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 22 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.7, delay }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <Reveal className="mb-11">
@@ -134,7 +121,12 @@ const CreativeGuideView = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen text-foreground">
+      {/* Base page color sits behind the atmospheric field */}
+      <div className="fixed inset-0 -z-20 bg-background" aria-hidden="true" />
+      {/* Atmospheric dot-matrix field — spec's technical-brand background effect */}
+      <TechnicalBackdrop />
+
       {/* NAV */}
       <header
         className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 sm:px-8 transition-all duration-400 ${

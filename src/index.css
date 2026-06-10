@@ -69,7 +69,9 @@ button, a, [role="button"] {
     --input: 220 10% 93%;
     --ring: 32 85% 38%;
 
-    --radius: 0.75rem;
+    /* Radius — nudged toward the design-system 24px family. Base token drives
+       cards/popovers/controls; hero surfaces anchor at 24px via rounded-3xl. */
+    --radius: 1rem;
 
     /* Glass tokens */
     --glass: 0 0% 98%;
@@ -746,6 +748,17 @@ button, a, [role="button"] {
     );
     background-size: 200% 100%;
     animation: shimmer-gold 6s ease-in-out infinite;
+  }
+}
+
+/* Respect reduced-motion — neutralize animations, transitions and smooth scroll
+   for users who opt out (design-system motion stays "minimal" and accessible). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
