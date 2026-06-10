@@ -4,7 +4,6 @@ import { ArrowLeft, FileVideo, Download, ExternalLink, Sparkles } from 'lucide-r
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { ALL_LED_ZONES } from '@/lib/creativeGuide';
 import { Reveal } from '@/components/motion/Reveal';
-import { TechnicalBackdrop } from '@/components/motion/TechnicalBackdrop';
 import solIcon from '@/assets/sol-icon.png';
 
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
@@ -41,12 +40,7 @@ const SERVICES = [
 export function ContentDeliveryView() {
   const navigate = useNavigate();
   return (
-    <div className="relative min-h-screen text-foreground">
-      {/* Base page color sits behind the atmospheric field */}
-      <div className="fixed inset-0 -z-20 bg-background" aria-hidden="true" />
-      {/* Atmospheric dot-matrix field — spec's technical-brand background effect */}
-      <TechnicalBackdrop />
-
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-40 glass border-b border-primary/15">
         <div className="container mx-auto max-w-5xl px-6 py-3 flex items-center justify-between">

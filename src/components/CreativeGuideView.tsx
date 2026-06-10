@@ -4,7 +4,6 @@ import { Menu, X, Compass, Maximize2, Printer, FileVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
-import { TechnicalBackdrop } from '@/components/motion/TechnicalBackdrop';
 import { Reveal } from '@/components/motion/Reveal';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import solIcon from '@/assets/sol-icon.png';
@@ -121,12 +120,7 @@ const CreativeGuideView = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen text-foreground">
-      {/* Base page color sits behind the atmospheric field */}
-      <div className="fixed inset-0 -z-20 bg-background" aria-hidden="true" />
-      {/* Atmospheric dot-matrix field — spec's technical-brand background effect */}
-      <TechnicalBackdrop />
-
+    <div className="min-h-screen bg-background text-foreground">
       {/* NAV */}
       <header
         className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 sm:px-8 transition-all duration-400 ${
