@@ -477,6 +477,47 @@ export function StoragePanel() {
         )}
       </section>
 
+      {/* Drive upload watcher → Zapier */}
+      <section className="rounded-xl border border-border/50 bg-card p-5">
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-[#c49a3c]" />
+            <div>
+              <h3 className="text-sm font-semibold">Client Upload Notifications</h3>
+              <p className="text-xs text-muted-foreground">
+                Polls every client's Drive folder every 2 minutes. New files fire a Zapier webhook.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={runWatcherNow}
+            disabled={watcherRunning}
+            className="gap-2"
+          >
+            {watcherRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+            Check now
+          </Button>
+        </div>
+        <div className="grid grid-cols-3 gap-3 text-xs">
+          <div className="rounded-lg border border-border/40 bg-muted/30 p-3">
+            <p className="text-muted-foreground">Files tracked</p>
+            <p className="text-lg font-semibold mt-1">{watcher?.tracked ?? '—'}</p>
+          </div>
+          <div className="rounded-lg border border-border/40 bg-muted/30 p-3">
+            <p className="text-muted-foreground">Webhooks fired</p>
+            <p className="text-lg font-semibold mt-1">{watcher?.notified ?? '—'}</p>
+          </div>
+          <div className="rounded-lg border border-border/40 bg-muted/30 p-3">
+            <p className="text-muted-foreground">Last notification</p>
+            <p className="text-xs font-mono mt-1 truncate">
+              {watcher?.lastNotifiedAt ? new Date(watcher.lastNotifiedAt).toLocaleString() : 'Never'}
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Orphan files in clips bucket */}
       <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5">
         <div className="flex items-start justify-between gap-3 mb-4">
