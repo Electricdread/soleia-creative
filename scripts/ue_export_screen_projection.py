@@ -6,15 +6,17 @@
 #   JSON lets us draw pixel-exact SVG overlays over the venue layout render.
 #
 # HOW TO RUN (in the Unreal Editor)
-#   1. Edit > Plugins: enable "Python Editor Script Plugin" (and restart if
-#      prompted). The "Procedural Mesh Component" plugin should be on too
-#      (it is by default; used only to read mesh vertices).
-#   2. Set CAMERA_NAME below to the label of the camera actor that rendered
-#      the venue layout image (as shown in the Outliner). If your camera is a
-#      CineCamera and the FOV read fails, set FOV_OVERRIDE.
-#   3. In the Outliner, SELECT all the screen meshes (and nothing else).
-#   4. Tools > Execute Python Script... and pick this file.
-#   5. Output: <Project>/Saved/screens_projection.json — paste its contents
+#   1. In the Outliner, SELECT all the screen meshes (and nothing else).
+#   2. Tools > Execute Python Script... and pick this file.
+#      - If there is exactly ONE camera actor in the level, it is used
+#        automatically.
+#      - If there are several, the run fails but PRINTS ALL CAMERA NAMES in
+#        the Output Log — set CAMERA_NAME below to the right one and rerun.
+#      - If the layout image was captured from the editor viewport (no camera
+#        actor), set USE_VIEWPORT_CAMERA = True, frame the viewport exactly
+#        like the layout render, then rerun. Set FOV_OVERRIDE if you know the
+#        viewport FOV (defaults to 90).
+#   3. Output: <Project>/Saved/screens_projection.json — paste its contents
 #      back in chat or commit it to the repo.
 
 import json
@@ -24,30 +26,65 @@ import os
 import unreal
 
 # ----------------------------------------------------------------------------
-CAMERA_NAME = "CameraActor"  # <-- set to your layout camera's Outliner label
-FOV_OVERRIDE = None          # e.g. 90.0 if the FOV can't be read automatically
-RENDER_W, RENDER_H = 1376, 768  # the layout render's pixel size (ratio is what matters)
+CAMERA_NAME = ""              # camera actor's Outliner label; "" = auto-detect
+USE_VIEWPORT_CAMERA = False   # True = use the current editor viewport instead
+FOV_OVERRIDE = None           # e.g. 90.0 to force the horizontal FOV
+RENDER_W, RENDER_H = 1376, 768  # layout render pixel size (only ratio matters)
 MAX_PTS_PER_ACTOR = 1200
 # ----------------------------------------------------------------------------
 
 
-def find_camera():
+def get_view():
+    """Returns (location, forward, right, up, fov_horizontal_deg)."""
+    if USE_VIEWPORT_CAMERA:
+        ues = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
+        loc, rot = ues.get_level_viewport_camera_info()
+        fwd = unreal.MathLibrary.get_forward_vector(rot)
+        right = unreal.MathLibrary.get_right_vector(rot)
+        up = unreal.MathLibrary.get_up_vector(rot)
+        fov = float(FOV_OVERRIDE or 90.0)
+        unreal.log(f"Using VIEWPORT camera at {loc} fov={fov}")
+        return loc, fwd, right, up, fov
+
     sub = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
-    for a in sub.get_all_level_actors():
-        if a.get_actor_label() == CAMERA_NAME:
-            return a
-    raise RuntimeError(f"Camera actor labeled '{CAMERA_NAME}' not found in level")
+    cams = [a for a in sub.get_all_level_actors() if isinstance(a, unreal.CameraActor)]
+    cam = None
+    if CAMERA_NAME:
+        for a in cams:
+            if a.get_actor_label() == CAMERA_NAME:
+                cam = a
+                break
+        if cam is None:
+            unreal.log_error(f"No camera labeled '{CAMERA_NAME}'. Cameras in level:")
+            for a in cams:
+                unreal.log_error(f"  - {a.get_actor_label()}  ({a.get_class().get_name()})")
+            raise RuntimeError("Set CAMERA_NAME to one of the labels above")
+    elif len(cams) == 1:
+        cam = cams[0]
+        unreal.log(f"Auto-selected the only camera: '{cam.get_actor_label()}'")
+    else:
+        unreal.log_error(f"{len(cams)} camera actors found — set CAMERA_NAME to one of:")
+        for a in cams:
+            unreal.log_error(f"  - {a.get_actor_label()}  ({a.get_class().get_name()})")
+        if not cams:
+            unreal.log_error("  (none — if the shot came from the viewport, set USE_VIEWPORT_CAMERA = True)")
+        raise RuntimeError("Camera not resolved — see Output Log")
 
-
-def camera_fov(cam_actor):
+    fov = None
     if FOV_OVERRIDE:
-        return float(FOV_OVERRIDE)
-    for comp in cam_actor.get_components_by_class(unreal.CameraComponent):
-        try:
-            return float(comp.field_of_view)
-        except Exception:
-            pass
-    raise RuntimeError("Could not read FOV — set FOV_OVERRIDE at the top of the script")
+        fov = float(FOV_OVERRIDE)
+    else:
+        for comp in cam.get_components_by_class(unreal.CameraComponent):
+            try:
+                fov = float(comp.field_of_view)
+                break
+            except Exception:
+                pass
+    if not fov:
+        raise RuntimeError("Could not read FOV — set FOV_OVERRIDE at the top")
+    unreal.log(f"Using camera '{cam.get_actor_label()}' fov={fov}")
+    return (cam.get_actor_location(), cam.get_actor_forward_vector(),
+            cam.get_actor_right_vector(), cam.get_actor_up_vector(), fov)
 
 
 def mesh_world_vertices(actor):
@@ -82,12 +119,7 @@ def mesh_world_vertices(actor):
 
 
 def main():
-    cam = find_camera()
-    fov_deg = camera_fov(cam)
-    cam_loc = cam.get_actor_location()
-    fwd = cam.get_actor_forward_vector()
-    right = cam.get_actor_right_vector()
-    up = cam.get_actor_up_vector()
+    loc, fwd, right, up, fov_deg = get_view()
 
     aspect = RENDER_W / float(RENDER_H)
     tan_h = math.tan(math.radians(fov_deg) / 2.0)  # UE FOV is horizontal
@@ -99,7 +131,7 @@ def main():
         raise RuntimeError("Nothing selected — select the screen mesh actors first")
 
     out = {
-        "camera": CAMERA_NAME,
+        "viewport": USE_VIEWPORT_CAMERA,
         "fov_horizontal_deg": fov_deg,
         "resolution": [RENDER_W, RENDER_H],
         "actors": {},
@@ -108,11 +140,12 @@ def main():
     for actor in selected:
         pts = mesh_world_vertices(actor)
         if not pts:
+            unreal.log_warning(f"{actor.get_actor_label()}: no mesh vertices found")
             continue
         step = max(1, len(pts) // MAX_PTS_PER_ACTOR)
         uv = []
         for i in range(0, len(pts), step):
-            d = pts[i] - cam_loc
+            d = pts[i] - loc
             x = d.dot(fwd)
             if x <= 1.0:  # behind or at the camera
                 continue
