@@ -39,3 +39,5 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = false
   [functions.create-client-drive-folder]
     verify_jwt = false
+  [functions.drive-upload-watcher]
+    verify_jwt = false
