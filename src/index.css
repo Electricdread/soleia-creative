@@ -256,7 +256,52 @@ button, a, [role="button"] {
     background: linear-gradient(180deg, hsl(30 20% 12% / 0.9) 0%, hsl(30 20% 8% / 0.95) 100%);
     box-shadow: none;
   }
-  
+
+  /* ── Design-system schema (src/content/designSystem.ts) ──────────────── */
+  /* Elevation & Depth — reusable layered shadow shared by hero panels,
+     cards and controls so the page reads as one material system. */
+  .surface-elevated {
+    box-shadow:
+      rgba(0, 0, 0, 0.06) 0px 2.8px 2.2px 0px,
+      rgba(0, 0, 0, 0.08) 0px 6.7px 5.3px 0px,
+      rgba(0, 0, 0, 0.1) 0px 12.5px 10px 0px,
+      rgba(0, 0, 0, 0.115) 0px 22.3px 17.9px 0px,
+      rgba(0, 0, 0, 0.14) 0px 41.8px 33.4px 0px,
+      rgba(0, 0, 0, 0.19) 0px 100px 80px 0px;
+  }
+  /* Dark surfaces sit on a near-black page where black shadows vanish, so the
+     same offset ladder is re-tinted: deep drops for depth plus a faint gold
+     rim/ambient so the panel reads as lifted, on-brand light. */
+  .dark .surface-elevated {
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.10),
+      0 0 22px -6px hsl(var(--primary) / 0.22),
+      0 0 70px -18px hsl(var(--primary) / 0.14),
+      rgba(0, 0, 0, 0.5) 0px 12.5px 10px 0px,
+      rgba(0, 0, 0, 0.6) 0px 22.3px 17.9px 0px,
+      rgba(0, 0, 0, 0.7) 0px 41.8px 33.4px 0px;
+  }
+
+  /* Gradient border shell — Soleia gold hairline edge as the hero treatment.
+     Drawn on a masked pseudo-element so it never disturbs the surface fill and
+     follows the element's (24px) radius. The host element must already be
+     positioned (relative/absolute) — do not set position here, or it would
+     override Tailwind's positioning utilities declared earlier in the layer. */
+  .edge-gold::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+  }
+
   /* Sun goddess glows */
   .glow-gold {
     box-shadow: 

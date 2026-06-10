@@ -2,8 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X, MousePointerClick } from 'lucide-react';
 import { ALL_LED_ZONES, DISPLAY_TYPES } from '@/lib/creativeGuide';
 
-// Cinematic top-down render exported from Unreal.
-const RENDER_SRC = '/creative-guide/venue-render.jpg';
+// Top-down venue blueprint, drawn in the mapping-card style (light + dark
+// colorways). Authored at 16:9 so the zone pins line up exactly.
+const BLUEPRINT_LIGHT = '/creative-guide/venue-blueprint-light.png';
+const BLUEPRINT_DARK = '/creative-guide/venue-blueprint-dark.png';
 
 // Per-zone schematic thumbnails (light + dark colorways) — generated in the
 // Soleia "LED Video Display" style. Resolved from the zone id at render time.
@@ -205,7 +207,7 @@ export function InteractiveVenueMap() {
   const onDoubleClick = (e: React.MouseEvent) => { if (t.s > 1) reset(); else zoomAt(2.4, e.clientX, e.clientY); };
 
   const stage = (
-    <div className={`relative overflow-hidden bg-black select-none ${fs ? 'flex-1' : 'border border-primary/15'}`}>
+    <div className={`relative overflow-hidden bg-black select-none ${fs ? 'flex-1' : 'rounded-3xl edge-gold surface-elevated'}`}>
       <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-20 pointer-events-none" />
       <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 z-20 pointer-events-none" />
       <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 z-20 pointer-events-none" />
@@ -227,10 +229,13 @@ export function InteractiveVenueMap() {
           style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, transformOrigin: 'center', transition: dragging ? 'none' : 'transform 0.18s ease-out' }}
         >
           {renderOk ? (
-            <img src={RENDER_SRC} alt="Soleia venue — top-down render" draggable={false} className="w-full h-full object-contain" onError={() => setRenderOk(false)} />
+            <>
+              <img src={BLUEPRINT_LIGHT} alt="Soleia venue — top-down blueprint" draggable={false} className="block dark:hidden w-full h-full object-contain" onError={() => setRenderOk(false)} />
+              <img src={BLUEPRINT_DARK} alt="Soleia venue — top-down blueprint" draggable={false} className="hidden dark:block w-full h-full object-contain" />
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-center px-6">
-              <p className="text-xs text-white/55 max-w-xs">Add a top-down render to <span className="text-primary">/public/creative-guide/venue-render.jpg</span>.</p>
+              <p className="text-xs text-white/55 max-w-xs">Add the venue blueprint to <span className="text-primary">/public/creative-guide/venue-blueprint-&#123;light,dark&#125;.png</span>.</p>
             </div>
           )}
 
@@ -304,8 +309,8 @@ export function InteractiveVenueMap() {
 
       {/* Mapping card for the selected immersive zone */}
       {activeCard && (
-        <div className="absolute top-3 left-3 z-30 w-[min(20rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-xl border border-primary/30 bg-black/85 backdrop-blur-md shadow-[0_8px_40px_-8px_rgba(0,0,0,0.8)]">
-          <div className="relative h-28 w-full overflow-hidden rounded-t-xl">
+        <div className="absolute top-3 left-3 z-30 w-[min(20rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-3xl edge-gold surface-elevated bg-black/85 backdrop-blur-md">
+          <div className="relative h-28 w-full overflow-hidden rounded-t-3xl">
             <img src={activeCard.light} alt={`${activeCard.label} zone screens`} className="block dark:hidden h-full w-full object-cover" draggable={false} />
             <img src={activeCard.dark} alt={`${activeCard.label} zone screens`} className="hidden dark:block h-full w-full object-cover" draggable={false} />
           </div>
