@@ -133,7 +133,15 @@ async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageU
   }
 
   // Logo at top
-  drawSoleiaText(doc, PAGE_W / 2, 60, 28, '#ffffff');
+  const logoUri = await getSoleiaLogoDataUri();
+  if (logoUri) {
+    const lw = 180;
+    const lh = lw / LOGO_ASPECT;
+    doc.addImage(logoUri, 'PNG', PAGE_W / 2 - lw / 2, 36, lw, lh);
+  } else {
+    drawSoleiaText(doc, PAGE_W / 2, 60, 28, '#ffffff');
+  }
+
 
   // Gold line
   doc.setDrawColor(GOLD);
