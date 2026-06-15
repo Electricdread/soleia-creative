@@ -386,9 +386,10 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const scenario = resolveScenario(proposal);
   const mappedItem = items.find(isMappedToSpec);
+  const visibleItems = signed ? items.filter(i => i.client_selected !== false) : items;
   const tableItems = scenario === 'pre_packet_no_call' && mappedItem
-    ? items.filter(i => i.id !== mappedItem.id)
-    : items;
+    ? visibleItems.filter(i => i.id !== mappedItem.id)
+    : visibleItems;
   const additionalServicesLabel = scenario === 'pre_packet_no_call'
     ? 'Optional Add-On Services'
     : 'Additional Services';
