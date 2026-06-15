@@ -84,7 +84,8 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(url, { signal: controller.signal });
+    const bustedUrl = url + (url.includes('?') ? '&' : '?') + `_=${Date.now()}`;
+    const res = await fetch(bustedUrl, { signal: controller.signal, cache: 'no-store' });
     clearTimeout(timeout);
     const blob = await res.blob();
     return new Promise((resolve) => {
