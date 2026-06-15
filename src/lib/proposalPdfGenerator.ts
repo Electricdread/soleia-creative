@@ -1,4 +1,26 @@
 import jsPDF from 'jspdf';
+import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
+
+const LOGO_ASPECT = 1006 / 345; // width / height
+let cachedLogoDataUri: string | null = null;
+async function getSoleiaLogoDataUri(): Promise<string | null> {
+  if (cachedLogoDataUri) return cachedLogoDataUri;
+  try {
+    const res = await fetch(soleiaWideLogo);
+    const blob = await res.blob();
+    const uri: string = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+    cachedLogoDataUri = uri;
+    return uri;
+  } catch {
+    return null;
+  }
+}
+
 
 interface ProposalData {
   event_name: string;
