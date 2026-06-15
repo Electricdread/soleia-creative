@@ -76,6 +76,16 @@ function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 }
 
+function itemTotal(item: ProposalItem) {
+  const price = Number(item.price) || 0;
+  const quantity = Number(item.quantity) || 1;
+  return item.is_flat_fee ? price : price * quantity;
+}
+
+function proposalTotal(items: ProposalItem[]) {
+  return items.reduce((sum, item) => sum + itemTotal(item), 0);
+}
+
 function formatDate(d: string) {
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
@@ -109,7 +119,7 @@ function drawSoleiaText(doc: jsPDF, x: number, y: number, size: number, color: s
   doc.text('CREATIVE TEAM', x, y + size * 0.45, { align: 'center' });
 }
 
-async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageUrl: string) {
+async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageUrl: string, grandTotal: number) {
   // Dark background
   doc.setFillColor(DARK);
   doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
@@ -228,6 +238,14 @@ async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageU
     doc.setFontSize(11);
     doc.setTextColor(GOLD);
     doc.text(formatDate(proposal.event_date), PAGE_W / 2, cursorY, { align: 'center' });
+    cursorY += 22;
+  }
+
+  if (grandTotal > 0) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor('#ffffff');
+    doc.text(`Proposal Total: ${formatCurrency(grandTotal)}`, PAGE_W / 2, cursorY, { align: 'center' });
   }
 }
 
@@ -244,11 +262,12 @@ export async function generateProposalPdf(
   galleryImages?: GalleryImage[]
 ) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  const grandTotal = proposalTotal(items);
   let y = 0;
 
   // === COVER PAGE (optional) ===
   if (coverImageUrl) {
-    await generateCoverPage(doc, proposal, coverImageUrl);
+    await generateCoverPage(doc, proposal, coverImageUrl, grandTotal);
     doc.addPage();
   }
 
@@ -292,6 +311,19 @@ export async function generateProposalPdf(
   if (proposal.venue_name) metaParts.push(`at ${proposal.venue_name}`);
   if (proposal.event_date) metaParts.push(`· ${formatDate(proposal.event_date)}`);
   doc.text(metaParts.join(' '), MARGIN, y);
+
+  y += 18;
+  doc.setFillColor('#faf8f4');
+  doc.rect(MARGIN, y, CONTENT_W, 34, 'F');
+  doc.setFillColor(GOLD);
+  doc.rect(MARGIN, y, 3, 34, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(GRAY);
+  doc.text('PROPOSAL TOTAL', MARGIN + 12, y + 21);
+  doc.setFontSize(16);
+  doc.setTextColor(TEXT);
+  doc.text(formatCurrency(grandTotal), PAGE_W - MARGIN - 10, y + 22, { align: 'right' });
 
 
   // === CONTRACT INCLUSIONS BAND ===
@@ -473,10 +505,6 @@ export async function generateProposalPdf(
   }
 
   // === TOTAL ===
-  const grandTotal = items.reduce(
-    (sum, i) => sum + (i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1)),
-    0
-  );
   if (y + 32 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
   doc.setDrawColor('#ecf0f1');
   doc.setLineWidth(0.5);
