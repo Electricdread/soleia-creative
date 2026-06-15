@@ -257,7 +257,14 @@ export async function generateProposalPdf(
   doc.rect(0, 0, PAGE_W, 70, 'F');
 
   // Logo in header
-  drawSoleiaText(doc, 80, 30, 16, '#ffffff');
+  const headerLogoUri = await getSoleiaLogoDataUri();
+  if (headerLogoUri) {
+    const lh = 28;
+    const lw = lh * LOGO_ASPECT;
+    doc.addImage(headerLogoUri, 'PNG', MARGIN, 21, lw, lh);
+  } else {
+    drawSoleiaText(doc, 80, 30, 16, '#ffffff');
+  }
 
   // Scenario badge
   const badgeLabel = scenarioLabel(proposal).toUpperCase();
