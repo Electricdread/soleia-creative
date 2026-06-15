@@ -1,0 +1,1 @@
+UPDATE public.proposals SET status='sent' WHERE id='62199637-565d-4f79-a04d-fdf36e08f7e3';
