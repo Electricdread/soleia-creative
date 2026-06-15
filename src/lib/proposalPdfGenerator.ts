@@ -434,7 +434,31 @@ export async function generateProposalPdf(
     y += rowH;
   }
 
-  y += 10;
+  // === TOTAL ===
+  const grandTotal = items.reduce(
+    (sum, i) => sum + (i.is_flat_fee ? Number(i.price) : Number(i.price) * Number(i.quantity || 1)),
+    0
+  );
+  if (y + 32 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
+  doc.setDrawColor('#ecf0f1');
+  doc.setLineWidth(0.5);
+  doc.line(MARGIN, y, MARGIN + CONTENT_W, y);
+  y += 6;
+  doc.setFillColor('#faf8f4');
+  doc.rect(MARGIN, y, CONTENT_W, 24, 'F');
+  doc.setFillColor(GOLD);
+  doc.rect(MARGIN, y, 3, 24, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(GRAY);
+  doc.text('TOTAL', MARGIN + 12, y + 16);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(TEXT);
+  doc.text(formatCurrency(grandTotal), PAGE_W - MARGIN - 6, y + 16, { align: 'right' });
+  y += 34;
+
+
 
   // === TIMELINE (horizontal dots) ===
   if (timeline.length > 0) {
