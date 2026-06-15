@@ -51,6 +51,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const [clientName, setClientName] = useState('');
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(!!proposal.signed_at);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [clientQty, setClientQty] = useState<Record<string, number>>(
     Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1]))
   );
@@ -343,6 +344,35 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     }
   };
 
+  const handleDownloadPdf = async () => {
+    setDownloadingPdf(true);
+    try {
+      const [proposalRes, itemsRes, galleryRes, timelineRes] = await Promise.all([
+        supabase.from('proposals').select('*').eq('id', proposal.id).maybeSingle(),
+        supabase.from('proposal_items').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+        supabase.from('proposal_gallery').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+        supabase.from('proposal_timeline').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+      ]);
+
+      if (proposalRes.error) throw proposalRes.error;
+      if (itemsRes.error) throw itemsRes.error;
+      if (galleryRes.error) throw galleryRes.error;
+      if (timelineRes.error) throw timelineRes.error;
+
+      const freshProposal = proposalRes.data || proposal;
+      const freshItems = itemsRes.data?.length ? itemsRes.data : items;
+      const freshGallery = galleryRes.data || gallery;
+      const freshTimeline = timelineRes.data || timeline;
+      const coverImageUrl = freshGallery?.[0]?.image_url || null;
+
+      await generateProposalPdf(freshProposal, freshItems, freshTimeline, coverImageUrl, freshGallery);
+    } catch (e: any) {
+      toast({ title: 'PDF download failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 
@@ -368,14 +398,12 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                const coverImageUrl = gallery?.[0]?.image_url || null;
-                generateProposalPdf(proposal, items, timeline, coverImageUrl, gallery);
-              }}
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
               className="print:hidden gap-2 text-[#7f8c8d] border-[#ecf0f1] hover:bg-[#f8f9fa]"
             >
-              <FileDown className="w-4 h-4" />
-              Download PDF
+              {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+              {downloadingPdf ? 'Preparing PDF' : 'Download PDF'}
             </Button>
           </div>
         </header>
