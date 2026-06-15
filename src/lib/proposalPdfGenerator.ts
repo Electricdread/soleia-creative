@@ -327,7 +327,7 @@ export async function generateProposalPdf(
 
 
   // === CONTRACT INCLUSIONS BAND ===
-  y += 18;
+  y += 46;
   const inclH = 56;
   doc.setFillColor('#faf8f4');
   doc.rect(MARGIN, y, CONTENT_W, inclH, 'F');
