@@ -6,7 +6,7 @@ let cachedLogoDataUri: string | null = null;
 async function getSoleiaLogoDataUri(): Promise<string | null> {
   if (cachedLogoDataUri) return cachedLogoDataUri;
   try {
-    const res = await fetch(soleiaWideLogo);
+    const res = await fetch(`${soleiaWideLogo}?v=${Date.now()}`, { cache: 'no-store' });
     const blob = await res.blob();
     const uri: string = await new Promise((resolve, reject) => {
       const r = new FileReader();
