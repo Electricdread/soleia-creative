@@ -1,4 +1,26 @@
 import jsPDF from 'jspdf';
+import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
+
+const LOGO_ASPECT = 1006 / 345; // width / height
+let cachedLogoDataUri: string | null = null;
+async function getSoleiaLogoDataUri(): Promise<string | null> {
+  if (cachedLogoDataUri) return cachedLogoDataUri;
+  try {
+    const res = await fetch(soleiaWideLogo);
+    const blob = await res.blob();
+    const uri: string = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+    cachedLogoDataUri = uri;
+    return uri;
+  } catch {
+    return null;
+  }
+}
+
 
 interface ProposalData {
   event_name: string;
@@ -111,7 +133,15 @@ async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageU
   }
 
   // Logo at top
-  drawSoleiaText(doc, PAGE_W / 2, 60, 28, '#ffffff');
+  const logoUri = await getSoleiaLogoDataUri();
+  if (logoUri) {
+    const lw = 180;
+    const lh = lw / LOGO_ASPECT;
+    doc.addImage(logoUri, 'PNG', PAGE_W / 2 - lw / 2, 36, lw, lh);
+  } else {
+    drawSoleiaText(doc, PAGE_W / 2, 60, 28, '#ffffff');
+  }
+
 
   // Gold line
   doc.setDrawColor(GOLD);
@@ -227,7 +257,14 @@ export async function generateProposalPdf(
   doc.rect(0, 0, PAGE_W, 70, 'F');
 
   // Logo in header
-  drawSoleiaText(doc, 80, 30, 16, '#ffffff');
+  const headerLogoUri = await getSoleiaLogoDataUri();
+  if (headerLogoUri) {
+    const lh = 28;
+    const lw = lh * LOGO_ASPECT;
+    doc.addImage(headerLogoUri, 'PNG', MARGIN, 21, lw, lh);
+  } else {
+    drawSoleiaText(doc, 80, 30, 16, '#ffffff');
+  }
 
   // Scenario badge
   const badgeLabel = scenarioLabel(proposal).toUpperCase();
