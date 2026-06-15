@@ -53,6 +53,7 @@ interface ProposalItem {
   category?: string | null;
   unit?: string | null;
   is_flat_fee?: boolean;
+  client_selected?: boolean;
 }
 
 interface TimelinePhase {
@@ -262,6 +263,10 @@ export async function generateProposalPdf(
   galleryImages?: GalleryImage[]
 ) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  // Once the client has signed, only items they actually selected are part of the accepted scope.
+  if (proposal.signed_at) {
+    items = items.filter(i => i.client_selected !== false);
+  }
   const grandTotal = proposalTotal(items);
   let y = 0;
 

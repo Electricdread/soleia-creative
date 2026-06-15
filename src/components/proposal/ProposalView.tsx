@@ -132,7 +132,14 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [items, clientQty]);
 
-  const displayedTotal = isAdmin || signed ? grandTotal : total;
+  // After signing, the accepted scope = items the client actually selected (persisted as client_selected).
+  const acceptedTotal = useMemo(() => {
+    return items
+      .filter(i => i.client_selected !== false)
+      .reduce((sum, i) => sum + calcLineTotal(i), 0);
+  }, [items, clientQty]);
+
+  const displayedTotal = signed ? acceptedTotal : (isAdmin ? grandTotal : total);
 
   const toggleItem = (id: string) => {
     setSelectedIds(prev => {
@@ -192,6 +199,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         p_token: proposal.token,
         p_signature: clientName,
         p_item_quantities: qtyUpdates as any,
+        p_selected_ids: Array.from(selectedIds) as any,
       });
       if (error) throw error;
       setSigned(true);
