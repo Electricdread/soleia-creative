@@ -1035,6 +1035,7 @@ export type Database = {
       proposal_items: {
         Row: {
           category: string | null
+          client_selected: boolean
           created_at: string
           description: string | null
           id: string
@@ -1048,6 +1049,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          client_selected?: boolean
           created_at?: string
           description?: string | null
           id?: string
@@ -1061,6 +1063,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          client_selected?: boolean
           created_at?: string
           description?: string | null
           id?: string
@@ -1422,10 +1425,24 @@ export type Database = {
           read_ct: number
         }[]
       }
-      sign_proposal_by_token: {
-        Args: { p_item_quantities?: Json; p_signature: string; p_token: string }
-        Returns: string
-      }
+      sign_proposal_by_token:
+        | {
+            Args: {
+              p_item_quantities?: Json
+              p_signature: string
+              p_token: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_item_quantities?: Json
+              p_selected_ids?: string[]
+              p_signature: string
+              p_token: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       app_role: "admin" | "user"

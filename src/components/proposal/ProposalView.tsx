@@ -132,7 +132,14 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [items, clientQty]);
 
-  const displayedTotal = isAdmin || signed ? grandTotal : total;
+  // After signing, the accepted scope = items the client actually selected (persisted as client_selected).
+  const acceptedTotal = useMemo(() => {
+    return items
+      .filter(i => i.client_selected !== false)
+      .reduce((sum, i) => sum + calcLineTotal(i), 0);
+  }, [items, clientQty]);
+
+  const displayedTotal = signed ? acceptedTotal : (isAdmin ? grandTotal : total);
 
   const toggleItem = (id: string) => {
     setSelectedIds(prev => {
@@ -192,6 +199,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         p_token: proposal.token,
         p_signature: clientName,
         p_item_quantities: qtyUpdates as any,
+        p_selected_ids: Array.from(selectedIds) as any,
       });
       if (error) throw error;
       setSigned(true);
@@ -378,9 +386,10 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const scenario = resolveScenario(proposal);
   const mappedItem = items.find(isMappedToSpec);
+  const visibleItems = signed ? items.filter(i => i.client_selected !== false) : items;
   const tableItems = scenario === 'pre_packet_no_call' && mappedItem
-    ? items.filter(i => i.id !== mappedItem.id)
-    : items;
+    ? visibleItems.filter(i => i.id !== mappedItem.id)
+    : visibleItems;
   const additionalServicesLabel = scenario === 'pre_packet_no_call'
     ? 'Optional Add-On Services'
     : 'Additional Services';
