@@ -8,7 +8,7 @@ export default function ProposalTimeline({ timeline }: ProposalTimelineProps) {
   return (
     <section className="mb-12">
       <h2 className="text-xl font-semibold text-foreground mb-4 border-b border-border pb-2">Project Timeline</h2>
-      <div className="bg-card rounded-lg border border-border shadow-md overflow-hidden">
+      <div className="bg-card rounded-lg border border-border shadow-card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-background border-b border-border">
