@@ -50,7 +50,7 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
   return (
     <section className="mb-12">
       <div className="flex items-center gap-2 mb-6 border-b border-[#ecf0f1] pb-2">
-        <Sparkles className="w-5 h-5 text-[#c49a3c]" />
+        <Sparkles className="w-5 h-5 text-primary" />
         <h2 className="text-xl font-semibold text-[#2c3e50]">Approved Creative Selections</h2>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -61,7 +61,7 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
           return (
             <div
               key={clip.id}
-              className="group relative bg-white rounded-xl overflow-hidden border border-[#ecf0f1] shadow-sm hover:shadow-md transition-shadow"
+              className="group relative bg-background rounded-xl overflow-hidden border border-[#ecf0f1] shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="aspect-[4/3] bg-[#f0f3f5] relative overflow-hidden">
                 {isVideo && thumb ? (
@@ -89,8 +89,8 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
                   </div>
                 )}
                 {/* Gold approved badge */}
-                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#c49a3c] flex items-center justify-center shadow-md">
-                  <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-md">
+                  <svg className="w-3.5 h-3.5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>

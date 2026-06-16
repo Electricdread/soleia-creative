@@ -162,7 +162,7 @@ export default function AdminEmailPreviews() {
             <div className="w-px h-6 bg-border" />
             <img src={soleiaLogo} alt="Soleia" className="h-7 object-contain" />
             <div className="hidden sm:flex items-center gap-2 ml-2">
-              <Mail className="w-4 h-4 text-[#c49a3c]" />
+              <Mail className="w-4 h-4 text-primary" />
               <h1 className="text-sm font-semibold text-foreground">Auth Email Previews</h1>
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function AdminEmailPreviews() {
                   onClick={() => setSelectedType(tpl.type)}
                   className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${
                     active
-                      ? 'bg-[#c49a3c]/10 border-[#c49a3c]/40 text-foreground'
+                      ? 'bg-primary/10 border-primary/40 text-foreground'
                       : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
                   }`}
                 >
@@ -204,7 +204,7 @@ export default function AdminEmailPreviews() {
           <Card className="p-4 bg-card border-border">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#c49a3c] mb-1">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary mb-1">
                   Subject
                 </div>
                 <div className="text-base font-semibold text-foreground truncate">
@@ -220,7 +220,7 @@ export default function AdminEmailPreviews() {
                     onClick={() => setViewport('desktop')}
                     className={`px-2 py-1 rounded text-xs flex items-center gap-1 transition ${
                       viewport === 'desktop'
-                        ? 'bg-[#c49a3c]/15 text-[#c49a3c]'
+                        ? 'bg-primary/15 text-primary'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                     title="Desktop width (600px)"
@@ -232,7 +232,7 @@ export default function AdminEmailPreviews() {
                     onClick={() => setViewport('mobile')}
                     className={`px-2 py-1 rounded text-xs flex items-center gap-1 transition ${
                       viewport === 'mobile'
-                        ? 'bg-[#c49a3c]/15 text-[#c49a3c]'
+                        ? 'bg-primary/15 text-primary'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                     title="Mobile width (375px)"
@@ -255,7 +255,7 @@ export default function AdminEmailPreviews() {
                     key={k}
                     className="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted border border-border text-muted-foreground"
                   >
-                    <span className="text-[#c49a3c]">{k}</span>
+                    <span className="text-primary">{k}</span>
                     <span className="opacity-50">=</span>
                     <span className="truncate max-w-[200px]">{v}</span>
                   </span>
@@ -326,7 +326,7 @@ export default function AdminEmailPreviews() {
                   title={`${selectedMeta.label} preview`}
                   srcDoc={html}
                   sandbox=""
-                  className="bg-white border border-border shadow-sm rounded transition-all"
+                  className="bg-background border border-border shadow-sm rounded transition-all"
                   style={{ width: iframeWidth, height: 720 }}
                 />
               )}

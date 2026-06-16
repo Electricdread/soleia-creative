@@ -33,7 +33,7 @@ const portals: PortalCard[] = [
   {
     title: 'Event Calendar',
     description: 'View upcoming events synced from Triple Seat',
-    icon: <Calendar className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Calendar className="w-6 h-6 text-primary" />,
     href: '/admin/calendar',
   },
   {
@@ -45,13 +45,13 @@ const portals: PortalCard[] = [
   {
     title: 'Delivery Guides',
     description: 'Session-based content delivery guides with asset upload links',
-    icon: <Send className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Send className="w-6 h-6 text-primary" />,
     href: '/delivery-guide',
   },
   {
     title: 'Client Proposals',
     description: 'Create and manage interactive service agreements and quotes',
-    icon: <FileText className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <FileText className="w-6 h-6 text-primary" />,
     href: '/admin/proposals',
   },
   {
@@ -63,25 +63,25 @@ const portals: PortalCard[] = [
   {
     title: 'Looks Collection',
     description: 'Curated motion library — upload, categorize, and browse looks',
-    icon: <Video className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Video className="w-6 h-6 text-primary" />,
     href: '/admin/looks',
   },
   {
     title: 'Auth Email Previews',
     description: 'Preview the six branded auth emails (signup, magic link, recovery, etc.)',
-    icon: <Mail className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Mail className="w-6 h-6 text-primary" />,
     href: '/admin/email-previews',
   },
   {
     title: 'Storage & Archive',
     description: 'Drive connection health, storage usage, and migrate older clips to cold archive',
-    icon: <HardDrive className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <HardDrive className="w-6 h-6 text-primary" />,
     href: '/admin/storage',
   },
   {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
-    icon: <Users className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Users className="w-6 h-6 text-primary" />,
     href: '/admin/users',
   },
 ];
@@ -244,7 +244,7 @@ export default function AdminPortal() {
             <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
               <Clock className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-3">Pending Approval</h1>
+            <h1 className="font-display text-2xl text-foreground mb-3">Pending Approval</h1>
             <p className="text-muted-foreground mb-6 leading-relaxed">
               Your registration is currently under review. An administrator will approve your access shortly.
             </p>
@@ -386,7 +386,7 @@ export default function AdminPortal() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">This Week</h1>
+            <h1 className="font-display text-xl sm:text-2xl text-foreground">This Week</h1>
             <span className="text-sm text-muted-foreground hidden sm:inline">
               {format(startOfWeek(new Date()), 'MMM d')} – {format(endOfWeek(new Date()), 'MMM d')}
             </span>

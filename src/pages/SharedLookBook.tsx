@@ -95,20 +95,20 @@ export default function SharedLookBook() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-[#c49a3c]" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
 
   if (notFound || !share) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center p-6">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-center p-6">
         <img src={soleiaLogo} alt="Soleia" className="h-10 w-auto object-contain mb-6" />
-        <h1 className="text-2xl text-zinc-100 mb-2" style={{ fontFamily: 'DM Serif Display, serif' }}>
+        <h1 className="font-display text-2xl text-foreground mb-2" style={{ fontFamily: 'DM Serif Display, serif' }}>
           Look Book unavailable
         </h1>
-        <p className="text-sm text-zinc-500" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+        <p className="text-sm text-muted-foreground" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
           This link is expired or no longer active.
         </p>
       </div>
@@ -116,27 +116,27 @@ export default function SharedLookBook() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black pointer-events-none" />
 
       {/* Header */}
-      <header className="relative z-10 border-b border-zinc-800">
+      <header className="relative z-10 border-b border-border">
         <div className="absolute top-4 left-4 z-20">
           <HomeButton variant="dark" />
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center text-center">
           <img src={soleiaLogo} alt="Soleia" className="h-10 w-auto object-contain" />
-          <p className="mt-4 text-[11px] uppercase tracking-[0.3em] text-[#c49a3c]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+          <p className="mt-4 text-[11px] uppercase tracking-[0.3em] text-primary" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
             Look Book {categoryName ? `· ${categoryName}` : ''}
           </p>
           <h1
-            className="mt-2 text-3xl sm:text-4xl text-zinc-100"
+            className="font-display mt-2 text-3xl sm:text-4xl text-foreground"
             style={{ fontFamily: 'DM Serif Display, serif' }}
           >
             {share.title}
           </h1>
           {share.intro_note && (
-            <p className="mt-4 max-w-2xl text-sm sm:text-base text-zinc-400 leading-relaxed">
+            <p className="mt-4 max-w-2xl text-sm sm:text-base text-muted-foreground leading-relaxed">
               {share.intro_note}
             </p>
           )}
@@ -146,7 +146,7 @@ export default function SharedLookBook() {
       {/* Gallery */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {clips.length === 0 ? (
-          <div className="text-center py-24 border border-dashed border-zinc-800 rounded-xl text-zinc-500">
+          <div className="text-center py-24 border border-dashed border-border rounded-xl text-muted-foreground">
             <p className="text-sm">No looks in this collection yet.</p>
           </div>
         ) : (
@@ -157,13 +157,13 @@ export default function SharedLookBook() {
           </div>
         )}
 
-        <p className="mt-12 text-center text-[10px] uppercase tracking-[0.3em] text-zinc-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+        <p className="mt-12 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
           Curated by Soleia Creative Team
         </p>
       </main>
 
       <Dialog open={!!previewing} onOpenChange={(o) => !o && setPreviewing(null)}>
-        <DialogContent className="max-w-5xl bg-black border-zinc-800 p-0">
+        <DialogContent className="max-w-5xl bg-background border-border p-0">
           {previewing && (
             <div>
               <video
@@ -172,11 +172,11 @@ export default function SharedLookBook() {
                 controls
                 autoPlay
                 playsInline
-                className="w-full max-h-[80vh] bg-black"
+                className="w-full max-h-[80vh] bg-background"
               />
-              <div className="p-4 text-zinc-100">
+              <div className="p-4 text-foreground">
                 <h3 className="text-lg" style={{ fontFamily: 'DM Serif Display, serif' }}>{previewing.title}</h3>
-                <p className="text-xs text-zinc-500 mt-1" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                <p className="text-xs text-muted-foreground mt-1" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
                   {previewing.resolution} {previewing.duration ? `· ${previewing.duration}` : ''}
                 </p>
               </div>
@@ -225,9 +225,9 @@ function SharedTile({ clip, onOpen }: { clip: Clip; onOpen: () => void }) {
       onClick={onOpen}
       role="button"
       style={{ touchAction: 'manipulation' }}
-      className="group relative rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-[#c49a3c]/40 transition-colors cursor-pointer"
+      className="group relative rounded-xl overflow-hidden bg-muted border border-border hover:border-primary/40 transition-colors cursor-pointer"
     >
-      <div className="aspect-video bg-black">
+      <div className="aspect-video bg-background">
         {clip.preview_url ? (
           <video
             ref={videoRef}
@@ -242,25 +242,25 @@ function SharedTile({ clip, onOpen }: { clip: Clip; onOpen: () => void }) {
         ) : clip.thumbnail ? (
           <img src={clip.thumbnail} alt={clip.title} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-zinc-600">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground/70">
             <Play className="h-8 w-8" />
           </div>
         )}
         <div className="absolute top-2 left-2 flex gap-1">
           {clip.resolution && (
-            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-zinc-200 backdrop-blur-sm" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-background/60 text-foreground backdrop-blur-sm" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
               {clip.resolution}
             </span>
           )}
           {clip.duration && (
-            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-black/60 text-zinc-200 backdrop-blur-sm" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+            <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-background/60 text-foreground backdrop-blur-sm" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
               {clip.duration}
             </span>
           )}
         </div>
       </div>
       <div className="p-3">
-        <p className="text-sm text-zinc-100 truncate">{clip.title || 'Untitled'}</p>
+        <p className="text-sm text-foreground truncate">{clip.title || 'Untitled'}</p>
       </div>
     </div>
   );

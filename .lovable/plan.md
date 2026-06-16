@@ -1,73 +1,55 @@
-# Separate Proposals from Content Packets
+# Apply Creative Guide scheme site-wide
 
-New rule: **Proposals = quote + signature only.** A standalone **Content Packet** lives at its own URL/admin section.
+The design tokens, gold gradient, and fonts (Inter / DM Serif Display / JetBrains Mono) are already global in `src/index.css` and `tailwind.config.ts`. The Creative Guide just *uses* them with discipline. This plan retrofits the rest of the site to the same conventions — **no new tokens, no layout rewrites, no PDF/email changes**.
 
-## Phase 1 — Strip packet content out of proposals (this pass)
+## The 4 conventions to enforce
 
-### Admin (`src/pages/AdminProposals.tsx`)
-- Remove scenario `<Select>` (Pre-Call Packet / Pre-Packet / Direct Quote) and the "Seed defaults" button.
-- Drop `setScenario`, `seedScenarioTwoDefaults`, and the packet branches in `buildPlainTextEmail` / `openInMailApp` — keep only the direct-quote email path (subject prefix "Proposal").
-- On `handleCreate`, insert `proposal_scenario: 'direct_quote'`, `is_pre_call_packet: false`.
+1. **Headings** → `font-display` (DM Serif Display). Hero/section titles add `text-gradient-gold`.
+2. **Numeric / spec / status / metadata labels** → `font-mono` (JetBrains Mono), often uppercase + tracked.
+3. **Body** → `font-sans` (Inter) — already the default, but kill any leftover hardcoded fonts.
+4. **Colors** → semantic tokens only (`text-foreground`, `text-muted-foreground`, `text-primary`, `bg-card`, `border-border/60`). Remove any hardcoded `text-white`, `bg-black`, `bg-[#...]`, `text-gray-*`.
 
-### Client proposal view (`src/components/proposal/ProposalView.tsx`)
-- Remove `<ProposalContractInclusions />` render.
-- Drop the `isMappedToSpec` pre-tick effect and `mappedItem` filtering of `tableItems`.
-- Replace `additionalServicesLabel` with single label **"Services"**.
+## Two tiny shared utilities (added to `src/index.css`)
 
-### PDF (`src/lib/proposalPdfGenerator.ts`)
-- Remove `scenarioLabel` chip on cover, "Mapped to Spec" filtering, and scenario-conditional copy. Pure quote.
+```
+.scheme-eyebrow  → font-mono uppercase tracking-[0.2em] text-xs text-primary/80
+.scheme-title    → font-display text-3xl sm:text-4xl text-foreground (gold gradient variant: .scheme-title-gold)
+.scheme-divider  → h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent
+```
 
-### Cleanup
-- Delete `src/components/proposal/ProposalContractInclusions.tsx`.
-- Leave `proposal_scenario` / `is_pre_call_packet` DB columns intact (historical proposals still render fine).
+These mirror the patterns already inline in `CreativeGuideView.tsx` so pages can adopt them in one or two class swaps.
 
-### Memory
-- Add Core rule: "Proposals are quote-only (line items + signature). Packet/inclusions content lives at /packet/:token, never inside proposals."
-- New memory `mem://features/client-proposal/quote-only-rule` documenting what was stripped.
-- Update `mem://features/client-proposal/proposal-scenarios` to mark scenarios deprecated.
+## Pages retrofitted (visual only, layout untouched)
 
-## Phase 2 — Standalone Content Packet (new admin section + page)
+**Client-facing**
+- `ClientProposal.tsx` / `ProposalView.tsx` — section titles → `font-display`, status badges / line-item amounts / dates → `font-mono`, replace any hardcoded grays.
+- `CreativeSession.tsx` / `SharedSession.tsx` — section headers + eyebrow labels.
+- `SharedLookBook.tsx` — gallery section headers + mono metadata.
+- `ContentDelivery.tsx`, `DeliveryGuide.tsx`, `SessionDeliveryGuide.tsx`, `TailgateDeliveryGuide.tsx` — already partially aligned; finish headings + spec rows.
 
-Decision: option (a) — `/packet/:token` public page + `/admin/packets` manager.
+**Admin / portals**
+- `AdminPortal.tsx`, `AdminProposals.tsx`, `AdminLooks.tsx`, `AdminCreative.tsx`, `AdminCalendar.tsx`, `AdminUsers.tsx`, `AdminStorage.tsx`, `OfficePortal.tsx` — page titles → `font-display`, table headers / counts / IDs / timestamps → `font-mono`, replace hardcoded colors with tokens.
+- Auth: `PendingApproval.tsx`, `AccessGranted.tsx`, `AdminSetup.tsx` — heading + eyebrow only. `AdminLogin.tsx` left as-is (per prior decision).
 
-### Database (migration)
-- New table `public.content_packets`:
-  - `id`, `token` (unique, public), `event_name`, `client_name`, `venue_name`, `event_date`, `cover_image_url`, `intro_text`, `is_active`, `created_by`, `created_at`, `updated_at`.
-- New table `public.content_packet_sections`:
-  - `id`, `packet_id` (FK), `section_type` ('inclusions' | 'rich_text' | 'image' | 'video' | 'link_list'), `title`, `body` (jsonb), `sort_order`, timestamps.
-- GRANTs: `authenticated` full, `anon` select (token-scoped via RLS), `service_role` all.
-- RLS:
-  - `anon` can read packets + sections only when packet `is_active = true` (token filter happens client-side via `.eq('token', …)`).
-  - `authenticated` admin (via `has_role(auth.uid(), 'admin')`) can CRUD.
-- Seed default "Inclusions" copy (current venue contract bullets from the old banner) for any newly created packet.
+## Out of scope (explicitly)
 
-### Routes (`src/App.tsx`)
-- Public: `/packet/:token` → `src/pages/ClientContentPacket.tsx`.
-- Admin: `/admin/packets` → `src/pages/AdminContentPackets.tsx` (list + create + edit, mirroring AdminProposals patterns).
+- PDF generators (`proposalPdfGenerator.ts`, `deliveryGuidePdf.ts`, etc.) — print aesthetic stays.
+- Email HTML templates and email-asset cards.
+- Token values, dark/light palette, business logic, RLS, routes.
+- Layouts, spacing systems, component restructuring.
+- shadcn/ui primitives (`button.tsx`, `card.tsx`, etc.) — they already consume tokens.
 
-### Client packet page (`src/pages/ClientContentPacket.tsx`)
-- Same Soleia branded chrome as `ProposalView` (logo, dark/light theme), but read-only.
-- Renders: cover image, event header, intro, then ordered `sections`:
-  - `inclusions` → the gold-bar "Included in Your Venue Contract" block (copy reused).
-  - `rich_text` → branded prose block.
-  - `image` / `video` → media tile with tap-to-fullscreen.
-  - `link_list` → labeled buttons (Lookbook share, Creative Guide, Tripleseat link, etc.).
+## Rollout order
 
-### Admin manager (`src/pages/AdminContentPackets.tsx`)
-- List with status badge + Active toggle (mirrors AdminProposals row).
-- Create form: event name, client name, venue, event date, optional linked `proposal_id` (display only — no data fusion).
-- Edit: section list with DnD reordering, add/remove sections, edit fields per type.
-- "Copy public link" + "Copy email snippet" actions (re-use the email-snippet pattern from ProposalEmailCard).
+1. Add the 3 utility classes to `src/index.css`.
+2. Sweep client-facing pages (proposal → session → lookbook → delivery).
+3. Sweep admin pages (portal → proposals → looks → creative → calendar → users → storage → office).
+4. Sweep auth pages.
+5. Quick visual pass in preview (light + dark) to catch stragglers.
 
-### Portal entry
-- Add a "Content Packets" card in `src/pages/AdminPortal.tsx` using the gold-accent icon convention (e.g. `BookOpen`).
+## Acceptance
 
-## Out of scope for now
-- Migrating any existing Pre-Call Packet proposals into the new `content_packets` table. Per your answer, those stay as-is.
-- Email automation that fires the packet link automatically — admins copy/paste manually like the other email tools.
-
-## Implementation order
-1. Phase 1 changes + memory updates (small, ship first).
-2. Phase 2 migration → admin page → client page → portal entry (each as its own focused change once you confirm).
-
-Want me to ship Phase 1 now and queue Phase 2 next, or do you want both in one go?
+- Every page heading renders in DM Serif Display.
+- Every numeric/spec/status/timestamp renders in JetBrains Mono.
+- No hardcoded color utilities remain on retrofitted pages (grep for `text-white|bg-black|text-gray-|bg-\[#`).
+- Light and dark modes both look cohesive with the Creative Guide.

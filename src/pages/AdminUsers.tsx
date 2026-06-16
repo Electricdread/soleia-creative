@@ -121,20 +121,20 @@ export default function AdminUsers() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-foreground" />
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Card className="bg-zinc-900 border-zinc-800 max-w-md">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="bg-muted border-border max-w-md">
           <CardContent className="p-8 text-center">
             <Shield className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
-            <p className="text-zinc-400">You need admin privileges to access this page.</p>
+            <h2 className="font-display text-xl text-foreground mb-2">Access Denied</h2>
+            <p className="text-muted-foreground">You need admin privileges to access this page.</p>
             <Button 
               onClick={() => navigate('/admin/login')} 
               className="mt-4"
@@ -170,16 +170,16 @@ export default function AdminUsers() {
               variant="ghost"
               size="icon"
               onClick={() => navigate('/admin')}
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-                <Users className="w-6 h-6 text-zinc-400" />
+              <h1 className="font-display text-2xl text-foreground tracking-tight flex items-center gap-3">
+                <Users className="w-6 h-6 text-muted-foreground" />
                 User Management
               </h1>
-              <p className="text-zinc-500 text-sm mt-1">Approve or deny access requests</p>
+              <p className="text-muted-foreground text-sm mt-1">Approve or deny access requests</p>
             </div>
           </div>
           
@@ -188,7 +188,7 @@ export default function AdminUsers() {
             size="sm"
             onClick={fetchPendingUsers}
             disabled={isLoading}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            className="border-border text-muted-foreground hover:bg-muted"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
@@ -197,44 +197,44 @@ export default function AdminUsers() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <Card className="bg-zinc-900/50 border-zinc-800">
+          <Card className="bg-muted/50 border-border">
             <CardContent className="p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
                 <Clock className="w-6 h-6 text-amber-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-white">{pendingCount}</p>
-                <p className="text-sm text-zinc-500">Pending Approval</p>
+                <p className="text-2xl font-bold text-foreground">{pendingCount}</p>
+                <p className="text-sm text-muted-foreground">Pending Approval</p>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-zinc-900/50 border-zinc-800">
+          <Card className="bg-muted/50 border-border">
             <CardContent className="p-4 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
                 <Check className="w-6 h-6 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-white">{approvedCount}</p>
-                <p className="text-sm text-zinc-500">Approved Admins</p>
+                <p className="text-2xl font-bold text-foreground">{approvedCount}</p>
+                <p className="text-sm text-muted-foreground">Approved Admins</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Users List */}
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-muted/50 border-border">
           <CardHeader>
-            <CardTitle className="text-white text-lg">Access Requests</CardTitle>
+            <CardTitle className="text-foreground text-lg">Access Requests</CardTitle>
             <CardDescription>Users waiting for admin approval</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
               </div>
             ) : pendingUsers.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500">
+              <div className="text-center py-12 text-muted-foreground">
                 <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No users found</p>
               </div>
@@ -246,20 +246,20 @@ export default function AdminUsers() {
                     className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${
                       user.has_admin_role 
                         ? 'bg-green-500/5 border-green-500/20' 
-                        : 'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-800'
+                        : 'bg-muted/50 border-border/50 hover:bg-muted'
                     }`}
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        user.has_admin_role ? 'bg-green-500/20' : 'bg-zinc-700'
+                        user.has_admin_role ? 'bg-green-500/20' : 'bg-border'
                       }`}>
-                        <span className="text-sm font-medium text-white">
+                        <span className="text-sm font-medium text-foreground">
                           {user.email.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div>
-                        <p className="text-white font-medium">{user.email}</p>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-foreground font-medium">{user.email}</p>
+                        <p className="text-xs text-muted-foreground">
                           Signed up {new Date(user.created_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -298,7 +298,7 @@ export default function AdminUsers() {
                             size="sm"
                             onClick={() => handleApprove(user.user_id)}
                             disabled={processingUser === user.user_id}
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            className="bg-green-600 hover:bg-green-700 text-foreground"
                           >
                             {processingUser === user.user_id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />

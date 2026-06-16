@@ -383,7 +383,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Event Title & Info */}
         {editingHeader ? (
-          <div className="bg-white rounded-lg p-5 border border-[#ecf0f1] mb-8 space-y-3">
+          <div className="bg-background rounded-lg p-5 border border-[#ecf0f1] mb-8 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-[#95a5a6] font-semibold">Event Name</label>
@@ -433,7 +433,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               </div>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={saveHeader} className="bg-[#2c3e50] text-white hover:bg-[#34495e]">
+              <Button size="sm" onClick={saveHeader} className="bg-[#2c3e50] text-foreground hover:bg-[#34495e]">
                 <Check className="w-3 h-3 mr-1" /> Save
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setEditingHeader(false)}>
@@ -444,11 +444,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         ) : (
           <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] tracking-[0.25em] uppercase text-[#c49a3c] font-bold mb-2">
+              <p className="text-[10px] tracking-[0.25em] uppercase text-primary font-bold mb-2">
                 Proposal
               </p>
               <div className="flex items-center gap-2">
-                <h1 className="text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
+                <h1 className="font-display text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
                 {isAdmin && (
                   <button onClick={() => setEditingHeader(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors">
                     <Pencil className="w-4 h-4" />
@@ -488,7 +488,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Section label for the menu of optional services */}
         {!editingItems && tableItems.length > 0 && (
-          <p className="text-[10px] tracking-[0.25em] uppercase text-[#c49a3c] font-semibold mb-3">
+          <p className="text-[10px] tracking-[0.25em] uppercase text-primary font-semibold mb-3">
             {additionalServicesLabel}
           </p>
         )}
@@ -500,7 +500,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-[#2c3e50]">Edit Items</h3>
               <div className="flex gap-2">
-                <Button size="sm" onClick={saveItems} className="bg-[#2c3e50] text-white hover:bg-[#34495e]">
+                <Button size="sm" onClick={saveItems} className="bg-[#2c3e50] text-foreground hover:bg-[#34495e]">
                   <Check className="w-3 h-3 mr-1" /> Save
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }))); }}>
@@ -509,7 +509,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               </div>
             </div>
             {editItems.map((item, idx) => (
-              <div key={item.id || idx} className="bg-white rounded-lg p-4 border border-[#ecf0f1] space-y-2">
+              <div key={item.id || idx} className="bg-background rounded-lg p-4 border border-[#ecf0f1] space-y-2">
                 <div className="grid grid-cols-[1fr_1fr] gap-2">
                   <Input
                     placeholder="Category (e.g. Immersive LED Environments)"
@@ -631,11 +631,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             )}
             {items.length === 0 ? (
               isAdmin ? (
-                <div className="bg-white border-2 border-dashed border-[#ecf0f1] rounded-lg p-10 text-center">
-                  <ListChecks className="w-8 h-8 text-[#c49a3c] mx-auto mb-3" />
+                <div className="bg-background border-2 border-dashed border-[#ecf0f1] rounded-lg p-10 text-center">
+                  <ListChecks className="w-8 h-8 text-primary mx-auto mb-3" />
                   <p className="text-[#2c3e50] font-semibold mb-1">No line items yet</p>
                   <p className="text-[#7f8c8d] text-sm mb-4">Add items so your client can see the menu and pricing.</p>
-                  <Button size="sm" onClick={() => setEditingItems(true)} className="bg-[#2c3e50] text-white hover:bg-[#34495e] gap-1.5">
+                  <Button size="sm" onClick={() => setEditingItems(true)} className="bg-[#2c3e50] text-foreground hover:bg-[#34495e] gap-1.5">
                     <Plus className="w-3 h-3" /> Add items
                   </Button>
                 </div>
@@ -649,7 +649,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             ) : tableItems.length === 0 ? null : (
             <>
             {/* Desktop Table - hidden on mobile */}
-            <div className="hidden sm:block bg-white rounded-lg border border-[#ecf0f1] overflow-hidden">
+            <div className="hidden sm:block bg-background rounded-lg border border-[#ecf0f1] overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#f8f9fa] border-b border-[#ecf0f1]">
@@ -705,7 +705,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                                     onClick={() => adjustQty(item.id, -1)}
                                     disabled={getEffectiveQty(item) <= 1}
                                     aria-label="Decrease quantity"
-                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation"
+                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
                                   >
                                     <Minus className="w-3 h-3" />
                                   </button>
@@ -714,7 +714,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                                     type="button"
                                     onClick={() => adjustQty(item.id, 1)}
                                     aria-label="Increase quantity"
-                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation"
+                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
                                   >
                                     <Plus className="w-3 h-3" />
                                   </button>
@@ -754,8 +754,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                         </div>
                       )}
                       <div
-                        className={`bg-white rounded-xl border p-4 transition-colors touch-manipulation active:scale-[0.98] ${
-                          selectedIds.has(item.id) ? 'border-[#c49a3c] bg-[#c49a3c]/5' : 'border-[#ecf0f1]'
+                        className={`bg-background rounded-xl border p-4 transition-colors touch-manipulation active:scale-[0.98] ${
+                          selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-[#ecf0f1]'
                         }`}
                         onClick={(event) => handleItemRowClick(event, item.id)}
                       >
@@ -789,7 +789,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                                           onClick={() => adjustQty(item.id, -1)}
                                           disabled={getEffectiveQty(item) <= 1}
                                           aria-label="Decrease quantity"
-                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation active:scale-95"
+                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
                                         >
                                           <Minus className="w-3.5 h-3.5" />
                                         </button>
@@ -798,7 +798,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                                           type="button"
                                           onClick={() => adjustQty(item.id, 1)}
                                           aria-label="Increase quantity"
-                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-[#c49a3c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c49a3c] transition-colors touch-manipulation active:scale-95"
+                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
                                         >
                                           <Plus className="w-3.5 h-3.5" />
                                         </button>
@@ -828,14 +828,14 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         )}
 
         {/* Total */}
-        <div className="bg-white rounded-lg p-5 border border-[#ecf0f1] mb-4 flex items-center justify-between">
+        <div className="bg-background rounded-lg p-5 border border-[#ecf0f1] mb-4 flex items-center justify-between">
           <span className="text-[#7f8c8d] font-medium">Total</span>
           <span className="text-2xl font-bold text-[#2c3e50]">{formatCurrency(displayedTotal)}</span>
         </div>
 
         {/* Sign Section */}
         {!isAdmin && !signed ? (
-          <div className="bg-white rounded-lg p-6 border border-[#ecf0f1] mb-12">
+          <div className="bg-background rounded-lg p-6 border border-[#ecf0f1] mb-12">
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
                 placeholder="Your full name"
@@ -846,7 +846,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               <Button
                 onClick={handleSign}
                 disabled={signing || selectedIds.size === 0}
-                className="bg-[#2c3e50] hover:bg-[#34495e] text-white px-8"
+                className="bg-[#2c3e50] hover:bg-[#34495e] text-foreground px-8"
               >
                 {signing ? 'Signing...' : 'Accept & Sign Proposal'}
               </Button>
@@ -881,8 +881,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Kickoff Conditions */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Kickoff Conditions</h2>
-          <div className="bg-white rounded-lg p-5 border border-[#ecf0f1]">
+          <h2 className="font-display text-xl text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Kickoff Conditions</h2>
+          <div className="bg-background rounded-lg p-5 border border-[#ecf0f1]">
             <p className="text-sm text-[#34495e]">
               Production begins only once <strong>both</strong> conditions are met: the proposal is signed off and all client brand assets have been delivered.
             </p>
@@ -894,7 +894,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Contact */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Contact</h2>
+          <h2 className="font-display text-xl text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Contact</h2>
           <p className="text-sm text-[#34495e]">
             For any questions, please contact us at{' '}
             <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="text-[#3498db] underline">

@@ -9,11 +9,11 @@ export default function AdminLooks() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
 
       {/* Header */}
-      <header className="relative z-10 border-b border-zinc-800">
+      <header className="relative z-10 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -21,12 +21,12 @@ export default function AdminLooks() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/admin')}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <div className="h-6 w-px bg-zinc-700" />
+              <div className="h-6 w-px bg-border" />
               <img
                 src={soleiaLogo}
                 alt="Soleia"
@@ -36,7 +36,7 @@ export default function AdminLooks() {
 
             <div className="flex items-center gap-3">
               <h1
-                className="text-base sm:text-lg font-semibold text-white"
+                className="font-display text-base sm:text-lg text-foreground"
                 style={{ fontFamily: 'DM Serif Display, serif' }}
               >
                 Look Book
@@ -45,7 +45,7 @@ export default function AdminLooks() {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/admin')}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800 h-8 w-8"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8"
                 aria-label="Go to admin portal"
               >
                 <Settings className="w-4 h-4" />
@@ -54,7 +54,7 @@ export default function AdminLooks() {
           </div>
 
           {/* Subtitle */}
-          <p className="mt-2 text-xs uppercase tracking-[0.25em] text-[#c49a3c]/80" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+          <p className="mt-2 text-xs uppercase tracking-[0.25em] text-primary/80" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
             Looks Collection · Curated Motion Library
           </p>
         </div>
@@ -62,7 +62,7 @@ export default function AdminLooks() {
 
       {/* Main */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 sm:p-6">
+        <div className="bg-muted/60 backdrop-blur-sm border border-border rounded-xl p-4 sm:p-6">
           <LookBookView />
         </div>
       </main>

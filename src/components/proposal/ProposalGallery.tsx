@@ -106,7 +106,7 @@ export default function ProposalGallery({ gallery, isAdmin, proposalId, onRefres
       {gallery.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {gallery.map(img => (
-            <div key={img.id} className="bg-white rounded-lg overflow-hidden border border-[#ecf0f1] shadow-sm relative group">
+            <div key={img.id} className="bg-background rounded-lg overflow-hidden border border-[#ecf0f1] shadow-sm relative group">
               <img
                 src={img.image_url}
                 alt={img.caption || ''}
