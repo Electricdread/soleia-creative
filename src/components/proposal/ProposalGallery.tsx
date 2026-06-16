@@ -94,12 +94,12 @@ export default function ProposalGallery({ gallery, isAdmin, proposalId, onRefres
 
       {gallery.length === 0 && isAdmin && (
         <div
-          className="border-2 border-dashed border-border rounded-lg p-10 text-center cursor-pointer hover:border-[#3498db] transition-colors"
+          className="border-2 border-dashed border-border rounded-lg p-10 text-center cursor-pointer hover:border-primary transition-colors"
           onClick={() => fileInputRef.current?.click()}
         >
-          <Upload className="w-8 h-8 text-[#bdc3c7] mx-auto mb-2" />
+          <Upload className="w-8 h-8 text-muted-foreground/60 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground/80">Click to upload gallery images</p>
-          <p className="text-xs text-[#bdc3c7] mt-1">The first image will be used as the PDF cover</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">The first image will be used as the PDF cover</p>
         </div>
       )}
 

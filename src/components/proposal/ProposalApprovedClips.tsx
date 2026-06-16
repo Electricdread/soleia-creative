@@ -85,7 +85,7 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-[#bdc3c7] text-xs uppercase">{clip.item_type}</span>
+                    <span className="text-muted-foreground/60 text-xs uppercase">{clip.item_type}</span>
                   </div>
                 )}
                 {/* Gold approved badge */}
