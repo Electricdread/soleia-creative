@@ -132,7 +132,7 @@ function OfficePortalContent() {
               alt="Soleia" 
               className="h-6 w-auto opacity-50"
             />
-            <p className="font-tech text-[10px] text-zinc-600 uppercase tracking-wider">
+            <p className="font-tech text-[10px] text-muted-foreground/70 uppercase tracking-wider">
               Operator Console v1.0 • {new Date().getFullYear()}
             </p>
           </div>

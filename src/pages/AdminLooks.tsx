@@ -26,7 +26,7 @@ export default function AdminLooks() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <div className="h-6 w-px bg-zinc-700" />
+              <div className="h-6 w-px bg-border" />
               <img
                 src={soleiaLogo}
                 alt="Soleia"

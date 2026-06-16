@@ -251,7 +251,7 @@ export default function AdminUsers() {
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        user.has_admin_role ? 'bg-green-500/20' : 'bg-zinc-700'
+                        user.has_admin_role ? 'bg-green-500/20' : 'bg-border'
                       }`}>
                         <span className="text-sm font-medium text-foreground">
                           {user.email.charAt(0).toUpperCase()}

@@ -157,7 +157,7 @@ export default function SharedLookBook() {
           </div>
         )}
 
-        <p className="mt-12 text-center text-[10px] uppercase tracking-[0.3em] text-zinc-600" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+        <p className="mt-12 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
           Curated by Soleia Creative Team
         </p>
       </main>
@@ -242,7 +242,7 @@ function SharedTile({ clip, onOpen }: { clip: Clip; onOpen: () => void }) {
         ) : clip.thumbnail ? (
           <img src={clip.thumbnail} alt={clip.title} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-zinc-600">
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground/70">
             <Play className="h-8 w-8" />
           </div>
         )}

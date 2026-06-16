@@ -384,7 +384,7 @@ luisdreamslv@gmail.com`;
         {/* Create New */}
         {!showForm ? (
           <div className="mb-8 flex flex-col sm:flex-row gap-2 sm:items-center">
-            <Button onClick={() => setShowForm(true)} className="gap-2 bg-background text-foreground hover:bg-zinc-200 w-full sm:w-auto">
+            <Button onClick={() => setShowForm(true)} className="gap-2 bg-background text-foreground hover:bg-muted w-full sm:w-auto">
               <Plus className="w-4 h-4" /> New Proposal
             </Button>
             <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
@@ -615,7 +615,7 @@ luisdreamslv@gmail.com`;
             )}
 
             <div className="flex gap-3">
-              <Button onClick={handleCreate} disabled={saving} className="bg-background text-foreground hover:bg-zinc-200">
+              <Button onClick={handleCreate} disabled={saving} className="bg-background text-foreground hover:bg-muted">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Create Proposal
               </Button>
@@ -712,7 +712,7 @@ luisdreamslv@gmail.com`;
                   <Button variant="ghost" size="icon" onClick={() => window.open(`/proposal/${p.token}`, '_blank')} className="text-muted-foreground hover:text-foreground">
                     <ExternalLink className="w-4 h-4" />
                   </Button>
-                  <div className="w-px h-5 bg-zinc-700 mx-1" />
+                  <div className="w-px h-5 bg-border mx-1" />
                   <DeleteConfirmDialog
                     trigger={
                       <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-red-400 hover:bg-red-500/10 ml-1">
