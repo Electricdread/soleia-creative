@@ -1,122 +1,27 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X, MousePointerClick } from 'lucide-react';
-import { ALL_LED_ZONES, DISPLAY_TYPES } from '@/lib/creativeGuide';
+import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X, View } from 'lucide-react';
 
-// Top-down venue blueprint, drawn in the mapping-card style (light + dark
-// colorways). Authored at 16:9 so the zone pins line up exactly.
-const BLUEPRINT_LIGHT = '/creative-guide/venue-blueprint-light.png';
-const BLUEPRINT_DARK = '/creative-guide/venue-blueprint-dark.png';
+// Isometric venue render. Pan / zoom only — no HUD, cards or zone overlays.
+const VENUE_IMG = '/creative-guide/venue-layout-iso.png';
 
-// Per-zone schematic thumbnails (light + dark colorways) — generated in the
-// Soleia "LED Video Display" style. Resolved from the zone id at render time.
-const ZONE_CARD_BASE = '/creative-guide/zone-cards';
+// Soleia 360° virtual tour (direct link from the map controls).
+const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
 
-const zoneById = new Map(ALL_LED_ZONES.map((z) => [z.id, z]));
-const tvDisplay = DISPLAY_TYPES.find((d) => d.id === 'television');
-
-// Plain location labels — no mapping card.
-const LABEL_PINS: { t: string; x: number; y: number }[] = [
-  { t: 'Lily Pad', x: 20.0, y: 19.0 },
-  { t: 'Pool 2', x: 33.0, y: 47.0 },
-  { t: 'Pool', x: 50.0, y: 47.0 },
-];
-
-// Immersive zones. Each is one clickable pin (placed at the zone centroid)
-// plus optional member dots at each screen it groups. `screenIds` resolve
-// against the LED zone specs; `tv` pulls from the TV display type.
-interface ZonePin {
+// Deep-link buttons shown below the venue render — each opens its exact scene
+// inside the 360° tour. Add one entry per location.
+interface TourLink {
   id: string;
   label: string;
-  kind: string;
-  x: number;
-  y: number;
-  screenIds?: string[];
-  tv?: boolean;
-  blurb: string;
-  members?: { x: number; y: number }[];
-  // Elliptical footprints highlighted on the blueprint when the zone is active.
-  // A zone may span multiple disjoint areas (e.g. Arrival). Zones with
-  // `glowOverlay` instead pulse an exact screen silhouette (projected from the
-  // venue's UE screen meshes) at /creative-guide/zone-glows/{id}.png; their
-  // regions are then only used to frame the auto-focus zoom.
-  regions: { cx: number; cy: number; rx: number; ry: number }[];
-  glowOverlay?: boolean;
+  url: string;
 }
 
-const ZONE_PINS: ZonePin[] = [
-  {
-    id: 'main',
-    label: 'Main Interior',
-    kind: 'Interior LED · Full Wall',
-    x: 83.0, y: 50.0,
-    regions: [
-      { cx: 74, cy: 19.5, rx: 9, ry: 8 },     // SR Curve — upper arc
-      { cx: 85, cy: 40, rx: 6.5, ry: 19 },    // IMAG SR / Center / IMAG SL
-      { cx: 78, cy: 68, rx: 9.5, ry: 10.5 },  // SL Curve — lower arc
-    ],
-    screenIds: ['curves-sr', 'imag-sr', 'center', 'imag-sl', 'curves-sl'],
-    blurb: 'The full main-room LED system — SR and SL curves wrapping the room into the IMAG side panels and center focal screen, for hero moments, logo reveals and live camera.',
-  },
-  {
-    id: 'arrival',
-    label: 'Arrival',
-    kind: 'Exterior LED · Open-air',
-    x: 90.0, y: 22.0,
-    regions: [{ cx: 60.5, cy: 45, rx: 3.5, ry: 16 }, { cx: 36, cy: 61.5, rx: 7, ry: 7.5 }],
-    screenIds: ['outdoor-sr', 'outdoor-sl', 'outdoor-arch'],
-    blurb: 'Open-air entry screens facing the Las Vegas Strip — the first brand touchpoint for arriving guests.',
-    members: [{ x: 75.0, y: 12.0 }, { x: 95.0, y: 50.0 }, { x: 88.0, y: 80.0 }],
-  },
-  {
-    id: 'tv',
-    label: 'TV Displays',
-    kind: 'TV / Narrowcasting',
-    x: 45.0, y: 14.0,
-    regions: [{ cx: 45, cy: 14, rx: 8, ry: 7 }],
-    tv: true,
-    blurb: 'High-definition TV displays throughout the venue for branded content and event visuals.',
-  },
+const TOUR_LINKS: TourLink[] = [
+  { id: 'main-interior', label: 'Interior Main Room', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=GhUwtyZ48l' },
+  { id: 'bungalow-tvs', label: 'Bungalow TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=ZNRIu-Lz46' },
+  { id: 'cabana-tvs', label: 'Cabana TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=wdJgz6i7nX' },
+  { id: 'cabana-bar-tvs', label: 'Cabana Bar TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=8fSEUnHezw' },
+  { id: 'east-cabana-tvs', label: 'East Cabana TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=OlPzRAlRV5' },
 ];
-
-// Mapping card shown when an immersive zone is selected.
-interface MappingCard {
-  label: string;
-  kind: string;
-  light: string;
-  dark: string;
-  blurb: string;
-  screens: { name: string; res: string }[];
-  uses: string[];
-}
-
-// Resolve the explanatory mapping card for an immersive zone.
-function getCard(zone: ZonePin): MappingCard {
-  const light = `${ZONE_CARD_BASE}/${zone.id}-light.png`;
-  const dark = `${ZONE_CARD_BASE}/${zone.id}-dark.png`;
-  if (zone.tv && tvDisplay) {
-    return {
-      label: zone.label,
-      kind: zone.kind,
-      light,
-      dark,
-      blurb: zone.blurb,
-      screens: [{ name: 'TV / Narrowcasting', res: tvDisplay.videoSpecs.resolution }],
-      uses: [],
-    };
-  }
-  const ids = zone.screenIds ?? [];
-  const screens = ids.map((id) => {
-    const z = zoneById.get(id);
-    return { name: z?.name ?? id, res: z?.resolution ?? z?.specs?.resolution ?? '—' };
-  });
-  const uses: string[] = [];
-  ids.forEach((id) => {
-    zoneById.get(id)?.useCases?.forEach((u) => {
-      if (!uses.includes(u)) uses.push(u);
-    });
-  });
-  return { label: zone.label, kind: zone.kind, light, dark, blurb: zone.blurb, screens, uses };
-}
 
 const MIN = 1;
 const MAX = 5;
@@ -127,10 +32,6 @@ export function InteractiveVenueMap() {
   const [fs, setFs] = useState(false);
   const [t, setT] = useState({ s: 1, x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
-  const [activePin, setActivePin] = useState<string | null>(null);
-
-  const activeZone = ZONE_PINS.find((z) => z.id === activePin) ?? null;
-  const activeCard = activeZone ? getCard(activeZone) : null;
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
@@ -139,33 +40,6 @@ export function InteractiveVenueMap() {
 
   const reset = useCallback(() => setT({ s: 1, x: 0, y: 0 }), []);
   useEffect(() => { reset(); }, [fs, reset]);
-
-  // Focus the map on the selected zone, framing its footprint in the open space
-  // between the left HUD and the right detail card. Resets when deselected.
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    if (!activeZone) { setT({ s: 1, x: 0, y: 0 }); return; }
-    const W = el.clientWidth, H = el.clientHeight;
-    // Frame the union of the zone's footprints; zoom adapts to the union's
-    // size so multi-area zones (e.g. Arrival) stay fully in frame.
-    const u = activeZone.regions.reduce(
-      (a, r) => ({
-        x0: Math.min(a.x0, r.cx - r.rx), y0: Math.min(a.y0, r.cy - r.ry),
-        x1: Math.max(a.x1, r.cx + r.rx), y1: Math.max(a.y1, r.cy + r.ry),
-      }),
-      { x0: 100, y0: 100, x1: 0, y1: 0 }
-    );
-    const s = Math.max(1.2, Math.min(1.8, Math.min(45 / (u.x1 - u.x0), 60 / (u.y1 - u.y0))));
-    const px = (((u.x0 + u.x1) / 2) / 100) * W;
-    const py = (((u.y0 + u.y1) / 2) / 100) * H;
-    const targetX = (188 + (W - 300)) / 2; // midpoint between HUD edge and card edge
-    const tx = targetX - W / 2 - (px - W / 2) * s;
-    const ty = (H / 2) - H / 2 - (py - H / 2) * s;
-    const c = clampXY(tx, ty, s);
-    setT({ s, x: c.x, y: c.y });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePin]);
 
   const clampXY = useCallback((x: number, y: number, s: number) => {
     const el = wrapRef.current;
@@ -253,163 +127,66 @@ export function InteractiveVenueMap() {
           style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`, transformOrigin: 'center', transition: dragging ? 'none' : 'transform 0.18s ease-out' }}
         >
           {renderOk ? (
-            <>
-              <img src={BLUEPRINT_LIGHT} alt="Soleia venue — top-down blueprint" draggable={false} className="block dark:hidden w-full h-full object-contain" onError={() => setRenderOk(false)} />
-              <img src={BLUEPRINT_DARK} alt="Soleia venue — top-down blueprint" draggable={false} className="hidden dark:block w-full h-full object-contain" />
-            </>
+            <img
+              src={VENUE_IMG}
+              alt="Soleia Las Vegas — venue layout"
+              draggable={false}
+              className="block w-full h-full object-contain"
+              onError={() => setRenderOk(false)}
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-center px-6">
-              <p className="text-xs text-white/55 max-w-xs">Add the venue blueprint to <span className="text-primary">/public/creative-guide/venue-blueprint-&#123;light,dark&#125;.png</span>.</p>
+              <p className="text-xs text-white/55 max-w-xs">Add the venue render to <span className="text-primary">/public/creative-guide/venue-layout-iso.png</span>.</p>
             </div>
           )}
 
-          {/* exact screen silhouette (from the UE screen meshes), pulsing */}
-          {renderOk && activeZone?.glowOverlay && (
-            <img
-              src={`/creative-guide/zone-glows/${activeZone.id}.png`}
-              alt=""
-              aria-hidden="true"
-              draggable={false}
-              className="absolute inset-0 w-full h-full object-contain pointer-events-none zone-glow-pulse"
-            />
-          )}
-
-          {/* highlight the active zone's footprint(s) on the blueprint */}
-          {renderOk && activeZone && !activeZone.glowOverlay && activeZone.regions.map((r, i) => (
-            <div
-              key={`${activeZone.id}-r${i}`}
-              className="absolute pointer-events-none"
-              style={{
-                left: `${r.cx}%`,
-                top: `${r.cy}%`,
-                width: `${r.rx * 2}%`,
-                height: `${r.ry * 2}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              <div
-                className="w-full h-full rounded-[50%] border border-amber-300/70 animate-pulse"
-                style={{ background: 'radial-gradient(closest-side, hsl(var(--primary) / 0.30), hsl(var(--primary) / 0.06) 70%, transparent)' }}
-              />
-            </div>
-          ))}
-
-          {/* plain location labels */}
-          {renderOk && LABEL_PINS.map((p) => (
-            <div key={p.t} className="absolute pointer-events-none" style={{ left: `${p.x}%`, top: `${p.y}%` }}>
-              <div className="flex items-center gap-1" style={{ transform: `translate(-50%, -50%) scale(${1 / t.s})`, transformOrigin: 'left center' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-white/60 ring-2 ring-black/40 shrink-0" />
-                <span
-                  className="whitespace-nowrap text-[11px] font-medium text-white/80"
-                  style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)' }}
-                >
-                  {p.t}
-                </span>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 
       <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-1.5">
+        <MapBtn onClick={() => window.open(TOUR_360_URL, '_blank', 'noopener,noreferrer')} label="Open 360° tour"><View className="w-4 h-4" /></MapBtn>
         <MapBtn onClick={() => zoomAt(1.4)} label="Zoom in"><ZoomIn className="w-4 h-4" /></MapBtn>
         <MapBtn onClick={() => zoomAt(1 / 1.4)} label="Zoom out"><ZoomOut className="w-4 h-4" /></MapBtn>
         <MapBtn onClick={reset} label="Reset"><RotateCcw className="w-4 h-4" /></MapBtn>
         <MapBtn onClick={() => setFs((f) => !f)} label={fs ? 'Exit fullscreen' : 'Fullscreen'}>{fs ? <X className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}</MapBtn>
       </div>
-      <div className="absolute bottom-3 left-3 z-20 hidden sm:flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-sm px-3 py-1.5 text-[10.5px] text-white/75 pointer-events-none">
-        <MousePointerClick className="w-3 h-3" /> Select a zone · drag to pan · pinch or scroll to zoom
-      </div>
-
-      {/* Zone HUD — pick a zone to inspect (highlights its footprint on the map) */}
-      <div className={`absolute top-3 left-3 z-30 w-40 sm:w-44 max-w-[46%] max-h-[calc(100%-1.5rem)] flex flex-col rounded-3xl edge-gold surface-elevated bg-black/80 backdrop-blur-md overflow-hidden ${activeCard ? 'hidden sm:flex' : 'flex'}`}>
-        <div className="px-3 pt-3 pb-2 shrink-0">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-primary">Zones</p>
-          <p className="text-[10px] text-white/45 mt-0.5">Select to inspect</p>
-        </div>
-        <ul className="px-1.5 pb-2 space-y-0.5 overflow-y-auto">
-          {ZONE_PINS.map((z) => {
-            const isActive = activePin === z.id;
-            const count = z.tv ? 1 : (z.screenIds?.length ?? 0);
-            return (
-              <li key={z.id}>
-                <button
-                  type="button"
-                  onClick={() => setActivePin((cur) => (cur === z.id ? null : z.id))}
-                  aria-pressed={isActive}
-                  className={`w-full text-left rounded-xl pl-2.5 pr-2 py-2 flex items-center gap-2 border-l-2 transition-colors ${isActive ? 'bg-primary/15 border-primary' : 'border-transparent hover:bg-white/5'}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${isActive ? 'bg-amber-300' : 'bg-primary/70'}`} />
-                  <span className="min-w-0 flex-1">
-                    <span className={`block text-xs font-semibold leading-tight truncate ${isActive ? 'text-amber-200' : 'text-white'}`}>{z.label}</span>
-                    <span className="block text-[10px] text-white/45 leading-tight truncate">{z.kind}</span>
-                  </span>
-                  <span className="text-[10px] font-mono text-primary/80 shrink-0">{count}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      {/* Mapping card for the selected immersive zone (right side) */}
-      {activeCard && (
-        <div className="absolute top-3 right-3 z-30 w-[min(18rem,calc(100%-1.5rem))] max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-3xl edge-gold surface-elevated bg-black/85 backdrop-blur-md">
-          <div className="relative h-28 w-full overflow-hidden rounded-t-3xl">
-            <img src={activeCard.light} alt={`${activeCard.label} zone screens`} className="block dark:hidden h-full w-full object-cover" draggable={false} />
-            <img src={activeCard.dark} alt={`${activeCard.label} zone screens`} className="hidden dark:block h-full w-full object-cover" draggable={false} />
-          </div>
-          <button
-            type="button"
-            onClick={() => setActivePin(null)}
-            aria-label="Close"
-            className="absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white/80 hover:bg-primary hover:text-primary-foreground transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-          <div className="p-4 space-y-3">
-            <div className="space-y-1">
-              <span className="text-[10px] uppercase tracking-[0.22em] text-primary">{activeCard.kind}</span>
-              <h4 className="text-base font-semibold text-white leading-tight">{activeCard.label} <span className="text-white/40 font-normal">Zone</span></h4>
-            </div>
-            <p className="text-xs leading-relaxed text-white/70">{activeCard.blurb}</p>
-
-            {/* Screens grouped in this zone */}
-            <div className="space-y-1.5 border-t border-white/10 pt-3">
-              <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold">
-                {activeCard.screens.length > 1 ? `${activeCard.screens.length} Screens in this zone` : 'Screen'}
-              </p>
-              <ul className="space-y-1">
-                {activeCard.screens.map((s) => (
-                  <li key={s.name} className="flex items-center justify-between gap-2 text-xs">
-                    <span className="text-white/85">{s.name}</span>
-                    <span className="rounded-md bg-primary/15 px-2 py-0.5 font-mono text-[11px] text-primary shrink-0">{s.res}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {activeCard.uses.length > 0 && (
-              <div className="space-y-1.5 border-t border-white/10 pt-3">
-                <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold">Best for</p>
-                <ul className="space-y-1">
-                  {activeCard.uses.slice(0, 5).map((u) => (
-                    <li key={u} className="flex items-start gap-1.5 text-xs text-white/75">
-                      <span className="mt-0.5 text-primary">•</span>
-                      <span>{u}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 
-  if (fs) return <div className="fixed inset-0 z-[80] bg-background flex flex-col p-3 sm:p-5">{stage}</div>;
-  return stage;
+  const tourButtons = TOUR_LINKS.length > 0 ? (
+    <div className="space-y-2.5 shrink-0">
+      <p className="text-[10px] uppercase tracking-[0.22em] text-primary">Step into the 360° tour</p>
+      <div className="flex flex-wrap gap-2">
+        {TOUR_LINKS.map((l) => (
+          <a
+            key={l.id}
+            href={l.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+          >
+            <View className="w-3.5 h-3.5" /> {l.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  ) : null;
+
+  if (fs) {
+    return (
+      <div className="fixed inset-0 z-[80] bg-background flex flex-col gap-4 p-3 sm:p-5">
+        {stage}
+        {tourButtons}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {stage}
+      {tourButtons}
+    </div>
+  );
 }
 
 function MapBtn({ onClick, label, children }: { onClick: () => void; label: string; children: React.ReactNode }) {
