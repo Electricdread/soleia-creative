@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import ProposalView from '@/components/proposal/ProposalView';
-import { HomeButton } from '@/components/HomeButton';
+import { Button } from '@/components/ui/button';
 
 export default function ClientProposal() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [proposal, setProposal] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
@@ -71,7 +72,16 @@ export default function ClientProposal() {
 
   return (
     <>
-      <HomeButton variant="floating" />
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+        className="fixed top-4 left-4 z-50 gap-2 bg-background/80 backdrop-blur-md border border-border text-foreground hover:bg-muted print:hidden min-h-[44px]"
+        aria-label="Back"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="hidden sm:inline">Back</span>
+      </Button>
       <ProposalView
         proposal={proposal}
         items={items}
