@@ -36,7 +36,7 @@ export default function AdminLooks() {
 
             <div className="flex items-center gap-3">
               <h1
-                className="text-base sm:text-lg font-semibold text-foreground"
+                className="font-display text-base sm:text-lg text-foreground"
                 style={{ fontFamily: 'DM Serif Display, serif' }}
               >
                 Look Book

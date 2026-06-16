@@ -46,7 +46,7 @@ const SharedSession = () => {
         />
         <div className="glass rounded-2xl p-8 max-w-md text-center border border-destructive/20">
           <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-          <h1 className="text-xl font-semibold mb-2">Session Not Found</h1>
+          <h1 className="font-display text-xl mb-2">Session Not Found</h1>
           <p className="text-muted-foreground">
             {error || 'This session link may have expired or is no longer active. Please contact your event coordinator for a new link.'}
           </p>

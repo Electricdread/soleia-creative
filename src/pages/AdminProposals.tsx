@@ -302,7 +302,7 @@ luisdreamslv@gmail.com`;
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3 min-w-0">
             <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain flex-shrink-0" />
-            <h1 className="text-foreground text-base sm:text-lg font-semibold truncate hidden sm:block">Client Proposals</h1>
+            <h1 className="font-display text-foreground text-base sm:text-lg truncate hidden sm:block">Client Proposals</h1>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Button
@@ -333,7 +333,7 @@ luisdreamslv@gmail.com`;
           <div className="bg-muted border border-border rounded-xl p-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
               <div className="min-w-0">
-                <h2 className="text-foreground text-lg font-semibold">Line Item Templates</h2>
+                <h2 className="font-display text-foreground text-lg">Line Item Templates</h2>
                 <p className="text-muted-foreground text-sm mt-1">Save reusable services and items here, then quickly add them when creating proposals.</p>
               </div>
               <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
@@ -430,7 +430,7 @@ luisdreamslv@gmail.com`;
           </div>
         ) : (
           <div className="bg-muted border border-border rounded-xl p-6 mb-8">
-            <h2 className="text-foreground text-lg font-semibold mb-4">Create Proposal</h2>
+            <h2 className="font-display text-foreground text-lg mb-4">Create Proposal</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div>
                 <Label className="text-muted-foreground text-xs">Event Name *</Label>

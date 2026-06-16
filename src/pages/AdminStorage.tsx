@@ -30,7 +30,7 @@ export default function AdminStorage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-foreground">Storage & Archive</h1>
+              <h1 className="font-display text-lg text-foreground">Storage & Archive</h1>
               <Button
                 variant="ghost"
                 size="icon"

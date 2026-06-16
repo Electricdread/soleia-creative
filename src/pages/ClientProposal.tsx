@@ -62,7 +62,7 @@ export default function ClientProposal() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-foreground mb-2">Proposal Not Found</h1>
+          <h1 className="font-display text-2xl text-foreground mb-2">Proposal Not Found</h1>
           <p className="text-muted-foreground">{error || 'This proposal may have expired or been removed.'}</p>
         </div>
       </div>

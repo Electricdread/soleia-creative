@@ -105,7 +105,7 @@ export default function SharedLookBook() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-center p-6">
         <img src={soleiaLogo} alt="Soleia" className="h-10 w-auto object-contain mb-6" />
-        <h1 className="text-2xl text-foreground mb-2" style={{ fontFamily: 'DM Serif Display, serif' }}>
+        <h1 className="font-display text-2xl text-foreground mb-2" style={{ fontFamily: 'DM Serif Display, serif' }}>
           Look Book unavailable
         </h1>
         <p className="text-sm text-muted-foreground" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
@@ -130,7 +130,7 @@ export default function SharedLookBook() {
             Look Book {categoryName ? `· ${categoryName}` : ''}
           </p>
           <h1
-            className="mt-2 text-3xl sm:text-4xl text-foreground"
+            className="font-display mt-2 text-3xl sm:text-4xl text-foreground"
             style={{ fontFamily: 'DM Serif Display, serif' }}
           >
             {share.title}

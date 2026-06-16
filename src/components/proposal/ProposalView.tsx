@@ -448,7 +448,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 Proposal
               </p>
               <div className="flex items-center gap-2">
-                <h1 className="text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
+                <h1 className="font-display text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
                 {isAdmin && (
                   <button onClick={() => setEditingHeader(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors">
                     <Pencil className="w-4 h-4" />
@@ -881,7 +881,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Kickoff Conditions */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Kickoff Conditions</h2>
+          <h2 className="font-display text-xl text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Kickoff Conditions</h2>
           <div className="bg-background rounded-lg p-5 border border-[#ecf0f1]">
             <p className="text-sm text-[#34495e]">
               Production begins only once <strong>both</strong> conditions are met: the proposal is signed off and all client brand assets have been delivered.
@@ -894,7 +894,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Contact */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Contact</h2>
+          <h2 className="font-display text-xl text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Contact</h2>
           <p className="text-sm text-[#34495e]">
             For any questions, please contact us at{' '}
             <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="text-[#3498db] underline">

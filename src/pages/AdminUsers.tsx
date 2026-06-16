@@ -133,7 +133,7 @@ export default function AdminUsers() {
         <Card className="bg-muted border-border max-w-md">
           <CardContent className="p-8 text-center">
             <Shield className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-foreground mb-2">Access Denied</h2>
+            <h2 className="font-display text-xl text-foreground mb-2">Access Denied</h2>
             <p className="text-muted-foreground">You need admin privileges to access this page.</p>
             <Button 
               onClick={() => navigate('/admin/login')} 
@@ -175,7 +175,7 @@ export default function AdminUsers() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-3">
+              <h1 className="font-display text-2xl text-foreground tracking-tight flex items-center gap-3">
                 <Users className="w-6 h-6 text-muted-foreground" />
                 User Management
               </h1>

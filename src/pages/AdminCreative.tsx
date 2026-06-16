@@ -38,7 +38,7 @@ export default function AdminCreative() {
             </div>
 
             <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-foreground">
+              <h1 className="font-display text-lg text-foreground">
                 Soleia Creative
               </h1>
               <Button
