@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +12,6 @@ import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import ContentDelivery from "./pages/ContentDelivery";
-import VenueVideoMapping from "./pages/VenueVideoMapping";
 import CreativeSession from "./pages/CreativeSession";
 import DeliveryGuide from "./pages/DeliveryGuide";
 
@@ -31,6 +31,16 @@ import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
 import ShowBloxPreview from "./pages/ShowBloxPreview";
 import SharedLookBook from "./pages/SharedLookBook";
+
+// Lazy-loaded so its heavy 3D (three.js) bundle only downloads when this page
+// is opened — keeps all other pages (proposals, sessions) light.
+const VenueVideoMapping = lazy(() => import("./pages/VenueVideoMapping"));
+
+const RouteFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -58,7 +68,7 @@ const App = () => (
               <Route path="/creative-guide" element={<CreativeGuide />} />
               <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
               <Route path="/creative-guide/content-delivery" element={<ContentDelivery />} />
-              <Route path="/creative-guide/video-mapping" element={<VenueVideoMapping />} />
+              <Route path="/creative-guide/video-mapping" element={<Suspense fallback={<RouteFallback />}><VenueVideoMapping /></Suspense>} />
               <Route path="/creative/:token" element={<CreativeSession />} />
               <Route path="/session/:token" element={<ProtectedRoute><SharedSession /></ProtectedRoute>} />
               
