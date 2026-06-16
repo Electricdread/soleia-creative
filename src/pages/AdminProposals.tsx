@@ -294,22 +294,22 @@ luisdreamslv@gmail.com`;
   if (isLoading || !isAdmin) return null;
 
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
+    <div className="relative min-h-screen bg-background overflow-hidden">
       <div className="fixed inset-0 bg-gradient-to-br from-black via-zinc-900 to-black z-0" />
       <div className="fixed inset-0 z-[1] opacity-5 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
 
-      <header className="relative z-10 border-b border-zinc-800">
+      <header className="relative z-10 border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3 min-w-0">
             <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain flex-shrink-0" />
-            <h1 className="text-white text-base sm:text-lg font-semibold truncate hidden sm:block">Client Proposals</h1>
+            <h1 className="text-foreground text-base sm:text-lg font-semibold truncate hidden sm:block">Client Proposals</h1>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setActiveTab('proposals')}
-              className={`text-sm ${activeTab === 'proposals' ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-white'}`}
+              className={`text-sm ${activeTab === 'proposals' ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'}`}
             >
               Proposals
             </Button>
@@ -317,11 +317,11 @@ luisdreamslv@gmail.com`;
               variant="ghost"
               size="sm"
               onClick={() => setActiveTab('library')}
-              className={`text-sm gap-1.5 ${activeTab === 'library' ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-white'}`}
+              className={`text-sm gap-1.5 ${activeTab === 'library' ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <Library className="w-3.5 h-3.5" /> Item Library
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-zinc-400 hover:text-white hover:bg-zinc-800">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-muted-foreground hover:text-foreground hover:bg-muted">
               <Settings className="w-4 h-4" />
             </Button>
           </div>
@@ -330,17 +330,17 @@ luisdreamslv@gmail.com`;
 
       <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {activeTab === 'library' ? (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+          <div className="bg-muted border border-border rounded-xl p-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
               <div className="min-w-0">
-                <h2 className="text-white text-lg font-semibold">Line Item Templates</h2>
-                <p className="text-zinc-500 text-sm mt-1">Save reusable services and items here, then quickly add them when creating proposals.</p>
+                <h2 className="text-foreground text-lg font-semibold">Line Item Templates</h2>
+                <p className="text-muted-foreground text-sm mt-1">Save reusable services and items here, then quickly add them when creating proposals.</p>
               </div>
               <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 sm:flex-none border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 gap-1.5"
+                  className="flex-1 sm:flex-none border-border text-muted-foreground hover:text-foreground hover:bg-muted gap-1.5"
                   onClick={async () => {
                     const { data, error } = await supabase
                       .from('line_item_templates')
@@ -358,7 +358,7 @@ luisdreamslv@gmail.com`;
                 </Button>
                 <Button
                   size="sm"
-                  className="flex-1 sm:flex-none bg-[#c49a3c] text-black hover:bg-[#b08a30] gap-1.5"
+                  className="flex-1 sm:flex-none bg-primary text-foreground hover:bg-[#b08a30] gap-1.5"
                   onClick={async () => {
                     const { data, error } = await supabase
                       .from('line_item_templates')
@@ -384,14 +384,14 @@ luisdreamslv@gmail.com`;
         {/* Create New */}
         {!showForm ? (
           <div className="mb-8 flex flex-col sm:flex-row gap-2 sm:items-center">
-            <Button onClick={() => setShowForm(true)} className="gap-2 bg-white text-black hover:bg-zinc-200 w-full sm:w-auto">
+            <Button onClick={() => setShowForm(true)} className="gap-2 bg-background text-foreground hover:bg-zinc-200 w-full sm:w-auto">
               <Plus className="w-4 h-4" /> New Proposal
             </Button>
             <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 sm:flex-none border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 gap-1.5 h-10"
+                className="flex-1 sm:flex-none border-border text-muted-foreground hover:text-foreground hover:bg-muted gap-1.5 h-10"
                 onClick={async () => {
                   const { data, error } = await supabase
                     .from('line_item_templates')
@@ -409,7 +409,7 @@ luisdreamslv@gmail.com`;
               </Button>
               <Button
                 size="sm"
-                className="flex-1 sm:flex-none bg-[#c49a3c] text-black hover:bg-[#b08a30] gap-1.5 h-10"
+                className="flex-1 sm:flex-none bg-primary text-foreground hover:bg-[#b08a30] gap-1.5 h-10"
                 onClick={async () => {
                   const { data, error } = await supabase
                     .from('line_item_templates')
@@ -429,49 +429,49 @@ luisdreamslv@gmail.com`;
             </div>
           </div>
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-8">
-            <h2 className="text-white text-lg font-semibold mb-4">Create Proposal</h2>
+          <div className="bg-muted border border-border rounded-xl p-6 mb-8">
+            <h2 className="text-foreground text-lg font-semibold mb-4">Create Proposal</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div>
-                <Label className="text-zinc-400 text-xs">Event Name *</Label>
-                <Input value={eventName} onChange={e => setEventName(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white mt-1" />
+                <Label className="text-muted-foreground text-xs">Event Name *</Label>
+                <Input value={eventName} onChange={e => setEventName(e.target.value)} className="bg-muted border-border text-foreground mt-1" />
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Client Name *</Label>
-                <Input value={clientName} onChange={e => setClientName(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white mt-1" />
+                <Label className="text-muted-foreground text-xs">Client Name *</Label>
+                <Input value={clientName} onChange={e => setClientName(e.target.value)} className="bg-muted border-border text-foreground mt-1" />
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Venue Name</Label>
-                <Input value={venueName} onChange={e => setVenueName(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white mt-1" />
+                <Label className="text-muted-foreground text-xs">Venue Name</Label>
+                <Input value={venueName} onChange={e => setVenueName(e.target.value)} className="bg-muted border-border text-foreground mt-1" />
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Event Date</Label>
-                <Input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white mt-1" />
+                <Label className="text-muted-foreground text-xs">Event Date</Label>
+                <Input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="bg-muted border-border text-foreground mt-1" />
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Validity (days)</Label>
-                <Input type="number" value={validityDays} onChange={e => setValidityDays(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white mt-1" />
+                <Label className="text-muted-foreground text-xs">Validity (days)</Label>
+                <Input type="number" value={validityDays} onChange={e => setValidityDays(e.target.value)} className="bg-muted border-border text-foreground mt-1" />
               </div>
               <div>
-                <Label className="text-zinc-400 text-xs">Contact Email</Label>
-                <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="bg-zinc-800 border-zinc-700 text-white mt-1" />
+                <Label className="text-muted-foreground text-xs">Contact Email</Label>
+                <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="bg-muted border-border text-foreground mt-1" />
               </div>
               <div className="sm:col-span-2">
-                <Label className="text-zinc-400 text-xs">Creative Call Scheduling Link (optional)</Label>
+                <Label className="text-muted-foreground text-xs">Creative Call Scheduling Link (optional)</Label>
                 <Input
                   value={creativeCallUrl}
                   onChange={e => setCreativeCallUrl(e.target.value)}
                   placeholder="https://calendly.com/..."
-                  className="bg-zinc-800 border-zinc-700 text-white mt-1"
+                  className="bg-muted border-border text-foreground mt-1"
                 />
-                <p className="text-zinc-500 text-[11px] mt-1">If set, a "Schedule Our Creative Call" button is added to the proposal email.</p>
+                <p className="text-muted-foreground text-[11px] mt-1">If set, a "Schedule Our Creative Call" button is added to the proposal email.</p>
               </div>
             </div>
 
             {/* Line Items */}
-            <h3 className="text-white font-medium mb-3">Line Items</h3>
+            <h3 className="text-foreground font-medium mb-3">Line Items</h3>
             {itemsList.map((item, idx) => (
-              <div key={idx} className="bg-zinc-800/50 rounded-lg p-3 mb-2 space-y-2">
+              <div key={idx} className="bg-muted/50 rounded-lg p-3 mb-2 space-y-2">
                 <div className="grid grid-cols-[1fr_1fr] gap-2">
                   <Input
                     placeholder="Category (e.g. Immersive LED Environments)"
@@ -481,7 +481,7 @@ luisdreamslv@gmail.com`;
                       n[idx].category = e.target.value;
                       setItemsList(n);
                     }}
-                    className="bg-zinc-800 border-zinc-700 text-white text-sm"
+                    className="bg-muted border-border text-foreground text-sm"
                   />
                   <Input
                     placeholder="Line Item Title"
@@ -491,7 +491,7 @@ luisdreamslv@gmail.com`;
                       n[idx].title = e.target.value;
                       setItemsList(n);
                     }}
-                    className="bg-zinc-800 border-zinc-700 text-white text-sm"
+                    className="bg-muted border-border text-foreground text-sm"
                   />
                 </div>
                 <div className="flex items-center gap-2 mb-1">
@@ -504,7 +504,7 @@ luisdreamslv@gmail.com`;
                       setItemsList(n);
                     }}
                   />
-                  <label htmlFor={`create-flat-${idx}`} className="text-xs text-zinc-400 cursor-pointer">Flat Fee</label>
+                  <label htmlFor={`create-flat-${idx}`} className="text-xs text-muted-foreground cursor-pointer">Flat Fee</label>
                 </div>
                 <Textarea
                   placeholder="Description — write a detailed scope of work, deliverables, and notes..."
@@ -514,7 +514,7 @@ luisdreamslv@gmail.com`;
                     n[idx].description = e.target.value;
                     setItemsList(n);
                   }}
-                  className="bg-zinc-800 border-zinc-700 text-white text-sm min-h-[140px] resize-y w-full mb-2"
+                  className="bg-muted border-border text-foreground text-sm min-h-[140px] resize-y w-full mb-2"
                   rows={6}
                 />
                 <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
@@ -529,7 +529,7 @@ luisdreamslv@gmail.com`;
                           n[idx].quantity = e.target.value;
                           setItemsList(n);
                         }}
-                        className="bg-zinc-800 border-zinc-700 text-white text-sm w-16"
+                        className="bg-muted border-border text-foreground text-sm w-16"
                         min="1"
                       />
                       <Input
@@ -540,7 +540,7 @@ luisdreamslv@gmail.com`;
                           n[idx].unit = e.target.value;
                           setItemsList(n);
                         }}
-                        className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
+                        className="bg-muted border-border text-foreground text-sm w-28"
                       />
                     </>
                   )}
@@ -553,14 +553,14 @@ luisdreamslv@gmail.com`;
                       n[idx].price = e.target.value;
                       setItemsList(n);
                     }}
-                    className="bg-zinc-800 border-zinc-700 text-white text-sm w-28"
+                    className="bg-muted border-border text-foreground text-sm w-28"
                   />
                   <DeleteConfirmDialog
                     trigger={
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-zinc-500 hover:text-red-400 h-9 w-9"
+                        className="text-muted-foreground hover:text-red-400 h-9 w-9"
                         disabled={itemsList.length === 1}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -578,7 +578,7 @@ luisdreamslv@gmail.com`;
                 variant="ghost"
                 size="sm"
                 onClick={() => setItemsList([...itemsList, { title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }])}
-                className="text-zinc-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Plus className="w-3 h-3 mr-1" /> Add Item
               </Button>
@@ -586,15 +586,15 @@ luisdreamslv@gmail.com`;
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowLibraryPicker(!showLibraryPicker)}
-                className="text-zinc-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Library className="w-3 h-3 mr-1" /> From Library
               </Button>
             </div>
 
             {showLibraryPicker && (
-              <div className="mb-6 bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
-                <h4 className="text-zinc-300 text-sm font-medium mb-3">Pick from Library</h4>
+              <div className="mb-6 bg-muted/50 border border-border rounded-lg p-4">
+                <h4 className="text-muted-foreground text-sm font-medium mb-3">Pick from Library</h4>
                 <LineItemLibrary
                   compact
                   onSelect={(t) => {
@@ -615,11 +615,11 @@ luisdreamslv@gmail.com`;
             )}
 
             <div className="flex gap-3">
-              <Button onClick={handleCreate} disabled={saving} className="bg-white text-black hover:bg-zinc-200">
+              <Button onClick={handleCreate} disabled={saving} className="bg-background text-foreground hover:bg-zinc-200">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Create Proposal
               </Button>
-              <Button variant="ghost" onClick={() => { setShowForm(false); resetForm(); }} className="text-zinc-400">
+              <Button variant="ghost" onClick={() => { setShowForm(false); resetForm(); }} className="text-muted-foreground">
                 Cancel
               </Button>
             </div>
@@ -629,25 +629,25 @@ luisdreamslv@gmail.com`;
         {/* Proposals List */}
         {loading ? (
           <div className="text-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-zinc-500 mx-auto" />
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mx-auto" />
           </div>
         ) : proposals.length === 0 ? (
-          <p className="text-zinc-500 text-center py-12">No proposals yet. Create your first one above.</p>
+          <p className="text-muted-foreground text-center py-12">No proposals yet. Create your first one above.</p>
         ) : (
           <div className="space-y-3">
             {proposals.map(p => (
-              <div key={p.id} className={`bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
+              <div key={p.id} className={`bg-muted/80 border border-border rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
                 <div className="w-full min-w-0 xl:w-48 xl:flex-[0_0_12rem] overflow-hidden">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className="text-white font-medium truncate">{p.event_name}</h3>
-                    <Badge className={`${statusColor(p.status)} text-white text-[10px] px-2`}>
+                    <h3 className="text-foreground font-medium truncate">{p.event_name}</h3>
+                    <Badge className={`${statusColor(p.status)} text-foreground text-[10px] px-2`}>
                       {p.status}
                     </Badge>
                     {p.is_active && !isProposalClosed(p) && (
                       <CountdownBadge eventDate={p.event_date} />
                     )}
                   </div>
-                  <p className="text-zinc-500 text-sm truncate">
+                  <p className="text-muted-foreground text-sm truncate">
                     {p.client_name}
                     {p.venue_name && ` · ${p.venue_name}`}
                     {p.event_date && ` · ${format(new Date(p.event_date + 'T00:00:00'), 'MMM d, yyyy')}`}
@@ -660,11 +660,11 @@ luisdreamslv@gmail.com`;
                 </div>
                 <div className="flex w-full flex-wrap items-center gap-3 xl:flex-1 xl:justify-end">
                   <label
-                    className="flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-800 border border-zinc-700 cursor-pointer flex-shrink-0"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted border border-border cursor-pointer flex-shrink-0"
                     title="Toggle off to disable client access to this link"
                   >
                     <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
-                    <span className="text-xs font-medium text-white">Active</span>
+                    <span className="text-xs font-medium text-foreground">Active</span>
                   </label>
                 <div className="flex flex-wrap items-center justify-end gap-1 flex-shrink-0">
                   {p.status === 'draft' && (
@@ -678,7 +678,7 @@ luisdreamslv@gmail.com`;
                       size="icon"
                       onClick={() => window.open(p.drive_folder_url!, '_blank')}
                       title="Open client Drive folder"
-                      className="text-[#c49a3c] hover:text-[#d4aa4c]"
+                      className="text-primary hover:text-[#d4aa4c]"
                     >
                       <Folder className="w-4 h-4" />
                     </Button>
@@ -688,34 +688,34 @@ luisdreamslv@gmail.com`;
                       size="icon"
                       onClick={() => generateClientFolder(p.id)}
                       title="Generate client Drive folder"
-                      className="text-zinc-400 hover:text-[#c49a3c]"
+                      className="text-muted-foreground hover:text-primary"
                       disabled={folderGenerating === p.id}
                     >
                       {folderGenerating === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderPlus className="w-4 h-4" />}
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} title="Edit proposal" className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => navigate(`/proposal/${p.token}?edit=true`)} title="Edit proposal" className="text-muted-foreground hover:text-foreground">
                     <Pencil className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setLinkerProposal(p)} title="Link creative session" className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => setLinkerProposal(p)} title="Link creative session" className="text-muted-foreground hover:text-foreground">
                     <Link2 className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => copyEmailTemplate(p.token)} title="Copy email template (rich HTML)" className="text-zinc-400 hover:text-white" disabled={emailCopying === p.token}>
+                  <Button variant="ghost" size="icon" onClick={() => copyEmailTemplate(p.token)} title="Copy email template (rich HTML)" className="text-muted-foreground hover:text-foreground" disabled={emailCopying === p.token}>
                     {emailCopying === p.token ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => openInMailApp(p)} title="Open in Mail app (recommended on mobile)" className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => openInMailApp(p)} title="Open in Mail app (recommended on mobile)" className="text-muted-foreground hover:text-foreground">
                     <ExternalLink className="w-4 h-4 rotate-45" />
                   </Button>
-                  <Button variant="ghost" size="sm" title="Copy link" onClick={() => copyLink(p.token)} className="text-zinc-400 hover:text-white gap-1 h-9 px-2 text-xs">
+                  <Button variant="ghost" size="sm" title="Copy link" onClick={() => copyLink(p.token)} className="text-muted-foreground hover:text-foreground gap-1 h-9 px-2 text-xs">
                     <Link2 className="w-4 h-4" /> Copy Link
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => window.open(`/proposal/${p.token}`, '_blank')} className="text-zinc-400 hover:text-white">
+                  <Button variant="ghost" size="icon" onClick={() => window.open(`/proposal/${p.token}`, '_blank')} className="text-muted-foreground hover:text-foreground">
                     <ExternalLink className="w-4 h-4" />
                   </Button>
                   <div className="w-px h-5 bg-zinc-700 mx-1" />
                   <DeleteConfirmDialog
                     trigger={
-                      <Button variant="ghost" size="icon" className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 ml-1">
+                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-red-400 hover:bg-red-500/10 ml-1">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     }

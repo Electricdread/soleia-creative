@@ -33,7 +33,7 @@ const portals: PortalCard[] = [
   {
     title: 'Event Calendar',
     description: 'View upcoming events synced from Triple Seat',
-    icon: <Calendar className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Calendar className="w-6 h-6 text-primary" />,
     href: '/admin/calendar',
   },
   {
@@ -45,13 +45,13 @@ const portals: PortalCard[] = [
   {
     title: 'Delivery Guides',
     description: 'Session-based content delivery guides with asset upload links',
-    icon: <Send className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Send className="w-6 h-6 text-primary" />,
     href: '/delivery-guide',
   },
   {
     title: 'Client Proposals',
     description: 'Create and manage interactive service agreements and quotes',
-    icon: <FileText className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <FileText className="w-6 h-6 text-primary" />,
     href: '/admin/proposals',
   },
   {
@@ -63,25 +63,25 @@ const portals: PortalCard[] = [
   {
     title: 'Looks Collection',
     description: 'Curated motion library — upload, categorize, and browse looks',
-    icon: <Video className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Video className="w-6 h-6 text-primary" />,
     href: '/admin/looks',
   },
   {
     title: 'Auth Email Previews',
     description: 'Preview the six branded auth emails (signup, magic link, recovery, etc.)',
-    icon: <Mail className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Mail className="w-6 h-6 text-primary" />,
     href: '/admin/email-previews',
   },
   {
     title: 'Storage & Archive',
     description: 'Drive connection health, storage usage, and migrate older clips to cold archive',
-    icon: <HardDrive className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <HardDrive className="w-6 h-6 text-primary" />,
     href: '/admin/storage',
   },
   {
     title: 'User Management',
     description: 'Approve or reject new user access requests',
-    icon: <Users className="w-6 h-6 text-[#c49a3c]" />,
+    icon: <Users className="w-6 h-6 text-primary" />,
     href: '/admin/users',
   },
 ];

@@ -52,7 +52,7 @@ export default function ClientProposal() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -60,7 +60,7 @@ export default function ClientProposal() {
 
   if (error || !proposal) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-foreground mb-2">Proposal Not Found</h1>
           <p className="text-muted-foreground">{error || 'This proposal may have expired or been removed.'}</p>

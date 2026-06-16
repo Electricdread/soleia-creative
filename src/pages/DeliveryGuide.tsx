@@ -105,7 +105,7 @@ const DeliveryGuide = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50/30 to-white">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-amber-200/50 shadow-sm">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-amber-200/50 shadow-sm">
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Back button */}
@@ -140,7 +140,7 @@ const DeliveryGuide = () => {
                 size="sm"
                 onClick={handlePrintPdf}
                 disabled={isDownloading}
-                className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg shadow-amber-600/25"
+                className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-foreground shadow-lg shadow-amber-600/25"
               >
                 {isDownloading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -186,7 +186,7 @@ const DeliveryGuide = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="overflow-hidden border-amber-200 bg-white/80 backdrop-blur-sm shadow-xl shadow-amber-500/10">
+          <Card className="overflow-hidden border-amber-200 bg-background/80 backdrop-blur-sm shadow-xl shadow-amber-500/10">
             <CardContent className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-center gap-6">
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 shrink-0">
@@ -203,7 +203,7 @@ const DeliveryGuide = () => {
                     <Button 
                       size="lg"
                       onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')}
-                      className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg shadow-amber-600/25"
+                      className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-foreground shadow-lg shadow-amber-600/25"
                     >
                       <ExternalLink className="w-4 h-4" />
                       Get Resolume Alley (Free)
@@ -245,9 +245,9 @@ const DeliveryGuide = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
               >
-                <Card className="h-full border-amber-200 bg-white/80 backdrop-blur-sm hover:shadow-lg hover:shadow-amber-500/10 transition-all">
+                <Card className="h-full border-amber-200 bg-background/80 backdrop-blur-sm hover:shadow-lg hover:shadow-amber-500/10 transition-all">
                   <CardContent className="p-5 space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold shadow-lg shadow-amber-500/30">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-foreground font-bold shadow-lg shadow-amber-500/30">
                       {item.step}
                     </div>
                     <h4 className="font-semibold text-amber-950">{item.title}</h4>
@@ -284,7 +284,7 @@ const DeliveryGuide = () => {
                 transition={{ delay: 0.3 + index * 0.1 }}
                 whileHover={{ y: -4, scale: 1.02 }}
               >
-                <Card className="h-full border-amber-200 bg-white/80 backdrop-blur-sm hover:shadow-xl hover:shadow-amber-500/15 transition-all duration-300">
+                <Card className="h-full border-amber-200 bg-background/80 backdrop-blur-sm hover:shadow-xl hover:shadow-amber-500/15 transition-all duration-300">
                   <CardContent className="p-5">
                     <div className="flex items-start gap-4">
                       <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100">
@@ -358,7 +358,7 @@ const DeliveryGuide = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/70 border border-orange-200">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-background/70 border border-orange-200">
                 <div className="text-4xl font-display font-bold text-orange-600">21</div>
                 <div>
                   <p className="font-semibold text-amber-950">Business Days Minimum</p>
@@ -374,7 +374,7 @@ const DeliveryGuide = () => {
       </main>
       
       {/* Footer */}
-      <footer className="border-t border-amber-200 bg-white/50 backdrop-blur-sm">
+      <footer className="border-t border-amber-200 bg-background/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src={soleiaLogo} alt="Soleia" className="h-6 object-contain opacity-70" />

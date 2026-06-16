@@ -57,7 +57,7 @@ const TailgateDeliveryGuide = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-sky-50/30 to-white">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
         <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -84,7 +84,7 @@ const TailgateDeliveryGuide = () => {
               size="sm"
               onClick={handlePrintPdf}
               disabled={isDownloading}
-              className="gap-2 bg-[#2b4c6f] hover:bg-[#1e3a56] text-white shadow-lg"
+              className="gap-2 bg-[#2b4c6f] hover:bg-[#1e3a56] text-foreground shadow-lg"
             >
               {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
               <span className="hidden sm:inline">Print PDF</span>
@@ -117,7 +117,7 @@ const TailgateDeliveryGuide = () => {
         
         {/* Resolume Download */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="overflow-hidden border-slate-200 bg-white/80 backdrop-blur-sm shadow-xl shadow-sky-500/10">
+          <Card className="overflow-hidden border-slate-200 bg-background/80 backdrop-blur-sm shadow-xl shadow-sky-500/10">
             <CardContent className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row items-center gap-6">
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-sky-100 to-slate-100 shrink-0">
@@ -127,7 +127,7 @@ const TailgateDeliveryGuide = () => {
                   <h3 className="text-xl font-semibold text-slate-900 mb-2">DXV3 Codec Required</h3>
                   <p className="text-slate-600 mb-4">Download the free Resolume Alley encoder to convert your videos to DXV3 format.</p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
-                    <Button size="lg" onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')} className="gap-2 bg-[#2b4c6f] hover:bg-[#1e3a56] text-white shadow-lg">
+                    <Button size="lg" onClick={() => window.open(RESOLUME_ALLEY_URL, '_blank')} className="gap-2 bg-[#2b4c6f] hover:bg-[#1e3a56] text-foreground shadow-lg">
                       <ExternalLink className="w-4 h-4" />
                       Get Resolume Alley (Free)
                     </Button>
@@ -150,9 +150,9 @@ const TailgateDeliveryGuide = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {workflowSteps.map((item, index) => (
               <motion.div key={item.step} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + index * 0.1 }}>
-                <Card className="h-full border-slate-200 bg-white/80 hover:shadow-lg transition-all">
+                <Card className="h-full border-slate-200 bg-background/80 hover:shadow-lg transition-all">
                   <CardContent className="p-5 space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-[#2b4c6f] flex items-center justify-center text-white font-bold shadow-lg">
+                    <div className="w-10 h-10 rounded-full bg-[#2b4c6f] flex items-center justify-center text-foreground font-bold shadow-lg">
                       {item.step}
                     </div>
                     <h4 className="font-semibold text-slate-900">{item.title}</h4>
@@ -166,7 +166,7 @@ const TailgateDeliveryGuide = () => {
 
         {/* Venue Display Diagram */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card className="overflow-hidden border-slate-200 bg-white/80 backdrop-blur-sm shadow-xl shadow-sky-500/10">
+          <Card className="overflow-hidden border-slate-200 bg-background/80 backdrop-blur-sm shadow-xl shadow-sky-500/10">
             <CardContent className="p-4 sm:p-6">
               <img src={displayDiagram} alt="Tailgate Beach Club Display Layout - Display 1 (5760x1000), Display 2A (1920x1056), Display 2 (1920x1056)" className="w-full rounded-lg" />
             </CardContent>
@@ -181,7 +181,7 @@ const TailgateDeliveryGuide = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {displaySpecs.map((spec, index) => (
               <motion.div key={spec.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + index * 0.1 }}>
-                <Card className="h-full border-slate-200 bg-white/80 hover:shadow-lg transition-all">
+                <Card className="h-full border-slate-200 bg-background/80 hover:shadow-lg transition-all">
                   <CardContent className="p-5 space-y-3">
                     <h4 className="font-semibold text-slate-900 text-sm">{spec.label}</h4>
                     <p className="text-2xl font-bold text-[#2b4c6f]">{spec.resolution}</p>
@@ -206,7 +206,7 @@ const TailgateDeliveryGuide = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-white/70 border border-sky-200">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-background/70 border border-sky-200">
                 <div className="text-4xl font-bold text-[#2b4c6f]">21</div>
                 <div>
                   <p className="font-semibold text-slate-900">Business Days Minimum</p>
@@ -219,7 +219,7 @@ const TailgateDeliveryGuide = () => {
       </main>
       
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white/50 backdrop-blur-sm">
+      <footer className="border-t border-slate-200 bg-background/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src={tailgateLogo} alt="Tailgate Beach Club" className="h-8 object-contain opacity-70" />

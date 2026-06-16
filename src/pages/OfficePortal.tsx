@@ -21,7 +21,7 @@ function OfficePortalContent() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       {/* Gradient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900" />
       <div 
@@ -33,7 +33,7 @@ function OfficePortalContent() {
       />
 
       {/* Header */}
-      <header className="relative z-10 border-b border-zinc-800/80 bg-zinc-900/50 backdrop-blur-xl sticky top-0">
+      <header className="relative z-10 border-b border-border/80 bg-muted/50 backdrop-blur-xl sticky top-0">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -41,23 +41,23 @@ function OfficePortalContent() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/admin')}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800 -ml-2"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted -ml-2"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Portal</span>
               </Button>
               
-              <div className="h-6 w-px bg-zinc-800" />
+              <div className="h-6 w-px bg-muted" />
               
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
-                  <Command className="w-4 h-4 text-white" />
+                  <Command className="w-4 h-4 text-foreground" />
                 </div>
                 <div>
-                  <h1 className="font-tech text-sm font-bold text-white uppercase tracking-wider">
+                  <h1 className="font-tech text-sm font-bold text-foreground uppercase tracking-wider">
                     Operator Console
                   </h1>
-                  <p className="font-tech text-[10px] text-zinc-500 uppercase tracking-widest">
+                  <p className="font-tech text-[10px] text-muted-foreground uppercase tracking-widest">
                     Luis Dreams • Visual Site Operator
                   </p>
                 </div>
@@ -74,7 +74,7 @@ function OfficePortalContent() {
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
@@ -99,8 +99,8 @@ function OfficePortalContent() {
             {/* Embedded Workspaces */}
             <section>
               <div className="flex items-center gap-2 mb-3">
-                <h2 className="font-tech text-xs uppercase tracking-wider text-zinc-400">Creative Workspaces</h2>
-                <div className="flex-1 h-px bg-zinc-800" />
+                <h2 className="font-tech text-xs uppercase tracking-wider text-muted-foreground">Creative Workspaces</h2>
+                <div className="flex-1 h-px bg-muted" />
               </div>
               <EmbeddedWorkspaces />
             </section>
@@ -116,15 +116,15 @@ function OfficePortalContent() {
         {/* Super Prompt Generator - Full Width */}
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <h2 className="font-tech text-xs uppercase tracking-wider text-zinc-400">AI Prompt Tools</h2>
-            <div className="flex-1 h-px bg-zinc-800" />
+            <h2 className="font-tech text-xs uppercase tracking-wider text-muted-foreground">AI Prompt Tools</h2>
+            <div className="flex-1 h-px bg-muted" />
           </div>
           <SuperPromptGenerator />
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-zinc-800/50 mt-12">
+      <footer className="relative z-10 border-t border-border/50 mt-12">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <img 
