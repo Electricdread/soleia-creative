@@ -359,7 +359,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const additionalServicesLabel = 'Services';
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa]">
+    <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-6 py-10">
         {/* Header */}
         <header className="flex items-center justify-between mb-10">
@@ -373,7 +373,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               size="sm"
               onClick={handleDownloadPdf}
               disabled={downloadingPdf}
-              className="print:hidden gap-2 text-[#7f8c8d] border-[#ecf0f1] hover:bg-[#f8f9fa]"
+              className="print:hidden gap-2 text-muted-foreground border-border hover:bg-background"
             >
               {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
               {downloadingPdf ? 'Preparing PDF' : 'Download PDF'}
@@ -383,43 +383,43 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Event Title & Info */}
         {editingHeader ? (
-          <div className="bg-background rounded-lg p-5 border border-[#ecf0f1] mb-8 space-y-3">
+          <div className="bg-background rounded-lg p-5 border border-border mb-8 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-[#95a5a6] font-semibold">Event Name</label>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Event Name</label>
                 <Input value={editFields.event_name} onChange={e => setEditFields({ ...editFields, event_name: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-[#95a5a6] font-semibold">Client Name</label>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Client Name</label>
                 <Input value={editFields.client_name} onChange={e => setEditFields({ ...editFields, client_name: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-[#95a5a6] font-semibold">Venue Name</label>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Venue Name</label>
                 <Input value={editFields.venue_name} onChange={e => setEditFields({ ...editFields, venue_name: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-[#95a5a6] font-semibold">Event Date</label>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Event Date</label>
                 <Input type="date" value={editFields.event_date} onChange={e => setEditFields({ ...editFields, event_date: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-[#95a5a6] font-semibold">Validity (days)</label>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Validity (days)</label>
                 <Input type="number" value={editFields.validity_days} onChange={e => setEditFields({ ...editFields, validity_days: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs text-[#95a5a6] font-semibold">Contact Email</label>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Contact Email</label>
                 <Input value={editFields.contact_email} onChange={e => setEditFields({ ...editFields, contact_email: e.target.value })} />
               </div>
               <div className="col-span-2">
-                <label className="text-xs text-[#95a5a6] font-semibold">Creative Call Scheduling Link (optional)</label>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Creative Call Scheduling Link (optional)</label>
                 <Input
                   value={editFields.creative_call_url}
                   onChange={e => setEditFields({ ...editFields, creative_call_url: e.target.value })}
                   placeholder="https://calendly.com/..."
                 />
-                <p className="text-[11px] text-[#95a5a6] mt-1">When set, adds a "Schedule Our Creative Call" button to the proposal email.</p>
+                <p className="text-[11px] text-muted-foreground/80 mt-1">When set, adds a "Schedule Our Creative Call" button to the proposal email.</p>
               </div>
               <div className="col-span-2">
-                <label className="text-xs text-[#95a5a6] font-semibold">Link Creative Session</label>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Link Creative Session</label>
                 <select
                   value={editFields.linked_session_id}
                   onChange={e => setEditFields({ ...editFields, linked_session_id: e.target.value })}
@@ -433,7 +433,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               </div>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={saveHeader} className="bg-[#2c3e50] text-foreground hover:bg-[#34495e]">
+              <Button size="sm" onClick={saveHeader} className="bg-primary text-foreground hover:bg-primary/90">
                 <Check className="w-3 h-3 mr-1" /> Save
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setEditingHeader(false)}>
@@ -448,18 +448,18 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 Proposal
               </p>
               <div className="flex items-center gap-2">
-                <h1 className="font-display text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
+                <h1 className="font-display text-4xl font-light text-foreground mb-1">{proposal.event_name}</h1>
                 {isAdmin && (
-                  <button onClick={() => setEditingHeader(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors">
+                  <button onClick={() => setEditingHeader(true)} className="text-muted-foreground/80 hover:text-foreground transition-colors">
                     <Pencil className="w-4 h-4" />
                   </button>
                 )}
               </div>
-              <p className="text-[#7f8c8d]">
-                Prepared for <span className="font-medium text-[#2c3e50]">{proposal.client_name}</span>
+              <p className="text-muted-foreground">
+                Prepared for <span className="font-medium text-foreground">{proposal.client_name}</span>
               </p>
               {proposal.venue_name && (
-                <p className="text-[#95a5a6] text-sm">at {proposal.venue_name}</p>
+                <p className="text-muted-foreground/80 text-sm">at {proposal.venue_name}</p>
               )}
               {eventDate && (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -477,8 +477,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             <div className="text-left sm:text-right text-sm space-y-1 shrink-0">
               {eventDate && (
                 <div>
-                  <span className="block text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Event Date</span>
-                  <span className="text-[#2c3e50] font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
+                  <span className="block text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Event Date</span>
+                  <span className="text-foreground font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
                 </div>
               )}
             </div>
@@ -498,9 +498,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         {editingItems ? (
           <div className="space-y-2 mb-10">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-[#2c3e50]">Edit Items</h3>
+              <h3 className="text-sm font-semibold text-foreground">Edit Items</h3>
               <div className="flex gap-2">
-                <Button size="sm" onClick={saveItems} className="bg-[#2c3e50] text-foreground hover:bg-[#34495e]">
+                <Button size="sm" onClick={saveItems} className="bg-primary text-foreground hover:bg-primary/90">
                   <Check className="w-3 h-3 mr-1" /> Save
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }))); }}>
@@ -509,7 +509,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               </div>
             </div>
             {editItems.map((item, idx) => (
-              <div key={item.id || idx} className="bg-background rounded-lg p-4 border border-[#ecf0f1] space-y-2">
+              <div key={item.id || idx} className="bg-background rounded-lg p-4 border border-border space-y-2">
                 <div className="grid grid-cols-[1fr_1fr] gap-2">
                   <Input
                     placeholder="Category (e.g. Immersive LED Environments)"
@@ -530,7 +530,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                     checked={item.is_flat_fee}
                     onCheckedChange={(v) => { const n = [...editItems]; n[idx] = { ...n[idx], is_flat_fee: !!v }; setEditItems(n); }}
                   />
-                  <label htmlFor={`flat-${idx}`} className="text-xs text-[#7f8c8d] cursor-pointer">Flat Fee</label>
+                  <label htmlFor={`flat-${idx}`} className="text-xs text-muted-foreground cursor-pointer">Flat Fee</label>
                 </div>
                 <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center">
                   <Textarea
@@ -583,7 +583,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 variant="ghost"
                 size="sm"
                 onClick={() => setEditItems([...editItems, { id: `new-${Date.now()}`, title: '', description: '', price: '0', quantity: '1', category: '', unit: '', is_flat_fee: false, proposal_id: proposal.id, sort_order: editItems.length }])}
-                className="text-[#3498db]"
+                className="text-primary"
               >
                 <Plus className="w-3 h-3 mr-1" /> Add Item
               </Button>
@@ -591,14 +591,14 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowLibraryPicker(!showLibraryPicker)}
-                className="text-[#3498db]"
+                className="text-primary"
               >
                 <Library className="w-3 h-3 mr-1" /> From Library
               </Button>
             </div>
             {showLibraryPicker && (
-              <div className="bg-[#f0f3f5] border border-[#dce1e6] rounded-lg p-4 mt-2">
-                <h4 className="text-[#2c3e50] text-sm font-medium mb-3">Pick from Library</h4>
+              <div className="bg-muted border border-border rounded-lg p-4 mt-2">
+                <h4 className="text-foreground text-sm font-medium mb-3">Pick from Library</h4>
                 <LineItemLibrary
                   compact
                   onSelect={(t) => {
@@ -624,24 +624,24 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           <div id="line-items" className="mb-10 scroll-mt-20">
             {isAdmin && (
               <div className="flex justify-end mb-2">
-                <button onClick={() => setEditingItems(true)} className="text-[#95a5a6] hover:text-[#2c3e50] transition-colors flex items-center gap-1 text-xs">
+                <button onClick={() => setEditingItems(true)} className="text-muted-foreground/80 hover:text-foreground transition-colors flex items-center gap-1 text-xs">
                   <Pencil className="w-3 h-3" /> Edit Items
                 </button>
               </div>
             )}
             {items.length === 0 ? (
               isAdmin ? (
-                <div className="bg-background border-2 border-dashed border-[#ecf0f1] rounded-lg p-10 text-center">
+                <div className="bg-background border-2 border-dashed border-border rounded-lg p-10 text-center">
                   <ListChecks className="w-8 h-8 text-primary mx-auto mb-3" />
-                  <p className="text-[#2c3e50] font-semibold mb-1">No line items yet</p>
-                  <p className="text-[#7f8c8d] text-sm mb-4">Add items so your client can see the menu and pricing.</p>
-                  <Button size="sm" onClick={() => setEditingItems(true)} className="bg-[#2c3e50] text-foreground hover:bg-[#34495e] gap-1.5">
+                  <p className="text-foreground font-semibold mb-1">No line items yet</p>
+                  <p className="text-muted-foreground text-sm mb-4">Add items so your client can see the menu and pricing.</p>
+                  <Button size="sm" onClick={() => setEditingItems(true)} className="bg-primary text-foreground hover:bg-primary/90 gap-1.5">
                     <Plus className="w-3 h-3" /> Add items
                   </Button>
                 </div>
               ) : (
-                <div className="bg-[#faf8f4] border border-[#ecf0f1] rounded-lg p-8 text-center">
-                  <p className="text-[#7f8c8d] text-sm italic">
+                <div className="bg-muted/40 border border-border rounded-lg p-8 text-center">
+                  <p className="text-muted-foreground text-sm italic">
                     Line items will be finalized together on our creative call.
                   </p>
                 </div>
@@ -649,17 +649,17 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             ) : tableItems.length === 0 ? null : (
             <>
             {/* Desktop Table - hidden on mobile */}
-            <div className="hidden sm:block bg-background rounded-lg border border-[#ecf0f1] overflow-hidden">
+            <div className="hidden sm:block bg-background rounded-lg border border-border overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-[#f8f9fa] border-b border-[#ecf0f1]">
+                  <TableRow className="bg-background border-b border-border">
                     {!signed && !isAdmin && <TableHead className="w-10" />}
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Category</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold">Line Item</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold text-center w-16">Qty</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold w-24">Unit</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold text-right w-24">Rate</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold text-right w-28">Total</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Category</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Line Item</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-center w-16">Qty</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold w-24">Unit</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-right w-24">Rate</TableHead>
+                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-right w-28">Total</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -673,7 +673,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                       return (
                         <TableRow
                           key={item.id}
-                          className="border-b border-[#f0f3f5] hover:bg-[#fafbfc] cursor-pointer transition-colors"
+                          className="border-b border-border/60 hover:bg-muted/40 cursor-pointer transition-colors"
                           onClick={(event) => handleItemRowClick(event, item.id)}
                         >
                           {!signed && !isAdmin && (
@@ -687,16 +687,16 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               />
                             </TableCell>
                           )}
-                          <TableCell className="text-sm text-[#7f8c8d] font-medium align-top">
+                          <TableCell className="text-sm text-muted-foreground font-medium align-top">
                             {showCategory ? item.category : ''}
                           </TableCell>
                           <TableCell className="align-top">
-                            <div className="text-sm font-semibold text-[#2c3e50]">{item.title}</div>
+                            <div className="text-sm font-semibold text-foreground">{item.title}</div>
                             {item.description && (
-                              <p className="text-xs text-[#95a5a6] mt-0.5 whitespace-pre-line">{item.description}</p>
+                              <p className="text-xs text-muted-foreground/80 mt-0.5 whitespace-pre-line">{item.description}</p>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-[#2c3e50] text-center align-top" onClick={e => e.stopPropagation()}>
+                          <TableCell className="text-sm text-foreground text-center align-top" onClick={e => e.stopPropagation()}>
                             {isFlatFee ? '—' : (
                               isClientEditable ? (
                                 <div className="inline-flex items-center gap-1.5">
@@ -705,7 +705,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                                     onClick={() => adjustQty(item.id, -1)}
                                     disabled={getEffectiveQty(item) <= 1}
                                     aria-label="Decrease quantity"
-                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
+                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
                                   >
                                     <Minus className="w-3 h-3" />
                                   </button>
@@ -714,7 +714,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                                     type="button"
                                     onClick={() => adjustQty(item.id, 1)}
                                     aria-label="Increase quantity"
-                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
+                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
                                   >
                                     <Plus className="w-3 h-3" />
                                   </button>
@@ -722,13 +722,13 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                               ) : (item.quantity || 1)
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-[#7f8c8d] align-top">
+                          <TableCell className="text-sm text-muted-foreground align-top">
                             {isFlatFee ? 'Flat Fee' : (item.unit || '—')}
                           </TableCell>
-                          <TableCell className="text-sm text-[#2c3e50] text-right align-top">
+                          <TableCell className="text-sm text-foreground text-right align-top">
                             {isFlatFee ? '—' : formatCurrency(Number(item.price))}
                           </TableCell>
-                          <TableCell className="text-sm font-semibold text-[#2c3e50] text-right align-top">{formatCurrency(lineTotal)}</TableCell>
+                          <TableCell className="text-sm font-semibold text-foreground text-right align-top">{formatCurrency(lineTotal)}</TableCell>
                         </TableRow>
                       );
                     });
@@ -749,13 +749,13 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                   return (
                     <div key={item.id}>
                       {showCategory && (
-                        <div className="text-[10px] tracking-[0.15em] uppercase text-[#95a5a6] font-semibold mt-4 mb-2 px-1">
+                        <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold mt-4 mb-2 px-1">
                           {item.category}
                         </div>
                       )}
                       <div
                         className={`bg-background rounded-xl border p-4 transition-colors touch-manipulation active:scale-[0.98] ${
-                          selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-[#ecf0f1]'
+                          selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-border'
                         }`}
                         onClick={(event) => handleItemRowClick(event, item.id)}
                       >
@@ -773,46 +773,46 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-[15px] font-semibold text-[#2c3e50] leading-snug">{item.title}</h3>
+                            <h3 className="text-[15px] font-semibold text-foreground leading-snug">{item.title}</h3>
                             {item.description && (
-                              <p className="text-[13px] text-[#95a5a6] mt-1.5 whitespace-pre-line leading-relaxed">{item.description}</p>
+                              <p className="text-[13px] text-muted-foreground/80 mt-1.5 whitespace-pre-line leading-relaxed">{item.description}</p>
                             )}
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#f0f3f5]">
-                              <div className="flex items-center gap-3 text-[12px] text-[#7f8c8d] flex-wrap">
+                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/60">
+                              <div className="flex items-center gap-3 text-[12px] text-muted-foreground flex-wrap">
                                 {!isFlatFee && (
                                   <>
                                     {isClientEditable ? (
                                       <div className="inline-flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                        <span className="text-[#7f8c8d]">Qty:</span>
+                                        <span className="text-muted-foreground">Qty:</span>
                                         <button
                                           type="button"
                                           onClick={() => adjustQty(item.id, -1)}
                                           disabled={getEffectiveQty(item) <= 1}
                                           aria-label="Decrease quantity"
-                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
+                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
                                         >
                                           <Minus className="w-3.5 h-3.5" />
                                         </button>
-                                        <span className="min-w-[1.5rem] text-center text-[#2c3e50] font-semibold tabular-nums">{getEffectiveQty(item)}</span>
+                                        <span className="min-w-[1.5rem] text-center text-foreground font-semibold tabular-nums">{getEffectiveQty(item)}</span>
                                         <button
                                           type="button"
                                           onClick={() => adjustQty(item.id, 1)}
                                           aria-label="Increase quantity"
-                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-[#ecf0f1] text-[#2c3e50] hover:bg-[#f8f9fa] hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
+                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
                                         >
                                           <Plus className="w-3.5 h-3.5" />
                                         </button>
                                       </div>
                                     ) : (
-                                      <span>Qty: <span className="text-[#2c3e50] font-medium">{item.quantity || 1}</span></span>
+                                      <span>Qty: <span className="text-foreground font-medium">{item.quantity || 1}</span></span>
                                     )}
                                     {item.unit && <span>• {item.unit}</span>}
                                     <span>@ {formatCurrency(Number(item.price))}</span>
                                   </>
                                 )}
-                                {isFlatFee && <span className="text-[#7f8c8d]">Flat Fee</span>}
+                                {isFlatFee && <span className="text-muted-foreground">Flat Fee</span>}
                               </div>
-                              <span className="text-[15px] font-bold text-[#2c3e50]">{formatCurrency(lineTotal)}</span>
+                              <span className="text-[15px] font-bold text-foreground">{formatCurrency(lineTotal)}</span>
                             </div>
                           </div>
                         </div>
@@ -828,14 +828,14 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         )}
 
         {/* Total */}
-        <div className="bg-background rounded-lg p-5 border border-[#ecf0f1] mb-4 flex items-center justify-between">
-          <span className="text-[#7f8c8d] font-medium">Total</span>
-          <span className="text-2xl font-bold text-[#2c3e50]">{formatCurrency(displayedTotal)}</span>
+        <div className="bg-background rounded-lg p-5 border border-border mb-4 flex items-center justify-between">
+          <span className="text-muted-foreground font-medium">Total</span>
+          <span className="text-2xl font-bold text-foreground">{formatCurrency(displayedTotal)}</span>
         </div>
 
         {/* Sign Section */}
         {!isAdmin && !signed ? (
-          <div className="bg-background rounded-lg p-6 border border-[#ecf0f1] mb-12">
+          <div className="bg-background rounded-lg p-6 border border-border mb-12">
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
                 placeholder="Your full name"
@@ -846,7 +846,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               <Button
                 onClick={handleSign}
                 disabled={signing || selectedIds.size === 0}
-                className="bg-[#2c3e50] hover:bg-[#34495e] text-foreground px-8"
+                className="bg-primary hover:bg-primary/90 text-foreground px-8"
               >
                 {signing ? 'Signing...' : 'Accept & Sign Proposal'}
               </Button>
@@ -881,12 +881,12 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Kickoff Conditions */}
         <section className="mb-12">
-          <h2 className="font-display text-xl text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Kickoff Conditions</h2>
-          <div className="bg-background rounded-lg p-5 border border-[#ecf0f1]">
-            <p className="text-sm text-[#34495e]">
+          <h2 className="font-display text-xl text-foreground mb-4 border-b border-border pb-2">Kickoff Conditions</h2>
+          <div className="bg-background rounded-lg p-5 border border-border">
+            <p className="text-sm text-foreground/90">
               Production begins only once <strong>both</strong> conditions are met: the proposal is signed off and all client brand assets have been delivered.
             </p>
-            <p className="text-sm text-[#7f8c8d] mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               From kickoff: <strong>14 days</strong> to deliver the first review &middot; <strong>3 days</strong> for client review &middot; <strong>1</strong> included revision &middot; final notes due <strong>no later than 4 days before the event</strong>.
             </p>
           </div>
@@ -894,10 +894,10 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Contact */}
         <section className="mb-12">
-          <h2 className="font-display text-xl text-[#2c3e50] mb-4 border-b border-[#ecf0f1] pb-2">Contact</h2>
-          <p className="text-sm text-[#34495e]">
+          <h2 className="font-display text-xl text-foreground mb-4 border-b border-border pb-2">Contact</h2>
+          <p className="text-sm text-foreground/90">
             For any questions, please contact us at{' '}
-            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="text-[#3498db] underline">
+            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="text-primary underline">
               {proposal.contact_email || 'luisdreamslv@gmail.com'}
             </a>
           </p>
@@ -907,7 +907,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         <ProposalTerms />
 
         {/* Footer */}
-        <footer className="text-center pt-8 pb-12 border-t border-[#ecf0f1]">
+        <footer className="text-center pt-8 pb-12 border-t border-border">
           <img src={soleiaLogo} alt="Soleia" className="h-8 mx-auto opacity-40" />
         </footer>
       </div>

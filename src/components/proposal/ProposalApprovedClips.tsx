@@ -49,9 +49,9 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
 
   return (
     <section className="mb-12">
-      <div className="flex items-center gap-2 mb-6 border-b border-[#ecf0f1] pb-2">
+      <div className="flex items-center gap-2 mb-6 border-b border-border pb-2">
         <Sparkles className="w-5 h-5 text-primary" />
-        <h2 className="text-xl font-semibold text-[#2c3e50]">Approved Creative Selections</h2>
+        <h2 className="text-xl font-semibold text-foreground">Approved Creative Selections</h2>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {clips.map((clip) => {
@@ -61,9 +61,9 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
           return (
             <div
               key={clip.id}
-              className="group relative bg-background rounded-xl overflow-hidden border border-[#ecf0f1] shadow-sm hover:shadow-md transition-shadow"
+              className="group relative bg-background rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="aspect-[4/3] bg-[#f0f3f5] relative overflow-hidden">
+              <div className="aspect-[4/3] bg-muted relative overflow-hidden">
                 {isVideo && thumb ? (
                   <video
                     src={thumb}
@@ -97,9 +97,9 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
               </div>
               {clip.title && (
                 <div className="px-3 py-2">
-                  <p className="text-xs font-medium text-[#2c3e50] truncate">{clip.title}</p>
+                  <p className="text-xs font-medium text-foreground truncate">{clip.title}</p>
                   {clip.description && (
-                    <p className="text-[10px] text-[#95a5a6] truncate mt-0.5">{clip.description}</p>
+                    <p className="text-[10px] text-muted-foreground/80 truncate mt-0.5">{clip.description}</p>
                   )}
                 </div>
               )}
@@ -107,7 +107,7 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
           );
         })}
       </div>
-      <p className="text-xs text-[#95a5a6] mt-4 italic">
+      <p className="text-xs text-muted-foreground/80 mt-4 italic">
         These selections have been approved during the creative session review.
       </p>
     </section>
