@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 export default function ClientProposal() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [proposal, setProposal] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
