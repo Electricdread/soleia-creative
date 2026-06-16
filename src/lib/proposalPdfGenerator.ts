@@ -37,13 +37,6 @@ interface ProposalData {
   is_pre_call_packet?: boolean | null;
 }
 
-function scenarioLabel(p: ProposalData) {
-  const s = p.proposal_scenario;
-  if (s === 'pre_call_packet') return 'Pre-Call Packet';
-  if (s === 'pre_packet_no_call') return 'Pre-Packet';
-  if (s === 'direct_quote') return 'Proposal';
-  return p.is_pre_call_packet === false ? 'Pre-Packet' : 'Pre-Call Packet';
-}
 
 interface ProposalItem {
   title: string;
@@ -160,11 +153,11 @@ async function generateCoverPage(doc: jsPDF, proposal: ProposalData, coverImageU
   doc.setLineWidth(1);
   doc.line(PAGE_W / 2 - 40, 90, PAGE_W / 2 + 40, 90);
 
-  // Scenario badge
+  // Label
   doc.setFontSize(10);
   doc.setTextColor(GOLD);
   doc.setFont('helvetica', 'bold');
-  doc.text(scenarioLabel(proposal).toUpperCase(), PAGE_W / 2, 108, { align: 'center' });
+  doc.text('PROPOSAL', PAGE_W / 2, 108, { align: 'center' });
 
   // === BOTTOM TEXT BLOCK (dynamically measured) ===
   const titleMaxW = CONTENT_W - 40;
