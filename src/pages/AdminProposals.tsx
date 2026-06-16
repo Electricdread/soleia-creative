@@ -9,10 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, Sparkles } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder } from 'lucide-react';
 import { downloadLineItemLibraryPdf, printLineItemLibraryPdf } from '@/lib/lineItemLibraryPdf';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
@@ -131,7 +130,9 @@ export default function AdminProposals() {
           creative_call_url: creativeCallUrl.trim() || null,
           status: 'draft',
           created_by: user?.id,
-        })
+          proposal_scenario: 'direct_quote',
+          is_pre_call_packet: false,
+        } as any)
         .select()
         .single();
       if (error) throw error;
@@ -235,153 +236,19 @@ export default function AdminProposals() {
     toast({ title: next ? 'Proposal activated — link is live' : 'Proposal deactivated — link is no longer accessible' });
   };
 
-  const setScenario = async (id: string, next: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote') => {
-    const { error } = await supabase.from('proposals').update({
-      proposal_scenario: next,
-      is_pre_call_packet: next === 'pre_call_packet',
-    } as any).eq('id', id);
-    if (error) {
-      toast({ title: 'Failed to update scenario', variant: 'destructive' });
-      return;
-    }
-    setProposals(prev => prev.map(p => p.id === id ? { ...p, proposal_scenario: next, is_pre_call_packet: next === 'pre_call_packet' } : p));
-    toast({ title: `Scenario set: ${next === 'pre_call_packet' ? 'Pre-Call Packet' : next === 'pre_packet_no_call' ? 'Pre-Packet (No Call)' : 'Direct Quote'}` });
-  };
-
-  const seedScenarioTwoDefaults = async (proposalId: string) => {
-    const { data: existing } = await supabase.from('proposal_items').select('id, title, sort_order').eq('proposal_id', proposalId);
-    const mapped = existing?.find(i => /^mapped to spec by client/i.test(i.title));
-
-    // Shift every other row down by 1 so the mapped item can take sort_order = 0.
-    const others = (existing || []).filter(i => i.id !== mapped?.id);
-    await Promise.all(
-      others.map((i, idx) =>
-        supabase.from('proposal_items').update({ sort_order: idx + 1 }).eq('id', i.id)
-      )
-    );
-
-    if (mapped) {
-      const { error } = await supabase.from('proposal_items').update({ sort_order: 0 }).eq('id', mapped.id);
-      if (error) {
-        toast({ title: 'Failed to pin line item', description: error.message, variant: 'destructive' });
-        return;
-      }
-      toast({ title: '"Mapped to Spec by Client" pinned to top' });
-      return;
-    }
-
-    const { error } = await supabase.from('proposal_items').insert({
-      proposal_id: proposalId,
-      title: 'Mapped to Spec by Client',
-      description: 'Your content is already mapped to spec. Soleia loads, QCs, and plays it back on our servers and screens.',
-      price: 0,
-      quantity: 1,
-      category: 'Content Operations',
-      unit: 'Project',
-      is_flat_fee: true,
-      sort_order: 0,
-    });
-    if (error) {
-      toast({ title: 'Failed to add line item', description: error.message, variant: 'destructive' });
-      return;
-    }
-    toast({ title: '"Mapped to Spec by Client" added', description: 'Pinned to top and pre-ticked for the client.' });
-  };
-
-  const resolveScenario = (p: { proposal_scenario?: string | null; is_pre_call_packet?: boolean | null }): 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' => {
-    const s = p.proposal_scenario;
-    if (s === 'pre_call_packet' || s === 'pre_packet_no_call' || s === 'direct_quote') return s;
-    return p.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet';
-  };
-
-  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null; proposal_scenario?: string | null }) => {
+  const buildPlainTextEmail = (p: { event_name: string; client_name: string; token: string }) => {
     const proposalUrl = `${getPublicOrigin()}/proposal/${p.token}`;
-    const scenario = resolveScenario(p);
-
-    if (scenario === 'direct_quote') {
-      return `SOLEIA CREATIVE TEAM
+    return `SOLEIA CREATIVE TEAM
 Your Proposal
 
 Hi ${p.client_name || 'there'},
 
 Please find your proposal for ${p.event_name} below.
-Review the details and sign when you're ready.
+Review the line items, adjust quantities if needed, and
+sign when you're ready to lock things in.
 
 Open your proposal:
 ${proposalUrl}
-
-Included in your venue contract:
-  • Up to 10 static logos — LED screens
-  • 1 static logo — all TVs, Cabanas & Bungalows
-
-— Soleia Creative Team
-luisdreamslv@gmail.com`;
-    }
-
-    if (scenario === 'pre_packet_no_call') {
-      return `SOLEIA CREATIVE TEAM
-Your Pre-Packet
-
-Hi ${p.client_name || 'there'},
-
-Here is your Pre-Packet for ${p.event_name}.
-No creative call needed — review the menu below,
-then send us your already-mapped content and we'll
-handle loading, QC, and playback on our servers.
-
-Open your proposal & menu:
-${proposalUrl}
-
-What's included in your venue contract:
-  • Up to 10 static logos — LED screens
-  • 1 static logo — all TVs, Cabanas & Bungalows
-
-Send us your content:
-Drop your mapped files into the Collect Assets folder
-linked inside your proposal. Spec details live in the
-Content Delivery Guide (also linked in the proposal).
-
-Add-on services (dynamic elevator, custom design, etc.)
-are listed on the proposal — approve any you'd like
-and we'll fold them into the schedule.
-
-— Soleia Creative Team
-luisdreamslv@gmail.com`;
-    }
-
-    const callUrl = p.creative_call_url?.trim();
-    const callBlock = callUrl
-      ? `Schedule our creative call:\n${callUrl}\n\n`
-      : `We'll reach out separately to schedule the creative call.\n\n`;
-    return `SOLEIA CREATIVE TEAM
-Your Proposal & Pre-Call Packet
-
-Hi ${p.client_name || 'there'},
-
-Ahead of our creative call, please take a few minutes
-to review the materials below for ${p.event_name}.
-They'll get you acquainted with our process so we can
-hit the ground running on the call — choosing themes,
-line items, and content ideas.
-
-Open your proposal & menu:
-${proposalUrl}
-
-What's inside:
-  • Line Item Menu — full menu of services & pricing
-  • Creative Guide — venue specs, LED zones, delivery standards
-  • Collect Assets folder — where to drop logos & brand assets
-  • Timeline — after sign-off + assets: 14 days to deliver, 3 days to review, 1 revision, final notes due 4 days before the event
-
-Included in your venue contract:
-  • Up to 10 static logos — LED screens
-  • 1 static logo — all TVs, Cabanas & Bungalows
-
-${callBlock}Once you've had a chance to look through everything,
-we'll meet on the creative call to finalize themes,
-content, and the line items you'd like to include.
-The on-page signature stays available for whenever
-you're ready to lock things in.
 
 — Soleia Creative Team
 luisdreamslv@gmail.com`;
@@ -408,12 +275,8 @@ luisdreamslv@gmail.com`;
     }
   };
 
-  const openInMailApp = (p: { event_name: string; client_name: string; token: string; creative_call_url?: string | null; is_pre_call_packet?: boolean | null; proposal_scenario?: string | null }) => {
-    const scenario = resolveScenario(p);
-    const prefix = scenario === 'pre_call_packet' ? 'Pre-Call Packet'
-      : scenario === 'pre_packet_no_call' ? 'Pre-Packet'
-      : 'Proposal';
-    const subject = `${prefix}: ${p.event_name} — ${p.client_name}`;
+  const openInMailApp = (p: { event_name: string; client_name: string; token: string }) => {
+    const subject = `Proposal: ${p.event_name} — ${p.client_name}`;
     const body = buildPlainTextEmail(p);
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
@@ -803,33 +666,6 @@ luisdreamslv@gmail.com`;
                     <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p.id, p.is_active)} />
                     <span className="text-xs font-medium text-white">Active</span>
                   </label>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Select
-                      value={p.proposal_scenario ?? (p.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet')}
-                      onValueChange={(v) => setScenario(p.id, v as any)}
-                    >
-                      <SelectTrigger className="h-9 w-[170px] bg-zinc-800 border-zinc-700 text-xs text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-700 text-white">
-                        <SelectItem value="pre_call_packet">Pre-Call Packet</SelectItem>
-                        <SelectItem value="pre_packet_no_call">Pre-Packet (No Call)</SelectItem>
-                        <SelectItem value="direct_quote">Direct Quote</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {(p.proposal_scenario === 'pre_packet_no_call') && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => seedScenarioTwoDefaults(p.id)}
-                        title='Insert "Mapped to Spec by Client" line item'
-                        className="text-[#c49a3c] hover:text-[#d4aa4c] text-xs gap-1"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        Seed defaults
-                      </Button>
-                    )}
-                  </div>
                 <div className="flex flex-wrap items-center justify-end gap-1 flex-shrink-0">
                   {p.status === 'draft' && (
                     <Button variant="ghost" size="sm" onClick={() => markSent(p.id)} className="text-blue-400 hover:text-blue-300 text-xs">

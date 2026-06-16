@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus, ListChecks, BookOpen, FolderOpen, Calendar, Loader2, Sparkles } from 'lucide-react';
+import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus, ListChecks, BookOpen, FolderOpen, Calendar, Loader2 } from 'lucide-react';
 import { generateProposalPdf } from '@/lib/proposalPdfGenerator';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
@@ -16,25 +16,9 @@ import ProposalGallery from './ProposalGallery';
 import ProposalTimeline from './ProposalTimeline';
 import ProposalTerms from './ProposalTerms';
 import ProposalApprovedClips from './ProposalApprovedClips';
-import ProposalContractInclusions from './ProposalContractInclusions';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
 
-type ProposalScenario = 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote';
-
-function resolveScenario(proposal: any): ProposalScenario {
-  const s = proposal?.proposal_scenario as ProposalScenario | undefined;
-  if (s === 'pre_call_packet' || s === 'pre_packet_no_call' || s === 'direct_quote') return s;
-  return proposal?.is_pre_call_packet === false ? 'pre_packet_no_call' : 'pre_call_packet';
-}
-
-const SCENARIO_CHIP_LABEL: Record<ProposalScenario, string> = {
-  pre_call_packet: 'Pre-Call Packet',
-  pre_packet_no_call: 'Pre-Packet',
-  direct_quote: 'Quote',
-};
-
-const isMappedToSpec = (i: any) => typeof i?.title === 'string' && /^mapped to spec by client/i.test(i.title);
 
 interface ProposalViewProps {
   proposal: any;
@@ -61,20 +45,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     setClientQty(Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1])));
   }, [items]);
 
-  // Scenario 2: pre-tick the "Mapped to Spec by Client" item so the client doesn't miss it.
-  useEffect(() => {
-    if (signed || isAdmin) return;
-    if (resolveScenario(proposal) !== 'pre_packet_no_call') return;
-    const mapped = items.find(isMappedToSpec);
-    if (!mapped) return;
-    setSelectedIds(prev => {
-      if (prev.has(mapped.id)) return prev;
-      const next = new Set(prev);
-      next.add(mapped.id);
-      return next;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, proposal?.id]);
 
   const isClientEditable = !isAdmin && !signed;
   const getEffectiveQty = (i: any) =>
@@ -384,15 +354,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 
-  const scenario = resolveScenario(proposal);
-  const mappedItem = items.find(isMappedToSpec);
   const visibleItems = signed ? items.filter(i => i.client_selected !== false) : items;
-  const tableItems = scenario === 'pre_packet_no_call' && mappedItem
-    ? visibleItems.filter(i => i.id !== mappedItem.id)
-    : visibleItems;
-  const additionalServicesLabel = scenario === 'pre_packet_no_call'
-    ? 'Optional Add-On Services'
-    : 'Additional Services';
+  const tableItems = visibleItems;
+  const additionalServicesLabel = 'Services';
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
@@ -481,7 +445,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
             <div className="min-w-0 flex-1">
               <p className="text-[10px] tracking-[0.25em] uppercase text-[#c49a3c] font-bold mb-2">
-                {SCENARIO_CHIP_LABEL[resolveScenario(proposal)]}
+                Proposal
               </p>
               <div className="flex items-center gap-2">
                 <h1 className="text-4xl font-light text-[#2c3e50] mb-1">{proposal.event_name}</h1>
@@ -521,94 +485,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           </div>
         )}
 
-        {/* Contract Inclusions — always shown above line items */}
-        <ProposalContractInclusions />
-
-        {/* Scenario-specific banner (resources panel moved below items) */}
-        {!signed && !isProposalClosed(proposal) && scenario === 'pre_call_packet' && (
-          <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-4 mb-8 print:hidden">
-            <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Call Packet</p>
-            <p className="text-[#34495e] text-sm leading-relaxed">
-              This is your pre-call packet. Browse the line item menu, creative guide, and timeline below.
-              We'll discuss themes and final selections together on our creative call &mdash; sign whenever
-              you're ready.
-            </p>
-          </div>
-        )}
-        {!signed && !isProposalClosed(proposal) && scenario === 'pre_packet_no_call' && (
-          <div className="bg-[#faf8f4] border-l-4 border-[#c49a3c] rounded-r-lg p-4 mb-8 print:hidden">
-            <p className="text-[11px] tracking-[0.2em] uppercase text-[#c49a3c] font-semibold mb-1">Pre-Packet</p>
-            <p className="text-[#34495e] text-sm leading-relaxed">
-              You're providing your own mapped content for this event. The core service below is already
-              included &amp; ticked. Add any optional services you'd like, then send us your files.
-            </p>
-          </div>
-        )}
-
-        {/* Validity Notice — only after sign-off / closure */}
-        {(signed || isProposalClosed(proposal)) && (
-          <div className="bg-white border-l-4 border-[#3498db] rounded-r-lg p-5 mb-10 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <p className="text-[#34495e] text-sm">
-                This proposal is valid for <strong>{proposal.validity_days || 7} days</strong>, please respond until{' '}
-                <strong>{format(expiryDate, 'MMMM d, yyyy')}</strong>.
-              </p>
-            </div>
-            <p className="text-[#7f8c8d] text-sm mt-1">
-              Confirmation within this period allows us to reserve production time.
-            </p>
-          </div>
-        )}
-
-        {/* Scenario 2 pinned card — "Included Service" */}
-        {!editingItems && scenario === 'pre_packet_no_call' && mappedItem && (
-          <div className="mb-6">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-[#c49a3c] font-semibold mb-2">
-              Included in this Proposal
-            </p>
-            <div
-              className={`rounded-lg border-l-4 border-[#c49a3c] border border-[#ecf0f1] p-5 transition-colors ${
-                selectedIds.has(mappedItem.id) || isAdmin || signed ? 'bg-[#faf8f4]' : 'bg-white'
-              }`}
-              onClick={(event) => handleItemRowClick(event, mappedItem.id)}
-            >
-              <div className="flex items-start gap-4">
-                {!signed && !isAdmin && (
-                  <div className="pt-1" onClick={e => e.stopPropagation()}>
-                    <Checkbox
-                      checked={selectedIds.has(mappedItem.id)}
-                      aria-label={`Select ${mappedItem.title}`}
-                      onCheckedChange={(checked) => setItemSelected(mappedItem.id, checked === true)}
-                      onClick={handleCheckboxClick}
-                      onPointerDown={(event) => event.stopPropagation()}
-                    />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div className="min-w-0">
-                      <h3 className="text-base font-semibold text-[#2c3e50] leading-snug">{mappedItem.title}</h3>
-                      {mappedItem.description && (
-                        <p className="text-sm text-[#7f8c8d] mt-1.5 leading-relaxed whitespace-pre-line">
-                          {mappedItem.description}
-                        </p>
-                      )}
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#c49a3c]/10 text-[#c49a3c] text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 flex-shrink-0">
-                      <Check className="w-3 h-3" /> Selected
-                    </span>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-[#ecf0f1] flex items-center justify-between text-sm">
-                    <span className="text-[#95a5a6]">
-                      {mappedItem.is_flat_fee ? 'Flat Fee' : `Qty: ${getEffectiveQty(mappedItem)}${mappedItem.unit ? ` · ${mappedItem.unit}` : ''}`}
-                    </span>
-                    <span className="font-bold text-[#2c3e50]">{formatCurrency(calcLineTotal(mappedItem))}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Section label for the menu of optional services */}
         {!editingItems && tableItems.length > 0 && (
@@ -989,13 +865,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           </div>
         ) : null}
 
-        {/* Resources panel (moved below items so the menu reads first) */}
-        {!signed && !isProposalClosed(proposal) && scenario === 'pre_call_packet' && (
-          <PreCallResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
-        )}
-        {!signed && !isProposalClosed(proposal) && scenario === 'pre_packet_no_call' && (
-          <PrePacketResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
-        )}
 
 
 
@@ -1041,261 +910,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         <footer className="text-center pt-8 pb-12 border-t border-[#ecf0f1]">
           <img src={soleiaLogo} alt="Soleia" className="h-8 mx-auto opacity-40" />
         </footer>
-      </div>
-    </div>
-  );
-}
-
-interface PreCallResourcesProps {
-  proposal: any;
-  isAdmin: boolean;
-  onRefresh?: () => void;
-}
-
-function PreCallResources({ proposal, isAdmin, onRefresh }: PreCallResourcesProps) {
-  const { toast } = useToast();
-  const [generating, setGenerating] = useState(false);
-  const driveUrl: string | null = proposal.drive_folder_url || null;
-  const callUrl: string | null = proposal.creative_call_url || null;
-
-  const generateFolder = async () => {
-    setGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
-        body: { proposal_id: proposal.id },
-      });
-      if (error) throw error;
-      const url = (data as any)?.folderUrl;
-      if (!url) throw new Error('No folder URL returned');
-      toast({ title: (data as any)?.existing ? 'Folder already exists' : 'Client folder created' });
-      onRefresh?.();
-    } catch (e: any) {
-      toast({ title: 'Folder generation failed', description: e.message, variant: 'destructive' });
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const Tile = ({
-    icon: Icon,
-    title,
-    subtitle,
-    onClick,
-    href,
-    disabled,
-    cta,
-  }: {
-    icon: any;
-    title: string;
-    subtitle: string;
-    onClick?: () => void;
-    href?: string;
-    disabled?: boolean;
-    cta?: React.ReactNode;
-  }) => {
-    const inner = (
-      <>
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
-            <Icon className="w-5 h-5 text-[#c49a3c]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[#2c3e50] font-semibold text-sm leading-tight">{title}</p>
-            <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">{subtitle}</p>
-            {cta && <div className="mt-2">{cta}</div>}
-          </div>
-        </div>
-      </>
-    );
-    const baseCls = `block bg-white border-l-4 border-[#c49a3c] border border-[#ecf0f1] rounded-r-lg p-4 transition-all ${
-      disabled ? 'opacity-60 cursor-default' : 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer'
-    }`;
-    if (href && !disabled) {
-      return (
-        <a href={href} target={href.startsWith('#') ? undefined : '_blank'} rel="noopener noreferrer" className={baseCls}>
-          {inner}
-        </a>
-      );
-    }
-    return (
-      <div className={baseCls} onClick={disabled ? undefined : onClick} role={onClick ? 'button' : undefined}>
-        {inner}
-      </div>
-    );
-  };
-
-  return (
-    <div className="mb-8 print:hidden">
-      <p className="text-[10px] tracking-[0.2em] uppercase text-[#95a5a6] font-semibold mb-3">Pre-Call Resources</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Tile
-          icon={ListChecks}
-          title="Line Item Menu"
-          subtitle="Browse services & pricing below."
-          href="#line-items"
-        />
-        <Tile
-          icon={BookOpen}
-          title="Creative Guide"
-          subtitle="Venue specs, LED zones, delivery standards."
-          href="/creative-guide"
-        />
-        {driveUrl ? (
-          <Tile
-            icon={Sparkles}
-            title="After Effects Template"
-            subtitle="Open the shared Drive folder to grab the AE project file."
-            href={driveUrl}
-          />
-        ) : (
-          <Tile
-            icon={Sparkles}
-            title="After Effects Template"
-            subtitle="Available in your Drive folder after sign-off."
-            disabled
-          />
-        )}
-        {driveUrl ? (
-          <Tile
-            icon={FolderOpen}
-            title="Collect Assets Folder"
-            subtitle="Drop logos, references & brand assets here."
-            href={driveUrl}
-          />
-        ) : isAdmin ? (
-          <Tile
-            icon={FolderOpen}
-            title="Collect Assets Folder"
-            subtitle="No client folder yet."
-            cta={
-              <Button size="sm" variant="outline" onClick={generateFolder} disabled={generating} className="h-7 text-xs gap-1.5 border-[#c49a3c] text-[#c49a3c] hover:bg-[#faf8f4]">
-                {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
-                Generate folder
-              </Button>
-            }
-          />
-        ) : (
-          <Tile
-            icon={FolderOpen}
-            title="Collect Assets Folder"
-            subtitle="Folder will be shared after sign-off."
-            disabled
-          />
-        )}
-        {callUrl && (
-          <Tile
-            icon={Calendar}
-            title="Schedule Creative Call"
-            subtitle="Book a time to align on themes & content."
-            href={callUrl}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-interface PrePacketResourcesProps {
-  proposal: any;
-  isAdmin: boolean;
-  onRefresh?: () => void;
-}
-
-function PrePacketResources({ proposal, isAdmin, onRefresh }: PrePacketResourcesProps) {
-  const { toast } = useToast();
-  const [generating, setGenerating] = useState(false);
-  const driveUrl: string | null = proposal.drive_folder_url || null;
-
-  const generateFolder = async () => {
-    setGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
-        body: { proposal_id: proposal.id },
-      });
-      if (error) throw error;
-      const url = (data as any)?.folderUrl;
-      if (!url) throw new Error('No folder URL returned');
-      toast({ title: (data as any)?.existing ? 'Folder already exists' : 'Client folder created' });
-      onRefresh?.();
-    } catch (e: any) {
-      toast({ title: 'Folder generation failed', description: e.message, variant: 'destructive' });
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const tileBase = 'block bg-white border-l-4 border-[#c49a3c] border border-[#ecf0f1] rounded-r-lg p-4 transition-all';
-
-  return (
-    <div className="mb-8 print:hidden">
-      <p className="text-[10px] tracking-[0.2em] uppercase text-[#95a5a6] font-semibold mb-3">Send Us Your Content</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <a
-          href="/delivery-guide"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${tileBase} hover:shadow-md hover:-translate-y-0.5 cursor-pointer`}
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
-              <BookOpen className="w-5 h-5 text-[#c49a3c]" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Content Delivery Guide</p>
-              <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">
-                DXV3 encoding spec, resolutions per zone, and how to package your files.
-              </p>
-            </div>
-          </div>
-        </a>
-        {driveUrl ? (
-          <a
-            href={driveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${tileBase} hover:shadow-md hover:-translate-y-0.5 cursor-pointer`}
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
-                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
-                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">
-                  Open the shared Drive folder and upload your mapped, encoded content.
-                </p>
-              </div>
-            </div>
-          </a>
-        ) : isAdmin ? (
-          <div className={`${tileBase} opacity-90`}>
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
-                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
-                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">No client folder yet.</p>
-                <Button size="sm" variant="outline" onClick={generateFolder} disabled={generating} className="mt-2 h-7 text-xs gap-1.5 border-[#c49a3c] text-[#c49a3c] hover:bg-[#faf8f4]">
-                  {generating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
-                  Generate folder
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className={`${tileBase} opacity-60`}>
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-md bg-[#faf8f4] border border-[#ecf0f1] flex items-center justify-center flex-shrink-0">
-                <FolderOpen className="w-5 h-5 text-[#c49a3c]" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[#2c3e50] font-semibold text-sm leading-tight">Drop Your Content Here</p>
-                <p className="text-[#7f8c8d] text-xs mt-1 leading-snug">Folder will be shared shortly.</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
