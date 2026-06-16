@@ -383,7 +383,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Event Title & Info */}
         {editingHeader ? (
-          <div className="bg-background rounded-lg p-5 border border-border mb-8 space-y-3">
+          <div className="bg-card rounded-lg p-5 border border-border shadow-md hover:shadow-lg transition-shadow mb-8 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-muted-foreground/80 font-semibold">Event Name</label>
@@ -509,7 +509,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               </div>
             </div>
             {editItems.map((item, idx) => (
-              <div key={item.id || idx} className="bg-background rounded-lg p-4 border border-border space-y-2">
+              <div key={item.id || idx} className="bg-card rounded-lg p-4 border border-border shadow-md hover:shadow-lg transition-shadow space-y-2">
                 <div className="grid grid-cols-[1fr_1fr] gap-2">
                   <Input
                     placeholder="Category (e.g. Immersive LED Environments)"
@@ -649,7 +649,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             ) : tableItems.length === 0 ? null : (
             <>
             {/* Desktop Table - hidden on mobile */}
-            <div className="hidden sm:block bg-background rounded-lg border border-border overflow-hidden">
+            <div className="hidden sm:block bg-card rounded-lg border border-border shadow-md overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-background border-b border-border">
@@ -828,14 +828,14 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         )}
 
         {/* Total */}
-        <div className="bg-background rounded-lg p-5 border border-border mb-4 flex items-center justify-between">
+        <div className="bg-card rounded-lg p-5 border border-border shadow-md hover:shadow-lg transition-shadow mb-4 flex items-center justify-between">
           <span className="text-muted-foreground font-medium">Total</span>
           <span className="text-2xl font-bold text-foreground">{formatCurrency(displayedTotal)}</span>
         </div>
 
         {/* Sign Section */}
         {!isAdmin && !signed ? (
-          <div className="bg-background rounded-lg p-6 border border-border mb-12">
+          <div className="bg-card rounded-lg p-6 border border-border shadow-md hover:shadow-lg transition-shadow mb-12">
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
                 placeholder="Your full name"
@@ -882,7 +882,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         {/* Kickoff Conditions */}
         <section className="mb-12">
           <h2 className="font-display text-xl text-foreground mb-4 border-b border-border pb-2">Kickoff Conditions</h2>
-          <div className="bg-background rounded-lg p-5 border border-border">
+          <div className="bg-card rounded-lg p-5 border border-border shadow-md hover:shadow-lg transition-shadow">
             <p className="text-sm text-foreground/90">
               Production begins only once <strong>both</strong> conditions are met: the proposal is signed off and all client brand assets have been delivered.
             </p>
