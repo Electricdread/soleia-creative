@@ -1,37 +1,49 @@
-# Plan: Card stacking above surrounding panels
+# Pre-Call Packet Manager (Dashboard)
 
-Shadows on `bg-card` blocks can be visually clipped or flattened when a parent panel paints over them, or when sibling sections sit in the same stacking context with no z-axis order. The fix is to give cards an explicit positioned stacking context that lifts them above ambient surfaces, while keeping the surrounding wrappers as the lower "tray".
+Build a self-contained Pre-Call Packet feature accessible from the AdminPortal dashboard. Packets are separate from proposals: they hold inclusions / scope-of-work content for client pre-call review and are deployed (made live) from the dashboard via a shareable token URL.
 
-## Changes
+## What you get
 
-### 1. `src/index.css` — utility helpers
-
-Add two small utilities under `@layer components`:
-
-- `.card-elevated` — applies `position: relative; z-index: 1; isolation: isolate;` so every card creates its own stacking context and paints above neighboring panels without affecting layout.
-- `.panel-base` — applies `position: relative; z-index: 0;` for wrapper sections (`bg-surface`, `bg-background`, gradient bands) so they sit beneath elevated cards even when they have their own backgrounds.
-
-This works in both light and dark themes since z-index is theme-agnostic; combined with the existing `--shadow-card` tokens, shadows will no longer be visually cut by adjacent backgrounds.
-
-### 2. Proposal components — apply the utilities
-
-In the proposal view (the surface where the user reported the issue), add `card-elevated` to every `bg-card … shadow-card` container and `panel-base` to the outer section wrappers:
-
-- `src/components/proposal/ProposalView.tsx`
-  - Outer `bg-surface` wrapper → add `panel-base`.
-  - Each `bg-card … shadow-card` div (header, line items mobile/desktop wrappers, totals, signature, terms section, etc.) → add `card-elevated`.
-- `src/components/proposal/ProposalTimeline.tsx` — add `card-elevated` to the `bg-card` wrapper.
-- `src/components/proposal/ProposalTerms.tsx` — add `card-elevated` to the `bg-card` wrapper.
-- `src/components/proposal/ProposalApprovedClips.tsx` — add `card-elevated` to the clip tiles that use `shadow-card`.
-- `src/components/proposal/ProposalGallery.tsx` — add `card-elevated` to any `bg-card` containers.
+- A new portal card **Pre-Call Packets** on `/admin` (dashboard sidebar + grid).
+- A new admin page `/admin/packets` to create, edit, deploy (activate/deactivate), copy share link, and delete packets.
+- A new public client page `/packet/:token` — read-only, themed like ProposalView, no auth required.
+- Tokens generated on create; "Deploy" sets `is_active = true` and surfaces the public URL + copy-link button. "Unpublish" flips it back off.
 
 ## Out of scope
 
-- No color, spacing, or layout changes.
-- No changes to admin pages, emails, or PDF generators.
-- No edits to the shadcn `Card` primitive (keeps global side effects out).
+- No changes to proposals, quote flow, or PDF generators.
+- No removal of the legacy `is_pre_call_packet` / `proposal_scenario` fields on `AdminProposals` (separate cleanup, ask later).
+- No email tooling for packets in this pass (link is copy-to-clipboard only).
+
+## Plan
+
+1. **Database** (single migration)
+   - `public.pre_call_packets`: `id`, `title`, `client_name`, `event_date` (nullable), `intro` (text), `inclusions` (jsonb array of `{heading, body}`), `scope` (text), `notes` (text), `token` (text unique, default `encode(gen_random_bytes(16),'hex')`), `is_active` (bool default false), `created_by` (uuid), `created_at`, `updated_at`.
+   - GRANTs: `authenticated` full CRUD; `service_role` ALL; `anon` SELECT (needed for public token view).
+   - RLS:
+     - Admins: full ALL via `has_role(auth.uid(),'admin')`.
+     - Public (anon + authenticated): `SELECT` only when `is_active = true` (token is the secret; row is hidden until deployed).
+   - `update_updated_at_column` trigger.
+
+2. **Routes** (`src/App.tsx`)
+   - Add admin-protected `/admin/packets` → `AdminPackets`.
+   - Add public `/packet/:token` → `ClientPacket`.
+
+3. **Dashboard integration** (`src/pages/AdminPortal.tsx`)
+   - Add `Pre-Call Packets` entry to `portals` array (FileText or BookOpen icon, gold accent), pointing to `/admin/packets`.
+
+4. **New pages / components**
+   - `src/pages/AdminPackets.tsx` — list of packets with status badge (Draft / Deployed), New Packet button, edit dialog, Deploy/Unpublish toggle, copy public URL (`${origin}/packet/${token}`), delete confirm.
+   - `src/components/admin/PacketEditor.tsx` — form: title, client name, event date, intro, dynamic inclusions list (add/remove/reorder rows), scope, notes. Save → upsert.
+   - `src/pages/ClientPacket.tsx` — fetches by token (anon read), renders Soleia-branded read-only view reusing existing tokens (`bg-card`, `card-elevated`, gold accents, DM Serif headings). 404 state when token missing or `is_active=false`.
+
+5. **Memory updates**
+   - Update `mem://features/client-proposal/quote-only-rule` to reference the new packet location.
+   - New `mem://features/pre-call-packets` describing the system.
 
 ## Technical notes
 
-- `isolation: isolate` is the key piece: it forces a new stacking context so backdrop blends, `bg-card/80`, and parent `overflow-hidden` panels cannot flatten the card's shadow.
-- z-index values are kept tiny (0 / 1) to avoid fighting modals, popovers, or sticky headers that already use higher layers.
+- Token URL uses `window.location.origin` so it works on preview, lovable.app, and `soleiacreative.app`.
+- RLS pattern matches existing `proposals` / `lookbook_shares` (token-gated public read, admin-only writes).
+- No edge function needed — anon `SELECT` with `is_active=true` policy is sufficient; if we later need signing/expiry, mirror `get_proposal_by_token` SECURITY DEFINER.
+- All UI uses semantic tokens; `card-elevated` on packet cards for the layering rule we just landed.

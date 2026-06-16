@@ -55,6 +55,12 @@ const portals: PortalCard[] = [
     href: '/admin/proposals',
   },
   {
+    title: 'Pre-Call Packets',
+    description: 'Inclusions and scope of work for client pre-call review — deploy to share',
+    icon: <BookOpen className="w-6 h-6 text-primary" />,
+    href: '/admin/packets',
+  },
+  {
     title: 'Creative Sessions',
     description: 'Internal creative sessions, mood boards, and team collaboration',
     iconSrc: soleiaIcon,
