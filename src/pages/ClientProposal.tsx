@@ -23,13 +23,10 @@ export default function ClientProposal() {
   const load = async () => {
     if (!token) return;
     setLoading(true);
-    const { data: p, error: pErr } = await supabase
-      .from('proposals')
-      .select('*')
-      .eq('token', token)
-      .eq('is_active', true)
-      .maybeSingle();
+    const { data: pRows, error: pErr } = await supabase
+      .rpc('get_proposal_by_token', { p_token: token });
 
+    const p = Array.isArray(pRows) ? pRows[0] : pRows;
     if (pErr || !p) {
       setError('Proposal not found or has expired.');
       setLoading(false);
