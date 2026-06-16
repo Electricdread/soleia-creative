@@ -95,6 +95,11 @@ button, a, [role="button"] {
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 10% 90%;
     --sidebar-ring: 32 85% 38%;
+
+    /* Elevation */
+    --surface: 30 25% 97%;
+    --shadow-card: 0 1px 2px hsl(220 15% 15% / 0.06), 0 8px 24px -8px hsl(220 15% 15% / 0.12);
+    --shadow-card-hover: 0 2px 4px hsl(220 15% 15% / 0.08), 0 18px 40px -12px hsl(220 15% 15% / 0.18);
   }
 
   /* Light mode - clean white elegant */
@@ -134,6 +139,9 @@ button, a, [role="button"] {
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 10% 90%;
     --sidebar-ring: 32 85% 38%;
+    --surface: 30 25% 97%;
+    --shadow-card: 0 1px 2px hsl(220 15% 15% / 0.06), 0 8px 24px -8px hsl(220 15% 15% / 0.12);
+    --shadow-card-hover: 0 2px 4px hsl(220 15% 15% / 0.08), 0 18px 40px -12px hsl(220 15% 15% / 0.18);
   }
 
   .dark {
