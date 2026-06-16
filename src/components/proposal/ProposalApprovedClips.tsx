@@ -61,7 +61,7 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
           return (
             <div
               key={clip.id}
-              className="group relative bg-background rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-card transition-shadow"
+              className="group relative bg-background rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-card transition-shadow card-elevated"
             >
               <div className="aspect-[4/3] bg-muted relative overflow-hidden">
                 {isVideo && thumb ? (

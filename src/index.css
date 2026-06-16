@@ -249,6 +249,18 @@ button, a, [role="button"] {
 }
 
 @layer utilities {
+  /* Stacking helpers — keep elevated cards visually above sibling panels
+     so bg-card and shadow-card never get clipped or flattened by neighbors. */
+  .card-elevated {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+  }
+  .panel-base {
+    position: relative;
+    z-index: 0;
+  }
+
   /* Elegant glassmorphism - theme aware */
   .glass {
     @apply bg-card/80 backdrop-blur-xl border border-border/30;
