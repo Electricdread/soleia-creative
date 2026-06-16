@@ -86,9 +86,10 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
       notes: form.notes?.trim() || null,
     };
 
+    const dbPayload: any = { ...payload, inclusions: payload.inclusions as any };
     const { error } = initial?.id
-      ? await supabase.from('pre_call_packets').update(payload).eq('id', initial.id)
-      : await supabase.from('pre_call_packets').insert({ ...payload, created_by: user?.id });
+      ? await supabase.from('pre_call_packets').update(dbPayload).eq('id', initial.id)
+      : await supabase.from('pre_call_packets').insert({ ...dbPayload, created_by: user?.id });
 
     setSaving(false);
     if (error) {
