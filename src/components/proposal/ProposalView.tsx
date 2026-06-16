@@ -359,7 +359,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const additionalServicesLabel = 'Services';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-surface">
       <div className="max-w-3xl mx-auto px-6 py-10">
         {/* Header */}
         <header className="flex items-center justify-between mb-10">
