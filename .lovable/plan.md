@@ -1,55 +1,34 @@
-# Apply Creative Guide scheme site-wide
+# Fix card elevation / layering
 
-The design tokens, gold gradient, and fonts (Inter / DM Serif Display / JetBrains Mono) are already global in `src/index.css` and `tailwind.config.ts`. The Creative Guide just *uses* them with discipline. This plan retrofits the rest of the site to the same conventions — **no new tokens, no layout rewrites, no PDF/email changes**.
+**Problem.** In light mode `--card` and `--background` are both pure white, so `bg-card` is invisible against the page and `shadow-md` (a black-tinted shadow on white) reads as a faint hairline. In dark mode `bg-card` is only marginally lighter than `bg-background`, and Tailwind's default black shadows disappear entirely on a near-black surface.
 
-## The 4 conventions to enforce
+## Changes
 
-1. **Headings** → `font-display` (DM Serif Display). Hero/section titles add `text-gradient-gold`.
-2. **Numeric / spec / status / metadata labels** → `font-mono` (JetBrains Mono), often uppercase + tracked.
-3. **Body** → `font-sans` (Inter) — already the default, but kill any leftover hardcoded fonts.
-4. **Colors** → semantic tokens only (`text-foreground`, `text-muted-foreground`, `text-primary`, `bg-card`, `border-border/60`). Remove any hardcoded `text-white`, `bg-black`, `bg-[#...]`, `text-gray-*`.
+1. **`src/index.css` — add elevation tokens**
+   - Light theme: add `--surface: 30 25% 97%` (warm off-white page wash) and `--shadow-card: 0 1px 2px hsl(220 15% 15% / 0.06), 0 8px 24px -8px hsl(220 15% 15% / 0.12)`, `--shadow-card-hover: 0 2px 4px hsl(220 15% 15% / 0.08), 0 18px 40px -12px hsl(220 15% 15% / 0.18)`.
+   - Dark theme: override `--surface: 30 15% 4%` (slightly darker than `--card` so cards lift), and `--shadow-card: 0 1px 0 hsl(45 40% 70% / 0.05) inset, 0 1px 2px hsl(0 0% 0% / 0.5), 0 12px 32px -10px hsl(0 0% 0% / 0.7)`, `--shadow-card-hover: 0 1px 0 hsl(45 40% 70% / 0.08) inset, 0 2px 4px hsl(0 0% 0% / 0.6), 0 22px 48px -12px hsl(0 0% 0% / 0.85), 0 0 0 1px hsl(45 60% 50% / 0.12)`.
+   - Add utility classes:
+     ```css
+     .shadow-card { box-shadow: var(--shadow-card); }
+     .shadow-card-hover:hover { box-shadow: var(--shadow-card-hover); }
+     .bg-surface { background-color: hsl(var(--surface)); }
+     ```
 
-## Two tiny shared utilities (added to `src/index.css`)
+2. **`tailwind.config.ts`** — register `surface: 'hsl(var(--surface))'` under `colors` so `bg-surface` is a real Tailwind utility (alternative to the CSS class above; pick one — prefer Tailwind registration for consistency).
 
-```
-.scheme-eyebrow  → font-mono uppercase tracking-[0.2em] text-xs text-primary/80
-.scheme-title    → font-display text-3xl sm:text-4xl text-foreground (gold gradient variant: .scheme-title-gold)
-.scheme-divider  → h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent
-```
+3. **`src/pages/ClientProposal.tsx`** — none (wrapper is `ProposalView`).
 
-These mirror the patterns already inline in `CreativeGuideView.tsx` so pages can adopt them in one or two class swaps.
+4. **`src/components/proposal/ProposalView.tsx`**
+   - Change page wrapper `min-h-screen bg-[#f8f9fa]` (already swept to `bg-background` earlier) → `min-h-screen bg-surface` so cards have something to lift off in light mode.
+   - Replace all `shadow-md hover:shadow-lg transition-shadow` on the card divs (lines 386, 512, 652, 831, 838, 885) with `shadow-card hover:shadow-card-hover transition-shadow duration-300`.
 
-## Pages retrofitted (visual only, layout untouched)
+5. **`src/components/proposal/ProposalGallery.tsx`, `ProposalTimeline.tsx`, `ProposalTerms.tsx`, `ProposalApprovedClips.tsx`** — same shadow-token swap on any card containers using `bg-card … shadow-md`.
 
-**Client-facing**
-- `ClientProposal.tsx` / `ProposalView.tsx` — section titles → `font-display`, status badges / line-item amounts / dates → `font-mono`, replace any hardcoded grays.
-- `CreativeSession.tsx` / `SharedSession.tsx` — section headers + eyebrow labels.
-- `SharedLookBook.tsx` — gallery section headers + mono metadata.
-- `ContentDelivery.tsx`, `DeliveryGuide.tsx`, `SessionDeliveryGuide.tsx`, `TailgateDeliveryGuide.tsx` — already partially aligned; finish headings + spec rows.
-
-**Admin / portals**
-- `AdminPortal.tsx`, `AdminProposals.tsx`, `AdminLooks.tsx`, `AdminCreative.tsx`, `AdminCalendar.tsx`, `AdminUsers.tsx`, `AdminStorage.tsx`, `OfficePortal.tsx` — page titles → `font-display`, table headers / counts / IDs / timestamps → `font-mono`, replace hardcoded colors with tokens.
-- Auth: `PendingApproval.tsx`, `AccessGranted.tsx`, `AdminSetup.tsx` — heading + eyebrow only. `AdminLogin.tsx` left as-is (per prior decision).
-
-## Out of scope (explicitly)
-
-- PDF generators (`proposalPdfGenerator.ts`, `deliveryGuidePdf.ts`, etc.) — print aesthetic stays.
-- Email HTML templates and email-asset cards.
-- Token values, dark/light palette, business logic, RLS, routes.
-- Layouts, spacing systems, component restructuring.
-- shadcn/ui primitives (`button.tsx`, `card.tsx`, etc.) — they already consume tokens.
-
-## Rollout order
-
-1. Add the 3 utility classes to `src/index.css`.
-2. Sweep client-facing pages (proposal → session → lookbook → delivery).
-3. Sweep admin pages (portal → proposals → looks → creative → calendar → users → storage → office).
-4. Sweep auth pages.
-5. Quick visual pass in preview (light + dark) to catch stragglers.
+## Out of scope
+- Other admin/client pages (not reported as broken). Tokens are added globally so future swaps are one-line.
+- PDF generator, emails, shadcn `Card` primitive default styling.
 
 ## Acceptance
-
-- Every page heading renders in DM Serif Display.
-- Every numeric/spec/status/timestamp renders in JetBrains Mono.
-- No hardcoded color utilities remain on retrofitted pages (grep for `text-white|bg-black|text-gray-|bg-\[#`).
-- Light and dark modes both look cohesive with the Creative Guide.
+- Light mode: proposal cards sit on a warm off-white wash with a soft, visible drop shadow; hover lifts noticeably.
+- Dark mode: cards read as a distinct lifted plane above the page, with a subtle gold-tinted inner highlight and a deeper ambient shadow on hover.
+- No hardcoded hex colors introduced; everything routed through HSL tokens.
