@@ -11,6 +11,7 @@ import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import ContentDelivery from "./pages/ContentDelivery";
+import VenueVideoMapping from "./pages/VenueVideoMapping";
 import CreativeSession from "./pages/CreativeSession";
 import DeliveryGuide from "./pages/DeliveryGuide";
 
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/creative-guide" element={<CreativeGuide />} />
               <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
               <Route path="/creative-guide/content-delivery" element={<ContentDelivery />} />
+              <Route path="/creative-guide/video-mapping" element={<VenueVideoMapping />} />
               <Route path="/creative/:token" element={<CreativeSession />} />
               <Route path="/session/:token" element={<ProtectedRoute><SharedSession /></ProtectedRoute>} />
               
