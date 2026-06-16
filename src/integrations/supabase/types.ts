@@ -970,6 +970,54 @@ export type Database = {
           },
         ]
       }
+      pre_call_packets: {
+        Row: {
+          client_name: string | null
+          created_at: string
+          created_by: string | null
+          event_date: string | null
+          id: string
+          inclusions: Json
+          intro: string | null
+          is_active: boolean
+          notes: string | null
+          scope: string | null
+          title: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          client_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          event_date?: string | null
+          id?: string
+          inclusions?: Json
+          intro?: string | null
+          is_active?: boolean
+          notes?: string | null
+          scope?: string | null
+          title: string
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          client_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          event_date?: string | null
+          id?: string
+          inclusions?: Json
+          intro?: string | null
+          is_active?: boolean
+          notes?: string | null
+          scope?: string | null
+          title?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
