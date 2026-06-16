@@ -2,7 +2,7 @@ export default function ProposalTerms() {
   return (
     <section className="mb-12">
       <h2 className="text-xl font-semibold text-foreground mb-4 border-b border-border pb-2">Terms</h2>
-      <div className="bg-card rounded-lg p-5 border border-border shadow-md hover:shadow-lg transition-shadow text-sm text-foreground/90 space-y-4">
+      <div className="bg-card rounded-lg p-5 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 text-sm text-foreground/90 space-y-4">
         <div>
           <h4 className="font-semibold mb-1">Production Workflow & Timeline</h4>
           <ul className="text-muted-foreground list-disc pl-5 space-y-1">

@@ -61,7 +61,7 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
           return (
             <div
               key={clip.id}
-              className="group relative bg-background rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-md transition-shadow"
+              className="group relative bg-background rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-card transition-shadow"
             >
               <div className="aspect-[4/3] bg-muted relative overflow-hidden">
                 {isVideo && thumb ? (
@@ -89,7 +89,7 @@ export default function ProposalApprovedClips({ sessionId }: ProposalApprovedCli
                   </div>
                 )}
                 {/* Gold approved badge */}
-                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-md">
+                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-card">
                   <svg className="w-3.5 h-3.5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
