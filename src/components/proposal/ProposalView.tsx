@@ -865,13 +865,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           </div>
         ) : null}
 
-        {/* Resources panel (moved below items so the menu reads first) */}
-        {!signed && !isProposalClosed(proposal) && scenario === 'pre_call_packet' && (
-          <PreCallResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
-        )}
-        {!signed && !isProposalClosed(proposal) && scenario === 'pre_packet_no_call' && (
-          <PrePacketResources proposal={proposal} isAdmin={!!isAdmin} onRefresh={onRefresh} />
-        )}
 
 
 
