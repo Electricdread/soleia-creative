@@ -8,7 +8,16 @@ import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Loc
 import { toast } from 'sonner';
 import { PacketEditor, type PacketRecord, type PacketInclusion } from '@/components/admin/PacketEditor';
 import { format, parseISO } from 'date-fns';
-import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface PacketRow extends PacketRecord {
   id: string;
