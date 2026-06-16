@@ -25,6 +25,8 @@ import AdminProposals from "./pages/AdminProposals";
 import AdminCalendar from "./pages/AdminCalendar";
 import AdminEmailPreviews from "./pages/AdminEmailPreviews";
 import AdminStorage from "./pages/AdminStorage";
+import AdminPackets from "./pages/AdminPackets";
+import ClientPacket from "./pages/ClientPacket";
 import ClientProposal from "./pages/ClientProposal";
 import OfficePortal from "./pages/OfficePortal";
 import Tutorial from "./pages/Tutorial";
