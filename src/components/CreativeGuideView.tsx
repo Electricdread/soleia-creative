@@ -10,10 +10,10 @@ import solIcon from '@/assets/sol-icon.png';
 
 const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
 
-const NAV_LINKS = [
+const NAV_LINKS: { label: string; href?: string; to?: string }[] = [
   { href: '#venue', label: 'Venue' },
   { href: '#layout', label: 'Layout' },
-  { href: '#tour', label: '360° Tour' },
+  { to: '/creative-guide/video-mapping', label: 'Video Mapping' },
   { href: '#branding', label: 'Branding' },
   { href: '#specs', label: 'Specs' },
   { href: '#zones', label: 'Zones' },
@@ -131,15 +131,25 @@ const CreativeGuideView = () => {
           <img src={solIcon} alt="Soleia" className="h-9 sm:h-10 w-auto object-contain" />
         </a>
         <nav className="hidden lg:flex items-center gap-7">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) =>
+            link.to ? (
+              <button
+                key={link.label}
+                onClick={() => navigate(link.to!)}
+                className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary transition-colors"
+              >
+                {link.label}
+              </button>
+            ) : (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary transition-colors"
+              >
+                {link.label}
+              </a>
+            )
+          )}
         </nav>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMenuOpen(true)} aria-label="Open menu">
@@ -154,16 +164,26 @@ const CreativeGuideView = () => {
           <Button variant="ghost" size="icon" className="absolute top-5 right-5" onClick={() => setMenuOpen(false)} aria-label="Close menu">
             <X className="w-7 h-7 text-primary" />
           </Button>
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
-              className="font-display text-2xl text-foreground"
-            >
-              {link.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) =>
+            link.to ? (
+              <button
+                key={link.label}
+                onClick={() => { setMenuOpen(false); navigate(link.to!); }}
+                className="font-display text-2xl text-foreground"
+              >
+                {link.label}
+              </button>
+            ) : (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="font-display text-2xl text-foreground"
+              >
+                {link.label}
+              </a>
+            )
+          )}
         </div>
       )}
 
