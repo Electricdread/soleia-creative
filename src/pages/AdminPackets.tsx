@@ -175,13 +175,22 @@ export default function AdminPackets() {
       </main>
 
       <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} onSaved={load} />
-      <DeleteConfirmDialog
-        open={!!deleteId}
-        onOpenChange={(o) => !o && setDeleteId(null)}
-        onConfirm={handleDelete}
-        title="Delete packet?"
-        description="This will permanently remove the packet. Public links will stop working."
-      />
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete packet?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the packet. Public links will stop working.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
