@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import ProposalView from '@/components/proposal/ProposalView';
-import { HomeButton } from '@/components/HomeButton';
+import { Button } from '@/components/ui/button';
 
 export default function ClientProposal() {
   const { token } = useParams<{ token: string }>();
