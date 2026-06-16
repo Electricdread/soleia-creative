@@ -1397,6 +1397,39 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_proposal_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          client_name: string
+          client_signature: string | null
+          contact_email: string | null
+          created_at: string
+          created_by: string | null
+          creative_call_url: string | null
+          drive_folder_id: string | null
+          drive_folder_url: string | null
+          event_date: string | null
+          event_name: string
+          id: string
+          is_active: boolean
+          is_pre_call_packet: boolean
+          notes: string | null
+          proposal_scenario: string
+          quote_date: string
+          signed_at: string | null
+          status: string
+          token: string
+          updated_at: string
+          validity_days: number
+          venue_name: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "proposals"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
