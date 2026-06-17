@@ -31,8 +31,10 @@ interface ProposalViewProps {
 
 export default function ProposalView({ proposal, items, gallery, timeline, isAdmin, onRefresh }: ProposalViewProps) {
   const { toast } = useToast();
+  const isProposalSigned = !!proposal.signed_at;
+  const isPersistedSelected = (item: any) => item.client_selected === true;
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    () => new Set(items.filter(i => i.client_selected === true).map(i => i.id))
+    () => new Set(isProposalSigned ? items.filter(isPersistedSelected).map(i => i.id) : [])
   );
   const [clientName, setClientName] = useState('');
   const [signing, setSigning] = useState(false);
@@ -45,8 +47,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   // Re-sync when items prop changes (e.g. after admin edit / refresh)
   useEffect(() => {
     setClientQty(Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1])));
-    setSelectedIds(new Set(items.filter(i => i.client_selected === true).map(i => i.id)));
-  }, [items]);
+    setSelectedIds(new Set(isProposalSigned ? items.filter(isPersistedSelected).map(i => i.id) : []));
+  }, [items, isProposalSigned]);
 
 
   const isClientEditable = !isAdmin && !signed;
@@ -108,7 +110,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   // After signing, the accepted scope = items the client actually selected (persisted as client_selected).
   const acceptedTotal = useMemo(() => {
     return items
-      .filter(i => i.client_selected !== false)
+      .filter(isPersistedSelected)
       .reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [items, clientQty]);
 
@@ -346,9 +348,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       const freshTimeline = timelineRes.data || timeline;
       const coverImageUrl = freshGallery?.[0]?.image_url || null;
 
-      // Only include items the client has currently selected (or all selected if signed/admin)
+      // Only include items the client has explicitly selected.
       const freshItems = freshProposal.signed_at
-        ? freshItemsAll.filter((i: any) => i.client_selected !== false)
+        ? freshItemsAll.filter(isPersistedSelected)
         : (isAdmin ? freshItemsAll : freshItemsAll.filter((i: any) => selectedIds.has(i.id)));
 
       // Apply client-adjusted quantities so PDF total matches what's displayed
@@ -368,7 +370,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 
-  const visibleItems = signed ? items.filter(i => i.client_selected !== false) : items;
+  const visibleItems = signed ? items.filter(isPersistedSelected) : items;
   const tableItems = visibleItems;
   const additionalServicesLabel = 'Services';
 
