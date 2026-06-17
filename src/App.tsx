@@ -38,6 +38,7 @@ import SharedLookBook from "./pages/SharedLookBook";
 // Lazy-loaded so its heavy 3D (three.js) bundle only downloads when this page
 // is opened — keeps all other pages (proposals, sessions) light.
 const VenueVideoMapping = lazy(() => import("./pages/VenueVideoMapping"));
+const SessionVideoMapping = lazy(() => import("./pages/SessionVideoMapping"));
 
 const RouteFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -72,6 +73,7 @@ const App = () => (
               <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
               <Route path="/creative-guide/content-delivery" element={<ContentDelivery />} />
               <Route path="/creative-guide/video-mapping" element={<Suspense fallback={<RouteFallback />}><VenueVideoMapping /></Suspense>} />
+              <Route path="/session/:token/video-mapping" element={<Suspense fallback={<RouteFallback />}><SessionVideoMapping /></Suspense>} />
               <Route path="/creative/:token" element={<CreativeSession />} />
               <Route path="/session/:token" element={<ProtectedRoute><SharedSession /></ProtectedRoute>} />
               
