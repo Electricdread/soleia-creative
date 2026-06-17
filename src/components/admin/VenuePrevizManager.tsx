@@ -194,7 +194,7 @@ export function VenuePrevizManager() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="video/mp4,video/*"
+          accept="video/mp4,video/webm,.mp4,.webm"
           onChange={(e) => pickFile(e.target.files?.[0])}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           disabled={uploading}
