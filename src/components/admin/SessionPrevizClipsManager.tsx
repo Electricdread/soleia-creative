@@ -236,7 +236,7 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
   const handlePick = async (file: File | undefined) => {
     if (!file) return;
     const check = isAcceptablePrevizFile(file);
-    if (!check.ok) {
+    if (check.ok === false) {
       toast.error(check.reason);
       return;
     }
