@@ -38,14 +38,34 @@ export function VenuePrevizManager() {
       });
   }, []);
 
-  const pickFile = useCallback((selected: File | undefined) => {
+  const probePlayable = (f: File): Promise<boolean> =>
+    new Promise((resolve) => {
+      const url = URL.createObjectURL(f);
+      const v = document.createElement('video');
+      v.preload = 'metadata';
+      v.muted = true;
+      const cleanup = () => URL.revokeObjectURL(url);
+      v.onloadedmetadata = () => { cleanup(); resolve(v.videoWidth > 0); };
+      v.onerror = () => { cleanup(); resolve(false); };
+      v.src = url;
+    });
+
+  const pickFile = useCallback(async (selected: File | undefined) => {
     if (!selected) return;
-    if (!selected.type.startsWith('video/')) {
-      toast.error('Please select a video file (.mp4)');
+    const name = selected.name.toLowerCase();
+    const isMov = name.endsWith('.mov');
+    const okType = selected.type === 'video/mp4' || selected.type === 'video/webm' || name.endsWith('.mp4') || name.endsWith('.webm');
+    if (isMov || !okType) {
+      toast.error('Browsers can only play .mp4 (H.264) or .webm — re-export from AME, not Resolume DXV.');
       return;
     }
     if (selected.size > MAX_BYTES) {
       toast.error('File too large — maximum is 500MB');
+      return;
+    }
+    const playable = await probePlayable(selected);
+    if (!playable) {
+      toast.error('This file can\'t be decoded by the browser. Re-export as H.264 .mp4 from Adobe Media Encoder.');
       return;
     }
     setFile(selected);
@@ -174,7 +194,7 @@ export function VenuePrevizManager() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="video/mp4,video/*"
+          accept="video/mp4,video/webm,.mp4,.webm"
           onChange={(e) => pickFile(e.target.files?.[0])}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           disabled={uploading}
