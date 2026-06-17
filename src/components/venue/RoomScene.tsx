@@ -672,12 +672,16 @@ export default function RoomScene({
   const src = previzUrl && previzUrl.trim() ? previzUrl : FALLBACK_PREVIZ_URL;
   const video = useMemo(() => {
     const v = document.createElement('video');
-    v.src = src;
+    // crossOrigin MUST be set BEFORE src so the request is sent with CORS
+    // headers — otherwise the resulting canvas is tainted and getImageData
+    // (used by the floor colour sampler) throws, leaving the floor stuck on
+    // the default neon palette instead of tinting to the movie's colours.
+    v.crossOrigin = 'anonymous';
     v.loop = true;
     v.muted = true;
     v.playsInline = true;
-    v.crossOrigin = 'anonymous';
     v.preload = 'auto';
+    v.src = src;
     return v;
   }, [src]);
   const videoTex = useMemo(() => {
