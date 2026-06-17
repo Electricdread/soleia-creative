@@ -5,7 +5,9 @@ import { Reveal } from '@/components/motion/Reveal';
 import RoomScene from '@/components/venue/RoomScene';
 import { supabase } from '@/integrations/supabase/client';
 import solIcon from '@/assets/sol-icon.png';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+// Note: intentionally NOT using Radix Popover here — it portals to document.body,
+// which becomes invisible when the room container enters fullscreen. We render a
+// plain absolute-positioned menu inside the roomRef so it stays visible.
 
 /**
  * Video Mapping — Creative Guide schema (editorial / luxury). An interactive 3D
