@@ -32,7 +32,7 @@ interface ProposalViewProps {
 export default function ProposalView({ proposal, items, gallery, timeline, isAdmin, onRefresh }: ProposalViewProps) {
   const { toast } = useToast();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    () => new Set(items.filter(i => i.client_selected !== false).map(i => i.id))
+    () => new Set(items.filter(i => i.client_selected === true).map(i => i.id))
   );
   const [clientName, setClientName] = useState('');
   const [signing, setSigning] = useState(false);
