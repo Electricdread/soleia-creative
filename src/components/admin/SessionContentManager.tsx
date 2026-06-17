@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Trash2, Upload, Loader2, GripVertical, Image, Film, FileText, Pencil, Check, X, Plus, Layers } from 'lucide-react';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { SessionPrevizClipsManager } from './SessionPrevizClipsManager';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
   DndContext,
@@ -48,6 +49,7 @@ interface Scene {
 
 interface SessionContentManagerProps {
   sessionId: string;
+  sessionToken?: string;
 }
 
 function SortableContentRow({ item, onDelete, deleting, onEdit, scenes }: {
@@ -135,7 +137,7 @@ function SortableContentRow({ item, onDelete, deleting, onEdit, scenes }: {
   );
 }
 
-export function SessionContentManager({ sessionId }: SessionContentManagerProps) {
+export function SessionContentManager({ sessionId, sessionToken }: SessionContentManagerProps) {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [loading, setLoading] = useState(true);
@@ -508,6 +510,9 @@ export function SessionContentManager({ sessionId }: SessionContentManagerProps)
         </DndContext>
       )}
 
+      {sessionToken && (
+        <SessionPrevizClipsManager sessionId={sessionId} sessionToken={sessionToken} />
+      )}
     </div>
   );
 }

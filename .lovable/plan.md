@@ -1,49 +1,58 @@
-# Pre-Call Packet Manager (Dashboard)
+# Per-Session Previz Clips with Playlist HUD
 
-Build a self-contained Pre-Call Packet feature accessible from the AdminPortal dashboard. Packets are separate from proposals: they hold inclusions / scope-of-work content for client pre-call review and are deployed (made live) from the dashboard via a shareable token URL.
+Today, the previz movie is a single global URL stored in `site_settings`. We'll move to a per-session list of titled previz clips, manage them from the session admin page, and let clients pick a clip from a dropdown playlist on the 3D venue HUD.
 
-## What you get
+## What admins get
 
-- A new portal card **Pre-Call Packets** on `/admin` (dashboard sidebar + grid).
-- A new admin page `/admin/packets` to create, edit, deploy (activate/deactivate), copy share link, and delete packets.
-- A new public client page `/packet/:token` — read-only, themed like ProposalView, no auth required.
-- Tokens generated on create; "Deploy" sets `is_active = true` and surfaces the public URL + copy-link button. "Unpublish" flips it back off.
+In `SessionContentManager` (the existing session admin screen), a new **Previz Clips** section that lets admins:
 
-## Out of scope
+- Upload multiple `.mp4` / `.webm` clips for the session (same browser-playability validation as today's `VenuePrevizManager`).
+- Give each clip a **title** (e.g. "Act 1 — Welcome", "Logo Reveal", "Headliner Loop").
+- Reorder via drag handle, rename inline, delete.
+- See an "active by default" badge on the first clip.
 
-- No changes to proposals, quote flow, or PDF generators.
-- No removal of the legacy `is_pre_call_packet` / `proposal_scenario` fields on `AdminProposals` (separate cleanup, ask later).
-- No email tooling for packets in this pass (link is copy-to-clipboard only).
+Uploads land in the existing public `creative-guide-template` bucket under `previz/<session-id>/<timestamp>-<name>` (no new bucket — workspace blocks new public buckets).
 
-## Plan
+## What clients get
 
-1. **Database** (single migration)
-   - `public.pre_call_packets`: `id`, `title`, `client_name`, `event_date` (nullable), `intro` (text), `inclusions` (jsonb array of `{heading, body}`), `scope` (text), `notes` (text), `token` (text unique, default `encode(gen_random_bytes(16),'hex')`), `is_active` (bool default false), `created_by` (uuid), `created_at`, `updated_at`.
-   - GRANTs: `authenticated` full CRUD; `service_role` ALL; `anon` SELECT (needed for public token view).
-   - RLS:
-     - Admins: full ALL via `has_role(auth.uid(),'admin')`.
-     - Public (anon + authenticated): `SELECT` only when `is_active = true` (token is the secret; row is hidden until deployed).
-   - `update_updated_at_column` trigger.
+On the per-session video mapping view (linked from the session page), the existing 3D room HUD gains a **playlist dropdown** beside Play Previz / Fullscreen:
 
-2. **Routes** (`src/App.tsx`)
-   - Add admin-protected `/admin/packets` → `AdminPackets`.
-   - Add public `/packet/:token` → `ClientPacket`.
+- Shows the current clip's title.
+- Click to open a popover listing all clips with their titles; tap one to switch.
+- Switching swaps the texture on every screen seamlessly; playback state (playing / stopped) is preserved.
+- If only one clip exists, the dropdown still shows the title but is non-interactive.
+- If no clips exist for the session, falls back to the bundled default (today's behavior).
 
-3. **Dashboard integration** (`src/pages/AdminPortal.tsx`)
-   - Add `Pre-Call Packets` entry to `portals` array (FileText or BookOpen icon, gold accent), pointing to `/admin/packets`.
+## Technical details
 
-4. **New pages / components**
-   - `src/pages/AdminPackets.tsx` — list of packets with status badge (Draft / Deployed), New Packet button, edit dialog, Deploy/Unpublish toggle, copy public URL (`${origin}/packet/${token}`), delete confirm.
-   - `src/components/admin/PacketEditor.tsx` — form: title, client name, event date, intro, dynamic inclusions list (add/remove/reorder rows), scope, notes. Save → upsert.
-   - `src/pages/ClientPacket.tsx` — fetches by token (anon read), renders Soleia-branded read-only view reusing existing tokens (`bg-card`, `card-elevated`, gold accents, DM Serif headings). 404 state when token missing or `is_active=false`.
+**Database** — new table `session_previz_clips`:
 
-5. **Memory updates**
-   - Update `mem://features/client-proposal/quote-only-rule` to reference the new packet location.
-   - New `mem://features/pre-call-packets` describing the system.
+| column | type |
+|---|---|
+| session_id | uuid → creative_sessions(id) on delete cascade |
+| title | text not null |
+| url | text not null |
+| sort_order | int |
+| is_default | bool |
 
-## Technical notes
+RLS: admins manage (`has_role(auth.uid(),'admin')`); anon + authenticated SELECT where the parent session's `is_active = true` (clients view via public session token, same model as `client_links`). GRANTs to anon/authenticated/service_role as per project rules.
 
-- Token URL uses `window.location.origin` so it works on preview, lovable.app, and `soleiacreative.app`.
-- RLS pattern matches existing `proposals` / `lookbook_shares` (token-gated public read, admin-only writes).
-- No edge function needed — anon `SELECT` with `is_active=true` policy is sufficient; if we later need signing/expiry, mirror `get_proposal_by_token` SECURITY DEFINER.
-- All UI uses semantic tokens; `card-elevated` on packet cards for the layering rule we just landed.
+**Admin UI** — new `SessionPrevizClipsManager` component, mounted in `SessionContentManager`. Reuses the format-validation + `probePlayable` helpers extracted from `VenuePrevizManager` into `src/lib/previzUpload.ts`. DND reorder uses the same `@dnd-kit` pattern already used for content items.
+
+**Client UI** — update `VenueVideoMappingView` + `VenueRoom`:
+- Accept a `clips: { id; title; url }[]` prop (replaces single `previzUrl`).
+- Add `activeClipId` state; pass active clip's URL into `RoomScene` as `previzUrl`.
+- New HUD control: `Popover` (shadcn) trigger button showing `<Layers /> {activeTitle}`; content lists titles with a check on the active one.
+
+**Session page wiring** — the existing per-session route that hosts the 3D venue (or a new `/session/:token/video-mapping` if none exists) fetches `session_previz_clips` for the session and passes them down. The global `/creative-guide/video-mapping` page keeps its current single-URL behavior, untouched.
+
+**Out of scope** — no changes to the global `VenuePrevizManager`, the `venue_previz_url` site setting, or the existing `/admin/video-mapping` page.
+
+## File touch list
+
+- new: `supabase/migrations/<ts>_session_previz_clips.sql`
+- new: `src/lib/previzUpload.ts` (extracted helpers)
+- new: `src/components/admin/SessionPrevizClipsManager.tsx`
+- edit: `src/components/admin/SessionContentManager.tsx` (mount the new section)
+- edit: `src/components/VenueVideoMappingView.tsx` (props + playlist HUD)
+- edit: the session page that currently renders `VenueVideoMappingView` (pass clips); confirm route during implementation

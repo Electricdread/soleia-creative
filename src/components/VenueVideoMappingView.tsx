@@ -1,22 +1,41 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move } from 'lucide-react';
+import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move, Layers, Check } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import RoomScene from '@/components/venue/RoomScene';
 import { supabase } from '@/integrations/supabase/client';
 import solIcon from '@/assets/sol-icon.png';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 /**
  * Video Mapping — Creative Guide schema (editorial / luxury). An interactive 3D
  * model of the venue with live previz (a mapped show played onto every screen).
  */
 
-// The 3D venue embed: orbit + zoom, Play Previz, Fullscreen — framed in the
-// Creative Guide's gold/elevated surface language.
-function VenueRoom({ roomRef, previzUrl }: { roomRef: RefObject<HTMLDivElement>; previzUrl?: string }) {
-  const progressRef = useRef(0); // unused in orbit mode (RoomScene tour driver)
+export interface PrevizClipOption {
+  id: string;
+  title: string;
+  url: string;
+}
+
+interface VenueRoomProps {
+  roomRef: RefObject<HTMLDivElement>;
+  clips: PrevizClipOption[];
+  fallbackUrl?: string;
+}
+
+function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
+  const progressRef = useRef(0);
   const [previz, setPreviz] = useState(false);
   const [isFull, setIsFull] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(clips[0]?.id ?? null);
+  const [playlistOpen, setPlaylistOpen] = useState(false);
+
+  useEffect(() => {
+    if (clips.length && !clips.find((c) => c.id === activeId)) {
+      setActiveId(clips[0].id);
+    }
+  }, [clips, activeId]);
 
   useEffect(() => {
     const onChange = () => setIsFull(document.fullscreenElement === roomRef.current);
@@ -29,6 +48,9 @@ function VenueRoom({ roomRef, previzUrl }: { roomRef: RefObject<HTMLDivElement>;
     else roomRef.current?.requestFullscreen?.();
   };
 
+  const active = clips.find((c) => c.id === activeId) ?? null;
+  const previzUrl = active?.url ?? fallbackUrl;
+
   return (
     <div
       ref={roomRef}
@@ -37,13 +59,20 @@ function VenueRoom({ roomRef, previzUrl }: { roomRef: RefObject<HTMLDivElement>;
     >
       <RoomScene progressRef={progressRef} orbit previz={previz} previzUrl={previzUrl} />
 
-      {/* Mouse navigation instructions */}
       <div className="absolute left-3 top-3 z-10 hidden flex-col gap-1.5 rounded-2xl border border-primary/25 bg-black/50 px-3 py-2.5 backdrop-blur-sm sm:flex">
         <span className="mb-0.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-primary/90">Navigate</span>
         <span className="flex items-center gap-2 text-[10.5px] text-white/85"><Orbit className="h-3.5 w-3.5 text-primary/80" /> Drag — orbit</span>
         <span className="flex items-center gap-2 text-[10.5px] text-white/85"><ZoomIn className="h-3.5 w-3.5 text-primary/80" /> Scroll — zoom</span>
         <span className="flex items-center gap-2 text-[10.5px] text-white/85"><Move className="h-3.5 w-3.5 text-primary/80" /> Right-drag — pan</span>
       </div>
+
+      {/* Active clip title chip */}
+      {previz && active && (
+        <div className="absolute right-3 top-3 z-10 rounded-full border border-primary/30 bg-black/55 px-3 py-1.5 backdrop-blur-md">
+          <span className="text-[10px] uppercase tracking-[0.18em] text-primary/90">Now playing</span>
+          <span className="ml-2 text-[11px] font-medium text-white">{active.title}</span>
+        </div>
+      )}
 
       <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/30 bg-black/55 px-2 py-1.5 backdrop-blur-md">
         <button
@@ -54,6 +83,54 @@ function VenueRoom({ roomRef, previzUrl }: { roomRef: RefObject<HTMLDivElement>;
         >
           {previz ? <><Power className="h-3.5 w-3.5" /> Stop Previz</> : <><Play className="h-3.5 w-3.5" /> Play Previz</>}
         </button>
+
+        {clips.length > 0 && (
+          <Popover open={playlistOpen} onOpenChange={setPlaylistOpen}>
+            <PopoverTrigger asChild>
+              <button
+                disabled={clips.length < 2}
+                className="inline-flex max-w-[200px] items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10 disabled:opacity-70"
+              >
+                <Layers className="h-3.5 w-3.5" />
+                <span className="truncate normal-case tracking-normal">
+                  {active?.title ?? 'Playlist'}
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="center"
+              side="top"
+              className="w-72 border-primary/20 bg-black/90 p-1 backdrop-blur-xl"
+            >
+              <div className="px-2 py-1.5 text-[10px] uppercase tracking-[0.18em] text-primary/80">
+                Previz Playlist
+              </div>
+              <div className="max-h-72 overflow-y-auto">
+                {clips.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      setActiveId(c.id);
+                      setPreviz(true);
+                      setPlaylistOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[12px] transition-colors hover:bg-primary/15 ${
+                      c.id === activeId ? 'bg-primary/10 text-white' : 'text-white/80'
+                    }`}
+                  >
+                    <Check
+                      className={`h-3.5 w-3.5 flex-shrink-0 ${
+                        c.id === activeId ? 'text-primary' : 'text-transparent'
+                      }`}
+                    />
+                    <span className="truncate">{c.title}</span>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
         <button
           onClick={toggleFull}
           className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
@@ -65,10 +142,20 @@ function VenueRoom({ roomRef, previzUrl }: { roomRef: RefObject<HTMLDivElement>;
   );
 }
 
-export default function VenueVideoMappingView() {
+interface VenueVideoMappingViewProps {
+  clips?: PrevizClipOption[];
+  heading?: string;
+  subheading?: string;
+}
+
+export default function VenueVideoMappingView({
+  clips: clipsProp,
+  heading,
+  subheading,
+}: VenueVideoMappingViewProps = {}) {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
-  const [previzUrl, setPrevizUrl] = useState<string | undefined>(undefined);
+  const [fallbackUrl, setFallbackUrl] = useState<string | undefined>(undefined);
   const roomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -77,22 +164,23 @@ export default function VenueVideoMappingView() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Active previz movie set by an admin (VenuePrevizManager). Empty/missing →
-  // RoomScene falls back to the bundled file.
+  // Fallback to the global previz movie when no per-session clips are provided.
   useEffect(() => {
+    if (clipsProp && clipsProp.length) return;
     supabase
       .from('site_settings')
       .select('value')
       .eq('key', 'venue_previz_url')
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.value && data.value.trim()) setPrevizUrl(data.value.trim());
+        if (data?.value && data.value.trim()) setFallbackUrl(data.value.trim());
       });
-  }, []);
+  }, [clipsProp]);
+
+  const clips = clipsProp ?? [];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* NAV */}
       <header
         className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 sm:px-8 transition-all duration-400 ${
           scrolled ? 'py-3 glass border-b border-primary/15' : 'py-5 border-b border-transparent'
@@ -109,20 +197,19 @@ export default function VenueVideoMappingView() {
         </button>
       </header>
 
-      {/* HERO */}
       <section className="flex min-h-[68vh] flex-col items-center justify-center px-6 pt-32 pb-16 text-center">
         <Reveal>
           <span className="mb-4 block text-[11px] uppercase tracking-[0.34em] text-primary">Creative Content Design</span>
-          <h1 className="mb-5 font-display text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">Video Mapping</h1>
+          <h1 className="mb-5 font-display text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
+            {heading ?? 'Video Mapping'}
+          </h1>
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Every screen in the venue is a different shape and resolution. Step inside an interactive 3D model of the
-            room and preview real mapped content on every surface — see how motion, branding and pixel-perfect mapping
-            turn the space into one immersive canvas.
+            {subheading ??
+              'Every screen in the venue is a different shape and resolution. Step inside an interactive 3D model of the room and preview real mapped content on every surface — see how motion, branding and pixel-perfect mapping turn the space into one immersive canvas.'}
           </p>
         </Reveal>
       </section>
 
-      {/* 3D VENUE + PREVIZ */}
       <section className="pb-24">
         <div className="container mx-auto max-w-6xl px-6">
           <Reveal className="mb-11">
@@ -130,9 +217,10 @@ export default function VenueVideoMappingView() {
             <h2 className="font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">Preview the room, live.</h2>
           </Reveal>
           <Reveal>
-            <VenueRoom roomRef={roomRef} previzUrl={previzUrl} />
+            <VenueRoom roomRef={roomRef} clips={clips} fallbackUrl={fallbackUrl} />
             <p className="mt-4 text-center text-sm text-muted-foreground">
-              Drag to orbit · scroll to zoom · <span className="text-primary">Play Previz</span> to map a show onto every screen.
+              Drag to orbit · scroll to zoom · <span className="text-primary">Play Previz</span>
+              {clips.length > 1 ? ' — open the playlist to switch between clips.' : ' to map a show onto every screen.'}
             </p>
           </Reveal>
         </div>

@@ -1246,6 +1246,50 @@ export type Database = {
         }
         Relationships: []
       }
+      session_previz_clips: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_default: boolean
+          session_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_default?: boolean
+          session_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_default?: boolean
+          session_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_previz_clips_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "creative_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_scenes: {
         Row: {
           created_at: string

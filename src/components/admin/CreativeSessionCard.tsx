@@ -458,7 +458,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             </TabsContent>
 
             <TabsContent value="content" className="py-2">
-              <SessionContentManager sessionId={session.id} />
+              <SessionContentManager sessionId={session.id} sessionToken={session.token} />
             </TabsContent>
 
             <TabsContent value="delivery" className="space-y-4 py-2">
