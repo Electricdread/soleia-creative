@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import RoomScene from '@/components/venue/RoomScene';
+import { supabase } from '@/integrations/supabase/client';
 import solIcon from '@/assets/sol-icon.png';
 
 /**
@@ -12,7 +13,7 @@ import solIcon from '@/assets/sol-icon.png';
 
 // The 3D venue embed: orbit + zoom, Play Previz, Fullscreen — framed in the
 // Creative Guide's gold/elevated surface language.
-function VenueRoom({ roomRef }: { roomRef: RefObject<HTMLDivElement> }) {
+function VenueRoom({ roomRef, previzUrl }: { roomRef: RefObject<HTMLDivElement>; previzUrl?: string }) {
   const progressRef = useRef(0); // unused in orbit mode (RoomScene tour driver)
   const [previz, setPreviz] = useState(false);
   const [isFull, setIsFull] = useState(false);
@@ -34,7 +35,7 @@ function VenueRoom({ roomRef }: { roomRef: RefObject<HTMLDivElement> }) {
       className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated bg-black"
       style={{ aspectRatio: '16 / 9' }}
     >
-      <RoomScene progressRef={progressRef} orbit previz={previz} />
+      <RoomScene progressRef={progressRef} orbit previz={previz} previzUrl={previzUrl} />
 
       {/* Mouse navigation instructions */}
       <div className="absolute left-3 top-3 z-10 hidden flex-col gap-1.5 rounded-2xl border border-primary/25 bg-black/50 px-3 py-2.5 backdrop-blur-sm sm:flex">
@@ -67,12 +68,26 @@ function VenueRoom({ roomRef }: { roomRef: RefObject<HTMLDivElement> }) {
 export default function VenueVideoMappingView() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [previzUrl, setPrevizUrl] = useState<string | undefined>(undefined);
   const roomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Active previz movie set by an admin (VenuePrevizManager). Empty/missing →
+  // RoomScene falls back to the bundled file.
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'venue_previz_url')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value && data.value.trim()) setPrevizUrl(data.value.trim());
+      });
   }, []);
 
   return (
@@ -115,7 +130,7 @@ export default function VenueVideoMappingView() {
             <h2 className="font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">Preview the room, live.</h2>
           </Reveal>
           <Reveal>
-            <VenueRoom roomRef={roomRef} />
+            <VenueRoom roomRef={roomRef} previzUrl={previzUrl} />
             <p className="mt-4 text-center text-sm text-muted-foreground">
               Drag to orbit · scroll to zoom · <span className="text-primary">Play Previz</span> to map a show onto every screen.
             </p>

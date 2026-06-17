@@ -654,27 +654,32 @@ function RoomModel({
   );
 }
 
-const PREVIZ_URL = '/venue/previz-vanderpump.mp4';
+// Bundled fallback movie — used until an admin uploads one (see VenuePrevizManager).
+const FALLBACK_PREVIZ_URL = '/venue/previz-vanderpump.mp4';
 
 export default function RoomScene({
   progressRef,
   orbit = false,
   previz = false,
+  previzUrl,
 }: {
   progressRef: MutableRefObject<number>;
   orbit?: boolean;
   previz?: boolean;
+  /** Active previz movie URL (from site_settings). Falls back to the bundled file. */
+  previzUrl?: string;
 }) {
+  const src = previzUrl && previzUrl.trim() ? previzUrl : FALLBACK_PREVIZ_URL;
   const video = useMemo(() => {
     const v = document.createElement('video');
-    v.src = PREVIZ_URL;
+    v.src = src;
     v.loop = true;
     v.muted = true;
     v.playsInline = true;
     v.crossOrigin = 'anonymous';
     v.preload = 'auto';
     return v;
-  }, []);
+  }, [src]);
   const videoTex = useMemo(() => {
     const t = new THREE.VideoTexture(video);
     // passthrough: the custom screen shader has no sRGB output encoding, so we

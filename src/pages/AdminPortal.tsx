@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen, MapPin, ArrowRight, Menu, X, Sun, Moon, Mail, HardDrive } from 'lucide-react';
+import { Loader2, LogOut, ExternalLink, Clock, Command, Users, FileText, Video, Zap, Send, Calendar, Palette, BookOpen, Eye, FolderOpen, MapPin, ArrowRight, Menu, X, Sun, Moon, Mail, HardDrive, MonitorPlay } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
@@ -41,6 +41,12 @@ const portals: PortalCard[] = [
     description: 'Technical specifications and venue display documentation',
     iconSrc: soleiaIcon,
     href: '/creative-guide',
+  },
+  {
+    title: 'Video Mapping',
+    description: 'Upload the previz movie that plays across the 3D venue screens',
+    icon: <MonitorPlay className="w-6 h-6 text-primary" />,
+    href: '/admin/video-mapping',
   },
   {
     title: 'Delivery Guides',
