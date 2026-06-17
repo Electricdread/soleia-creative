@@ -43,6 +43,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const [clientQty, setClientQty] = useState<Record<string, number>>(
     Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1]))
   );
+  const isSignedItem = (item: any) => isProposalSigned ? isPersistedSelected(item) : selectedIds.has(item.id);
 
   // Re-sync when items prop changes (e.g. after admin edit / refresh)
   useEffect(() => {
@@ -110,9 +111,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   // After signing, the accepted scope = items the client actually selected (persisted as client_selected).
   const acceptedTotal = useMemo(() => {
     return items
-      .filter(isPersistedSelected)
+      .filter(isSignedItem)
       .reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [items, clientQty]);
+  }, [items, clientQty, selectedIds, isProposalSigned]);
 
   const displayedTotal = signed ? acceptedTotal : (isAdmin ? grandTotal : total);
 
@@ -371,7 +372,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 
-  const visibleItems = signed ? items.filter(isPersistedSelected) : items;
+  const visibleItems = signed ? items.filter(isSignedItem) : items;
   const tableItems = visibleItems;
   const additionalServicesLabel = 'Services';
 
