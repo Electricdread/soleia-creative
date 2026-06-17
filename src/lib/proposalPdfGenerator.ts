@@ -388,7 +388,7 @@ export async function generateProposalPdf(
   let lastCategory = '';
 
   for (const item of tableItems) {
-    const lineTotal = item.is_flat_fee ? Number(item.price) : Number(item.price) * Number(item.quantity || 1);
+    const lineTotal = itemTotal(item);
     const needsCategory = !!item.category && item.category !== lastCategory;
     if (item.category) lastCategory = item.category;
 
