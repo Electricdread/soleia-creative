@@ -87,59 +87,64 @@ function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
         </button>
 
         {clips.length > 0 && (
-          <Popover open={playlistOpen} onOpenChange={setPlaylistOpen}>
-            <PopoverTrigger asChild>
-              <button
-                disabled={clips.length < 2}
-                className={`inline-flex max-w-[260px] items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors disabled:opacity-70 ${clips.length > 1 ? 'border border-primary/40 bg-primary/15 text-white hover:bg-primary/25' : 'text-white hover:bg-white/10'}`}
-                title={clips.length > 1 ? 'Switch previz clip' : active?.title}
-              >
-                <Layers className="h-3.5 w-3.5" />
-                <span className="truncate normal-case tracking-normal">
-                  {active?.title ?? 'Playlist'}
-                </span>
-                {clips.length > 1 && (
-                  <>
-                    <span className="ml-0.5 rounded-full bg-primary/30 px-1.5 py-px text-[9px] font-bold tracking-normal text-white">
-                      {(clips.findIndex((c) => c.id === activeId) + 1) || 1}/{clips.length}
-                    </span>
-                    <ChevronDown className="h-3 w-3 opacity-80" />
-                  </>
-                )}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              align="center"
-              side="top"
-              className="w-72 border-primary/20 bg-black/90 p-1 backdrop-blur-xl"
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => clips.length > 1 && setPlaylistOpen((v) => !v)}
+              disabled={clips.length < 2}
+              className={`inline-flex max-w-[260px] items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors disabled:opacity-70 ${clips.length > 1 ? 'border border-primary/40 bg-primary/15 text-white hover:bg-primary/25' : 'text-white hover:bg-white/10'}`}
+              title={clips.length > 1 ? 'Switch previz clip' : active?.title}
             >
-              <div className="px-2 py-1.5 text-[10px] uppercase tracking-[0.18em] text-primary/80">
-                Previz Playlist
-              </div>
-              <div className="max-h-72 overflow-y-auto">
-                {clips.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => {
-                      setActiveId(c.id);
-                      setPreviz(true);
-                      setPlaylistOpen(false);
-                    }}
-                    className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[12px] transition-colors hover:bg-primary/15 ${
-                      c.id === activeId ? 'bg-primary/10 text-white' : 'text-white/80'
-                    }`}
-                  >
-                    <Check
-                      className={`h-3.5 w-3.5 flex-shrink-0 ${
-                        c.id === activeId ? 'text-primary' : 'text-transparent'
-                      }`}
-                    />
-                    <span className="truncate">{c.title}</span>
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+              <Layers className="h-3.5 w-3.5" />
+              <span className="truncate normal-case tracking-normal">
+                {active?.title ?? 'Playlist'}
+              </span>
+              {clips.length > 1 && (
+                <>
+                  <span className="ml-0.5 rounded-full bg-primary/30 px-1.5 py-px text-[9px] font-bold tracking-normal text-white">
+                    {(clips.findIndex((c) => c.id === activeId) + 1) || 1}/{clips.length}
+                  </span>
+                  <ChevronDown className={`h-3 w-3 opacity-80 transition-transform ${playlistOpen ? 'rotate-180' : ''}`} />
+                </>
+              )}
+            </button>
+
+            {playlistOpen && clips.length > 1 && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setPlaylistOpen(false)}
+                />
+                <div className="absolute bottom-full left-1/2 z-50 mb-2 w-72 -translate-x-1/2 rounded-md border border-primary/20 bg-black/90 p-1 shadow-xl backdrop-blur-xl">
+                  <div className="px-2 py-1.5 text-[10px] uppercase tracking-[0.18em] text-primary/80">
+                    Previz Playlist
+                  </div>
+                  <div className="max-h-72 overflow-y-auto">
+                    {clips.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          setActiveId(c.id);
+                          setPreviz(true);
+                          setPlaylistOpen(false);
+                        }}
+                        className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[12px] transition-colors hover:bg-primary/15 ${
+                          c.id === activeId ? 'bg-primary/10 text-white' : 'text-white/80'
+                        }`}
+                      >
+                        <Check
+                          className={`h-3.5 w-3.5 flex-shrink-0 ${
+                            c.id === activeId ? 'text-primary' : 'text-transparent'
+                          }`}
+                        />
+                        <span className="truncate">{c.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         )}
 
         <button
