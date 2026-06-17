@@ -6,8 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Upload, Loader2, FileVideo, X, Check, MonitorPlay, AlertTriangle } from 'lucide-react';
 
 const PREVIZ_KEY = 'venue_previz_url';
-const BUCKET = 'venue-previz';
-const MAX_BYTES = 524288000; // 500MB — matches the bucket limit
+// Workspace policy blocks new public buckets, so we reuse the existing public
+// creative-guide-template bucket and namespace previz uploads under previz/.
+const BUCKET = 'creative-guide-template';
+const PATH_PREFIX = 'previz/';
+const MAX_BYTES = 524288000; // 500MB
 
 /**
  * Admin uploader for the Video Mapping previz movie. Uploads a browser-playable
@@ -68,7 +71,7 @@ export function VenuePrevizManager() {
     try {
       const timestamp = Date.now();
       const sanitized = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const path = `${timestamp}-${sanitized}`;
+      const path = `${PATH_PREFIX}${timestamp}-${sanitized}`;
 
       const { error: uploadError } = await supabase.storage
         .from(BUCKET)

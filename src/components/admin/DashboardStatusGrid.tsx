@@ -167,7 +167,7 @@ export function DashboardStatusGrid() {
         { label: 'with selections', value: stats.linksWithSelections, color: 'text-emerald-500' },
         { label: 'awaiting', value: Math.max(0, stats.linksActive - stats.linksWithSelections), color: 'text-amber-500' },
       ],
-      href: '/admin/looks' as string | undefined,
+      href: '/admin/video-mapping' as string | undefined,
       onClick: undefined as ((e: React.MouseEvent) => void) | undefined,
       busy: false,
     },
