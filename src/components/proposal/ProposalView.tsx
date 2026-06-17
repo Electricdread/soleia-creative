@@ -45,7 +45,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   // Re-sync when items prop changes (e.g. after admin edit / refresh)
   useEffect(() => {
     setClientQty(Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1])));
-    setSelectedIds(new Set(items.filter(i => i.client_selected !== false).map(i => i.id)));
+    setSelectedIds(new Set(items.filter(i => i.client_selected === true).map(i => i.id)));
   }, [items]);
 
 
