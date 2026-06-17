@@ -89,12 +89,21 @@ function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
             <PopoverTrigger asChild>
               <button
                 disabled={clips.length < 2}
-                className="inline-flex max-w-[200px] items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10 disabled:opacity-70"
+                className={`inline-flex max-w-[260px] items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors disabled:opacity-70 ${clips.length > 1 ? 'border border-primary/40 bg-primary/15 text-white hover:bg-primary/25' : 'text-white hover:bg-white/10'}`}
+                title={clips.length > 1 ? 'Switch previz clip' : active?.title}
               >
                 <Layers className="h-3.5 w-3.5" />
                 <span className="truncate normal-case tracking-normal">
                   {active?.title ?? 'Playlist'}
                 </span>
+                {clips.length > 1 && (
+                  <>
+                    <span className="ml-0.5 rounded-full bg-primary/30 px-1.5 py-px text-[9px] font-bold tracking-normal text-white">
+                      {(clips.findIndex((c) => c.id === activeId) + 1) || 1}/{clips.length}
+                    </span>
+                    <ChevronDown className="h-3 w-3 opacity-80" />
+                  </>
+                )}
               </button>
             </PopoverTrigger>
             <PopoverContent
