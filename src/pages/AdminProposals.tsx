@@ -150,6 +150,7 @@ export default function AdminProposals() {
             category: item.category || null,
             unit: item.unit || null,
             is_flat_fee: item.is_flat_fee,
+            client_selected: false,
             sort_order: idx,
           }))
         );
@@ -172,6 +173,7 @@ export default function AdminProposals() {
               category: t.category || null,
               unit: null,
               is_flat_fee: false,
+              client_selected: false,
               sort_order: idx,
             }))
           );
