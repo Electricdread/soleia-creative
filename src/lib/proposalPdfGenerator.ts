@@ -72,7 +72,8 @@ function formatCurrency(n: number) {
 
 function itemTotal(item: ProposalItem) {
   const price = Number(item.price) || 0;
-  const quantity = Number(item.quantity) || 1;
+  const rawQty = Number(item.quantity);
+  const quantity = Number.isFinite(rawQty) ? rawQty : 1;
   return item.is_flat_fee ? price : price * quantity;
 }
 
