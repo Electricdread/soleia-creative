@@ -341,12 +341,23 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       if (timelineRes.error) throw timelineRes.error;
 
       const freshProposal = proposalRes.data || proposal;
-      const freshItems = itemsRes.data?.length ? itemsRes.data : items;
+      const freshItemsAll = itemsRes.data?.length ? itemsRes.data : items;
       const freshGallery = galleryRes.data || gallery;
       const freshTimeline = timelineRes.data || timeline;
       const coverImageUrl = freshGallery?.[0]?.image_url || null;
 
-      await generateProposalPdf(freshProposal, freshItems, freshTimeline, coverImageUrl, freshGallery);
+      // Only include items the client has currently selected (or all selected if signed/admin)
+      const freshItems = freshProposal.signed_at
+        ? freshItemsAll.filter((i: any) => i.client_selected !== false)
+        : (isAdmin ? freshItemsAll : freshItemsAll.filter((i: any) => selectedIds.has(i.id)));
+
+      // Apply client-adjusted quantities so PDF total matches what's displayed
+      const itemsForPdf = freshItems.map((i: any) => ({
+        ...i,
+        quantity: clientQty[i.id] ?? i.quantity ?? 1,
+      }));
+
+      await generateProposalPdf(freshProposal, itemsForPdf, freshTimeline, coverImageUrl, freshGallery);
     } catch (e: any) {
       toast({ title: 'PDF download failed', description: e.message, variant: 'destructive' });
     } finally {
