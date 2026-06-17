@@ -234,6 +234,10 @@ const REGIONS: Record<string, [number, number, number, number]> = {
   LED_Sol_Rays_Sunray_4: [0, 1752, 1792, 128],
   LED_Sol_Rays_Sunray_5: [0, 1880, 1792, 128],
   LED_Sol_Rays_Sunray_6: [0, 2008, 1536, 128],
+  // Outdoor screens (real flat MI_OUTDOOR* planes from Unreal).
+  outdoor_SR: [2322, 793, 588, 840],
+  outdoor_SL: [2916, 793, 588, 840],
+  LED_Outdoor_Arch: [2322, 1639, 1512, 504],
 };
 
 function regionVec4(name: string): THREE.Vector4 {
@@ -302,9 +306,10 @@ function beatIndexForName(name: string): number {
 }
 
 function namedAncestor(obj: THREE.Object3D): string {
+  // Screen actor nodes are LED_* (interior + arch) or outdoor_SR / outdoor_SL.
   let p: THREE.Object3D | null = obj;
   while (p) {
-    if (/^LED_/.test(p.name)) return p.name;
+    if (/^(LED_|outdoor_)/i.test(p.name)) return p.name;
     p = p.parent;
   }
   return '';
@@ -396,9 +401,9 @@ function RoomModel({
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh) return;
 
-      // Only real LED screens (MI_* materials) light up; structural meshes
-      // (the arch backboard, outdoor concrete, etc.) are hidden so they don't
-      // glow as whole slabs.
+      // Only real LED screens (MI_* materials, incl. MI_OUTDOOR*) light up;
+      // structural meshes are hidden so they don't glow as whole slabs.
+      const name = namedAncestor(mesh);
       const m0 = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
       if (!/^MI_/.test((m0 as THREE.Material)?.name ?? '')) {
         mesh.visible = false;
@@ -407,7 +412,7 @@ function RoomModel({
 
       const geo = (mesh.geometry as THREE.BufferGeometry).clone();
       normalizeUVs(geo);
-      applyUVFix(geo, namedAncestor(mesh));
+      applyUVFix(geo, name);
       mesh.geometry = geo;
 
       const map = firstMap(mesh.material);
@@ -418,10 +423,11 @@ function RoomModel({
         map.wrapT = THREE.ClampToEdgeWrapping;
         map.needsUpdate = true;
       }
-      const name = namedAncestor(mesh);
       const material = new THREE.ShaderMaterial({
         uniforms: {
-          uCard: { value: map ?? new THREE.Texture() },
+          // Outdoor screens have no baked card texture → fall back to the live
+          // brand layer so they read as branded (not black) when previz is off.
+          uCard: { value: map ?? brand.tex },
           uBrand: { value: brand.tex },
           uVideo: { value: videoTex },
           uMix: { value: 0 },
