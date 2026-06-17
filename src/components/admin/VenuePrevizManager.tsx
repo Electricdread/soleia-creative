@@ -71,7 +71,7 @@ export function VenuePrevizManager() {
     try {
       const timestamp = Date.now();
       const sanitized = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const path = `${timestamp}-${sanitized}`;
+      const path = `${PATH_PREFIX}${timestamp}-${sanitized}`;
 
       const { error: uploadError } = await supabase.storage
         .from(BUCKET)
