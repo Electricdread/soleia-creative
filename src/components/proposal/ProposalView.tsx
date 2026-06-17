@@ -32,7 +32,7 @@ interface ProposalViewProps {
 export default function ProposalView({ proposal, items, gallery, timeline, isAdmin, onRefresh }: ProposalViewProps) {
   const { toast } = useToast();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    () => new Set(items.filter(i => i.client_selected !== false).map(i => i.id))
+    () => new Set(items.filter(i => i.client_selected === true).map(i => i.id))
   );
   const [clientName, setClientName] = useState('');
   const [signing, setSigning] = useState(false);
@@ -45,7 +45,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   // Re-sync when items prop changes (e.g. after admin edit / refresh)
   useEffect(() => {
     setClientQty(Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1])));
-    setSelectedIds(new Set(items.filter(i => i.client_selected !== false).map(i => i.id)));
+    setSelectedIds(new Set(items.filter(i => i.client_selected === true).map(i => i.id)));
   }, [items]);
 
 
