@@ -259,7 +259,7 @@ export async function generateProposalPdf(
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   // Once the client has signed, only items they actually selected are part of the accepted scope.
   if (proposal.signed_at) {
-    items = items.filter(i => i.client_selected !== false);
+    items = items.filter(i => i.client_selected === true);
   }
   const grandTotal = proposalTotal(items);
   let y = 0;
