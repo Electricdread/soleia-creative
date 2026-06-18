@@ -70,11 +70,10 @@ function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 }
 
+import { calcLineTotal as sharedLineTotal } from './proposalTotals';
+
 function itemTotal(item: ProposalItem) {
-  const price = Number(item.price) || 0;
-  const rawQty = Number(item.quantity);
-  const quantity = Number.isFinite(rawQty) ? rawQty : 1;
-  return item.is_flat_fee ? price : price * quantity;
+  return sharedLineTotal(item as any);
 }
 
 function proposalTotal(items: ProposalItem[]) {
@@ -257,11 +256,15 @@ export async function generateProposalPdf(
   galleryImages?: GalleryImage[]
 ) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
-  // Once the client has signed, only items they actually selected are part of the accepted scope.
-  if (proposal.signed_at) {
-    items = items.filter(i => i.client_selected === true);
-  }
+  // Single source of truth: the accepted/quoted scope is ALWAYS items where
+  // client_selected === true (set at signing time, or by admin pre-selection
+  // when generating a draft). Never fall back to "all items" or the stored
+  // total_amount snapshot — that's how the $10,000 ghost total kept coming back.
+  const signed = !!proposal.signed_at;
   const selectedItems = items.filter(i => i.client_selected === true);
+  if (signed) {
+    items = selectedItems;
+  }
   const grandTotal = proposalTotal(selectedItems);
   let y = 0;
 
