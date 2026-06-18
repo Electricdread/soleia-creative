@@ -94,20 +94,19 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       });
   }, [isAdmin, proposal.id]);
 
-  const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * getEffectiveQty(i);
+  // Use shared total helpers so live view, signed view, and PDF stay in lockstep.
+  const calcLineTotal = (i: any) =>
+    calcLineTotalShared(i, isClientEditable ? clientQty : undefined);
 
-  const total = useMemo(() => {
-    return items
-      .filter(i => selectedIds.has(i.id))
-      .reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [selectedIds, items, clientQty]);
+  const total = useMemo(
+    () => calcProposalTotal(items, { signed: false, selectedIds, qtyOverrides: isClientEditable ? clientQty : undefined }),
+    [selectedIds, items, clientQty, isClientEditable]
+  );
 
-  // After signing, the accepted scope = items the client actually selected (persisted as client_selected).
-  const acceptedTotal = useMemo(() => {
-    return items
-      .filter(isSignedItem)
-      .reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [items, clientQty, selectedIds, isProposalSigned]);
+  const acceptedTotal = useMemo(
+    () => calcProposalTotal(items, { signed: true }),
+    [items]
+  );
 
   const displayedTotal = signed ? acceptedTotal : total;
 
