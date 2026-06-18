@@ -256,12 +256,23 @@ export async function generateProposalPdf(
   galleryImages?: GalleryImage[]
 ) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
-  // Once the client has signed, only items they actually selected are part of the accepted scope.
-  if (proposal.signed_at) {
-    items = items.filter(i => i.client_selected === true);
-  }
+  // Single source of truth: the accepted scope is whatever the shared helper says it is.
+  // - Signed proposals: items with client_selected === true.
+  // - Unsigned proposals: no implicit selection -> empty scope -> $0 total in PDF too,
+  //   matching what the client sees in the browser. This prevents the stored
+  //   `total_amount` snapshot from drifting back into the PDF.
+  const signed = !!proposal.signed_at;
   const selectedItems = items.filter(i => i.client_selected === true);
-  const grandTotal = proposalTotal(selectedItems);
+  if (signed) {
+    items = selectedItems;
+  }
+  const grandTotal = sharedProposalTotal(items as any, {
+    signed,
+    selectedIds: new Set(selectedItems.map((_, idx) => String(idx))),
+  });
+  // Note: when unsigned and nothing selected, grandTotal === 0 by construction.
+  // When unsigned but admin pre-selected (client_selected=true on creation), it sums those.
+  const _ignoredGrandTotalRecompute = proposalTotal(selectedItems); void _ignoredGrandTotalRecompute;
   let y = 0;
 
   // === COVER PAGE (optional) ===
