@@ -18,6 +18,7 @@ import ProposalTerms from './ProposalTerms';
 import ProposalApprovedClips from './ProposalApprovedClips';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
+import { calcProposalTotal, calcLineTotal as calcLineTotalShared } from '@/lib/proposalTotals';
 
 
 interface ProposalViewProps {
