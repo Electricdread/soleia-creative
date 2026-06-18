@@ -104,10 +104,6 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       .reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [selectedIds, items, isAdmin, editingItems, clientQty]);
 
-  const grandTotal = useMemo(() => {
-    return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [items, clientQty]);
-
   // After signing, the accepted scope = items the client actually selected (persisted as client_selected).
   const acceptedTotal = useMemo(() => {
     return items
@@ -115,7 +111,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       .reduce((sum, i) => sum + calcLineTotal(i), 0);
   }, [items, clientQty, selectedIds, isProposalSigned]);
 
-  const displayedTotal = signed ? acceptedTotal : (isAdmin ? grandTotal : total);
+  const displayedTotal = signed ? acceptedTotal : total;
 
   const toggleItem = (id: string) => {
     setSelectedIds(prev => {
@@ -350,15 +346,16 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       const freshTimeline = timelineRes.data || timeline;
       const coverImageUrl = freshGallery?.[0]?.image_url || null;
 
-      // Only include items the client has explicitly selected.
+      // Keep unsigned proposal PDFs showing the line-item menu, but only total client-selected rows.
       const freshItems = freshProposal.signed_at
         ? freshItemsAll.filter(isPersistedSelected)
-        : (isAdmin ? freshItemsAll : freshItemsAll.filter((i: any) => selectedIds.has(i.id)));
+        : freshItemsAll;
 
       // Apply client-adjusted quantities so PDF total matches what's displayed
       const itemsForPdf = freshItems.map((i: any) => ({
         ...i,
         quantity: clientQty[i.id] ?? i.quantity ?? 1,
+        client_selected: freshProposal.signed_at ? i.client_selected === true : selectedIds.has(i.id),
       }));
 
       await generateProposalPdf(freshProposal, itemsForPdf, freshTimeline, coverImageUrl, freshGallery);
