@@ -70,7 +70,7 @@ function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 }
 
-import { calcLineTotal as sharedLineTotal, calcProposalTotal as sharedProposalTotal } from './proposalTotals';
+import { calcLineTotal as sharedLineTotal } from './proposalTotals';
 
 function itemTotal(item: ProposalItem) {
   return sharedLineTotal(item as any);
