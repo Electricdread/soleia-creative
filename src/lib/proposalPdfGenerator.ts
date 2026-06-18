@@ -261,7 +261,8 @@ export async function generateProposalPdf(
   if (proposal.signed_at) {
     items = items.filter(i => i.client_selected === true);
   }
-  const grandTotal = proposalTotal(items);
+  const selectedItems = items.filter(i => i.client_selected === true);
+  const grandTotal = proposalTotal(selectedItems);
   let y = 0;
 
   // === COVER PAGE (optional) ===
