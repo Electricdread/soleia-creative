@@ -96,13 +96,10 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const calcLineTotal = (i: any) => i.is_flat_fee ? Number(i.price) : Number(i.price) * getEffectiveQty(i);
 
   const total = useMemo(() => {
-    if (isAdmin && !editingItems) {
-      return items.reduce((sum, i) => sum + calcLineTotal(i), 0);
-    }
     return items
       .filter(i => selectedIds.has(i.id))
       .reduce((sum, i) => sum + calcLineTotal(i), 0);
-  }, [selectedIds, items, isAdmin, editingItems, clientQty]);
+  }, [selectedIds, items, clientQty]);
 
   // After signing, the accepted scope = items the client actually selected (persisted as client_selected).
   const acceptedTotal = useMemo(() => {
