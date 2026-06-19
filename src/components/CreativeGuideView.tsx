@@ -363,13 +363,33 @@ const CreativeGuideView = () => {
         </div>
       </section>
 
-      {/* 03 — ACTIVATION ZONES */}
+      {/* VIDEO MAPPING CTA — interactive 3D venue + previz */}
+      <section className="pb-8 pt-24">
+        <div className="container mx-auto max-w-5xl px-6">
+          <Reveal>
+            <div
+              onClick={() => navigate('/creative-guide/video-mapping')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/creative-guide/video-mapping')}
+              className="group cursor-pointer rounded-3xl surface-elevated border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/5 p-7 sm:p-8 hover:border-primary/50 transition-colors"
+            >
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-primary mb-2"><Boxes className="w-4 h-4" /> See it come alive</div>
+              <h3 className="font-display text-2xl text-foreground mb-2 group-hover:text-gradient-gold transition-colors">Video Mapping</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">Step inside an interactive 3D model of the venue and preview real mapped content on every screen — see how motion, branding and pixel-perfect mapping turn the room into one immersive canvas.</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-[10.5px] uppercase tracking-[0.18em] text-primary">Explore the venue in 3D →</span>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* 06 — VENUE SCREEN LAYOUT */}
       <section id="zones" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="06 — Activation Zones" title="Where your brand lives." />
+          <SectionHead eyebrow="06 — Venue Screen Layout" title="Main room and outside screens." />
           <Reveal>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl mb-10">
-              The venue's LED ecosystem breaks into three activation surfaces — the interior main-room wall, the open-air beachclub exterior, and the TV / narrowcasting network. Here's every zone and how brands use it.
+              The venue's LED system is split into two areas: the main room interior and the outdoor beachclub exterior. The cards below list every screen in each area along with its native pixel resolution — use them as a reference for what's available and where.
             </p>
           </Reveal>
           <div className="space-y-10">
@@ -391,26 +411,6 @@ const CreativeGuideView = () => {
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* VIDEO MAPPING CTA — interactive 3D venue + previz */}
-      <section className="pb-8">
-        <div className="container mx-auto max-w-5xl px-6">
-          <Reveal>
-            <div
-              onClick={() => navigate('/creative-guide/video-mapping')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/creative-guide/video-mapping')}
-              className="group cursor-pointer rounded-3xl surface-elevated border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/5 p-7 sm:p-8 hover:border-primary/50 transition-colors"
-            >
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-primary mb-2"><Boxes className="w-4 h-4" /> See it come alive</div>
-              <h3 className="font-display text-2xl text-foreground mb-2 group-hover:text-gradient-gold transition-colors">Video Mapping</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">Step inside an interactive 3D model of the venue and preview real mapped content on every screen — see how motion, branding and pixel-perfect mapping turn the room into one immersive canvas.</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-[10.5px] uppercase tracking-[0.18em] text-primary">Explore the venue in 3D →</span>
-            </div>
-          </Reveal>
         </div>
       </section>
 
