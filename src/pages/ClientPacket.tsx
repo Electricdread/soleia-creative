@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, BookOpen, FolderOpen } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
+import { Button } from '@/components/ui/button';
 
 interface Inclusion {
   heading: string;
@@ -17,7 +18,11 @@ interface Packet {
   intro: string | null;
   inclusions: Inclusion[];
   scope: string | null;
+  creative_guide_url: string | null;
+  drive_folder_url: string | null;
 }
+
+const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide';
 
 export default function ClientPacket() {
   const { token } = useParams<{ token: string }>();
@@ -34,7 +39,7 @@ export default function ClientPacket() {
       }
       const { data, error } = await supabase
         .from('pre_call_packets')
-        .select('title, client_name, event_date, intro, inclusions, scope')
+        .select('title, client_name, event_date, intro, inclusions, scope, creative_guide_url, drive_folder_url')
         .eq('token', token)
         .eq('is_active', true)
         .maybeSingle();
@@ -69,6 +74,8 @@ export default function ClientPacket() {
     );
   }
 
+  const guideUrl = packet.creative_guide_url?.trim() || DEFAULT_GUIDE_URL;
+
   return (
     <div className="panel-base min-h-screen bg-background">
       <header className="border-b border-border bg-card/40">
@@ -91,6 +98,29 @@ export default function ClientPacket() {
             <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{packet.intro}</p>
           </section>
         )}
+
+        <section className="grid sm:grid-cols-2 gap-3">
+          <a href={guideUrl} target="_blank" rel="noreferrer" className="block">
+            <div className="card-elevated bg-card border border-primary/30 hover:border-primary/60 rounded-lg p-5 shadow-card transition-colors h-full">
+              <div className="flex items-center gap-3 mb-1">
+                <BookOpen className="w-5 h-5 text-primary" />
+                <h3 className="font-display text-lg text-primary">Soleia Creative Guide</h3>
+              </div>
+              <p className="text-sm text-foreground/80">Open the living guide — venue, LED canvas and delivery specs.</p>
+            </div>
+          </a>
+          {packet.drive_folder_url && (
+            <a href={packet.drive_folder_url} target="_blank" rel="noreferrer" className="block">
+              <div className="card-elevated bg-card border border-primary/30 hover:border-primary/60 rounded-lg p-5 shadow-card transition-colors h-full">
+                <div className="flex items-center gap-3 mb-1">
+                  <FolderOpen className="w-5 h-5 text-primary" />
+                  <h3 className="font-display text-lg text-primary">Shared Drive Folder</h3>
+                </div>
+                <p className="text-sm text-foreground/80">Creative Guide files, Pixel Map and your Client Asset Collect.</p>
+              </div>
+            </a>
+          )}
+        </section>
 
         {packet.inclusions.length > 0 && (
           <section>
@@ -118,6 +148,14 @@ export default function ClientPacket() {
             <h2 className="font-display text-2xl text-foreground mb-3">Scope of Work</h2>
             <p className="text-foreground/85 leading-relaxed whitespace-pre-wrap">{packet.scope}</p>
           </section>
+        )}
+
+        {!packet.scope && (
+          <div className="flex justify-center pt-2">
+            <Button asChild>
+              <a href={guideUrl} target="_blank" rel="noreferrer">Open Creative Guide</a>
+            </Button>
+          </div>
         )}
       </main>
 

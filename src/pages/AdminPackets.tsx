@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock } from 'lucide-react';
+import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { PacketEditor, type PacketRecord, type PacketInclusion } from '@/components/admin/PacketEditor';
 import { format, parseISO } from 'date-fns';
@@ -24,6 +24,8 @@ interface PacketRow extends PacketRecord {
   token: string;
   is_active: boolean;
   created_at: string;
+  drive_folder_url?: string | null;
+  drive_folder_id?: string | null;
 }
 
 export default function AdminPackets() {
@@ -81,6 +83,25 @@ export default function AdminPackets() {
     toast.success('Packet deleted');
     setDeleteId(null);
     load();
+  };
+
+  const createDriveFolder = async (p: PacketRow) => {
+    if (!p.client_name) {
+      toast.error('Add a client name before creating a Drive folder');
+      return;
+    }
+    const t = toast.loading('Creating Drive folder…');
+    try {
+      const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
+        body: { packet_id: p.id },
+      });
+      if (error) throw error;
+      toast.success('Drive folder ready', { id: t });
+      if (data?.folderUrl) window.open(data.folderUrl, '_blank');
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Drive folder failed', { id: t });
+    }
   };
 
   return (
@@ -143,6 +164,15 @@ export default function AdminPackets() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
+                    {p.drive_folder_url ? (
+                      <Button variant="outline" size="sm" onClick={() => window.open(p.drive_folder_url!, '_blank')}>
+                        <FolderOpen className="w-3.5 h-3.5 mr-1" /> Drive folder
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" onClick={() => createDriveFolder(p)}>
+                        <FolderPlus className="w-3.5 h-3.5 mr-1" /> Create Drive folder
+                      </Button>
+                    )}
                     {p.is_active && (
                       <>
                         <Button variant="outline" size="sm" onClick={() => copyLink(p.token)}>
