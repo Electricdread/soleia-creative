@@ -16,7 +16,7 @@ const NAV_LINKS: { label: string; href?: string; to?: string }[] = [
   { to: '/creative-guide/video-mapping', label: 'Video Mapping' },
   { href: '#branding', label: 'Branding' },
   { href: '#specs', label: 'Specs' },
-  { href: '#zones', label: 'Zones' },
+  
 ];
 
 const ZONE_GROUPS = [
@@ -383,36 +383,6 @@ const CreativeGuideView = () => {
         </div>
       </section>
 
-      {/* 06 — VENUE SCREEN LAYOUT */}
-      <section id="zones" className="py-24 scroll-mt-20">
-        <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="06 — Venue Screen Layout" title="Main room and outside screens." />
-          <Reveal>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl mb-10">
-              The venue's LED system is split into two areas: the main room interior and the outdoor beachclub exterior. The cards below list every screen in each area along with its native pixel resolution — use them as a reference for what's available and where.
-            </p>
-          </Reveal>
-          <div className="space-y-10">
-            {ZONE_GROUPS.map((g, gi) => (
-              <Reveal key={g.group} delay={gi * 0.05}>
-                <div className="flex items-baseline justify-between gap-4 border-b border-primary/15 pb-2.5 mb-4">
-                  <h3 className="font-display text-2xl text-foreground">{g.group}</h3>
-                  <span className="text-[11px] text-muted-foreground/70">{g.note}</span>
-                </div>
-                <div className="rounded-3xl surface-elevated border border-primary/15 overflow-hidden">
-                  {g.zones.map((z, zi) => (
-                    <div key={z.name} className={`grid grid-cols-1 sm:grid-cols-[180px_1fr_auto] gap-1 sm:gap-4 items-center ${zi < g.zones.length - 1 ? 'border-b border-primary/15' : ''}`}>
-                      <div className="px-5 py-3.5 text-sm font-medium text-foreground">{z.name}</div>
-                      <div className="px-5 py-3.5 text-[13px] text-muted-foreground leading-snug">{z.role}</div>
-                      <div className="px-5 py-3.5 text-[13px] text-primary font-mono text-left sm:text-right whitespace-nowrap">{z.res} px</div>
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CONTENT DELIVERY CTA — always sits just above the footer */}
       <section className="pb-24">
@@ -451,7 +421,7 @@ const CreativeGuideView = () => {
                 <a href="#layout" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Layout</a>
                 <a href="#tour" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">360° Tour</a>
                 <button onClick={() => navigate('/creative-guide/video-mapping')} className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors text-left">Video Mapping</button>
-                <a href="#zones" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Activation Zones</a>
+                
               </div>
               <div>
                 <h4 className="text-[10.5px] uppercase tracking-[0.2em] text-primary mb-3.5">Plan</h4>
