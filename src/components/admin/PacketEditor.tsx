@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
+export type PacketKind = 'pre_call' | 'creative_pre_call';
+
 export interface PacketInclusion {
   heading: string;
   body: string;
@@ -26,6 +28,7 @@ export interface PacketRecord {
   creative_guide_url?: string | null;
   drive_folder_url?: string | null;
   drive_folder_id?: string | null;
+  kind?: PacketKind;
   is_active?: boolean;
 }
 
@@ -33,12 +36,13 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial?: PacketRecord | null;
+  kind?: PacketKind;
   onSaved: () => void;
 }
 
 const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide';
 
-const defaultPacket = (): PacketRecord => ({
+const fullDefault = (): PacketRecord => ({
   title: 'Soleia Pre-Call Packet',
   client_name: '',
   event_date: '',
@@ -48,37 +52,42 @@ const defaultPacket = (): PacketRecord => ({
     'folder (created on save) to drop logos, brand assets, references, and any inspiration. ' +
     'Final creative is delivered no later than 21 business days before your event.',
   inclusions: [
-    {
-      heading: 'Soleia Creative Guide',
-      body:
-        'Our living technical & creative reference covering the venue, LED canvas, motion ' +
-        'graphics standards and delivery specs. Open the Creative Guide link above to explore.',
-    },
-    {
-      heading: 'Pixel Map',
-      body:
-        'The master LED pixel map for the venue lives in the "02_Pixel Map" folder of your ' +
-        'shared Drive, alongside the SOLEIA Content Delivery Guide.',
-    },
-    {
-      heading: 'Client Asset Collect',
-      body:
-        'Upload logos (vector preferred), brand colors, fonts, photography and any reference ' +
-        'films to the "03_Client Asset Collect" folder in your shared Drive.',
-    },
+    { heading: 'Soleia Creative Guide', body: 'Our living technical & creative reference covering the venue, LED canvas, motion graphics standards and delivery specs. Open the Creative Guide link above to explore.' },
+    { heading: 'Pixel Map', body: 'The master LED pixel map for the venue lives in the "02_Pixel Map" folder of your shared Drive, alongside the SOLEIA Content Delivery Guide.' },
+    { heading: 'Client Asset Collect', body: 'Upload logos (vector preferred), brand colors, fonts, photography and any reference films to the "03_Client Asset Collect" folder in your shared Drive.' },
   ],
   scope:
-    'Soleia delivers custom motion graphics and venue mapping for your event. Creative direction, ' +
-    'asset preparation, encoding and on-site QC are included. Final assets due 21 business days ' +
-    'before show date.',
+    'Soleia delivers custom motion graphics and venue mapping for your event. Creative direction, asset preparation, encoding and on-site QC are included. Final assets due 21 business days before show date.',
   notes: '',
   creative_guide_url: DEFAULT_GUIDE_URL,
+  kind: 'pre_call',
 });
 
-export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
+const creativeDefault = (): PacketRecord => ({
+  title: 'Soleia Pre-Call Creative Packet',
+  client_name: '',
+  event_date: '',
+  intro:
+    'Before our creative pre-call, please review the Soleia Creative Guide using the button ' +
+    'below. Then drop your logos, brand assets, references and inspiration into the shared ' +
+    'Client Asset Collect folder (created on save). Final assets are due 21 business days ' +
+    'before your event.',
+  inclusions: [
+    { heading: 'Client Asset Collect', body: 'Upload logos (vector preferred), brand colors, fonts, photography and any reference films. The shared folder is automatically created when this packet is saved.' },
+  ],
+  scope: 'Creative pre-call review. Final assets due 21 business days before show date.',
+  notes: '',
+  creative_guide_url: DEFAULT_GUIDE_URL,
+  kind: 'creative_pre_call',
+});
+
+const defaultFor = (k: PacketKind) => (k === 'creative_pre_call' ? creativeDefault() : fullDefault());
+
+export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', onSaved }: Props) {
   const { user } = useAuth();
-  const [form, setForm] = useState<PacketRecord>(defaultPacket());
+  const [form, setForm] = useState<PacketRecord>(defaultFor(kind));
   const [saving, setSaving] = useState(false);
+  const effectiveKind: PacketKind = initial?.kind ?? kind;
 
   useEffect(() => {
     if (open) {
@@ -87,12 +96,13 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
           ? {
               ...initial,
               creative_guide_url: initial.creative_guide_url || DEFAULT_GUIDE_URL,
-              inclusions: initial.inclusions?.length ? initial.inclusions : defaultPacket().inclusions,
+              inclusions: initial.inclusions?.length ? initial.inclusions : defaultFor(initial.kind ?? kind).inclusions,
+              kind: initial.kind ?? kind,
             }
-          : defaultPacket(),
+          : defaultFor(kind),
       );
     }
-  }, [open, initial]);
+  }, [open, initial, kind]);
 
   const updateInclusion = (idx: number, field: keyof PacketInclusion, value: string) => {
     setForm((f) => ({
@@ -101,10 +111,8 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
     }));
   };
 
-  const addInclusion = () =>
-    setForm((f) => ({ ...f, inclusions: [...f.inclusions, { heading: '', body: '' }] }));
-  const removeInclusion = (idx: number) =>
-    setForm((f) => ({ ...f, inclusions: f.inclusions.filter((_, i) => i !== idx) }));
+  const addInclusion = () => setForm((f) => ({ ...f, inclusions: [...f.inclusions, { heading: '', body: '' }] }));
+  const removeInclusion = (idx: number) => setForm((f) => ({ ...f, inclusions: f.inclusions.filter((_, i) => i !== idx) }));
 
   const handleSave = async () => {
     if (!form.title.trim()) {
@@ -121,12 +129,13 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
       scope: form.scope?.trim() || null,
       notes: form.notes?.trim() || null,
       creative_guide_url: form.creative_guide_url?.trim() || DEFAULT_GUIDE_URL,
+      kind: effectiveKind,
     };
 
     const dbPayload: any = { ...payload, inclusions: payload.inclusions as any };
     const { data: saved, error } = initial?.id
-      ? await supabase.from('pre_call_packets').update(dbPayload).eq('id', initial.id).select('id, client_name, drive_folder_url').maybeSingle()
-      : await supabase.from('pre_call_packets').insert({ ...dbPayload, created_by: user?.id }).select('id, client_name, drive_folder_url').maybeSingle();
+      ? await supabase.from('pre_call_packets').update(dbPayload).eq('id', initial.id).select('id, client_name, drive_folder_url, kind').maybeSingle()
+      : await supabase.from('pre_call_packets').insert({ ...dbPayload, created_by: user?.id }).select('id, client_name, drive_folder_url, kind').maybeSingle();
 
     if (error) {
       setSaving(false);
@@ -134,11 +143,11 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
       return;
     }
 
-    // Kick off Drive folder creation (non-fatal). Only if client name is set and not already created.
     if (saved?.id && saved?.client_name && !saved?.drive_folder_url) {
       try {
+        const folderMode = saved.kind === 'creative_pre_call' ? 'asset_only' : 'full';
         const { data: fnData, error: fnErr } = await supabase.functions.invoke('create-client-drive-folder', {
-          body: { packet_id: saved.id },
+          body: { packet_id: saved.id, folder_mode: folderMode },
         });
         if (fnErr) throw fnErr;
         if (fnData?.folderUrl) toast.success('Drive folder ready');
@@ -153,11 +162,13 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
     onOpenChange(false);
   };
 
+  const titleLabel = effectiveKind === 'creative_pre_call' ? 'Pre-Call Creative Packet' : 'Pre-Call Packet';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto card-elevated">
         <DialogHeader>
-          <DialogTitle className="font-display">{initial?.id ? 'Edit Packet' : 'New Pre-Call Packet'}</DialogTitle>
+          <DialogTitle className="font-display">{initial?.id ? `Edit ${titleLabel}` : `New ${titleLabel}`}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -187,8 +198,9 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
               placeholder={DEFAULT_GUIDE_URL}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Saving a packet with a client name auto-creates a shared Google Drive folder with
-              Creative Guide, Pixel Map, and Client Asset Collect subfolders.
+              {effectiveKind === 'creative_pre_call'
+                ? 'Saving with a client name auto-creates a shared Drive folder with just a Client Asset Collect subfolder.'
+                : 'Saving with a client name auto-creates a shared Drive folder with Creative Guide, Pixel Map, and Client Asset Collect subfolders.'}
             </p>
           </div>
 
@@ -208,21 +220,12 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
               {form.inclusions.map((inc, i) => (
                 <div key={i} className="card-elevated bg-card border border-border rounded-lg p-3 space-y-2">
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="Heading"
-                      value={inc.heading}
-                      onChange={(e) => updateInclusion(i, 'heading', e.target.value)}
-                    />
+                    <Input placeholder="Heading" value={inc.heading} onChange={(e) => updateInclusion(i, 'heading', e.target.value)} />
                     <Button type="button" variant="ghost" size="icon" onClick={() => removeInclusion(i)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <Textarea
-                    placeholder="Description"
-                    rows={2}
-                    value={inc.body}
-                    onChange={(e) => updateInclusion(i, 'body', e.target.value)}
-                  />
+                  <Textarea placeholder="Description" rows={2} value={inc.body} onChange={(e) => updateInclusion(i, 'body', e.target.value)} />
                 </div>
               ))}
             </div>
