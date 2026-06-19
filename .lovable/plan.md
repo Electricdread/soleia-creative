@@ -1,52 +1,44 @@
-## Problem
-- `/admin/packets` is empty (table has 0 rows) and the "New Packet" form is blank, so there's nothing useful to deploy.
-- Drive folder creation (Creative Guide / Pixel Map / Client Asset Collect) only runs when a proposal is signed — packets never trigger it.
-
 ## Goal
-Make a new pre-call packet immediately useful: pre-fill it with content pointing at the Creative Guide, and on save spin up the same Google Drive folder structure already used for signed proposals.
+Add a second packet flavor — "Pre-Call Creative Packet" — that points the client at the Creative Guide page and provisions a slim Google Drive folder containing **only** a Client Asset Collect subfolder (no Creative Guide zip, no Pixel Map).
 
 ## Changes
 
 ### 1. Schema
 Add to `pre_call_packets`:
-- `drive_folder_url text`
-- `drive_folder_id text`
-- `creative_guide_url text` (defaults to `https://soleiacreative.app/creative-guide`, editable)
+- `kind text not null default 'pre_call'` — values: `'pre_call'` (current full packet) or `'creative_pre_call'` (new slim variant).
 
 ### 2. Edge function `create-client-drive-folder`
-Generalize so it accepts either `proposal_id` OR `packet_id`:
-- Reads `client_name` + `event_name`/`title` from the matching table.
-- Builds the same folder tree (`Soleia Clients / <Client> — <Event> / 01_Soleia Creative Guide / 02_Pixel Map / 03_Client Asset Collect`) with the existing zip/pixel-map/CDG uploads.
-- Persists `drive_folder_url` + `drive_folder_id` back to whichever row called it.
-- Idempotent — returns the existing folder when already set.
+Accept a new optional `folder_mode` argument:
+- `'full'` (default) — current behaviour: Creative Guide + Pixel Map + Client Asset Collect, with the zip / pixel map / CDG uploads.
+- `'asset_only'` — creates just `<Client> — <Event>/Client Asset Collect/`, skips all template uploads, still anyone-with-link writer.
+Body of edge call from new packet kind sends `{ packet_id, folder_mode: 'asset_only' }`.
 
-### 3. `PacketEditor` template
-Replace the blank `empty` constant with a Soleia default:
-- Title: `Soleia Pre-Call Packet`
-- Intro: short paragraph welcoming the client and pointing to the Creative Guide link.
-- `creative_guide_url` field rendered above inclusions.
-- Inclusions seeded with three cards:
-  1. **Creative Guide** — purpose + live link.
-  2. **Pixel Map** — LED canvas overview, link to Drive folder.
-  3. **Client Asset Collect** — what/how to upload.
-- Scope: standard 21-business-day timeline reminder (matches existing memory).
+### 3. `AdminPackets` page
+- Replace the single "New Packet" button with a small dropdown / two buttons: **Pre-Call Packet** and **Pre-Call Creative Packet**.
+- Pass the chosen `kind` into `PacketEditor`.
+- Badge each row with its kind.
 
-After a successful insert/update, call `supabase.functions.invoke('create-client-drive-folder', { body: { packet_id }})` and toast the returned folder URL. Failure is non-fatal (toast warning).
-
-### 4. `AdminPackets` row
-- Show an "Open Drive folder" button when `drive_folder_url` is set.
-- Add a "Create Drive folder" action for older rows that don't have one yet.
+### 4. `PacketEditor`
+- Accept a `kind` prop (defaults to `pre_call` for legacy edits).
+- Two default templates:
+  - `pre_call` → current Soleia template (Creative Guide / Pixel Map / Client Asset Collect inclusions).
+  - `creative_pre_call` → leaner template focused on the Creative Guide page:
+    - Title: `Pre-Call Creative Packet`
+    - Intro: "Review the Soleia Creative Guide before our pre-call and drop your assets in the shared folder."
+    - Single inclusion: **Client Asset Collect** instructions.
+    - Scope: same 21-business-day reminder.
+- On save, pass `folder_mode: kind === 'creative_pre_call' ? 'asset_only' : 'full'` to the edge function.
 
 ### 5. `ClientPacket` page
-- Add a prominent CTA section linking to the Creative Guide URL.
-- If `drive_folder_url` is present, show a secondary CTA linking to the shared Drive folder ("Upload your assets here").
+- When `kind === 'creative_pre_call'`, the primary CTA becomes a large "Open Creative Guide" button that navigates to the Creative Guide page (`creative_guide_url`), and the Drive CTA reads "Upload your assets" pointing at the asset-only folder.
+- Other packet kind keeps the existing two-card layout.
 
 ## Non-goals
-- No changes to proposal flow, totals, or other pages.
-- Existing signed proposals continue to call the edge function exactly as before.
+- No changes to proposals, signed-proposal Drive flow, or other admin pages.
+- No migration of existing packet rows — they default to `kind = 'pre_call'`.
 
 ## Files touched
-- new migration: add 3 columns to `pre_call_packets`
+- new migration: `kind` column on `pre_call_packets`
 - `supabase/functions/create-client-drive-folder/index.ts`
 - `src/components/admin/PacketEditor.tsx`
 - `src/pages/AdminPackets.tsx`

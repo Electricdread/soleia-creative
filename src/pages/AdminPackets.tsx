@@ -6,7 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { PacketEditor, type PacketRecord, type PacketInclusion } from '@/components/admin/PacketEditor';
+import { PacketEditor, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { format, parseISO } from 'date-fns';
 import {
   AlertDialog,
@@ -35,6 +41,7 @@ export default function AdminPackets() {
   const [loading, setLoading] = useState(true);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<PacketRow | null>(null);
+  const [newKind, setNewKind] = useState<PacketKind>('pre_call');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const load = async () => {
@@ -114,14 +121,21 @@ export default function AdminPackets() {
             </Button>
             <h1 className="font-display text-2xl text-foreground">Pre-Call Packets</h1>
           </div>
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setEditorOpen(true);
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" /> New Packet
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" /> New Packet
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => { setEditing(null); setNewKind('pre_call'); setEditorOpen(true); }}>
+                Pre-Call Packet
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setEditing(null); setNewKind('creative_pre_call'); setEditorOpen(true); }}>
+                Pre-Call Creative Packet
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
@@ -157,6 +171,9 @@ export default function AdminPackets() {
                           <Lock className="w-3 h-3 mr-1" /> Draft
                         </Badge>
                       )}
+                      <Badge variant="outline" className="text-xs">
+                        {p.kind === 'creative_pre_call' ? 'Creative' : 'Pre-Call'}
+                      </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {p.client_name || 'No client'}
@@ -204,7 +221,7 @@ export default function AdminPackets() {
         )}
       </main>
 
-      <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} onSaved={load} />
+      <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} kind={newKind} onSaved={load} />
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

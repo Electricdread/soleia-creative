@@ -983,6 +983,7 @@ export type Database = {
           inclusions: Json
           intro: string | null
           is_active: boolean
+          kind: string
           notes: string | null
           scope: string | null
           title: string
@@ -1001,6 +1002,7 @@ export type Database = {
           inclusions?: Json
           intro?: string | null
           is_active?: boolean
+          kind?: string
           notes?: string | null
           scope?: string | null
           title: string
@@ -1019,6 +1021,7 @@ export type Database = {
           inclusions?: Json
           intro?: string | null
           is_active?: boolean
+          kind?: string
           notes?: string | null
           scope?: string | null
           title?: string
