@@ -39,6 +39,7 @@ export default function AdminPackets() {
   const [editing, setEditing] = useState<PacketRow | null>(null);
   const [newKind, setNewKind] = useState<PacketKind>('pre_call');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [emailPacket, setEmailPacket] = useState<PacketRow | null>(null);
 
   const load = async () => {
     setLoading(true);
