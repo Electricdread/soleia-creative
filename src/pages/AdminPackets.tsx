@@ -4,9 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus } from 'lucide-react';
+import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { PacketEditor, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
+import { PacketEmailCard } from '@/components/admin/PacketEmailCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, parseISO } from 'date-fns';
 import {
   AlertDialog,
@@ -37,6 +39,7 @@ export default function AdminPackets() {
   const [editing, setEditing] = useState<PacketRow | null>(null);
   const [newKind, setNewKind] = useState<PacketKind>('pre_call');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [emailPacket, setEmailPacket] = useState<PacketRow | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -191,6 +194,9 @@ export default function AdminPackets() {
                         <Button variant="outline" size="sm" onClick={() => window.open(`/packet/${p.token}`, '_blank')}>
                           <ExternalLink className="w-3.5 h-3.5 mr-1" /> Open
                         </Button>
+                        <Button variant="outline" size="sm" onClick={() => setEmailPacket(p)}>
+                          <Mail className="w-3.5 h-3.5 mr-1" /> Email
+                        </Button>
                       </>
                     )}
                     <Button
@@ -215,6 +221,24 @@ export default function AdminPackets() {
       </main>
 
       <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} kind={newKind} onSaved={load} />
+
+      <Dialog open={!!emailPacket} onOpenChange={(o) => !o && setEmailPacket(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Send Packet Email</DialogTitle>
+          </DialogHeader>
+          {emailPacket && (
+            <PacketEmailCard
+              kind={(emailPacket.kind as PacketKind) || 'pre_call'}
+              clientName={emailPacket.client_name || ''}
+              eventDate={emailPacket.event_date}
+              packetUrl={`${window.location.origin}/packet/${emailPacket.token}`}
+              driveUrl={emailPacket.drive_folder_url}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
