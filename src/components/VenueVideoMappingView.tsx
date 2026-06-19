@@ -14,6 +14,36 @@ import solIcon from '@/assets/sol-icon.png';
  * model of the venue with live previz (a mapped show played onto every screen).
  */
 
+const ZONE_GROUPS = [
+  {
+    group: 'Main Room — Interior LED',
+    note: 'The primary nightclub LED wall, left to right.',
+    zones: [
+      { name: 'SR Curves', res: '2304 × 272', role: 'Stage-right curved LED — wraparound ambient visuals and brand washes.' },
+      { name: 'IMAG SR', res: '1216 × 592', role: 'Stage-right vertical screen — directional branding and portrait content.' },
+      { name: 'Center', res: '640 × 272', role: 'Center focal screen — logo reveals and hero moments.' },
+      { name: 'IMAG SL', res: '1216 × 592', role: 'Stage-left vertical screen — directional branding and portrait content.' },
+      { name: 'SL Curves', res: '2304 × 272', role: 'Stage-left curved LED — wraparound ambient visuals and brand washes.' },
+    ],
+  },
+  {
+    group: 'Beach Club — Exterior LED',
+    note: 'Open-air screens facing the Las Vegas Strip.',
+    zones: [
+      { name: 'Outdoor SR', res: '588 × 840', role: 'Stage-right exterior tower — high-brightness arrival branding.' },
+      { name: 'Outdoor SL', res: '588 × 840', role: 'Stage-left exterior tower — high-brightness arrival branding.' },
+      { name: 'Outdoor Arch', res: '1512 × 504', role: 'Beachclub arch — immersive entry moment overlooking the Strip.' },
+    ],
+  },
+  {
+    group: 'TV Displays',
+    note: 'Narrowcasting network across the venue.',
+    zones: [
+      { name: 'TV / Narrowcasting', res: '1920×1080 or 3840×2160', role: 'Logos and sponsor messaging across front-door entry, cabanas and bungalows.' },
+    ],
+  },
+];
+
 export interface PrevizClipOption {
   id: string;
   title: string;
@@ -279,6 +309,40 @@ export default function VenueVideoMappingView({
               {clips.length > 1 ? ' — open the playlist to switch between clips.' : ' to map a show onto every screen.'}
             </p>
           </Reveal>
+        </div>
+      </section>
+
+      {/* VENUE SCREEN LAYOUT — moved from Creative Guide section 06 */}
+      <section id="zones" className="pb-24 scroll-mt-20">
+        <div className="container mx-auto max-w-5xl px-6">
+          <Reveal className="mb-11">
+            <span className="mb-3.5 block text-[11px] uppercase tracking-[0.34em] text-primary">Venue Screen Layout</span>
+            <h2 className="font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">Main room and outside screens.</h2>
+          </Reveal>
+          <Reveal>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl mb-10">
+              The venue's LED system is split into two areas: the main room interior and the outdoor beachclub exterior. The cards below list every screen in each area along with its native pixel resolution — use them as a reference for what's available and where.
+            </p>
+          </Reveal>
+          <div className="space-y-10">
+            {ZONE_GROUPS.map((g, gi) => (
+              <Reveal key={g.group} delay={gi * 0.05}>
+                <div className="flex items-baseline justify-between gap-4 border-b border-primary/15 pb-2.5 mb-4">
+                  <h3 className="font-display text-2xl text-foreground">{g.group}</h3>
+                  <span className="text-[11px] text-muted-foreground/70">{g.note}</span>
+                </div>
+                <div className="rounded-3xl surface-elevated border border-primary/15 overflow-hidden">
+                  {g.zones.map((z, zi) => (
+                    <div key={z.name} className={`grid grid-cols-1 sm:grid-cols-[180px_1fr_auto] gap-1 sm:gap-4 items-center ${zi < g.zones.length - 1 ? 'border-b border-primary/15' : ''}`}>
+                      <div className="px-5 py-3.5 text-sm font-medium text-foreground">{z.name}</div>
+                      <div className="px-5 py-3.5 text-[13px] text-muted-foreground leading-snug">{z.role}</div>
+                      <div className="px-5 py-3.5 text-[13px] text-primary font-mono text-left sm:text-right whitespace-nowrap">{z.res} px</div>
+                    </div>
+                  ))}
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
     </div>
