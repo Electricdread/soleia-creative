@@ -86,6 +86,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const proposal_id: string | undefined = body?.proposal_id;
     const packet_id: string | undefined = body?.packet_id;
+    const folder_mode: 'full' | 'asset_only' = body?.folder_mode === 'asset_only' ? 'asset_only' : 'full';
 
     if ((!proposal_id && !packet_id) || (proposal_id && typeof proposal_id !== 'string') || (packet_id && typeof packet_id !== 'string')) {
       return new Response(JSON.stringify({ error: 'proposal_id or packet_id required' }), {
@@ -148,12 +149,20 @@ Deno.serve(async (req) => {
     const clientFolderName = `${safe(proposal.client_name)} — ${safe(proposal.event_name)}`;
     const clientFolderId = await findOrCreateFolder(clientFolderName, rootId, lovableKey, driveKey);
 
-    // 3 subfolders
-    const [creativeGuideFolderId, pixelMapFolderId, _assetCollectFolderId] = await Promise.all([
-      findOrCreateFolder('01_Soleia Creative Guide', clientFolderId, lovableKey, driveKey),
-      findOrCreateFolder('02_Pixel Map', clientFolderId, lovableKey, driveKey),
-      findOrCreateFolder('03_Client Asset Collect', clientFolderId, lovableKey, driveKey),
-    ]);
+    // Subfolders depend on mode
+    let creativeGuideFolderId = '';
+    let pixelMapFolderId = '';
+    if (folder_mode === 'asset_only') {
+      await findOrCreateFolder('Client Asset Collect', clientFolderId, lovableKey, driveKey);
+    } else {
+      const [cg, pm, _ac] = await Promise.all([
+        findOrCreateFolder('01_Soleia Creative Guide', clientFolderId, lovableKey, driveKey),
+        findOrCreateFolder('02_Pixel Map', clientFolderId, lovableKey, driveKey),
+        findOrCreateFolder('03_Client Asset Collect', clientFolderId, lovableKey, driveKey),
+      ]);
+      creativeGuideFolderId = cg;
+      pixelMapFolderId = pm;
+    }
 
     // Upload the master Creative Guide Project zip into 01_Soleia Creative Guide
     // (idempotent: skip if a file with the same name already exists in that folder)
