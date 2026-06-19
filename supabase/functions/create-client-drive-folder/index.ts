@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
 
     // Upload the master Creative Guide Project zip into 01_Soleia Creative Guide
     // (idempotent: skip if a file with the same name already exists in that folder)
-    try {
+    if (folder_mode === 'full') try {
       const zipName = 'SOLEIA - Creative Guide Project.zip';
       const { data: settingRow } = await supabase
         .from('site_settings')
@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
     }
 
     // Upload the master Pixel Map PNG into 02_Pixel Map (idempotent by name)
-    try {
+    if (folder_mode === 'full') try {
       const pixmapName = 'SOLEIA-Pixel-Map.png';
       const { data: pmRow } = await supabase
         .from('site_settings')
@@ -292,7 +292,7 @@ Deno.serve(async (req) => {
     }
 
     // Upload the master Content Delivery Guide PDF into 02_Pixel Map (idempotent by name)
-    try {
+    if (folder_mode === 'full') try {
       const cdgName = 'SOLEIA-Content-Delivery-Guide.pdf';
       const { data: cdgRow } = await supabase
         .from('site_settings')
