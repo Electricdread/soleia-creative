@@ -128,10 +128,24 @@ export default function AdminPackets() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => { setEditing(null); setNewKind('pre_call'); setEditorOpen(true); }}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setEditing(null);
+                  setNewKind('pre_call');
+                  setTimeout(() => setEditorOpen(true), 0);
+                }}
+              >
                 Pre-Call Packet
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setEditing(null); setNewKind('creative_pre_call'); setEditorOpen(true); }}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setEditing(null);
+                  setNewKind('creative_pre_call');
+                  setTimeout(() => setEditorOpen(true), 0);
+                }}
+              >
                 Pre-Call Creative Packet
               </DropdownMenuItem>
             </DropdownMenuContent>
