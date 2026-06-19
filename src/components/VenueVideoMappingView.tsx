@@ -191,7 +191,7 @@ function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
           onClick={toggleFull}
           className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
         >
-          {isFull ? <><Minimize2 className="h-3.5 w-3.5" /> Exit</> : <><Maximize className="h-3.5 w-3.5" /> Fullscreen</>}
+          {showingFull ? <><Minimize2 className="h-3.5 w-3.5" /> Exit</> : <><Maximize className="h-3.5 w-3.5" /> Fullscreen</>}
         </button>
       </div>
     </div>
