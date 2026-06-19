@@ -91,6 +91,10 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
 
   useEffect(() => {
     if (open) {
+      // Clear any stale pointer-events lock left by a parent Radix menu
+      if (typeof document !== 'undefined' && document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = '';
+      }
       setForm(
         initial
           ? {
