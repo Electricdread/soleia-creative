@@ -194,6 +194,9 @@ export default function AdminPackets() {
                         <Button variant="outline" size="sm" onClick={() => window.open(`/packet/${p.token}`, '_blank')}>
                           <ExternalLink className="w-3.5 h-3.5 mr-1" /> Open
                         </Button>
+                        <Button variant="outline" size="sm" onClick={() => setEmailPacket(p)}>
+                          <Mail className="w-3.5 h-3.5 mr-1" /> Email
+                        </Button>
                       </>
                     )}
                     <Button
