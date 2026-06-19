@@ -4,9 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus } from 'lucide-react';
+import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { PacketEditor, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
+import { PacketEmailCard } from '@/components/admin/PacketEmailCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, parseISO } from 'date-fns';
 import {
   AlertDialog,
