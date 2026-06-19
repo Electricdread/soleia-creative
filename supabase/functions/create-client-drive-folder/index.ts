@@ -83,23 +83,53 @@ Deno.serve(async (req) => {
     if (!driveKey) throw new Error('GOOGLE_DRIVE_API_KEY is not configured');
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
 
-    const { proposal_id } = await req.json();
-    if (!proposal_id || typeof proposal_id !== 'string') {
-      return new Response(JSON.stringify({ error: 'proposal_id required' }), {
+    const body = await req.json().catch(() => ({}));
+    const proposal_id: string | undefined = body?.proposal_id;
+    const packet_id: string | undefined = body?.packet_id;
+
+    if ((!proposal_id && !packet_id) || (proposal_id && typeof proposal_id !== 'string') || (packet_id && typeof packet_id !== 'string')) {
+      return new Response(JSON.stringify({ error: 'proposal_id or packet_id required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const supabase = createClient(supabaseUrl, serviceKey);
-    const { data: proposal, error: fetchErr } = await supabase
-      .from('proposals')
-      .select('id, event_name, client_name, drive_folder_url, drive_folder_id')
-      .eq('id', proposal_id)
-      .maybeSingle();
 
-    if (fetchErr) throw new Error(`Fetch proposal failed: ${fetchErr.message}`);
-    if (!proposal) throw new Error('Proposal not found');
+    // Load the source row (proposal or packet) into a normalized shape
+    let sourceTable: 'proposals' | 'pre_call_packets';
+    let sourceId: string;
+    let proposal: { id: string; event_name: string; client_name: string; drive_folder_url: string | null; drive_folder_id: string | null };
+
+    if (proposal_id) {
+      sourceTable = 'proposals';
+      sourceId = proposal_id;
+      const { data, error: fetchErr } = await supabase
+        .from('proposals')
+        .select('id, event_name, client_name, drive_folder_url, drive_folder_id')
+        .eq('id', proposal_id)
+        .maybeSingle();
+      if (fetchErr) throw new Error(`Fetch proposal failed: ${fetchErr.message}`);
+      if (!data) throw new Error('Proposal not found');
+      proposal = data as typeof proposal;
+    } else {
+      sourceTable = 'pre_call_packets';
+      sourceId = packet_id!;
+      const { data, error: fetchErr } = await supabase
+        .from('pre_call_packets')
+        .select('id, title, client_name, drive_folder_url, drive_folder_id')
+        .eq('id', packet_id!)
+        .maybeSingle();
+      if (fetchErr) throw new Error(`Fetch packet failed: ${fetchErr.message}`);
+      if (!data) throw new Error('Packet not found');
+      proposal = {
+        id: data.id,
+        event_name: data.title || 'Pre-Call Packet',
+        client_name: data.client_name || 'Client',
+        drive_folder_url: data.drive_folder_url,
+        drive_folder_id: data.drive_folder_id,
+      };
+    }
 
     // Idempotent: return existing if already created
     if (proposal.drive_folder_url && proposal.drive_folder_id) {
@@ -337,10 +367,10 @@ Deno.serve(async (req) => {
     const folderId: string = meta.id;
 
     const { error: updErr } = await supabase
-      .from('proposals')
+      .from(sourceTable)
       .update({ drive_folder_url: folderUrl, drive_folder_id: folderId })
-      .eq('id', proposal_id);
-    if (updErr) throw new Error(`Update proposal failed: ${updErr.message}`);
+      .eq('id', sourceId);
+    if (updErr) throw new Error(`Update ${sourceTable} failed: ${updErr.message}`);
 
     return new Response(
       JSON.stringify({ folderUrl, folderId, existing: false }),

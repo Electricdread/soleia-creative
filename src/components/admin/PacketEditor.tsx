@@ -23,6 +23,9 @@ export interface PacketRecord {
   inclusions: PacketInclusion[];
   scope: string | null;
   notes: string | null;
+  creative_guide_url?: string | null;
+  drive_folder_url?: string | null;
+  drive_folder_id?: string | null;
   is_active?: boolean;
 }
 
@@ -33,27 +36,60 @@ interface Props {
   onSaved: () => void;
 }
 
-const empty: PacketRecord = {
-  title: '',
+const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide';
+
+const defaultPacket = (): PacketRecord => ({
+  title: 'Soleia Pre-Call Packet',
   client_name: '',
   event_date: '',
-  intro: '',
-  inclusions: [{ heading: '', body: '' }],
-  scope: '',
+  intro:
+    'Welcome — this packet prepares us for your creative pre-call with the Soleia team. ' +
+    'Please review the Creative Guide ahead of our meeting and use the shared Google Drive ' +
+    'folder (created on save) to drop logos, brand assets, references, and any inspiration. ' +
+    'Final creative is delivered no later than 21 business days before your event.',
+  inclusions: [
+    {
+      heading: 'Soleia Creative Guide',
+      body:
+        'Our living technical & creative reference covering the venue, LED canvas, motion ' +
+        'graphics standards and delivery specs. Open the Creative Guide link above to explore.',
+    },
+    {
+      heading: 'Pixel Map',
+      body:
+        'The master LED pixel map for the venue lives in the "02_Pixel Map" folder of your ' +
+        'shared Drive, alongside the SOLEIA Content Delivery Guide.',
+    },
+    {
+      heading: 'Client Asset Collect',
+      body:
+        'Upload logos (vector preferred), brand colors, fonts, photography and any reference ' +
+        'films to the "03_Client Asset Collect" folder in your shared Drive.',
+    },
+  ],
+  scope:
+    'Soleia delivers custom motion graphics and venue mapping for your event. Creative direction, ' +
+    'asset preparation, encoding and on-site QC are included. Final assets due 21 business days ' +
+    'before show date.',
   notes: '',
-};
+  creative_guide_url: DEFAULT_GUIDE_URL,
+});
 
 export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
   const { user } = useAuth();
-  const [form, setForm] = useState<PacketRecord>(empty);
+  const [form, setForm] = useState<PacketRecord>(defaultPacket());
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open) {
       setForm(
         initial
-          ? { ...initial, inclusions: initial.inclusions?.length ? initial.inclusions : [{ heading: '', body: '' }] }
-          : empty,
+          ? {
+              ...initial,
+              creative_guide_url: initial.creative_guide_url || DEFAULT_GUIDE_URL,
+              inclusions: initial.inclusions?.length ? initial.inclusions : defaultPacket().inclusions,
+            }
+          : defaultPacket(),
       );
     }
   }, [open, initial]);
@@ -84,18 +120,34 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
       inclusions: form.inclusions.filter((i) => i.heading.trim() || i.body.trim()),
       scope: form.scope?.trim() || null,
       notes: form.notes?.trim() || null,
+      creative_guide_url: form.creative_guide_url?.trim() || DEFAULT_GUIDE_URL,
     };
 
     const dbPayload: any = { ...payload, inclusions: payload.inclusions as any };
-    const { error } = initial?.id
-      ? await supabase.from('pre_call_packets').update(dbPayload).eq('id', initial.id)
-      : await supabase.from('pre_call_packets').insert({ ...dbPayload, created_by: user?.id });
+    const { data: saved, error } = initial?.id
+      ? await supabase.from('pre_call_packets').update(dbPayload).eq('id', initial.id).select('id, client_name, drive_folder_url').maybeSingle()
+      : await supabase.from('pre_call_packets').insert({ ...dbPayload, created_by: user?.id }).select('id, client_name, drive_folder_url').maybeSingle();
 
-    setSaving(false);
     if (error) {
+      setSaving(false);
       toast.error(error.message);
       return;
     }
+
+    // Kick off Drive folder creation (non-fatal). Only if client name is set and not already created.
+    if (saved?.id && saved?.client_name && !saved?.drive_folder_url) {
+      try {
+        const { data: fnData, error: fnErr } = await supabase.functions.invoke('create-client-drive-folder', {
+          body: { packet_id: saved.id },
+        });
+        if (fnErr) throw fnErr;
+        if (fnData?.folderUrl) toast.success('Drive folder ready');
+      } catch (e: any) {
+        toast.warning(`Saved, but Drive folder failed: ${e?.message ?? 'unknown error'}`);
+      }
+    }
+
+    setSaving(false);
     toast.success(initial?.id ? 'Packet updated' : 'Packet created');
     onSaved();
     onOpenChange(false);
@@ -123,6 +175,21 @@ export function PacketEditor({ open, onOpenChange, initial, onSaved }: Props) {
           <div>
             <Label htmlFor="event_date">Event date</Label>
             <Input id="event_date" type="date" value={form.event_date ?? ''} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
+          </div>
+
+          <div>
+            <Label htmlFor="guide">Creative Guide URL</Label>
+            <Input
+              id="guide"
+              type="url"
+              value={form.creative_guide_url ?? ''}
+              onChange={(e) => setForm({ ...form, creative_guide_url: e.target.value })}
+              placeholder={DEFAULT_GUIDE_URL}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Saving a packet with a client name auto-creates a shared Google Drive folder with
+              Creative Guide, Pixel Map, and Client Asset Collect subfolders.
+            </p>
           </div>
 
           <div>
