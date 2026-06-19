@@ -221,6 +221,24 @@ export default function AdminPackets() {
       </main>
 
       <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} kind={newKind} onSaved={load} />
+
+      <Dialog open={!!emailPacket} onOpenChange={(o) => !o && setEmailPacket(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Send Packet Email</DialogTitle>
+          </DialogHeader>
+          {emailPacket && (
+            <PacketEmailCard
+              kind={(emailPacket.kind as PacketKind) || 'pre_call'}
+              clientName={emailPacket.client_name || ''}
+              eventDate={emailPacket.event_date}
+              packetUrl={`${window.location.origin}/packet/${emailPacket.token}`}
+              driveUrl={emailPacket.drive_folder_url}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
