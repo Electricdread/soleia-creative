@@ -975,6 +975,9 @@ export type Database = {
           client_name: string | null
           created_at: string
           created_by: string | null
+          creative_guide_url: string | null
+          drive_folder_id: string | null
+          drive_folder_url: string | null
           event_date: string | null
           id: string
           inclusions: Json
@@ -990,6 +993,9 @@ export type Database = {
           client_name?: string | null
           created_at?: string
           created_by?: string | null
+          creative_guide_url?: string | null
+          drive_folder_id?: string | null
+          drive_folder_url?: string | null
           event_date?: string | null
           id?: string
           inclusions?: Json
@@ -1005,6 +1011,9 @@ export type Database = {
           client_name?: string | null
           created_at?: string
           created_by?: string | null
+          creative_guide_url?: string | null
+          drive_folder_id?: string | null
+          drive_folder_url?: string | null
           event_date?: string | null
           id?: string
           inclusions?: Json
