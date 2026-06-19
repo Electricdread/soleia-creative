@@ -20,6 +20,7 @@ interface Packet {
   scope: string | null;
   creative_guide_url: string | null;
   drive_folder_url: string | null;
+  kind: 'pre_call' | 'creative_pre_call' | null;
 }
 
 const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide';
@@ -39,7 +40,7 @@ export default function ClientPacket() {
       }
       const { data, error } = await supabase
         .from('pre_call_packets')
-        .select('title, client_name, event_date, intro, inclusions, scope, creative_guide_url, drive_folder_url')
+        .select('title, client_name, event_date, intro, inclusions, scope, creative_guide_url, drive_folder_url, kind')
         .eq('token', token)
         .eq('is_active', true)
         .maybeSingle();
