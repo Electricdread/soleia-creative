@@ -7,12 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { PacketEditor, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
 import { format, parseISO } from 'date-fns';
 import {
   AlertDialog,
@@ -92,6 +86,12 @@ export default function AdminPackets() {
     load();
   };
 
+  const openNewPacket = (kind: PacketKind) => {
+    setEditing(null);
+    setNewKind(kind);
+    setEditorOpen(true);
+  };
+
   const createDriveFolder = async (p: PacketRow) => {
     if (!p.client_name) {
       toast.error('Add a client name before creating a Drive folder');
@@ -121,35 +121,14 @@ export default function AdminPackets() {
             </Button>
             <h1 className="font-display text-2xl text-foreground">Pre-Call Packets</h1>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" /> New Packet
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setEditing(null);
-                  setNewKind('pre_call');
-                  setTimeout(() => setEditorOpen(true), 0);
-                }}
-              >
-                Pre-Call Packet
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setEditing(null);
-                  setNewKind('creative_pre_call');
-                  setTimeout(() => setEditorOpen(true), 0);
-                }}
-              >
-                Pre-Call Creative Packet
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <Button variant="outline" onClick={() => openNewPacket('pre_call')}>
+              <Plus className="w-4 h-4 mr-2" /> Pre-Call
+            </Button>
+            <Button onClick={() => openNewPacket('creative_pre_call')}>
+              <Plus className="w-4 h-4 mr-2" /> Creative Packet
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -161,7 +140,7 @@ export default function AdminPackets() {
         ) : packets.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <p className="mb-4">No packets yet.</p>
-            <Button onClick={() => { setEditing(null); setEditorOpen(true); }}>
+            <Button onClick={() => openNewPacket('creative_pre_call')}>
               <Plus className="w-4 h-4 mr-2" /> Create the first packet
             </Button>
           </div>
