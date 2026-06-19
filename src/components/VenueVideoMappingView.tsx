@@ -39,25 +39,65 @@ function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
     }
   }, [clips, activeId]);
 
+  const [pseudoFull, setPseudoFull] = useState(false);
+
   useEffect(() => {
     const onChange = () => setIsFull(document.fullscreenElement === roomRef.current);
     document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange' as any, onChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange);
+      document.removeEventListener('webkitfullscreenchange' as any, onChange);
+    };
   }, [roomRef]);
 
+  useEffect(() => {
+    if (!pseudoFull) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPseudoFull(false); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [pseudoFull]);
+
   const toggleFull = () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else roomRef.current?.requestFullscreen?.();
+    const el = roomRef.current as any;
+    if (!el) return;
+    const doc = document as any;
+    if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+      (doc.exitFullscreen || doc.webkitExitFullscreen)?.call(doc);
+      return;
+    }
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.webkitEnterFullscreen;
+    if (req) {
+      try {
+        const r = req.call(el);
+        if (r && typeof r.catch === 'function') r.catch(() => setPseudoFull(true));
+      } catch {
+        setPseudoFull(true);
+      }
+    } else {
+      setPseudoFull(true);
+    }
   };
 
   const active = clips.find((c) => c.id === activeId) ?? null;
   const previzUrl = active?.url ?? fallbackUrl;
 
+  const showingFull = isFull || pseudoFull;
+
   return (
     <div
       ref={roomRef}
-      className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated bg-black"
-      style={{ aspectRatio: '16 / 9' }}
+      className={
+        pseudoFull
+          ? 'fixed inset-0 z-[9999] w-screen h-screen bg-black overflow-hidden'
+          : 'relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated bg-black'
+      }
+      style={pseudoFull ? undefined : { aspectRatio: '16 / 9' }}
     >
       <RoomScene progressRef={progressRef} orbit previz={previz} previzUrl={previzUrl} />
 
