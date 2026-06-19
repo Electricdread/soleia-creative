@@ -48,7 +48,8 @@ export default function ClientPacket() {
         setNotFound(true);
       } else {
         setPacket({
-          ...data,
+          ...(data as any),
+          kind: ((data as any).kind ?? 'pre_call') as Packet['kind'],
           inclusions: Array.isArray(data.inclusions) ? (data.inclusions as unknown as Inclusion[]) : [],
         });
       }
@@ -101,23 +102,33 @@ export default function ClientPacket() {
         )}
 
         <section className="grid sm:grid-cols-2 gap-3">
-          <a href={guideUrl} target="_blank" rel="noreferrer" className="block">
-            <div className="card-elevated bg-card border border-primary/30 hover:border-primary/60 rounded-lg p-5 shadow-card transition-colors h-full">
+          <a href={guideUrl} target="_blank" rel="noreferrer" className="block sm:col-span-2">
+            <div className="card-elevated bg-card border border-primary/40 hover:border-primary/70 rounded-lg p-6 shadow-card transition-colors">
               <div className="flex items-center gap-3 mb-1">
-                <BookOpen className="w-5 h-5 text-primary" />
-                <h3 className="font-display text-lg text-primary">Soleia Creative Guide</h3>
+                <BookOpen className="w-6 h-6 text-primary" />
+                <h3 className="font-display text-xl text-primary">Open the Soleia Creative Guide</h3>
               </div>
-              <p className="text-sm text-foreground/80">Open the living guide — venue, LED canvas and delivery specs.</p>
+              <p className="text-sm text-foreground/80">
+                {packet.kind === 'creative_pre_call'
+                  ? 'Review before our creative pre-call — venue, LED canvas and delivery specs.'
+                  : 'Living guide — venue, LED canvas and delivery specs.'}
+              </p>
             </div>
           </a>
           {packet.drive_folder_url && (
-            <a href={packet.drive_folder_url} target="_blank" rel="noreferrer" className="block">
-              <div className="card-elevated bg-card border border-primary/30 hover:border-primary/60 rounded-lg p-5 shadow-card transition-colors h-full">
+            <a href={packet.drive_folder_url} target="_blank" rel="noreferrer" className="block sm:col-span-2">
+              <div className="card-elevated bg-card border border-primary/30 hover:border-primary/60 rounded-lg p-5 shadow-card transition-colors">
                 <div className="flex items-center gap-3 mb-1">
                   <FolderOpen className="w-5 h-5 text-primary" />
-                  <h3 className="font-display text-lg text-primary">Shared Drive Folder</h3>
+                  <h3 className="font-display text-lg text-primary">
+                    {packet.kind === 'creative_pre_call' ? 'Upload your assets' : 'Shared Drive Folder'}
+                  </h3>
                 </div>
-                <p className="text-sm text-foreground/80">Creative Guide files, Pixel Map and your Client Asset Collect.</p>
+                <p className="text-sm text-foreground/80">
+                  {packet.kind === 'creative_pre_call'
+                    ? 'Drop logos, brand assets, references and inspiration into the Client Asset Collect folder.'
+                    : 'Creative Guide files, Pixel Map and your Client Asset Collect.'}
+                </p>
               </div>
             </a>
           )}
