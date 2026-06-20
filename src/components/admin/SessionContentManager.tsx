@@ -270,10 +270,10 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const MAX_BYTES = 500 * 1024 * 1024; // 500 MB
+
     setUploading(true);
 
-    // Get the current max sort_order so new uploads append to the end
-    // (and don't collide with existing drag-reordered items)
     const { data: maxRow } = await supabase
       .from('mood_board_items')
       .select('sort_order')
@@ -282,21 +282,54 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
       .limit(1);
     let sortOrder = ((maxRow?.[0]?.sort_order ?? -1) as number) + 1;
 
-    for (const file of Array.from(files)) {
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      const baseName = `${sessionId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
-      const fileName = `${baseName}.${fileExt}`;
+    let succeeded = 0;
+    let failed = 0;
+    const fileArray = Array.from(files);
+
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      const label = `${file.name} (${i + 1}/${fileArray.length})`;
+
+      if (file.size > MAX_BYTES) {
+        toast.error(`${file.name} is over 500 MB — please compress or re-encode.`);
+        failed++;
+        continue;
+      }
 
       let itemType: 'image' | 'video' | 'pdf' = 'image';
       if (file.type.startsWith('video/')) itemType = 'video';
       else if (file.type === 'application/pdf') itemType = 'pdf';
 
+      // Pre-flight: confirm the browser can decode the video before we upload.
+      if (itemType === 'video') {
+        const playable = await new Promise<boolean>((resolve) => {
+          const url = URL.createObjectURL(file);
+          const v = document.createElement('video');
+          v.preload = 'metadata';
+          v.muted = true;
+          v.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(v.videoWidth > 0); };
+          v.onerror = () => { URL.revokeObjectURL(url); resolve(false); };
+          v.src = url;
+        });
+        if (!playable) {
+          toast.error(`${file.name} can't be played in the browser. Re-export as H.264 .mp4.`);
+          failed++;
+          continue;
+        }
+      }
+
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
+      const baseName = `${sessionId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
+      const fileName = `${baseName}.${fileExt}`;
+
       const { error: uploadError } = await supabase.storage
         .from('creative-uploads')
-        .upload(fileName, file);
+        .upload(fileName, file, { contentType: file.type, upsert: false });
 
       if (uploadError) {
-        toast.error(`Failed to upload ${file.name}`);
+        console.error('storage upload failed', label, uploadError);
+        toast.error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        failed++;
         continue;
       }
 
@@ -314,15 +347,29 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
       });
 
       if (insertError) {
-        toast.error(`Failed to save ${file.name}`);
+        console.error('insert failed', label, insertError);
+        toast.error(`Saved file but couldn't record ${file.name}: ${insertError.message}`);
+        // clean up orphaned upload
+        await supabase.storage.from('creative-uploads').remove([fileName]);
+        failed++;
+        continue;
       }
+
+      succeeded++;
       sortOrder++;
     }
 
-    toast.success(`${files.length} file(s) uploaded`);
     await fetchItems();
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
+
+    if (succeeded > 0 && failed === 0) {
+      toast.success(`${succeeded} file${succeeded !== 1 ? 's' : ''} uploaded`);
+    } else if (succeeded > 0 && failed > 0) {
+      toast.warning(`${succeeded} uploaded, ${failed} failed`);
+    } else if (succeeded === 0 && failed > 0) {
+      toast.error(`Upload failed for all ${failed} file${failed !== 1 ? 's' : ''}`);
+    }
   };
 
   if (loading) {
