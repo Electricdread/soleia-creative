@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck, Link2, Mail, MonitorPlay } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Link2, Mail, MonitorPlay } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SessionContentManager } from './SessionContentManager';
 import { SessionPrevizClipsManager } from './SessionPrevizClipsManager';
@@ -78,7 +78,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [editClientName, setEditClientName] = useState(session.client_name);
   const [editCreativeNotes, setEditCreativeNotes] = useState(session.creative_notes || '');
   const [editTechnicalNotes, setEditTechnicalNotes] = useState(session.technical_notes || '');
-  const [editDropboxUrl, setEditDropboxUrl] = useState((session as any).dropbox_url || '');
+  
   const [editEventDate, setEditEventDate] = useState(session.event_date || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -175,7 +175,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
         client_name: editClientName.trim(),
         creative_notes: editCreativeNotes.trim() || null,
         technical_notes: editTechnicalNotes.trim() || null,
-        dropbox_url: editDropboxUrl.trim() || null,
+        
         event_date: editEventDate || null,
       })
       .eq('id', session.id);
@@ -386,7 +386,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             <DialogTitle>Edit Session</DialogTitle>
           </DialogHeader>
           <Tabs defaultValue="details" className="w-full flex-1 overflow-y-auto px-6 pb-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details" className="gap-1.5 text-xs">
                 <Settings2 className="w-3.5 h-3.5" />
                 Details
@@ -398,10 +398,6 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
               <TabsTrigger value="previz" className="gap-1.5 text-xs">
                 <MonitorPlay className="w-3.5 h-3.5" />
                 Previz
-              </TabsTrigger>
-              <TabsTrigger value="delivery" className="gap-1.5 text-xs">
-                <Truck className="w-3.5 h-3.5" />
-                Delivery
               </TabsTrigger>
             </TabsList>
 
