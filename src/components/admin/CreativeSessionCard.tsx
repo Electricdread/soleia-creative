@@ -449,13 +449,6 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                   className="text-sm resize-none"
                 />
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
-                <Button onClick={handleSaveEdit} disabled={saving} className="gap-1.5">
-                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  Save Changes
-                </Button>
-              </DialogFooter>
             </TabsContent>
 
             <TabsContent value="content" className="py-2">
