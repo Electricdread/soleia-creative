@@ -1,9 +1,15 @@
-## Change
+## Update Creative Sessions sort order
 
-Replace **`public/creative-guide/venue-layout-iso.png`** with the previewed render above:
+In `src/components/admin/CreativeSessionManager.tsx`, change `fetchSessions` to order by:
 
-- Bright sunlit Beach Club / pool on the left, palms on the pool side only.
-- Dark moody Main Room nightclub on the right — no foliage, no colored ceiling pillars, just clean dark interior with cool LED rim accents.
-- No labels or callouts.
+1. `is_active` DESC — active sessions on top, inactive at the bottom
+2. `created_at` DESC — within each group, newest first / oldest last
 
-On approval I'll copy the scratchpad image to the project path. No code changes — `InteractiveVenueMap.tsx` already references this file.
+```ts
+.order('is_active', { ascending: false })
+.order('created_at', { ascending: false });
+```
+
+Also update the project memory (`mem://features/creative-sessions/management-and-layout`) to reflect the new rule: active-before-inactive, then newest-first.
+
+No other files affected.

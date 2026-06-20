@@ -42,6 +42,7 @@ export function CreativeSessionManager() {
     const { data, error } = await supabase
       .from('creative_sessions')
       .select('*')
+      .order('is_active', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (error) {
