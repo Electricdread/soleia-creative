@@ -7,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck, Link2, Mail } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Truck, Link2, Mail, MonitorPlay } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SessionContentManager } from './SessionContentManager';
+import { SessionPrevizClipsManager } from './SessionPrevizClipsManager';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -385,14 +386,18 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
             <DialogTitle>Edit Session</DialogTitle>
           </DialogHeader>
           <Tabs defaultValue="details" className="w-full flex-1 overflow-y-auto px-6 pb-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="details" className="gap-1.5 text-xs">
                 <Settings2 className="w-3.5 h-3.5" />
                 Details
               </TabsTrigger>
               <TabsTrigger value="content" className="gap-1.5 text-xs">
                 <FileImage className="w-3.5 h-3.5" />
-                Content
+                Clips
+              </TabsTrigger>
+              <TabsTrigger value="previz" className="gap-1.5 text-xs">
+                <MonitorPlay className="w-3.5 h-3.5" />
+                Previz
               </TabsTrigger>
               <TabsTrigger value="delivery" className="gap-1.5 text-xs">
                 <Truck className="w-3.5 h-3.5" />
@@ -459,6 +464,12 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
             <TabsContent value="content" className="py-2">
               <SessionContentManager sessionId={session.id} sessionToken={session.token} />
+            </TabsContent>
+
+            <TabsContent value="previz" className="py-2">
+              {session.token && (
+                <SessionPrevizClipsManager sessionId={session.id} sessionToken={session.token} />
+              )}
             </TabsContent>
 
             <TabsContent value="delivery" className="space-y-4 py-2">
