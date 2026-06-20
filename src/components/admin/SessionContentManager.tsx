@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Trash2, Upload, Loader2, GripVertical, Image, Film, FileText, Pencil, Check, X, Plus, Layers } from 'lucide-react';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-import { SessionPrevizClipsManager } from './SessionPrevizClipsManager';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
   DndContext,
@@ -510,9 +510,6 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
         </DndContext>
       )}
 
-      {sessionToken && (
-        <SessionPrevizClipsManager sessionId={sessionId} sessionToken={sessionToken} />
-      )}
     </div>
   );
 }
