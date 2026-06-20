@@ -14,9 +14,8 @@ import CreativeGuide from "./pages/CreativeGuide";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import ContentDelivery from "./pages/ContentDelivery";
 import CreativeSession from "./pages/CreativeSession";
-import DeliveryGuide from "./pages/DeliveryGuide";
 
-import SessionDeliveryGuide from "./pages/SessionDeliveryGuide";
+
 import AdminLogin from "./pages/AdminLogin";
 import AdminPortal from "./pages/AdminPortal";
 import AdminCreative from "./pages/AdminCreative";
@@ -62,9 +61,6 @@ const App = () => (
               {/* Public Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/tutorial" element={<Tutorial />} />
-              <Route path="/delivery-guide" element={<DeliveryGuide />} />
-              
-              <Route path="/delivery/:token" element={<SessionDeliveryGuide />} />
               <Route path="/looks/:token" element={<SharedLookBook />} />
               
               {/* Root redirects to Admin Portal */}
