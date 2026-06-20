@@ -56,6 +56,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <FloatingThemeToggle />
             <Routes>
               {/* Public Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />
