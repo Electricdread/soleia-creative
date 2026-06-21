@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const PORTRAIT_SRC = "/luis-dreams-portrait.jpg";
@@ -107,10 +107,20 @@ export default function CreativeDirector() {
   const [portraitOk, setPortraitOk] = useState(true);
 
   useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Creative Director — Luis Dreams | Soleia";
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex,nofollow";
+    document.head.appendChild(meta);
     const img = new Image();
     img.onload = () => setPortraitOk(true);
     img.onerror = () => setPortraitOk(false);
     img.src = PORTRAIT_SRC;
+    return () => {
+      document.title = prevTitle;
+      meta.remove();
+    };
   }, []);
 
   return (
