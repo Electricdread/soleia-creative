@@ -125,14 +125,6 @@ export default function CreativeDirector() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Helmet>
-        <title>Creative Director — Luis Dreams | Soleia</title>
-        <meta name="robots" content="noindex,nofollow" />
-        <meta
-          name="description"
-          content="Luis Dreams, Creative Director of Soleia."
-        />
-      </Helmet>
 
       <main className="mx-auto max-w-6xl px-6 py-16 md:py-24">
         <section className="grid gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-14 md:items-start">
