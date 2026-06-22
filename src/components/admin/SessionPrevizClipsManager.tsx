@@ -201,7 +201,30 @@ function SortableRow({
           description={`Permanently remove "${clip.title}" from this session.`}
           onConfirm={() => onDelete(clip.id)}
         />
+        <Button
+          size="icon"
+          variant="ghost"
+          className={`h-8 w-8 ${showCues ? 'text-primary' : 'text-muted-foreground'}`}
+          onClick={() => setShowCues((s) => !s)}
+          title="Run-of-show cues"
+          aria-label="Run-of-show cues"
+        >
+          <ListOrdered className="h-3.5 w-3.5" />
+        </Button>
       </div>
+      </div>
+      {showCues && (
+        <div className="border-t border-border p-3">
+          <PrevizPlayer
+            videoUrl={clip.url}
+            cues={cues}
+            editable
+            onAddCue={addCue}
+            onUpdateCue={updateCue}
+            onDeleteCue={deleteCue}
+          />
+        </div>
+      )}
     </div>
   );
 }
