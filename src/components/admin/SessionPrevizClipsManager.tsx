@@ -16,10 +16,7 @@ import {
   Pencil,
   Check,
   X,
-  ListOrdered,
 } from 'lucide-react';
-import { PrevizPlayer } from '@/components/previz/PrevizPlayer';
-import { usePrevizCues } from '@/hooks/usePrevizCues';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import {
   DndContext,
@@ -82,8 +79,6 @@ function SortableRow({
   const style = { transform: CSS.Transform.toString(transform), transition };
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(clip.title);
-  const [showCues, setShowCues] = useState(false);
-  const { cues, addCue, updateCue, deleteCue } = usePrevizCues(showCues ? clip.id : null);
 
   return (
     <div
@@ -203,30 +198,8 @@ function SortableRow({
           description={`Permanently remove "${clip.title}" from this session.`}
           onConfirm={() => onDelete(clip.id)}
         />
-        <Button
-          size="icon"
-          variant="ghost"
-          className={`h-8 w-8 ${showCues ? 'text-primary' : 'text-muted-foreground'}`}
-          onClick={() => setShowCues((s) => !s)}
-          title="Run-of-show cues"
-          aria-label="Run-of-show cues"
-        >
-          <ListOrdered className="h-3.5 w-3.5" />
-        </Button>
       </div>
       </div>
-      {showCues && (
-        <div className="border-t border-border p-3">
-          <PrevizPlayer
-            videoUrl={clip.url}
-            cues={cues}
-            editable
-            onAddCue={addCue}
-            onUpdateCue={updateCue}
-            onDeleteCue={deleteCue}
-          />
-        </div>
-      )}
     </div>
   );
 }
