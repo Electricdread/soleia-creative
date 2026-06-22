@@ -64,6 +64,71 @@ export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
   const [muted, setMuted] = useState(true);
+
+  // Background prefetch: warm the browser's media/HTTP cache for every clip
+  // as soon as the venue mounts, so opening previz or switching clips is
+  // instant instead of waiting on a buffer. Hidden, muted, paused <video>
+  // elements with preload="auto" fetch the bytes into the same cache the
+  // live RoomScene player will read from.
+  useEffect(() => {
+    if (!clips.length && !fallbackUrl) return;
+    const urls = clips
+      .map((c) => c.url)
+      .filter((u): u is string => !!u && u.trim().length > 0);
+    if (fallbackUrl) urls.push(fallbackUrl);
+    const active = clips.find((c) => c.id === activeId)?.url;
+    const ordered = [
+      ...(active ? [active] : []),
+      ...urls.filter((u) => u !== active),
+    ];
+    const MAX_CONCURRENT = 3;
+    const elements: HTMLVideoElement[] = [];
+    let cancelled = false;
+    let inFlight = 0;
+    let cursor = 0;
+    const pump = () => {
+      if (cancelled) return;
+      while (inFlight < MAX_CONCURRENT && cursor < ordered.length) {
+        const url = ordered[cursor++];
+        const v = document.createElement('video');
+        v.crossOrigin = 'anonymous';
+        v.muted = true;
+        v.playsInline = true;
+        v.preload = 'auto';
+        (v as any).disablePictureInPicture = true;
+        v.style.position = 'absolute';
+        v.style.width = '1px';
+        v.style.height = '1px';
+        v.style.opacity = '0';
+        v.style.pointerEvents = 'none';
+        v.style.left = '-9999px';
+        v.src = url;
+        inFlight++;
+        const done = () => {
+          inFlight--;
+          pump();
+        };
+        v.addEventListener('canplaythrough', done, { once: true });
+        v.addEventListener('loadeddata', done, { once: true });
+        v.addEventListener('error', done, { once: true });
+        document.body.appendChild(v);
+        elements.push(v);
+      }
+    };
+    pump();
+    return () => {
+      cancelled = true;
+      for (const v of elements) {
+        try { v.pause(); } catch { /* noop */ }
+        try { v.removeAttribute('src'); v.load(); } catch { /* noop */ }
+        if (v.parentNode) v.parentNode.removeChild(v);
+      }
+    };
+    // activeId intentionally excluded — re-running on every clip switch would
+    // tear down the warmed cache. Only refresh when the clip list itself changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clips, fallbackUrl]);
+  
   
 
   // Apply mute state to the underlying video whenever it (re)mounts or toggles.
