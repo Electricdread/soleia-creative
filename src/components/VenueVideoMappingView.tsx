@@ -58,7 +58,9 @@ interface VenueRoomProps {
 
 export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
   const progressRef = useRef(0);
-  const [previz, setPreviz] = useState(false);
+  // Auto-start previz playback so the clip is visible immediately when the
+  // client opens the session from an email link — no extra click required.
+  const [previz, setPreviz] = useState(true);
   const [isFull, setIsFull] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(clips[0]?.id ?? null);
   const [playlistOpen, setPlaylistOpen] = useState(false);
