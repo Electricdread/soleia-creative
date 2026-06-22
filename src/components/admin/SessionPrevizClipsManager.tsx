@@ -41,7 +41,6 @@ import {
   probePlayable,
   uploadPrevizFile,
 } from '@/lib/previzUpload';
-import { reencodePrevizForPlayback } from '@/lib/previzCompressor';
 
 interface PrevizClip {
   id: string;
@@ -54,10 +53,6 @@ interface PrevizClip {
 interface Props {
   sessionId: string;
   sessionToken: string;
-}
-
-function extensionForMime(mimeType: string): string {
-  return mimeType.includes('mp4') ? 'mp4' : 'webm';
 }
 
 function SortableRow({
