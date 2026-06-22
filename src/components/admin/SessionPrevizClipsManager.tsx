@@ -59,6 +59,10 @@ interface Props {
   sessionToken: string;
 }
 
+function extensionForMime(mimeType: string): string {
+  return mimeType.includes('mp4') ? 'mp4' : 'webm';
+}
+
 function SortableRow({
   clip,
   onDelete,
@@ -305,7 +309,7 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
 
       const encodedFile = new File(
         [encoded.blob],
-        file.name.replace(/\.[^.]+$/, '') + '.webm',
+        `${file.name.replace(/\.[^.]+$/, '')}.${extensionForMime(encoded.mimeType)}`,
         { type: encoded.mimeType },
       );
 
