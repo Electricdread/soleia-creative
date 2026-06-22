@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const PREVIZ_BUCKET = 'creative-guide-template';
-export const PREVIZ_MAX_BYTES = 524288000; // 500MB
+export const PREVIZ_MAX_BYTES = 2147483648; // 2GB
 
 export function isAcceptablePrevizFile(f: File): { ok: true } | { ok: false; reason: string } {
   const name = f.name.toLowerCase();
@@ -14,7 +14,7 @@ export function isAcceptablePrevizFile(f: File): { ok: true } | { ok: false; rea
     name.endsWith('.mp4') ||
     name.endsWith('.webm');
   if (!okType) return { ok: false, reason: 'Only .mp4 (H.264) or .webm files are supported.' };
-  if (f.size > PREVIZ_MAX_BYTES) return { ok: false, reason: 'File too large — maximum is 500MB.' };
+  if (f.size > PREVIZ_MAX_BYTES) return { ok: false, reason: 'File too large — maximum is 2GB.' };
   return { ok: true };
 }
 
