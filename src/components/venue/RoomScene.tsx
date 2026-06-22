@@ -569,7 +569,9 @@ function RoomModel({
     const m = floorMatRef.current;
     if (!m) return;
     frameN.current += 1;
-    if (frameN.current % 8 !== 0) return;
+    // Sample the movie every ~20 frames so the video decoder isn't starved
+    // by the floor-tint readback while previz is playing.
+    if (frameN.current % 20 !== 0) return;
     const vid = videoTex.image as HTMLVideoElement | undefined;
     if (!vid || vid.readyState < 2) return;
     try {
@@ -689,7 +691,11 @@ export default function RoomScene({
     v.loop = true;
     v.muted = true; // start muted so autoplay is allowed; parent unmutes on user gesture
     v.playsInline = true;
-    v.preload = 'auto';
+    // 'auto' on a 1–2 GB H.264 file causes the browser to chase the whole
+    // buffer aggressively and stutters playback. 'metadata' lets the media
+    // engine stream just-in-time, which is far smoother for big previz files.
+    v.preload = 'metadata';
+    (v as any).disablePictureInPicture = true;
     v.src = src;
     return v;
   }, [src]);
@@ -704,19 +710,28 @@ export default function RoomScene({
     t.colorSpace = THREE.NoColorSpace;
     t.minFilter = THREE.LinearFilter;
     t.magFilter = THREE.LinearFilter;
+    t.generateMipmaps = false;
     return t;
   }, [video]);
 
   useEffect(() => {
-    if (previz) video.play().catch(() => {});
-    else video.pause();
+    if (previz) {
+      // Kick the decoder before play() so the first frames are ready.
+      try { video.load(); } catch { /* noop */ }
+      const p = video.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } else {
+      video.pause();
+    }
   }, [previz, video]);
 
   return (
     <Canvas
       className="vvm-3d-canvas"
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: false, toneMapping: THREE.NoToneMapping }}
+      // Lower the pixel-ratio ceiling while previz is playing so the GPU
+      // isn't decoding video AND rasterising 2x pixels at the same time.
+      dpr={previz ? [1, 1.25] : [1, 2]}
+      gl={{ antialias: !previz, alpha: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
       <color attach="background" args={['#06060b']} />
       <Suspense fallback={null}>
