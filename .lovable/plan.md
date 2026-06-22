@@ -1,37 +1,29 @@
 ## Goal
+Drop the previz cue-marker timing feature entirely. Keep the focus on clear video + working audio playback.
 
-Make the previz feel smooth and reliable in the 3D venue view, while keeping the new audio toggle working.
+## Changes
 
-## Assumption
+1. **Remove cue overlay from the player**
+   - `src/components/previz/PrevizPlayer.tsx`: stop rendering `VenuePrevizCueOverlay` and any marker UI / duration-probing logic that exists only to position cues. Keep the standard video element, controls, and audio path untouched.
 
-I’ll treat “playback is not good” as choppy/stuttering playback in the 3D venue previz, especially with large 3840×2160 uploads.
+2. **Hide cue management UI**
+   - Remove the "Cue points" editor/section from the previz admin (in `SessionPrevizClipsManager.tsx` or whichever sub-component renders the cue list/add-cue form). Uploads, re-encoding, progress, and clip list stay exactly as they are.
+   - Remove any cue-related controls from the client-facing venue view that renders previz.
 
-## Plan
+3. **Delete now-unused files**
+   - `src/components/previz/VenuePrevizCueOverlay.tsx`
+   - `src/lib/mediaDuration.ts` (only used to place cues)
+   - Any small cue-only helper/types file if one exists.
 
-1. **Reduce 3D render pressure during previz playback**
-   - Lower the 3D canvas device-pixel-ratio ceiling while previz is active.
-   - Keep the venue interactive, but avoid making the browser render more pixels than needed while also decoding video.
+4. **Leave data alone**
+   - Do NOT drop the cue points table/columns. Existing rows stay in the database in case we want to revisit this later; they simply won't be read or written from the UI.
 
-2. **Make the video element more playback-stable**
-   - Use safer video loading behavior for the 3D texture.
-   - Start muted for autoplay, then preserve the tap-to-unmute behavior.
-   - Ensure source changes reset/play cleanly instead of leaving the video in a bad buffering state.
+5. **Keep intact**
+   - Browser re-encode pipeline (`src/lib/previzCompressor.ts`) with VP9/WebM + AAC/MP4 fallback, `fix-webm-duration`, resumed `AudioContext`, captureStream audio path — this is what gives clear video + audio.
 
-3. **Throttle expensive video-driven updates if needed**
-   - Review any per-frame color sampling / texture-driven effects in `RoomScene.tsx` and reduce their frequency during previz so the video decode gets priority.
+## Technical notes
+- After removing the imports of `VenuePrevizCueOverlay` and `getMediaDuration`, run a quick `rg` for any leftover references so the build stays clean.
+- No migrations, no edge-function changes, no schema changes.
 
-4. **Improve admin guidance for source files**
-   - Update the previz upload text to recommend web-optimized h.264 MP4 exports instead of maximum-quality 4K masters.
-   - Keep the current upload flow intact; no database changes and no new backend pipeline.
-
-## Expected files
-
-- `src/components/venue/RoomScene.tsx`
-- `src/components/VenueVideoMappingView.tsx`
-- `src/components/admin/SessionPrevizClipsManager.tsx`
-
-## Not included
-
-- No new backend transcoder.
-- No schema/storage changes.
-- No changes to cue/comment/voting behavior.
+## Out of scope
+- Re-introducing cues in a different form. If you want them back later we can revisit with a dedicated timeline editor.
