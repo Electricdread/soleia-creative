@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move, Layers, Check, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move, Layers, Check, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import RoomScene from '@/components/venue/RoomScene';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,7 +65,27 @@ export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
   const [activeId, setActiveId] = useState<string | null>(clips[0]?.id ?? null);
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
+  const [muted, setMuted] = useState(true);
   const { cues } = usePrevizCues(activeId);
+
+  // Apply mute state to the underlying video whenever it (re)mounts or toggles.
+  useEffect(() => {
+    if (!videoEl) return;
+    videoEl.muted = muted;
+    if (!muted && previz) {
+      // Re-trigger play so the audio track engages after the user gesture.
+      videoEl.play().catch(() => {});
+    }
+  }, [videoEl, muted, previz]);
+
+  const toggleAudio = () => {
+    // Must run inside a user gesture so the browser permits unmuted playback.
+    if (videoEl) {
+      videoEl.muted = !muted;
+      if (muted) videoEl.play().catch(() => {});
+    }
+    setMuted((m) => !m);
+  };
 
   useEffect(() => {
     if (clips.length && !clips.find((c) => c.id === activeId)) {
@@ -221,6 +241,14 @@ export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
             )}
           </div>
         )}
+
+        <button
+          onClick={toggleAudio}
+          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
+          title={muted ? 'Unmute previz audio' : 'Mute previz audio'}
+        >
+          {muted ? <><VolumeX className="h-3.5 w-3.5" /> Audio</> : <><Volume2 className="h-3.5 w-3.5 text-primary" /> On</>}
+        </button>
 
         <button
           onClick={toggleFull}
