@@ -64,7 +64,7 @@ export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
   const [muted, setMuted] = useState(true);
-  const { cues } = usePrevizCues(activeId);
+  
 
   // Apply mute state to the underlying video whenever it (re)mounts or toggles.
   useEffect(() => {
