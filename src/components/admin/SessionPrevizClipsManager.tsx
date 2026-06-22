@@ -394,9 +394,10 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Upload multiple <span className="text-foreground">.mp4 (H.264)</span> previz movies — each
-        rendered to the standard 3840×2160 SOLEIA pixel map. Clients pick between them from a
-        playlist dropdown on the 3D venue HUD.
+        Upload <span className="text-foreground">web-optimized .mp4 (H.264, AAC audio)</span> previz
+        movies — 3840×2160 SOLEIA pixel map, target <span className="text-foreground">15–25 Mbps</span>
+        with the <span className="text-foreground">moov atom at the start</span> (Faststart). Smaller,
+        web-tuned exports stream and scrub far smoother in the 3D venue than full-quality masters.
       </p>
 
       {/* Uploader */}
