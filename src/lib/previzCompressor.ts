@@ -101,9 +101,16 @@ export async function reencodePrevizForPlayback(
       let audioCtx: AudioContext | null = null;
       try {
         audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const src = audioCtx.createMediaElementSource(video);
+        // Browsers create AudioContexts in 'suspended' state until a user
+        // gesture resumes them. If we skip this, the MediaElementSource never
+        // pumps samples into the MediaStreamDestination and the resulting
+        // WebM ships with a silent (or missing) audio track.
+        if (audioCtx.state === 'suspended') {
+          try { await audioCtx.resume(); } catch { /* noop */ }
+        }
+        const srcNode = audioCtx.createMediaElementSource(video);
         const dest = audioCtx.createMediaStreamDestination();
-        src.connect(dest);
+        srcNode.connect(dest);
         // Do NOT connect to audioCtx.destination — we don't want the source
         // audio to blast through the speakers while encoding.
         dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
