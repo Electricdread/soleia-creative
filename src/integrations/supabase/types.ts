@@ -1302,6 +1302,47 @@ export type Database = {
           },
         ]
       }
+      session_previz_cues: {
+        Row: {
+          clip_id: string
+          color: string | null
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+          time_seconds: number
+          updated_at: string
+        }
+        Insert: {
+          clip_id: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          time_seconds?: number
+          updated_at?: string
+        }
+        Update: {
+          clip_id?: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          time_seconds?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_previz_cues_clip_id_fkey"
+            columns: ["clip_id"]
+            isOneToOne: false
+            referencedRelation: "session_previz_clips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_scenes: {
         Row: {
           created_at: string
