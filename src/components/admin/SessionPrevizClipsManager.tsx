@@ -41,6 +41,7 @@ import {
   probePlayable,
   uploadPrevizFile,
 } from '@/lib/previzUpload';
+import { reencodePrevizForPlayback } from '@/lib/previzCompressor';
 
 interface PrevizClip {
   id: string;
