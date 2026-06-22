@@ -44,6 +44,7 @@ import {
   probePlayable,
   uploadPrevizFile,
 } from '@/lib/previzUpload';
+import { reencodePrevizForPlayback } from '@/lib/previzCompressor';
 
 interface PrevizClip {
   id: string;
@@ -231,6 +232,7 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [stageLabel, setStageLabel] = useState<string>('');
   const [titleDraft, setTitleDraft] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -276,10 +278,39 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
     }
     const title = titleDraft.trim() || file.name.replace(/\.[^.]+$/, '');
     setUploading(true);
-    setProgress(15);
+    setProgress(2);
+    setStageLabel('Preparing encoder…');
     try {
-      const { url } = await uploadPrevizFile(file, `previz/${sessionId}/`);
-      setProgress(75);
+      // Re-encode in-browser to a streaming-friendly WebM at the original
+      // pixel-map resolution. This is what fixes choppy playback for huge
+      // 4K H.264 masters — the previz player gets a clean, web-tuned file
+      // with audio instead of the 1–2 GB original.
+      const encoded = await reencodePrevizForPlayback(file, (p) => {
+        // First 70% of the bar is the re-encode pass.
+        const mapped = Math.max(2, Math.min(70, Math.round(p.progress * 0.7)));
+        setProgress(mapped);
+        setStageLabel(
+          p.stage === 'encoding'
+            ? `Optimizing for playback… ${Math.round(p.progress)}%`
+            : p.stage === 'finalizing'
+              ? 'Finalizing…'
+              : p.stage === 'loading'
+                ? 'Loading source…'
+                : 'Optimizing…',
+        );
+      });
+
+      setProgress(72);
+      setStageLabel('Uploading optimized previz…');
+
+      const encodedFile = new File(
+        [encoded.blob],
+        file.name.replace(/\.[^.]+$/, '') + '.webm',
+        { type: encoded.mimeType },
+      );
+
+      const { url } = await uploadPrevizFile(encodedFile, `previz/${sessionId}/`);
+      setProgress(92);
       const nextOrder = clips.length ? Math.max(...clips.map((c) => c.sort_order)) + 1 : 0;
       const { error } = await supabase.from('session_previz_clips').insert({
         session_id: sessionId,
@@ -290,9 +321,10 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
       });
       if (error) throw error;
       setProgress(100);
+      setStageLabel('Done');
       setTitleDraft('');
       if (fileRef.current) fileRef.current.value = '';
-      toast.success('Previz clip added');
+      toast.success('Previz clip added — optimized for smooth playback');
       await fetchClips();
     } catch (err) {
       console.error(err);
@@ -300,6 +332,7 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
     } finally {
       setUploading(false);
       setProgress(0);
+      setStageLabel('');
     }
   };
 
