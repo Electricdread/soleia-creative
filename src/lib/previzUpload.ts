@@ -14,7 +14,7 @@ export function isAcceptablePrevizFile(f: File): { ok: true } | { ok: false; rea
     name.endsWith('.mp4') ||
     name.endsWith('.webm');
   if (!okType) return { ok: false, reason: 'Only .mp4 (H.264) or .webm files are supported.' };
-  if (f.size > PREVIZ_MAX_BYTES) return { ok: false, reason: 'File too large — maximum is 500MB.' };
+  if (f.size > PREVIZ_MAX_BYTES) return { ok: false, reason: 'File too large — maximum is 2GB.' };
   return { ok: true };
 }
 
