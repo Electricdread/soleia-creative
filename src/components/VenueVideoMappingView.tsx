@@ -65,7 +65,27 @@ export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
   const [activeId, setActiveId] = useState<string | null>(clips[0]?.id ?? null);
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
+  const [muted, setMuted] = useState(true);
   const { cues } = usePrevizCues(activeId);
+
+  // Apply mute state to the underlying video whenever it (re)mounts or toggles.
+  useEffect(() => {
+    if (!videoEl) return;
+    videoEl.muted = muted;
+    if (!muted && previz) {
+      // Re-trigger play so the audio track engages after the user gesture.
+      videoEl.play().catch(() => {});
+    }
+  }, [videoEl, muted, previz]);
+
+  const toggleAudio = () => {
+    // Must run inside a user gesture so the browser permits unmuted playback.
+    if (videoEl) {
+      videoEl.muted = !muted;
+      if (muted) videoEl.play().catch(() => {});
+    }
+    setMuted((m) => !m);
+  };
 
   useEffect(() => {
     if (clips.length && !clips.find((c) => c.id === activeId)) {
