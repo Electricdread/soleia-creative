@@ -84,11 +84,15 @@ function SortableRow({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 rounded-md border border-border bg-card/60 p-2"
+      className="rounded-md border border-border bg-card/60"
     >
+      <div className="flex items-center gap-2 p-2">
       <button
         {...attributes}
         {...listeners}
+        className="cursor-grab touch-manipulation text-muted-foreground hover:text-foreground"
+        aria-label="Reorder"
+      >
         className="cursor-grab touch-manipulation text-muted-foreground hover:text-foreground"
         aria-label="Reorder"
       >
