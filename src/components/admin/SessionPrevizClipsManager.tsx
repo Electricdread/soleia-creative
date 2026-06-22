@@ -41,7 +41,6 @@ import {
   probePlayable,
   uploadPrevizFile,
 } from '@/lib/previzUpload';
-import { reencodePrevizForPlayback } from '@/lib/previzCompressor';
 
 interface PrevizClip {
   id: string;
@@ -54,10 +53,6 @@ interface PrevizClip {
 interface Props {
   sessionId: string;
   sessionToken: string;
-}
-
-function extensionForMime(mimeType: string): string {
-  return mimeType.includes('mp4') ? 'mp4' : 'webm';
 }
 
 function SortableRow({
@@ -255,38 +250,13 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
     }
     const title = titleDraft.trim() || file.name.replace(/\.[^.]+$/, '');
     setUploading(true);
-    setProgress(2);
-    setStageLabel('Preparing encoder…');
+    setProgress(5);
+    setStageLabel('Uploading previz…');
     try {
-      // Re-encode in-browser to a streaming-friendly WebM at the original
-      // pixel-map resolution. This is what fixes choppy playback for huge
-      // 4K H.264 masters — the previz player gets a clean, web-tuned file
-      // with audio instead of the 1–2 GB original.
-      const encoded = await reencodePrevizForPlayback(file, (p) => {
-        // First 70% of the bar is the re-encode pass.
-        const mapped = Math.max(2, Math.min(70, Math.round(p.progress * 0.7)));
-        setProgress(mapped);
-        setStageLabel(
-          p.stage === 'encoding'
-            ? `Optimizing for playback… ${Math.round(p.progress)}%`
-            : p.stage === 'finalizing'
-              ? 'Finalizing…'
-              : p.stage === 'loading'
-                ? 'Loading source…'
-                : 'Optimizing…',
-        );
-      });
-
-      setProgress(72);
-      setStageLabel('Uploading optimized previz…');
-
-      const encodedFile = new File(
-        [encoded.blob],
-        `${file.name.replace(/\.[^.]+$/, '')}.${extensionForMime(encoded.mimeType)}`,
-        { type: encoded.mimeType },
-      );
-
-      const { url } = await uploadPrevizFile(encodedFile, `previz/${sessionId}/`);
+      // Upload the original file as-is. The source is already an MP4/WebM
+      // the browser confirmed it can decode, so re-encoding only risks
+      // corrupting audio or failing on large files. Original = cleanest.
+      const { url } = await uploadPrevizFile(file, `previz/${sessionId}/`);
       setProgress(92);
       const nextOrder = clips.length ? Math.max(...clips.map((c) => c.sort_order)) + 1 : 0;
       const { error } = await supabase.from('session_previz_clips').insert({
@@ -301,7 +271,7 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
       setStageLabel('Done');
       setTitleDraft('');
       if (fileRef.current) fileRef.current.value = '';
-      toast.success('Previz clip added — optimized for smooth playback');
+      toast.success('Previz clip added');
       await fetchClips();
     } catch (err) {
       console.error(err);
@@ -404,10 +374,9 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Upload your previz at any size — every file is automatically re-encoded in your browser
-        at the <span className="text-foreground">original 3840×2160 SOLEIA pixel map</span> into a
-        streaming-friendly <span className="text-foreground">VP9 WebM (~22 Mbps, with audio)</span>
-        so clients get clear, smooth playback in the 3D venue.
+        Upload your previz as <span className="text-foreground">H.264 .mp4</span> or
+        <span className="text-foreground"> .webm</span>. Files are stored as-is so the 3D venue
+        plays back the original clear video and audio.
       </p>
 
       {/* Uploader */}
