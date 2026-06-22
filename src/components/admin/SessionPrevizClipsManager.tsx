@@ -427,10 +427,10 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Upload <span className="text-foreground">web-optimized .mp4 (H.264, AAC audio)</span> previz
-        movies — 3840×2160 SOLEIA pixel map, target <span className="text-foreground">15–25 Mbps</span>
-        with the <span className="text-foreground">moov atom at the start</span> (Faststart). Smaller,
-        web-tuned exports stream and scrub far smoother in the 3D venue than full-quality masters.
+        Upload your previz at any size — every file is automatically re-encoded in your browser
+        at the <span className="text-foreground">original 3840×2160 SOLEIA pixel map</span> into a
+        streaming-friendly <span className="text-foreground">VP9 WebM (~22 Mbps, with audio)</span>
+        so clients get clear, smooth playback in the 3D venue.
       </p>
 
       {/* Uploader */}
@@ -455,7 +455,7 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
             ) : (
               <Upload className="h-3.5 w-3.5" />
             )}
-            {uploading ? 'Uploading…' : 'Add previz clip'}
+            {uploading ? 'Optimizing…' : 'Add previz clip'}
           </Button>
           <input
             ref={fileRef}
@@ -465,8 +465,11 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
             onChange={(e) => handlePick(e.target.files?.[0] ?? undefined)}
           />
           {uploading && (
-            <div className="flex-1">
+            <div className="flex-1 space-y-1">
               <Progress value={progress} className="h-1.5" />
+              {stageLabel && (
+                <p className="text-[10px] font-mono text-muted-foreground">{stageLabel}</p>
+              )}
             </div>
           )}
         </div>
