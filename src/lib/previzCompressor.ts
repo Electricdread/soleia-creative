@@ -41,9 +41,12 @@ const TARGET_FPS = 30;
  */
 function pickMimeType(): string {
   const candidates = [
+    'video/mp4;codecs=avc1.640028,mp4a.40.2',
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4',
     'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp9',
     'video/webm;codecs=vp8,opus',
+    'video/webm;codecs=vp9',
     'video/webm;codecs=vp8',
     'video/webm',
   ];
@@ -99,10 +102,24 @@ export async function reencodePrevizForPlayback(
 
       const stream = (canvas as HTMLCanvasElement).captureStream(TARGET_FPS);
 
-      // Pull audio from the source video through WebAudio so the encoder
-      // gets a real MediaStreamTrack.
+      // Pull audio from the source video so the encoder gets a real
+      // MediaStreamTrack. Native capture is most reliable when available;
+      // WebAudio is the fallback for browsers that expose no captureStream().
       let audioCtx: AudioContext | null = null;
+      let audioTrackAdded = false;
+      const captureStream =
+        (video as HTMLVideoElement & { captureStream?: () => MediaStream; mozCaptureStream?: () => MediaStream }).captureStream ??
+        (video as HTMLVideoElement & { mozCaptureStream?: () => MediaStream }).mozCaptureStream;
       try {
+        captureStream?.call(video).getAudioTracks().forEach((t) => {
+          stream.addTrack(t);
+          audioTrackAdded = true;
+        });
+      } catch {
+        audioTrackAdded = false;
+      }
+      try {
+        if (audioTrackAdded) throw new Error('Audio track already captured');
         const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (!AudioContextClass) throw new Error('AudioContext unavailable');
         audioCtx = new AudioContextClass();
@@ -161,7 +178,9 @@ export async function reencodePrevizForPlayback(
           // Browser MediaRecorder WebM output often omits duration metadata.
           // Without this, HTMLVideoElement reports duration as 0/Infinity, so
           // cue markers collapse to the left edge and seeking behaves badly.
-          blob = await fixWebmDuration(rawBlob, Math.round(duration * 1000), { logger: false });
+          if (rawBlob.type.includes('webm')) {
+            blob = await fixWebmDuration(rawBlob, Math.round(duration * 1000), { logger: false });
+          }
         } catch {
           blob = rawBlob;
         }
