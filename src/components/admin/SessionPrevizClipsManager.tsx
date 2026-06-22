@@ -374,10 +374,9 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Upload your previz at any size — every file is automatically re-encoded in your browser
-        at the <span className="text-foreground">original 3840×2160 SOLEIA pixel map</span> into a
-        streaming-friendly <span className="text-foreground">VP9 WebM (~22 Mbps, with audio)</span>
-        so clients get clear, smooth playback in the 3D venue.
+        Upload your previz as <span className="text-foreground">H.264 .mp4</span> or
+        <span className="text-foreground"> .webm</span>. Files are stored as-is so the 3D venue
+        plays back the original clear video and audio.
       </p>
 
       {/* Uploader */}
