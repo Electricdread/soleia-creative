@@ -687,7 +687,7 @@ export default function RoomScene({
     // the default neon palette instead of tinting to the movie's colours.
     v.crossOrigin = 'anonymous';
     v.loop = true;
-    v.muted = true;
+    v.muted = true; // start muted so autoplay is allowed; parent unmutes on user gesture
     v.playsInline = true;
     v.preload = 'auto';
     v.src = src;
