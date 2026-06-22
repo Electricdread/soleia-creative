@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move, Layers, Check, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move, Layers, Check, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import RoomScene from '@/components/venue/RoomScene';
 import { supabase } from '@/integrations/supabase/client';
