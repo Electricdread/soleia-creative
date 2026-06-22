@@ -1,29 +1,22 @@
 ## Goal
-Drop the previz cue-marker timing feature entirely. Keep the focus on clear video + working audio playback.
+Make previz clip switching/playback instant — no buffering wait when a viewer opens the 3D venue or picks a different clip from the playlist.
+
+## Approach
+Preload every previz clip in the background as soon as `VenueRoom` mounts, so by the time the user clicks Play or switches clips the bytes are already in the browser cache.
 
 ## Changes
 
-1. **Remove cue overlay from the player**
-   - `src/components/previz/PrevizPlayer.tsx`: stop rendering `VenuePrevizCueOverlay` and any marker UI / duration-probing logic that exists only to position cues. Keep the standard video element, controls, and audio path untouched.
+**`src/components/VenueVideoMappingView.tsx`**
+- On mount (and whenever `clips` changes), kick off a background prefetch for every clip URL:
+  - Use hidden `<video preload="auto" muted playsinline>` elements (one per clip) appended off-screen, OR a `fetch(url, { cache: 'force-cache' })` per URL that streams the body to `/dev/null`.
+  - Prefer the hidden-video approach: it warms the browser's media cache the same way the real `RoomScene` video element will read it, and it's bounded by the browser's own media memory limits.
+- Prioritize the currently-active clip first, then the rest in parallel (cap at ~3 concurrent to avoid saturating mobile networks).
+- Clean up the prefetch elements on unmount.
 
-2. **Hide cue management UI**
-   - Remove the "Cue points" editor/section from the previz admin (in `SessionPrevizClipsManager.tsx` or whichever sub-component renders the cue list/add-cue form). Uploads, re-encoding, progress, and clip list stay exactly as they are.
-   - Remove any cue-related controls from the client-facing venue view that renders previz.
+**`src/components/venue/RoomScene.tsx`**
+- Change the live playback `<video>` element's `preload` from `'metadata'` to `'auto'` so once previz is toggled on, the browser fetches the full clip immediately (it can reuse bytes already warmed by the prefetch).
 
-3. **Delete now-unused files**
-   - `src/components/previz/VenuePrevizCueOverlay.tsx`
-   - `src/lib/mediaDuration.ts` (only used to place cues)
-   - Any small cue-only helper/types file if one exists.
-
-4. **Leave data alone**
-   - Do NOT drop the cue points table/columns. Existing rows stay in the database in case we want to revisit this later; they simply won't be read or written from the UI.
-
-5. **Keep intact**
-   - Browser re-encode pipeline (`src/lib/previzCompressor.ts`) with VP9/WebM + AAC/MP4 fallback, `fix-webm-duration`, resumed `AudioContext`, captureStream audio path — this is what gives clear video + audio.
-
-## Technical notes
-- After removing the imports of `VenuePrevizCueOverlay` and `getMediaDuration`, run a quick `rg` for any leftover references so the build stays clean.
-- No migrations, no edge-function changes, no schema changes.
-
-## Out of scope
-- Re-introducing cues in a different form. If you want them back later we can revisit with a dedicated timeline editor.
+## Notes / trade-offs
+- Background prefetch uses bandwidth up front. For a typical previz session (a handful of ~720p re-encoded clips) this is the right trade — viewers stop seeing the "buffering" pause when switching clips.
+- No changes to upload/encode pipeline, audio handling, or the 3D scene itself.
+- No backend changes.
