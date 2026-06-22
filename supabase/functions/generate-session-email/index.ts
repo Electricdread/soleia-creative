@@ -249,8 +249,8 @@ Deno.serve(async (req) => {
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 <tr><td style="background:linear-gradient(135deg,#B8860B,#DAA520);height:6px;border-radius:4px 4px 0 0;"></td></tr>
 <tr><td style="padding:30px 40px 20px;text-align:center;">
-<span style="font-size:28px;font-weight:700;color:#B8860B;letter-spacing:2px;">SOLEIA</span>
-<p style="margin:4px 0 0;font-size:11px;color:#8B6914;letter-spacing:3px;text-transform:uppercase;">Creative Team</p>
+<img src="${logoUrl}" alt="Soleia" width="180" style="display:block;height:60px;width:auto;margin:0 auto;border:0;outline:none;text-decoration:none;" />
+<p style="margin:8px 0 0;font-size:11px;color:#8B6914;letter-spacing:3px;text-transform:uppercase;">Creative Team</p>
 </td></tr>
 ${coverUrl ? `<tr><td style="padding:0 30px;">
 <img src="${esc(coverUrl)}" alt="${esc(title)}" width="540" style="width:100%;max-width:540px;height:auto;border-radius:8px;display:block;" />
