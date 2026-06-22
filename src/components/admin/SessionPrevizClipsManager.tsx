@@ -16,7 +16,10 @@ import {
   Pencil,
   Check,
   X,
+  ListOrdered,
 } from 'lucide-react';
+import { PrevizPlayer } from '@/components/previz/PrevizPlayer';
+import { usePrevizCues } from '@/hooks/usePrevizCues';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import {
   DndContext,
