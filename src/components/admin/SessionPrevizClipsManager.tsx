@@ -41,6 +41,7 @@ import {
   probePlayable,
   uploadPrevizFile,
 } from '@/lib/previzUpload';
+import { reencodePrevizForPlayback } from '@/lib/previzCompressor';
 
 interface PrevizClip {
   id: string;
@@ -250,14 +251,42 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
     }
     const title = titleDraft.trim() || file.name.replace(/\.[^.]+$/, '');
     setUploading(true);
-    setProgress(5);
-    setStageLabel('Uploading previz…');
+    setProgress(2);
+    setStageLabel('Optimizing for playback…');
     try {
-      // Upload the original file as-is. The source is already an MP4/WebM
-      // the browser confirmed it can decode, so re-encoding only risks
-      // corrupting audio or failing on large files. Original = cleanest.
-      const { url } = await uploadPrevizFile(file, `previz/${sessionId}/`);
-      setProgress(92);
+      // Try to re-encode for optimal venue playback (preserves dimensions,
+      // high bitrate, captures audio). If re-encode fails for any reason,
+      // fall back to uploading the original so the upload never breaks.
+      let uploadBlob: Blob = file;
+      let uploadName = file.name;
+      let uploadType = file.type;
+      try {
+        const encoded = await reencodePrevizForPlayback(file, (p) => {
+          // Encoding phase 0-85% of the overall progress bar
+          setStageLabel(
+            p.stage === 'loading'
+              ? 'Preparing source…'
+              : p.stage === 'encoding'
+                ? 'Optimizing for playback…'
+                : p.stage === 'finalizing'
+                  ? 'Finalizing…'
+                  : 'Done',
+          );
+          setProgress(Math.min(85, Math.round(p.progress * 0.85)));
+        });
+        uploadBlob = encoded.blob;
+        uploadType = encoded.mimeType;
+        const ext = encoded.mimeType.includes('mp4') ? 'mp4' : 'webm';
+        uploadName = file.name.replace(/\.[^.]+$/, '') + `.previz.${ext}`;
+      } catch (encErr) {
+        console.warn('[previz] re-encode failed, uploading original:', encErr);
+        setStageLabel('Uploading original…');
+      }
+      setStageLabel('Uploading previz…');
+      setProgress(88);
+      const uploadFile = new File([uploadBlob], uploadName, { type: uploadType });
+      const { url } = await uploadPrevizFile(uploadFile, `previz/${sessionId}/`);
+      setProgress(94);
       const nextOrder = clips.length ? Math.max(...clips.map((c) => c.sort_order)) + 1 : 0;
       const { error } = await supabase.from('session_previz_clips').insert({
         session_id: sessionId,
