@@ -93,9 +93,6 @@ function SortableRow({
         className="cursor-grab touch-manipulation text-muted-foreground hover:text-foreground"
         aria-label="Reorder"
       >
-        className="cursor-grab touch-manipulation text-muted-foreground hover:text-foreground"
-        aria-label="Reorder"
-      >
         <GripVertical className="h-4 w-4" />
       </button>
 
