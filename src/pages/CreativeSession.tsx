@@ -13,7 +13,7 @@ import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { HomeButton } from '@/components/HomeButton';
-import VenueVideoMappingView, { type PrevizClipOption } from '@/components/VenueVideoMappingView';
+import { VenueRoom, type PrevizClipOption } from '@/components/VenueVideoMappingView';
 
 interface CoverImage {
   url: string;

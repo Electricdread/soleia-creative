@@ -58,7 +58,7 @@ interface VenueRoomProps {
   fallbackUrl?: string;
 }
 
-function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
+export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
   const progressRef = useRef(0);
   const [previz, setPreviz] = useState(false);
   const [isFull, setIsFull] = useState(false);
