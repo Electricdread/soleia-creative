@@ -331,23 +331,8 @@ export default function CreativeSession() {
             <PrevizSection clips={previzClips} />
           </section>
         )}
-        {/* end previz */}
-      </div>
-    </div>
-  );
-}
 
-function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
-  const roomRef = useRef<HTMLDivElement>(null);
-  return <VenueRoom roomRef={roomRef} clips={clips} />;
-}
 
-function _unused_close_tags() {
-  return (
-    <>
-
-          </section>
-        )}
 
 
 
