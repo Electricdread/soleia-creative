@@ -668,12 +668,15 @@ export default function RoomScene({
   orbit = false,
   previz = false,
   previzUrl,
+  onVideoReady,
 }: {
   progressRef: MutableRefObject<number>;
   orbit?: boolean;
   previz?: boolean;
   /** Active previz movie URL (from site_settings). Falls back to the bundled file. */
   previzUrl?: string;
+  /** Receives the underlying HTMLVideoElement whenever the source changes — used by cue overlays to sync to the same playback clock. */
+  onVideoReady?: (video: HTMLVideoElement | null) => void;
 }) {
   const src = previzUrl && previzUrl.trim() ? previzUrl : FALLBACK_PREVIZ_URL;
   const video = useMemo(() => {
@@ -690,6 +693,10 @@ export default function RoomScene({
     v.src = src;
     return v;
   }, [src]);
+  useEffect(() => {
+    onVideoReady?.(video);
+    return () => onVideoReady?.(null);
+  }, [video, onVideoReady]);
   const videoTex = useMemo(() => {
     const t = new THREE.VideoTexture(video);
     // passthrough: the custom screen shader has no sRGB output encoding, so we
