@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { PrevizCue } from '@/components/previz/PrevizPlayer';
 import { formatMMSS } from '@/components/previz/PrevizPlayer';
+import { getMediaDuration, isUsableDuration } from '@/lib/mediaDuration';
 
 const GOLD = '#c49a3c';
 
@@ -44,14 +45,18 @@ export function VenuePrevizCueOverlay({ video, cues, visible, className }: Props
       cancelAnimationFrame(raf);
       setCurrentTime(video.currentTime);
     };
-    const onLoaded = () => setDuration(video.duration || 0);
+    const onLoaded = () => {
+      if (isUsableDuration(video.duration)) setDuration(video.duration);
+      else getMediaDuration(video.currentSrc || video.src).then(setDuration);
+    };
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
     video.addEventListener('ended', onPause);
     video.addEventListener('loadedmetadata', onLoaded);
     video.addEventListener('timeupdate', onPause);
     if (!video.paused) onPlay();
-    if (video.duration) setDuration(video.duration);
+    if (isUsableDuration(video.duration)) setDuration(video.duration);
+    else if (video.currentSrc || video.src) getMediaDuration(video.currentSrc || video.src).then(setDuration);
     return () => {
       cancelAnimationFrame(raf);
       video.removeEventListener('play', onPlay);
@@ -73,7 +78,7 @@ export function VenuePrevizCueOverlay({ video, cues, visible, className }: Props
 
   if (!visible || !video || sorted.length === 0) return null;
 
-  const pct = (t: number) => (duration > 0 ? Math.min(100, Math.max(0, (t / duration) * 100)) : 0);
+  const pct = (t: number) => (isUsableDuration(duration) ? Math.min(100, Math.max(0, (t / duration) * 100)) : 0);
 
   return (
     <div
@@ -91,7 +96,7 @@ export function VenuePrevizCueOverlay({ video, cues, visible, className }: Props
         </div>
         <div
           ref={stripRef}
-          className="relative h-7 cursor-pointer rounded-full bg-white/5"
+          className="relative h-11 cursor-pointer rounded-full bg-white/5"
           onClick={(e) => {
             if (!duration) return;
             const rect = e.currentTarget.getBoundingClientRect();
@@ -107,7 +112,7 @@ export function VenuePrevizCueOverlay({ video, cues, visible, className }: Props
             className="pointer-events-none absolute top-0 bottom-0 w-px"
             style={{ left: `${pct(currentTime)}%`, background: GOLD }}
           />
-          {sorted.map((c) => {
+          {sorted.map((c, index) => {
             const isActive = c.id === activeId;
             return (
               <button
@@ -117,7 +122,7 @@ export function VenuePrevizCueOverlay({ video, cues, visible, className }: Props
                   e.stopPropagation();
                   video.currentTime = c.time_seconds;
                 }}
-                className="group absolute top-0 bottom-0 flex -translate-x-1/2 flex-col items-center"
+                className="group absolute top-0 bottom-0 flex w-16 -translate-x-1/2 flex-col items-center"
                 style={{ left: `${pct(c.time_seconds)}%` }}
                 aria-label={`Jump to ${c.label}`}
               >
@@ -132,10 +137,10 @@ export function VenuePrevizCueOverlay({ video, cues, visible, className }: Props
                 />
                 <span
                   className={cn(
-                    'mt-0.5 max-w-[90px] truncate whitespace-nowrap rounded px-1 text-[9px] font-medium leading-tight',
+                    'mt-0.5 max-w-16 truncate whitespace-nowrap rounded px-1 text-[9px] font-medium leading-tight',
                     isActive ? 'text-white' : 'text-white/60 group-hover:text-white',
                   )}
-                  style={isActive ? { color: c.color || GOLD } : {}}
+                  style={{ transform: `translateY(${(index % 3) * 10}px)`, ...(isActive ? { color: c.color || GOLD } : {}) }}
                   title={`${formatMMSS(c.time_seconds)} — ${c.label}`}
                 >
                   {c.label}

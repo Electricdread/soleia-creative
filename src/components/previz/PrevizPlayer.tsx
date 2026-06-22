@@ -3,6 +3,7 @@ import { Plus, Trash2, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { getMediaDuration, isUsableDuration } from '@/lib/mediaDuration';
 
 export interface PrevizCue {
   id: string;
@@ -69,7 +70,10 @@ export function PrevizPlayer({
       cancelAnimationFrame(raf);
       setCurrentTime(v.currentTime);
     };
-    const onLoaded = () => setDuration(v.duration || 0);
+    const onLoaded = () => {
+      if (isUsableDuration(v.duration)) setDuration(v.duration);
+      else getMediaDuration(videoUrl).then(setDuration);
+    };
     v.addEventListener('play', onPlay);
     v.addEventListener('pause', onPause);
     v.addEventListener('ended', onPause);
@@ -121,7 +125,7 @@ export function PrevizPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editable, onAddCue]);
 
-  const pct = (t: number) => (duration > 0 ? Math.min(100, Math.max(0, (t / duration) * 100)) : 0);
+  const pct = (t: number) => (isUsableDuration(duration) ? Math.min(100, Math.max(0, (t / duration) * 100)) : 0);
 
   return (
     <div className={cn('space-y-3', className)}>
@@ -143,7 +147,7 @@ export function PrevizPlayer({
         </div>
         <div
           ref={stripRef}
-          className="relative h-10 cursor-pointer rounded-md border border-border bg-surface-elevated"
+          className="relative h-14 cursor-pointer overflow-visible rounded-md border border-border bg-surface-elevated"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const ratio = (e.clientX - rect.left) / rect.width;
@@ -161,7 +165,7 @@ export function PrevizPlayer({
             style={{ left: `${pct(currentTime)}%`, background: GOLD }}
           />
           {/* cue markers */}
-          {sortedCues.map((c) => {
+          {sortedCues.map((c, index) => {
             const left = pct(c.time_seconds);
             const isActive = c.id === activeCueId;
             return (
@@ -172,7 +176,7 @@ export function PrevizPlayer({
                   e.stopPropagation();
                   seekTo(c.time_seconds);
                 }}
-                className="group absolute -translate-x-1/2 top-0 bottom-0 flex flex-col items-center"
+                className="group absolute -translate-x-1/2 top-0 bottom-0 flex w-16 flex-col items-center"
                 style={{ left: `${left}%` }}
                 title={`${formatMMSS(c.time_seconds)} — ${c.label}`}
                 aria-label={`Jump to ${c.label}`}
@@ -189,12 +193,12 @@ export function PrevizPlayer({
                 <div className="h-3 w-px bg-foreground/20" />
                 <span
                   className={cn(
-                    'mt-0.5 max-w-[100px] truncate rounded px-1 text-[9px] font-medium leading-tight',
+                    'mt-0.5 max-w-16 truncate rounded px-1 text-[9px] font-medium leading-tight',
                     isActive
                       ? 'text-foreground'
                       : 'text-muted-foreground group-hover:text-foreground',
                   )}
-                  style={isActive ? { color: c.color || GOLD } : {}}
+                  style={{ transform: `translateY(${(index % 3) * 12}px)`, ...(isActive ? { color: c.color || GOLD } : {}) }}
                 >
                   {c.label}
                 </span>
