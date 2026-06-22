@@ -1,3 +1,5 @@
+import fixWebmDuration from 'fix-webm-duration';
+
 /**
  * Previz re-encoder.
  *
@@ -66,6 +68,7 @@ export async function reencodePrevizForPlayback(
 
     const video = document.createElement('video');
     video.muted = false;
+    video.volume = 1;
     video.playsInline = true;
     video.preload = 'auto';
     const objectUrl = URL.createObjectURL(file);
@@ -110,9 +113,13 @@ export async function reencodePrevizForPlayback(
         }
         const srcNode = audioCtx.createMediaElementSource(video);
         const dest = audioCtx.createMediaStreamDestination();
+        const silentOutput = audioCtx.createGain();
+        silentOutput.gain.value = 0;
         srcNode.connect(dest);
-        // Do NOT connect to audioCtx.destination — we don't want the source
-        // audio to blast through the speakers while encoding.
+        // Keep the media element's audio graph active without monitoring it
+        // through the speakers during the encode pass.
+        srcNode.connect(silentOutput);
+        silentOutput.connect(audioCtx.destination);
         dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
       } catch {
         // Movie has no audio, or the browser blocks the capture. Encode video only.
@@ -142,9 +149,18 @@ export async function reencodePrevizForPlayback(
         audioCtx?.close().catch(() => {});
         reject(new Error('Re-encoding failed: ' + (e as any)?.error?.message));
       };
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         onProgress?.({ stage: 'finalizing', progress: 98 });
-        const blob = new Blob(chunks, { type: mimeType.split(';')[0] });
+        const rawBlob = new Blob(chunks, { type: mimeType.split(';')[0] });
+        let blob = rawBlob;
+        try {
+          // Browser MediaRecorder WebM output often omits duration metadata.
+          // Without this, HTMLVideoElement reports duration as 0/Infinity, so
+          // cue markers collapse to the left edge and seeking behaves badly.
+          blob = await fixWebmDuration(rawBlob, Math.round(duration * 1000), { logger: false });
+        } catch {
+          blob = rawBlob;
+        }
         cleanup();
         audioCtx?.close().catch(() => {});
         onProgress?.({ stage: 'complete', progress: 100 });
@@ -182,6 +198,9 @@ export async function reencodePrevizForPlayback(
       };
 
       try {
+        if (audioCtx?.state === 'suspended') {
+          try { await audioCtx.resume(); } catch { /* noop */ }
+        }
         await video.play();
       } catch (e) {
         cancelAnimationFrame(raf);
