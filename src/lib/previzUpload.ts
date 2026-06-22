@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const PREVIZ_BUCKET = 'creative-guide-template';
-export const PREVIZ_MAX_BYTES = 524288000; // 500MB
+export const PREVIZ_MAX_BYTES = 2147483648; // 2GB
 
 export function isAcceptablePrevizFile(f: File): { ok: true } | { ok: false; reason: string } {
   const name = f.name.toLowerCase();
