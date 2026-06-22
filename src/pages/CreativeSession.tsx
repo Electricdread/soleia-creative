@@ -480,3 +480,8 @@ export default function CreativeSession() {
     </div>
   );
 }
+
+function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
+  const roomRef = useRef<HTMLDivElement>(null);
+  return <VenueRoom roomRef={roomRef} clips={clips} />;
+}
