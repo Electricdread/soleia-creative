@@ -243,6 +243,14 @@ export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
         )}
 
         <button
+          onClick={toggleAudio}
+          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
+          title={muted ? 'Unmute previz audio' : 'Mute previz audio'}
+        >
+          {muted ? <><VolumeX className="h-3.5 w-3.5" /> Audio</> : <><Volume2 className="h-3.5 w-3.5 text-primary" /> On</>}
+        </button>
+
+        <button
           onClick={toggleFull}
           className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
         >
