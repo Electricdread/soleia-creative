@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { HomeButton } from '@/components/HomeButton';
+import { VenueRoom, type PrevizClipOption } from '@/components/VenueVideoMappingView';
 
 interface CoverImage {
   url: string;
@@ -74,6 +75,7 @@ export default function CreativeSession() {
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [scenes, setScenes] = useState<SceneData[]>([]);
+  const [previzClips, setPrevizClips] = useState<PrevizClipOption[]>([]);
   const [proposalToken, setProposalToken] = useState<string | null>(null);
   const [userName, setUserName] = useState(() =>
     localStorage.getItem('creative_session_name') || ''
@@ -94,6 +96,7 @@ export default function CreativeSession() {
       fetchReactions();
       fetchComments();
       fetchScenes();
+      fetchPrevizClips();
       const cleanup = setupRealtime();
       return cleanup;
     }
@@ -184,6 +187,24 @@ export default function CreativeSession() {
       .eq('session_id', session.id)
       .order('sort_order', { ascending: true });
     setScenes((data as SceneData[]) || []);
+  };
+
+  const fetchPrevizClips = async () => {
+    if (!session?.id) return;
+    const { data } = await supabase
+      .from('session_previz_clips')
+      .select('id, title, url, sort_order, is_default')
+      .eq('session_id', session.id)
+      .order('is_default', { ascending: false })
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+    setPrevizClips(
+      ((data as Array<{ id: string; title: string; url: string }>) || []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        url: r.url,
+      })),
+    );
   };
 
   const setupRealtime = () => {
@@ -298,6 +319,22 @@ export default function CreativeSession() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <CreativeSessionCover session={session} />
+
+        {previzClips.length > 0 && (
+          <section className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-display text-xl text-foreground">Venue Previz</h2>
+              <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Run-of-show cues sync to the playback
+              </span>
+            </div>
+            <PrevizSection clips={previzClips} />
+          </section>
+        )}
+
+
+
+
 
         {/* Content Gallery — Read Only */}
         {items.length === 0 ? (
@@ -442,4 +479,9 @@ export default function CreativeSession() {
       )}
     </div>
   );
+}
+
+function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
+  const roomRef = useRef<HTMLDivElement>(null);
+  return <VenueRoom roomRef={roomRef} clips={clips} />;
 }

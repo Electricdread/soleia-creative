@@ -357,7 +357,7 @@ export function SessionPrevizClipsManager({ sessionId, sessionToken }: Props) {
     );
   };
 
-  const clientLink = `${window.location.origin}/session/${sessionToken}/video-mapping`;
+  const clientLink = `${window.location.origin}/creative/${sessionToken}`;
 
   const copyLink = async () => {
     try {
