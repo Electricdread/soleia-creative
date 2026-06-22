@@ -328,7 +328,24 @@ export default function CreativeSession() {
                 Run-of-show cues sync to the playback
               </span>
             </div>
-            <VenueVideoMappingView clips={previzClips} />
+            <PrevizSection clips={previzClips} />
+          </section>
+        )}
+        {/* end previz */}
+      </div>
+    </div>
+  );
+}
+
+function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
+  const roomRef = useRef<HTMLDivElement>(null);
+  return <VenueRoom roomRef={roomRef} clips={clips} />;
+}
+
+function _unused_close_tags() {
+  return (
+    <>
+
           </section>
         )}
 
