@@ -1,42 +1,62 @@
-## Creative Director — draft page (unlinked)
+# Cued Previz Player for Creative Sessions
 
-Build the Luis Dreams section as its own standalone page first, with **no link from anywhere in the app**. We iterate on copy and layout there, then later wire it into the Creative Guide.
+Play a session's H.264 video (with audio) and overlay a horizontal timeline strip with run-of-show cue markers (e.g. `0:13 — Walk-in Look`, `0:42 — Reception`). Admin authors cues; client view plays the same video with read-only cue markers that highlight as the playhead passes.
 
-### Route
-- New route `/creative-director` registered in `src/App.tsx`.
-- Wrapped in `ProtectedRoute` (admin-only, same as other internal pages).
-- Not added to `NAV_LINKS`, footer, sitemap, or any menu. Only reachable by typing the URL.
-- `<meta name="robots" content="noindex,nofollow">` on the page.
+## What gets built
 
-### File
-- New: `src/pages/CreativeDirector.tsx`
-- Reuses existing tokens (`surface-elevated`, gold accents `#c49a3c`, `font-display`, `font-mono`), shadcn `Tabs`, and shared layout chrome consistent with the Creative Guide.
+### 1. Cue data model
+New table `session_previz_cues` scoped to an existing row in `session_previz_clips` (the uploaded H.264 video):
 
-### Page structure
-1. **Hero / intro block**
-   - Eyebrow: `Creative Director`
-   - Headline: `Luis Dreams`
-   - Lead paragraph (2–3 sentences). Mentions **once**: "At Soleia, the brand is the headliner."
-   - Portrait on the left at `md+`, stacked above on mobile. Slot: `src/assets/luis-dreams-portrait.jpg` with graceful fallback (dark card + `soleia-icon.png` + "Portrait coming soon") so the page never looks broken.
-   - No stat strip.
+```text
+session_previz_cues
+  id            uuid pk
+  clip_id       uuid → session_previz_clips.id (cascade)
+  time_seconds  numeric(8,3)   -- e.g. 13.000, 42.500
+  label         text           -- "Walk-in Look", "Reception", "Toast"
+  color         text null      -- optional accent override
+  sort_order    integer
+  created_at / updated_at
+```
 
-2. **Tabbed bio** (shadcn `Tabs`, gold underline on active, mobile-scrollable tab list)
-   - **Bio** — full long-form biography: decade-plus designing visual language for nightclubs, touring artists, festival stages; live VJ residencies; transition into branded environments; arrival at Soleia leading the fusion of nightlife production craft with corporate brand activation.
-   - **LIV Miami** — career-defining residency at LIV Nightclub Miami; live VJ sets, custom motion content for headlining DJs, LED programming and reactive show design that shaped LIV's modern visual identity.
-   - **Miami Vice × Michael Mann** — worked with Michael Mann on the opening sequence of the new *Miami Vice*; curated and operated the on-screen club visuals so the room reads as a real Miami nightclub on camera. Rare credit where club-floor visual direction crosses into feature-film cinematography.
-   - **Live Artist Work** — direct collaboration with global artists and DJs on custom show content, most notably 50 Cent's Dome event (designed and ran headline visuals); ongoing bespoke visual sets for touring DJs and artists — the same discipline now applied to Soleia's corporate clients.
+GRANTs + RLS:
+- `authenticated`: full CRUD when the parent session belongs to admin (via existing `has_role`).
+- `anon`: SELECT only when the parent session is public OR reached through a valid `client_links` token (same pattern already used for `session_previz_clips`).
 
-   Tab bodies: short stack of paragraphs, `text-muted-foreground`, `leading-relaxed`, `max-w-prose`. Default tab: Bio.
+### 2. Admin authoring — `SessionPrevizClipsManager`
+On each previz clip row, add a **Cues** panel:
+- Video player above a horizontal timeline strip (full width, gold ticks on dark rail).
+- "Add cue at current time" button — grabs `video.currentTime`, opens inline row to label it.
+- Cue list (table): timestamp `mm:ss.s` (editable), label (editable), drag handle reorders only when timestamps tie, delete.
+- Markers on the strip are draggable to retime; tooltip shows label + timestamp.
+- Keyboard: `M` while focused on the player drops a marker at playhead.
 
-### Out of scope for this round
-- No edits to `CreativeGuideView.tsx`, `PrintableCreativeGuide.tsx`, `NAV_LINKS`, or footer.
-- No new DB tables, no admin editor.
-- No stat strip. "Brand is the headliner" appears exactly once.
+### 3. Shared `<PrevizPlayer />` component
+Single component reused by admin + client:
+- `<video controls playsInline>` with audio enabled.
+- Custom timeline strip below (or overlay-on-hover) rendered from cues:
+  - Tick + dot per cue, label above on hover, label always visible for the active cue.
+  - Active cue = last cue whose `time_seconds <= currentTime`; highlights in gold (`#c49a3c`), pulses briefly on transition.
+  - Click a marker → `video.currentTime = cue.time_seconds`.
+- Props: `videoUrl`, `cues[]`, `editable?: boolean`, `onCueChange?`.
 
-### After approval / iteration
-Once you sign off on copy and layout on `/creative-director`, a follow-up turn will:
-- Embed the same component into the Creative Guide as the `#director` section, and
-- Add `Director` to the guide's nav + printable PDF.
+### 4. Client view — `CreativeSession` / `/preview/:token`
+Where the session's previz video already renders, swap in `<PrevizPlayer editable={false} />`. Cues load via the same query the clip uses today, filtered by `clip_id`. Read-only: no add/edit affordances, just synced highlight + click-to-seek.
 
-### Open item
-Portrait image: drop `src/assets/luis-dreams-portrait.jpg`, or tell me to pull one of the `luis-liv-*.png` portraits from the Luis Dreams project. Ships with a placeholder either way.
+### 5. Out of scope (for this pass)
+- Multi-track audio, waveform rendering, MIDI/OSC export.
+- Auto-detecting cues from audio.
+- Editing cues from the client side.
+- Changes to non-previz clip players (gallery, lookbook, mood board).
+
+## Technical notes
+
+- Time stored as numeric seconds with millisecond precision; display helper `formatMMSS(t)` already-pattern in the repo (`src/lib/format.ts` if present, else add).
+- Active-cue calculation runs off `requestAnimationFrame` while playing, throttled to `timeupdate` when paused — avoids re-renders every frame.
+- Marker drag uses pointer events with `clientX → time` mapping against the strip's `getBoundingClientRect()`; commits on pointerup.
+- Reuse existing dark surface tokens (`surface-elevated`, `border-border`) and gold accent `#c49a3c`. No new fonts.
+- New table follows project RLS conventions: `GRANT` block in same migration, `service_role` ALL, `authenticated` CRUD gated by `has_role(auth.uid(),'admin')`, `anon` SELECT gated by session visibility / token.
+- No changes to storage buckets — the H.264 file is already uploaded through the existing previz upload path (`src/lib/previzUpload.ts`).
+
+## Open question
+
+The current `session_previz_clips` row stores a single `url`. Confirm a session typically has **one** master previz video that the run-of-show times against (the plan assumes yes). If a session may have multiple, cues are still scoped per clip, so it still works — just say the word if you want a session-level "primary previz" selector too.
