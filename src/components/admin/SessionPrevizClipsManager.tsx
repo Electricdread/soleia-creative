@@ -77,6 +77,8 @@ function SortableRow({
   const style = { transform: CSS.Transform.toString(transform), transition };
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(clip.title);
+  const [showCues, setShowCues] = useState(false);
+  const { cues, addCue, updateCue, deleteCue } = usePrevizCues(showCues ? clip.id : null);
 
   return (
     <div
