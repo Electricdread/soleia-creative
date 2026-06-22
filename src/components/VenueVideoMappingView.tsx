@@ -62,6 +62,8 @@ function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
   const [isFull, setIsFull] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(clips[0]?.id ?? null);
   const [playlistOpen, setPlaylistOpen] = useState(false);
+  const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
+  const { cues } = usePrevizCues(activeId);
 
   useEffect(() => {
     if (clips.length && !clips.find((c) => c.id === activeId)) {
@@ -129,7 +131,8 @@ function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
       }
       style={pseudoFull ? undefined : { aspectRatio: '16 / 9' }}
     >
-      <RoomScene progressRef={progressRef} orbit previz={previz} previzUrl={previzUrl} />
+      <RoomScene progressRef={progressRef} orbit previz={previz} previzUrl={previzUrl} onVideoReady={setVideoEl} />
+      <VenuePrevizCueOverlay video={videoEl} cues={cues} visible={previz} />
 
       <div className="absolute left-3 top-3 z-10 hidden flex-col gap-1.5 rounded-2xl border border-primary/25 bg-black/50 px-3 py-2.5 backdrop-blur-sm sm:flex">
         <span className="mb-0.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-primary/90">Navigate</span>
