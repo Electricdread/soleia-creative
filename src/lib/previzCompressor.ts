@@ -103,7 +103,9 @@ export async function reencodePrevizForPlayback(
       // gets a real MediaStreamTrack.
       let audioCtx: AudioContext | null = null;
       try {
-        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        if (!AudioContextClass) throw new Error('AudioContext unavailable');
+        audioCtx = new AudioContextClass();
         // Browsers create AudioContexts in 'suspended' state until a user
         // gesture resumes them. If we skip this, the MediaElementSource never
         // pumps samples into the MediaStreamDestination and the resulting
@@ -147,7 +149,9 @@ export async function reencodePrevizForPlayback(
       recorder.onerror = (e) => {
         cleanup();
         audioCtx?.close().catch(() => {});
-        reject(new Error('Re-encoding failed: ' + (e as any)?.error?.message));
+        const eventError = (e as Event & { error?: unknown }).error;
+        const message = eventError instanceof Error ? eventError.message : 'unknown recorder error';
+        reject(new Error('Re-encoding failed: ' + message));
       };
       recorder.onstop = async () => {
         onProgress?.({ stage: 'finalizing', progress: 98 });
