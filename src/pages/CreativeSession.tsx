@@ -329,7 +329,7 @@ export default function CreativeSession() {
               Run-of-show cues sync to the playback
             </span>
           </div>
-          <PrevizSection />
+          <PrevizSection clips={previzClips} />
         </section>
 
 
@@ -481,6 +481,88 @@ export default function CreativeSession() {
   );
 }
 
-function PrevizSection() {
-  return <PrevizMovie />;
+function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
+  const [activeId, setActiveId] = useState<string | null>(clips[0]?.id ?? null);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (clips.length > 0 && !clips.find((c) => c.id === activeId)) {
+      setActiveId(clips[0].id);
+      setHasError(false);
+    }
+  }, [clips, activeId]);
+
+  if (clips.length === 0) {
+    return <PrevizMovie />;
+  }
+
+  const active = clips.find((c) => c.id === activeId) ?? clips[0];
+
+  return (
+    <div className="space-y-3">
+      <div
+        className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated bg-black"
+        style={{ aspectRatio: '16 / 9' }}
+      >
+        {!hasError && (
+          <video
+            key={active.url}
+            src={active.url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            controls={false}
+            disablePictureInPicture
+            onError={() => setHasError(true)}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+
+        {hasError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/90">
+            <AlertCircle className="h-8 w-8 text-primary/70" />
+            <div className="text-center">
+              <p className="text-sm font-medium text-primary/90">Preview unavailable</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Unable to load previz video. Please refresh or try again later.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="pointer-events-none absolute right-3 top-3 z-10 rounded-full border border-primary/30 bg-black/55 px-3 py-1.5 backdrop-blur-md">
+          <span className="text-[10px] uppercase tracking-[0.18em] text-primary/90">
+            {active.title || 'Unreal Previz'}
+          </span>
+        </div>
+      </div>
+
+      {clips.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {clips.map((c) => {
+            const isActive = c.id === active.id;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  setActiveId(c.id);
+                  setHasError(false);
+                }}
+                className={`rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                  isActive
+                    ? 'border-primary/60 bg-primary/15 text-primary'
+                    : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground hover:border-border'
+                }`}
+              >
+                {c.title}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
