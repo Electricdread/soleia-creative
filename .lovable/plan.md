@@ -1,17 +1,7 @@
-## Problem
-The Creative Session page hard-codes the previz player to the bundled "Mutiny" Unreal asset. Uploaded session clips (e.g. `NightScene` on the 4th of July session) are fetched from `session_previz_clips` into state but never rendered — `PrevizSection` just returns `<PrevizMovie />` with the bundled file.
+## Changes — `src/pages/CreativeSession.tsx` (`PrevizSection`)
 
-## Fix
-Wire the uploaded clips into the previz player so each creative session plays its own uploaded movie(s).
+1. **Scene selector** — relabel the existing pill switcher as "Scenes" (small uppercase label above the row) so each uploaded previz clip is presented as a selectable scene. Show the row whenever there is at least one clip (not only when >1), so the active scene name is always visible to the client.
 
-### Changes — `src/pages/CreativeSession.tsx`
-1. Pass `previzClips` into `PrevizSection` as a prop.
-2. Rewrite `PrevizSection({ clips })`:
-   - If `clips.length === 0` → keep current `<PrevizMovie />` (bundled fallback).
-   - If `clips.length >= 1` → render an inline `<video>` (same 16:9 rounded-3xl `edge-gold` shell, `Unreal Previz` badge, error fallback) using the selected clip's `url`. Default to the first clip (already sorted with `is_default` first).
-   - If `clips.length > 1` → render a small row of pill buttons above/below the player with each `clip.title` to switch between them (state inside `PrevizSection`). Uses existing primary/gold styling, no new design tokens.
+2. **Fullscreen button** — add a fullscreen toggle in the player chrome (bottom-right of the video, mirroring the top-right "Unreal Previz" badge styling) using the `Maximize2` / `Minimize2` icons from `lucide-react`. Clicking calls the native Fullscreen API (`requestFullscreen` on the player container, `document.exitFullscreen` to leave) and listens to `fullscreenchange` to keep the icon in sync. In fullscreen, the video remains looping and muted (autoplay-friendly) and uses `object-contain` so the whole frame is visible.
 
-No backend, schema, or upload-pipeline changes — `fetchPrevizClips` already runs on session load and realtime is not needed for this fix (clips are stable per session view).
-
-### Verification
-On `/creative/creative-mpbzjcwh-3ft5og` the player will load the `NightScene` public URL from `session_previz_clips` instead of the bundled mutiny asset. Sessions with no uploads keep the existing bundled previz.
+No backend, schema, or other component changes.
