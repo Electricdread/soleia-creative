@@ -666,7 +666,13 @@ function RoomModel({
       </mesh>
 
       {/* Flowing floor — lines stream across the floor toward the back */}
+      {/* Minimal lighting so stylized PBR structural surfaces render */}
+      <ambientLight intensity={0.18} color="#3a3550" />
+      <hemisphereLight args={['#2a2a40', '#0a0a10', 0.25]} />
+
+      {/* Flowing floor — lines stream across the floor toward the back */}
       <FlowFloor radius={built.radius} floorY={built.floorY} flowDir={built.flowDir} matRef={floorMatRef} />
+
 
       {/* subtle glowing sparkle (bloom turns these into twinkles) */}
       <Sparkles
