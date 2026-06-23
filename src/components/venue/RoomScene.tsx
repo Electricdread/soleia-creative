@@ -11,7 +11,7 @@
  */
 import { MutableRefObject, Suspense, useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, useGLTF, Sparkles, MeshReflectorMaterial } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, useGLTF, Sparkles, MeshReflectorMaterial, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
 /* ---- flowing floor field — lines stream across the floor toward the back ---- */
