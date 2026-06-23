@@ -1,22 +1,46 @@
 ## Goal
-Make previz clip switching/playback instant — no buffering wait when a viewer opens the 3D venue or picks a different clip from the playlist.
+Make the previz scene read as the real venue by revealing the structural meshes already in `soleia_screens.gltf` (pool wall, deck, truss, ceiling, etc.) instead of hiding them. Keep it stylized so the LED screens remain the hero.
 
-## Approach
-Preload every previz clip in the background as soon as `VenueRoom` mounts, so by the time the user clicks Play or switches clips the bytes are already in the browser cache.
+You'll see the result in the live preview as soon as the plan is approved — nothing is pushed/published. Publishing only happens when you explicitly click Publish.
 
-## Changes
+## Current behavior
+In `src/components/venue/RoomScene.tsx` (`RoomModel`), the traversal hides every mesh whose material name doesn't start with `MI_`:
 
-**`src/components/VenueVideoMappingView.tsx`**
-- On mount (and whenever `clips` changes), kick off a background prefetch for every clip URL:
-  - Use hidden `<video preload="auto" muted playsinline>` elements (one per clip) appended off-screen, OR a `fetch(url, { cache: 'force-cache' })` per URL that streams the body to `/dev/null`.
-  - Prefer the hidden-video approach: it warms the browser's media cache the same way the real `RoomScene` video element will read it, and it's bounded by the browser's own media memory limits.
-- Prioritize the currently-active clip first, then the rest in parallel (cap at ~3 concurrent to avoid saturating mobile networks).
-- Clean up the prefetch elements on unmount.
+```ts
+if (!/^MI_/.test((m0 as THREE.Material)?.name ?? '')) {
+  mesh.visible = false;
+  return;
+}
+```
 
-**`src/components/venue/RoomScene.tsx`**
-- Change the live playback `<video>` element's `preload` from `'metadata'` to `'auto'` so once previz is toggled on, the browser fetches the full clip immediately (it can reuse bytes already warmed by the prefetch).
+That kills all architectural geometry, leaving only the floating LED slabs.
 
-## Notes / trade-offs
-- Background prefetch uses bandwidth up front. For a typical previz session (a handful of ~720p re-encoded clips) this is the right trade — viewers stop seeing the "buffering" pause when switching clips.
-- No changes to upload/encode pipeline, audio handling, or the 3D scene itself.
-- No backend changes.
+## Changes (only `src/components/venue/RoomScene.tsx`)
+
+1. **Stop hiding structural meshes.** Replace the early-return with a branch:
+   - If material name starts with `MI_` → existing LED screen pipeline (unchanged).
+   - Otherwise → keep visible, assign a stylized PBR `MeshStandardMaterial` based on a name classifier.
+
+2. **Name-based material classifier.** Inspect node/material name and assign one of a small palette:
+   - `pool|water` → deep blue-black, low roughness, high metalness (reads as still water with reflections).
+   - `wall|tile|deck|stage|floor_struct` → dark matte concrete (`#1a1a22`, roughness 0.85).
+   - `truss|frame|rig|mesh|metal` → dark brushed metal (`#2a2a32`, metalness 0.8, roughness 0.35).
+   - `ceiling|roof` → near-black matte (`#0d0d12`).
+   - Fallback → neutral dark matte (`#15151c`, roughness 0.9).
+
+3. **Lighting pass.** Add minimal, cheap lighting so PBR surfaces actually render:
+   - `<ambientLight intensity={0.18} color="#3a3550" />`
+   - `<hemisphereLight>` (sky `#2a2a40`, ground `#0a0a10`, intensity 0.25).
+   - No shadow maps, no env map.
+
+4. **Keep the mirrored floor + flow shader.** Reflector floor stays dominant; structural floor meshes get `renderOrder` adjusted if they conflict.
+
+5. **Performance guardrails.** Frustum-cull structural meshes, no shadows, shared materials per category, leave `dpr`/AA logic unchanged.
+
+## Out of scope
+- No new glTF, no procedural geometry, no texture downloads.
+- No changes to LED screen shaders, previz video pipeline, or admin upload flow.
+- No file changes outside `RoomScene.tsx`.
+
+## Preview & iteration
+After approval I'll make the edit and the preview updates immediately. If a category looks wrong on a specific mesh, we tune the classifier regex — single file, easy iteration. Nothing reaches the published site until you click Publish.

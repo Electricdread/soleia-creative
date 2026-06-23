@@ -388,6 +388,24 @@ function RoomModel({
     const brand = makeBrandTexture();
     const screens: ScreenRef[] = [];
 
+    // Shared stylized PBR materials for structural geometry. Kept dark and
+    // matte so the LED screens remain the visual hero.
+    const structuralMats = {
+      water: new THREE.MeshStandardMaterial({ color: '#070a14', roughness: 0.18, metalness: 0.85 }),
+      concrete: new THREE.MeshStandardMaterial({ color: '#1a1a22', roughness: 0.85, metalness: 0.05 }),
+      metal: new THREE.MeshStandardMaterial({ color: '#2a2a32', roughness: 0.35, metalness: 0.8 }),
+      ceiling: new THREE.MeshStandardMaterial({ color: '#0d0d12', roughness: 0.95, metalness: 0.0 }),
+      fallback: new THREE.MeshStandardMaterial({ color: '#15151c', roughness: 0.9, metalness: 0.05 }),
+    };
+    const classify = (mesh: THREE.Mesh, matName: string): THREE.MeshStandardMaterial => {
+      const n = `${mesh.name} ${mesh.parent?.name ?? ''} ${matName}`.toLowerCase();
+      if (/pool|water/.test(n)) return structuralMats.water;
+      if (/truss|frame|rig|metal|beam|pipe/.test(n)) return structuralMats.metal;
+      if (/ceiling|roof/.test(n)) return structuralMats.ceiling;
+      if (/wall|tile|deck|stage|floor/.test(n)) return structuralMats.concrete;
+      return structuralMats.fallback;
+    };
+
     // Recentre first so world matrices are correct for UV projection.
     const box = new THREE.Box3().setFromObject(clone);
     const center = new THREE.Vector3();
@@ -401,14 +419,18 @@ function RoomModel({
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh) return;
 
-      // Only real LED screens (MI_* materials, incl. MI_OUTDOOR*) light up;
-      // structural meshes are hidden so they don't glow as whole slabs.
       const name = namedAncestor(mesh);
       const m0 = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
-      if (!/^MI_/.test((m0 as THREE.Material)?.name ?? '')) {
-        mesh.visible = false;
+      const matName = (m0 as THREE.Material)?.name ?? '';
+      if (!/^MI_/.test(matName)) {
+        // Structural geometry — keep visible with stylized PBR material.
+        mesh.material = classify(mesh, matName);
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
+        mesh.frustumCulled = true;
         return;
       }
+
 
       const geo = (mesh.geometry as THREE.BufferGeometry).clone();
       normalizeUVs(geo);
@@ -644,7 +666,13 @@ function RoomModel({
       </mesh>
 
       {/* Flowing floor — lines stream across the floor toward the back */}
+      {/* Minimal lighting so stylized PBR structural surfaces render */}
+      <ambientLight intensity={0.18} color="#3a3550" />
+      <hemisphereLight args={['#2a2a40', '#0a0a10', 0.25]} />
+
+      {/* Flowing floor — lines stream across the floor toward the back */}
       <FlowFloor radius={built.radius} floorY={built.floorY} flowDir={built.flowDir} matRef={floorMatRef} />
+
 
       {/* subtle glowing sparkle (bloom turns these into twinkles) */}
       <Sparkles
