@@ -11,7 +11,7 @@
  */
 import { MutableRefObject, Suspense, useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, useGLTF, Sparkles, MeshReflectorMaterial } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, useGLTF, Sparkles, MeshReflectorMaterial, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
 /* ---- flowing floor field — lines stream across the floor toward the back ---- */
@@ -391,11 +391,11 @@ function RoomModel({
     // Shared stylized PBR materials for structural geometry. Kept dark and
     // matte so the LED screens remain the visual hero.
     const structuralMats = {
-      water: new THREE.MeshStandardMaterial({ color: '#070a14', roughness: 0.18, metalness: 0.85 }),
-      concrete: new THREE.MeshStandardMaterial({ color: '#1a1a22', roughness: 0.85, metalness: 0.05 }),
-      metal: new THREE.MeshStandardMaterial({ color: '#2a2a32', roughness: 0.35, metalness: 0.8 }),
-      ceiling: new THREE.MeshStandardMaterial({ color: '#0d0d12', roughness: 0.95, metalness: 0.0 }),
-      fallback: new THREE.MeshStandardMaterial({ color: '#15151c', roughness: 0.9, metalness: 0.05 }),
+      water: new THREE.MeshStandardMaterial({ color: '#1a2740', roughness: 0.25, metalness: 0.6 }),
+      concrete: new THREE.MeshStandardMaterial({ color: '#3d3d48', roughness: 0.88, metalness: 0.04 }),
+      metal: new THREE.MeshStandardMaterial({ color: '#5a5a66', roughness: 0.42, metalness: 0.7 }),
+      ceiling: new THREE.MeshStandardMaterial({ color: '#26262e', roughness: 0.92, metalness: 0.0 }),
+      fallback: new THREE.MeshStandardMaterial({ color: '#3a3a44', roughness: 0.85, metalness: 0.08 }),
     };
     const classify = (mesh: THREE.Mesh, matName: string): THREE.MeshStandardMaterial => {
       const n = `${mesh.name} ${mesh.parent?.name ?? ''} ${matName}`.toLowerCase();
@@ -666,9 +666,11 @@ function RoomModel({
       </mesh>
 
       {/* Flowing floor — lines stream across the floor toward the back */}
-      {/* Minimal lighting so stylized PBR structural surfaces render */}
-      <ambientLight intensity={0.18} color="#3a3550" />
-      <hemisphereLight args={['#2a2a40', '#0a0a10', 0.25]} />
+      {/* Minimal lighting + env so stylized PBR structural surfaces render */}
+      <ambientLight intensity={0.55} color="#b8b4d0" />
+      <hemisphereLight args={['#8a8ab0', '#1a1a22', 0.7]} />
+      <directionalLight position={[built.radius * 1.2, built.radius * 1.8, built.radius * 0.8]} intensity={0.9} color="#ffffff" />
+      <Environment preset="night" />
 
       {/* Flowing floor — lines stream across the floor toward the back */}
       <FlowFloor radius={built.radius} floorY={built.floorY} flowDir={built.flowDir} matRef={floorMatRef} />
