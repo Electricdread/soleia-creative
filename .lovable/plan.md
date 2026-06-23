@@ -1,7 +1,16 @@
-## Changes — `src/pages/CreativeSession.tsx` (`PrevizSection`)
+## Goal
+Remove the browser re-encoding step from the Session Previz Clips upload so already web-optimized files are uploaded as-is.
 
-1. **Scene selector** — relabel the existing pill switcher as "Scenes" (small uppercase label above the row) so each uploaded previz clip is presented as a selectable scene. Show the row whenever there is at least one clip (not only when >1), so the active scene name is always visible to the client.
+## Changes
+**`src/components/admin/SessionPrevizClipsManager.tsx`**
+- Remove the `reencodePrevizForPlayback` import and its entire try/catch block in `handlePick`.
+- Upload the original `File` directly via `uploadPrevizFile(file, ...)` with no renaming or repackaging (no `.previz.mp4/webm` suffix).
+- Simplify progress: a single "Uploading previz…" stage going 10% → 100%.
+- Update button label from "Optimizing…" to "Uploading…" and adjust the helper copy to reflect "uploaded as-is, no re-encoding".
 
-2. **Fullscreen button** — add a fullscreen toggle in the player chrome (bottom-right of the video, mirroring the top-right "Unreal Previz" badge styling) using the `Maximize2` / `Minimize2` icons from `lucide-react`. Clicking calls the native Fullscreen API (`requestFullscreen` on the player container, `document.exitFullscreen` to leave) and listens to `fullscreenchange` to keep the icon in sync. In fullscreen, the video remains looping and muted (autoplay-friendly) and uses `object-contain` so the whole frame is visible.
+**`src/lib/previzCompressor.ts`**
+- Delete the file (no other references after the change above).
 
-No backend, schema, or other component changes.
+## Out of scope
+- No backend, bucket, schema, or playback-side changes.
+- Existing already-uploaded `.previz.*` clips remain playable (unchanged URLs).
