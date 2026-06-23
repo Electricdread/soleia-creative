@@ -13,7 +13,9 @@ import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { HomeButton } from '@/components/HomeButton';
-import { VenueRoom, type PrevizClipOption } from '@/components/VenueVideoMappingView';
+import PrevizMovie from '@/components/venue/PrevizMovie';
+
+type PrevizClipOption = { id: string; title: string; url: string };
 
 interface CoverImage {
   url: string;
@@ -328,7 +330,7 @@ export default function CreativeSession() {
                 Run-of-show cues sync to the playback
               </span>
             </div>
-            <PrevizSection clips={previzClips} />
+            <PrevizSection />
           </section>
         )}
 
@@ -481,7 +483,6 @@ export default function CreativeSession() {
   );
 }
 
-function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
-  const roomRef = useRef<HTMLDivElement>(null);
-  return <VenueRoom roomRef={roomRef} clips={clips} />;
+function PrevizSection() {
+  return <PrevizMovie />;
 }
