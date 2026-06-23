@@ -370,6 +370,100 @@ function CameraRig({
   return null;
 }
 
+function VenueStructure({
+  radius,
+  floorY,
+  stageCenter,
+  flowDir,
+}: {
+  radius: number;
+  floorY: number;
+  stageCenter: THREE.Vector3;
+  flowDir: THREE.Vector2;
+}) {
+  const layout = useMemo(() => {
+    const stageDir = new THREE.Vector3(flowDir.x, 0, flowDir.y);
+    if (stageDir.lengthSq() < 1e-4) stageDir.set(1, 0, 0);
+    stageDir.normalize();
+    return {
+      rotationY: Math.atan2(-stageDir.z, stageDir.x),
+      roomDepth: radius * 1.45,
+      roomWidth: radius * 1.28,
+      wallHeight: radius * 0.36,
+      ceilingY: Math.max(stageCenter.y + radius * 0.14, floorY + radius * 0.28),
+      beam: Math.max(radius * 0.012, 0.34),
+    };
+  }, [flowDir.x, flowDir.y, floorY, radius, stageCenter.y]);
+
+  const materials = useMemo(
+    () => ({
+      floor: new THREE.MeshStandardMaterial({ color: '#36343c', roughness: 0.9, metalness: 0.04 }),
+      wall: new THREE.MeshStandardMaterial({ color: '#24222a', roughness: 0.92, metalness: 0.02 }),
+      metal: new THREE.MeshStandardMaterial({ color: '#64606c', roughness: 0.5, metalness: 0.55 }),
+      water: new THREE.MeshStandardMaterial({ color: '#185b78', roughness: 0.28, metalness: 0.25, transparent: true, opacity: 0.72 }),
+      ceiling: new THREE.MeshStandardMaterial({ color: '#1e1d24', roughness: 0.94, metalness: 0.01, transparent: true, opacity: 0.82 }),
+    }),
+    [],
+  );
+
+  const trussZ = [-0.42, -0.14, 0.14, 0.42].map((z) => z * layout.roomWidth);
+  const crossX = [-0.76, -0.52, -0.28, -0.04, 0.18].map((x) => x * layout.roomDepth);
+
+  return (
+    <group position={[stageCenter.x, 0, stageCenter.z]} rotation={[0, layout.rotationY, 0]}>
+      <mesh material={materials.floor} position={[-layout.roomDepth * 0.43, floorY - 0.08, 0]}>
+        <boxGeometry args={[layout.roomDepth * 1.18, 0.18, layout.roomWidth * 1.04]} />
+      </mesh>
+
+      <mesh material={materials.water} position={[-layout.roomDepth * 0.72, floorY + 0.08, 0]}>
+        <boxGeometry args={[layout.roomDepth * 0.34, 0.08, layout.roomWidth * 0.9]} />
+      </mesh>
+
+      <mesh material={materials.wall} position={[layout.roomDepth * 0.19, floorY + layout.wallHeight * 0.5, 0]}>
+        <boxGeometry args={[0.5, layout.wallHeight, layout.roomWidth * 1.04]} />
+      </mesh>
+
+      {[-1, 1].map((side) => (
+        <mesh
+          key={`side-wall-${side}`}
+          material={materials.wall}
+          position={[-layout.roomDepth * 0.28, floorY + layout.wallHeight * 0.46, side * layout.roomWidth * 0.52]}
+        >
+          <boxGeometry args={[layout.roomDepth * 0.95, layout.wallHeight * 0.92, 0.42]} />
+        </mesh>
+      ))}
+
+      <mesh material={materials.ceiling} position={[-layout.roomDepth * 0.32, layout.ceilingY + layout.beam * 0.65, 0]}>
+        <boxGeometry args={[layout.roomDepth * 0.92, 0.08, layout.roomWidth * 1.02]} />
+      </mesh>
+
+      {trussZ.map((z) => (
+        <mesh key={`truss-long-${z}`} material={materials.metal} position={[-layout.roomDepth * 0.32, layout.ceilingY, z]}>
+          <boxGeometry args={[layout.roomDepth * 0.98, layout.beam, layout.beam]} />
+        </mesh>
+      ))}
+
+      {crossX.map((x) => (
+        <mesh key={`truss-cross-${x}`} material={materials.metal} position={[x, layout.ceilingY, 0]}>
+          <boxGeometry args={[layout.beam, layout.beam, layout.roomWidth * 0.94]} />
+        </mesh>
+      ))}
+
+      {[-1, 1].flatMap((side) =>
+        [-0.62, -0.16, 0.16].map((x) => (
+          <mesh
+            key={`column-${side}-${x}`}
+            material={materials.metal}
+            position={[x * layout.roomDepth, floorY + layout.wallHeight * 0.5, side * layout.roomWidth * 0.47]}
+          >
+            <cylinderGeometry args={[layout.beam * 1.45, layout.beam * 1.45, layout.wallHeight, 12]} />
+          </mesh>
+        )),
+      )}
+    </group>
+  );
+}
+
 function RoomModel({
   orbit,
   previz,
@@ -416,6 +510,7 @@ function RoomModel({
     clone.updateMatrixWorld(true);
 
     clone.traverse((o) => {
+      o.visible = true;
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh) return;
 
@@ -648,6 +743,7 @@ function RoomModel({
         <CameraRig beats={built.beats} screens={built.screens} brand={built.brand} progressRef={progressRef} previz={previz} />
       )}
 
+      <VenueStructure radius={built.radius} floorY={built.floorY} stageCenter={built.frontTarget} flowDir={built.flowDir} />
       <primitive object={built.root} />
 
       {/* Clean mirrored floor — reflects the screens */}
