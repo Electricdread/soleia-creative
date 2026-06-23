@@ -666,9 +666,11 @@ function RoomModel({
       </mesh>
 
       {/* Flowing floor — lines stream across the floor toward the back */}
-      {/* Minimal lighting so stylized PBR structural surfaces render */}
-      <ambientLight intensity={0.18} color="#3a3550" />
-      <hemisphereLight args={['#2a2a40', '#0a0a10', 0.25]} />
+      {/* Minimal lighting + env so stylized PBR structural surfaces render */}
+      <ambientLight intensity={0.55} color="#b8b4d0" />
+      <hemisphereLight args={['#8a8ab0', '#1a1a22', 0.7]} />
+      <directionalLight position={[built.radius * 1.2, built.radius * 1.8, built.radius * 0.8]} intensity={0.9} color="#ffffff" />
+      <Environment preset="night" />
 
       {/* Flowing floor — lines stream across the floor toward the back */}
       <FlowFloor radius={built.radius} floorY={built.floorY} flowDir={built.flowDir} matRef={floorMatRef} />
