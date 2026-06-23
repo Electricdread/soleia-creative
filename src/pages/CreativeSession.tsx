@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, User, ArrowRight, FileText, AlertCircle } from 'lucide-react';
+import { Loader2, User, ArrowRight, FileText, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
@@ -484,6 +484,8 @@ export default function CreativeSession() {
 function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
   const [activeId, setActiveId] = useState<string | null>(clips[0]?.id ?? null);
   const [hasError, setHasError] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (clips.length > 0 && !clips.find((c) => c.id === activeId)) {
@@ -491,6 +493,24 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
       setHasError(false);
     }
   }, [clips, activeId]);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === containerRef.current);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (containerRef.current) {
+        await containerRef.current.requestFullscreen();
+      }
+    } catch {
+      /* ignore */
+    }
+  };
 
   if (clips.length === 0) {
     return <PrevizMovie />;
@@ -501,8 +521,9 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
   return (
     <div className="space-y-3">
       <div
+        ref={containerRef}
         className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated bg-black"
-        style={{ aspectRatio: '16 / 9' }}
+        style={isFullscreen ? undefined : { aspectRatio: '16 / 9' }}
       >
         {!hasError && (
           <video
@@ -516,7 +537,7 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
             controls={false}
             disablePictureInPicture
             onError={() => setHasError(true)}
-            className="absolute inset-0 h-full w-full object-cover"
+            className={`absolute inset-0 h-full w-full ${isFullscreen ? 'object-contain' : 'object-cover'}`}
           />
         )}
 
@@ -537,9 +558,19 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
             {active.title || 'Unreal Previz'}
           </span>
         </div>
+
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          className="absolute right-3 bottom-3 z-10 rounded-full border border-primary/30 bg-black/55 p-2 text-primary/90 backdrop-blur-md transition-colors hover:bg-black/75 hover:text-primary"
+        >
+          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
       </div>
 
-      {clips.length > 1 && (
+      <div className="space-y-1.5">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Scenes</div>
         <div className="flex flex-wrap gap-2">
           {clips.map((c) => {
             const isActive = c.id === active.id;
@@ -562,7 +593,7 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
             );
           })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
