@@ -322,17 +322,15 @@ export default function CreativeSession() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <CreativeSessionCover session={session} />
 
-        {previzClips.length > 0 && (
-          <section className="space-y-2">
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-xl text-foreground">Venue Previz</h2>
-              <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Run-of-show cues sync to the playback
-              </span>
-            </div>
-            <PrevizSection />
-          </section>
-        )}
+        <section className="space-y-2">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-xl text-foreground">Venue Previz</h2>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Run-of-show cues sync to the playback
+            </span>
+          </div>
+          <PrevizSection />
+        </section>
 
 
 
