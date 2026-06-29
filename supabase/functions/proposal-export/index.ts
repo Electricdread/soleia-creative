@@ -16,37 +16,50 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Require authentication
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    // Two auth modes:
+    //  1) Machine-to-machine: x-api-key header matches DSXBOOKS_EXPORT_KEY
+    //  2) Admin user JWT: Authorization: Bearer <jwt> with admin role
+    const exportKey = Deno.env.get("DSXBOOKS_EXPORT_KEY");
+    const providedKey = req.headers.get("x-api-key");
+    let authorized = false;
+
+    if (exportKey && providedKey && providedKey === exportKey) {
+      authorized = true;
+    } else {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user }, error: authError } = await userClient.auth.getUser();
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const { data: isAdmin, error: adminErr } = await userClient.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin",
+      });
+      if (adminErr || !isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      authorized = true;
+    }
+
+    if (!authorized) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // Authorization: only admins may export full business data.
-    // Soleia exposes role checks via the public.has_role(_user_id, _role) RPC.
-    const { data: isAdmin, error: adminErr } = await userClient.rpc("has_role", {
-      _user_id: user.id,
-      _role: "admin",
-    });
-    if (adminErr || !isAdmin) {
-      return new Response(
-        JSON.stringify({ error: "Forbidden" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
