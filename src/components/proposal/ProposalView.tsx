@@ -191,6 +191,52 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         },
       }).catch(console.error);
 
+      // Build a signed-state PDF and email it to client + PM + Luis
+      (async () => {
+        try {
+          const [itemsRes, galleryRes, timelineRes] = await Promise.all([
+            supabase.from('proposal_items').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+            supabase.from('proposal_gallery').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+            supabase.from('proposal_timeline').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+          ]);
+          const freshItems = itemsRes.data || items;
+          const freshGallery = galleryRes.data || gallery;
+          const freshTimeline = timelineRes.data || timeline;
+          const coverImageUrl = freshGallery?.[0]?.image_url || null;
+          const signedProposal = { ...proposal, signed_at: new Date().toISOString(), client_signature: clientName };
+          const itemsForPdf = freshItems.map((i: any) => ({
+            ...i,
+            quantity: clientQty[i.id] ?? i.quantity ?? 1,
+            client_selected: selectedIds.has(i.id),
+          }));
+          const pdf = await generateProposalPdf(
+            signedProposal,
+            itemsForPdf,
+            freshTimeline,
+            coverImageUrl,
+            freshGallery,
+            { returnBase64: true }
+          );
+          await supabase.functions.invoke('send-signed-proposal', {
+            body: {
+              event_name: proposal.event_name,
+              client_name: proposal.client_name,
+              client_signature: clientName,
+              client_email: proposal.client_email || null,
+              venue_name: proposal.venue_name,
+              event_date: proposal.event_date,
+              proposal_url: window.location.href,
+              assigned_pm_name: proposal.assigned_pm_name || null,
+              assigned_pm_email: proposal.assigned_pm_email || null,
+              pdf_base64: pdf.base64,
+              pdf_filename: pdf.filename,
+            },
+          });
+        } catch (err) {
+          console.error('send-signed-proposal failed', err);
+        }
+      })();
+
       // Auto-create client Google Drive folder (idempotent on backend)
       supabase.functions.invoke('create-client-drive-folder', {
         body: { proposal_id: proposal.id },
