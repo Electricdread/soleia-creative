@@ -78,7 +78,12 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   });
   const [linkedSessionId, setLinkedSessionId] = useState<string | null>(null);
   const [editingItems, setEditingItems] = useState(false);
-  const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
+  const seedEditItems = (src: any[]) => src.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }));
+  const [editItems, setEditItems] = useState(() => seedEditItems(items));
+  // Keep edit buffer in sync with latest items prop whenever we're not actively editing.
+  useEffect(() => {
+    if (!editingItems) setEditItems(seedEditItems(items));
+  }, [items, editingItems]);
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
   const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
 
