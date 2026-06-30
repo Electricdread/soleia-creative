@@ -710,6 +710,9 @@ luisdreamslv@gmail.com`;
                       Signed by {p.client_signature} on {format(new Date(p.signed_at), 'MMM d, yyyy')}
                     </p>
                   )}
+                  {p.assigned_pm_name && (
+                    <p className="text-primary text-xs mt-1">PM: {p.assigned_pm_name}</p>
+                  )}
                 </div>
                 <div className="flex w-full flex-wrap items-center gap-3 xl:flex-1 xl:justify-end">
                   <label
