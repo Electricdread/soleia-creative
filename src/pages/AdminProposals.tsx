@@ -685,6 +685,17 @@ luisdreamslv@gmail.com`;
                       Mark Sent
                     </Button>
                   )}
+                  {p.signed_at && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => resetSignature(p.id, p.event_name)}
+                      title="Reset signature & reopen for signing"
+                      className="text-amber-400 hover:text-amber-300"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                  )}
                   {p.drive_folder_url ? (
                     <Button
                       variant="ghost"
