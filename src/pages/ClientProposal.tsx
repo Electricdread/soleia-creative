@@ -60,9 +60,11 @@ export default function ClientProposal() {
   if (error || !proposal) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md px-6">
           <h1 className="font-display text-2xl text-foreground mb-2">Proposal Not Found</h1>
-          <p className="text-muted-foreground">{error || 'This proposal may have expired or been removed.'}</p>
+          <p className="text-muted-foreground mb-6">{error || 'This proposal may have expired or been removed.'}</p>
+          <p className="text-sm text-muted-foreground mb-4">If you have seen this page before, your browser may be showing an older version.</p>
+          <ClearCacheButton label="Clear cache & reload" />
         </div>
       </div>
     );
