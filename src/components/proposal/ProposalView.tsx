@@ -272,6 +272,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       // Defensive whitelist: only these columns exist on `proposals`.
       // Session linkage lives on creative_sessions.proposal_id (NOT proposals.session_id).
       // Never spread editFields here — it contains linked_session_id which is not a proposals column.
+      const pickedPm = adminUsers.find(u => u.user_id === editFields.assigned_pm_id);
       const proposalPayload = {
         event_name: editFields.event_name,
         client_name: editFields.client_name,
@@ -279,7 +280,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         event_date: editFields.event_date || null,
         validity_days: parseInt(editFields.validity_days) || 7,
         contact_email: editFields.contact_email,
+        client_email: editFields.client_email?.trim() || null,
         creative_call_url: editFields.creative_call_url?.trim() || null,
+        assigned_pm_id: editFields.assigned_pm_id || null,
+        assigned_pm_email: pickedPm?.email || null,
+        assigned_pm_name: pickedPm?.display_name || pickedPm?.email || null,
       };
 
       if (import.meta.env.DEV) {
