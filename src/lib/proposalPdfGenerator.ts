@@ -253,7 +253,8 @@ export async function generateProposalPdf(
   items: ProposalItem[],
   timeline: TimelinePhase[],
   coverImageUrl?: string | null,
-  galleryImages?: GalleryImage[]
+  galleryImages?: GalleryImage[],
+  options?: { returnBase64?: boolean; filename?: string }
 ) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   // Single source of truth: the accepted/quoted scope is ALWAYS items where
