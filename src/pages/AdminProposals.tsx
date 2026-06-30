@@ -48,6 +48,9 @@ interface ProposalRow {
   creative_call_url: string | null;
   is_pre_call_packet: boolean;
   proposal_scenario: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' | null;
+  assigned_pm_name?: string | null;
+  assigned_pm_email?: string | null;
+  client_email?: string | null;
 }
 
 export default function AdminProposals() {
