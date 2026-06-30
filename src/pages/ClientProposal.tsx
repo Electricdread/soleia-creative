@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import ProposalView from '@/components/proposal/ProposalView';
+import ClearCacheButton from '@/components/ClearCacheButton';
 import { Button } from '@/components/ui/button';
 
 export default function ClientProposal() {
