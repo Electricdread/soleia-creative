@@ -661,7 +661,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                   <ListChecks className="w-8 h-8 text-primary mx-auto mb-3" />
                   <p className="text-foreground font-semibold mb-1">No line items yet</p>
                   <p className="text-muted-foreground text-sm mb-4">Add items so your client can see the menu and pricing.</p>
-                  <Button size="sm" onClick={() => setEditingItems(true)} className="bg-primary text-foreground hover:bg-primary/90 gap-1.5">
+                  <Button size="sm" onClick={() => { setEditItems(seedEditItems(items)); setEditingItems(true); }} className="bg-primary text-foreground hover:bg-primary/90 gap-1.5">
                     <Plus className="w-3 h-3" /> Add items
                   </Button>
                 </div>
