@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, RotateCcw } from 'lucide-react';
 import { downloadLineItemLibraryPdf, printLineItemLibraryPdf } from '@/lib/lineItemLibraryPdf';
 import { Switch } from '@/components/ui/switch';
 import { getPublicOrigin } from '@/lib/ogShare';
