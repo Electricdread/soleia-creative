@@ -1,31 +1,16 @@
-## Reset signed proposal + admin reset button
+## Fix: proposal item edits revert after saving
 
-### 1. Reset the Fudale × GitHub proposal now
-Run a data update on proposal token `8d55d68d...`:
-- `client_signature` → `NULL`
-- `signed_at` → `NULL`
-- `status` → `sent`
-- `proposal_items.client_selected` → `NULL` for that proposal (clear client selections so they can re-pick)
+### Root cause
+In `src/components/proposal/ProposalView.tsx`, `editItems` is initialized from the `items` prop only once at mount (`useState(items.map(...))`). When the parent reloads after a save (`onRefresh`) and passes fresh `items` down, `editItems` is never re-seeded. The "Edit Items" buttons (lines 648, 659) flip `editingItems` to true without rebuilding `editItems`, so the form shows the stale in-memory snapshot from first mount — which looks like the edits "restored to default."
 
-Quantities adjusted by the client during signing are left as-is (they were edits, not signature state). Confirm if you'd also like quantities restored to originals — that requires a separate snapshot we don't currently store.
+### Fix
+In `src/components/proposal/ProposalView.tsx`:
 
-### 2. Add an admin "Reset signature" button
-**Location:** Admin proposal detail/edit view (`src/pages/AdminProposalEdit.tsx` or the proposal row actions in the admin proposals list — whichever you prefer; default to both: row action + detail page header).
+1. Add a `useEffect` that re-seeds `editItems` from `items` whenever `items` changes **and** `editingItems` is false. This keeps the edit buffer in sync with the latest server data between edit sessions.
+2. Update both "Edit Items" buttons (lines 648 & 659) to re-seed `editItems` from current `items` at the moment edit mode is entered, as a belt-and-suspenders guarantee.
+3. After `saveItems` succeeds, keep `setEditingItems(false)` + `onRefresh()`; the new effect will repopulate the buffer from the refreshed items.
 
-**UI:**
-- Button only visible when `status = 'accepted'` AND `client_signature IS NOT NULL`
-- Label: "Reset signature" with an Undo/RotateCcw icon, destructive-outline style
-- Confirmation dialog: "This will clear the client signature and reopen the proposal for signing. Continue?"
+No schema, RLS, or save-logic changes — the writes themselves are correct (verified RLS policy `Admins can manage proposal items` allows full CRUD for admins).
 
-**Backend:** New SECURITY DEFINER RPC `reset_proposal_signature(p_proposal_id uuid)`:
-- Requires caller to be admin (`has_role(auth.uid(), 'admin')`)
-- Clears `client_signature`, `signed_at`, sets `status = 'sent'`
-- Clears `client_selected` on related `proposal_items`
-- Returns the proposal id
-
-**Client:** On success, toast "Proposal reopened for signing" and refresh the proposal data.
-
-### Technical notes
-- New migration adds the RPC + grants execute to `authenticated`
-- No schema changes to tables
-- No changes to client-facing `ProposalView.tsx`
+### Files touched
+- `src/components/proposal/ProposalView.tsx` (state sync only)
