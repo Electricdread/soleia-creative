@@ -650,7 +650,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           <div id="line-items" className="mb-10 scroll-mt-20">
             {isAdmin && (
               <div className="flex justify-end mb-2">
-                <button onClick={() => setEditingItems(true)} className="text-muted-foreground/80 hover:text-foreground transition-colors flex items-center gap-1 text-xs">
+                <button onClick={() => { setEditItems(seedEditItems(items)); setEditingItems(true); }} className="text-muted-foreground/80 hover:text-foreground transition-colors flex items-center gap-1 text-xs">
                   <Pencil className="w-3 h-3" /> Edit Items
                 </button>
               </div>
