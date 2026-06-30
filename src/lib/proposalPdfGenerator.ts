@@ -253,7 +253,8 @@ export async function generateProposalPdf(
   items: ProposalItem[],
   timeline: TimelinePhase[],
   coverImageUrl?: string | null,
-  galleryImages?: GalleryImage[]
+  galleryImages?: GalleryImage[],
+  options?: { returnBase64?: boolean; filename?: string }
 ) {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   // Single source of truth: the accepted/quoted scope is ALWAYS items where
@@ -680,5 +681,14 @@ export async function generateProposalPdf(
     author: 'Soleia Creative Team',
   });
 
-  doc.save(`Proposal_${proposal.event_name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+  const safeName = proposal.event_name.replace(/[^a-zA-Z0-9]/g, '_');
+  const filename = options?.filename || `Proposal_${safeName}.pdf`;
+  if (options?.returnBase64) {
+    // Strip the "data:application/pdf;filename=...;base64," prefix
+    const dataUri = doc.output('datauristring', { filename }) as string;
+    const base64 = dataUri.includes(',') ? dataUri.split(',')[1] : dataUri;
+    return { base64, filename };
+  }
+  doc.save(filename);
+  return { base64: '', filename };
 }

@@ -48,6 +48,9 @@ interface ProposalRow {
   creative_call_url: string | null;
   is_pre_call_packet: boolean;
   proposal_scenario: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' | null;
+  assigned_pm_name?: string | null;
+  assigned_pm_email?: string | null;
+  client_email?: string | null;
 }
 
 export default function AdminProposals() {
@@ -66,12 +69,20 @@ export default function AdminProposals() {
   const [eventDate, setEventDate] = useState('');
   const [validityDays, setValidityDays] = useState('7');
   const [contactEmail, setContactEmail] = useState('luisdreamslv@gmail.com');
+  const [clientEmail, setClientEmail] = useState('');
+  const [assignedPmId, setAssignedPmId] = useState('');
+  const [adminUsers, setAdminUsers] = useState<{ user_id: string; email: string; display_name: string }[]>([]);
   const [creativeCallUrl, setCreativeCallUrl] = useState('');
   const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
   const [saving, setSaving] = useState(false);
   const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
   const [emailCopying, setEmailCopying] = useState<string | null>(null);
   const [folderGenerating, setFolderGenerating] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.rpc('list_admin_users').then(({ data }) => setAdminUsers((data as any[]) || []));
+  }, [isAdmin]);
 
   const generateClientFolder = async (proposalId: string) => {
     setFolderGenerating(proposalId);
@@ -127,6 +138,10 @@ export default function AdminProposals() {
           event_date: eventDate || null,
           validity_days: parseInt(validityDays) || 7,
           contact_email: contactEmail,
+          client_email: clientEmail.trim() || null,
+          assigned_pm_id: assignedPmId || null,
+          assigned_pm_email: adminUsers.find(u => u.user_id === assignedPmId)?.email || null,
+          assigned_pm_name: adminUsers.find(u => u.user_id === assignedPmId)?.display_name || adminUsers.find(u => u.user_id === assignedPmId)?.email || null,
           creative_call_url: creativeCallUrl.trim() || null,
           status: 'draft',
           created_by: user?.id,
@@ -205,6 +220,8 @@ export default function AdminProposals() {
     setEventDate('');
     setValidityDays('7');
     setContactEmail('luisdreamslv@gmail.com');
+    setClientEmail('');
+    setAssignedPmId('');
     setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
     setCreativeCallUrl('');
   };
@@ -469,6 +486,29 @@ luisdreamslv@gmail.com`;
                 <Label className="text-muted-foreground text-xs">Contact Email</Label>
                 <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="bg-muted border-border text-foreground mt-1" />
               </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Client Email (for signed PDF)</Label>
+                <Input
+                  type="email"
+                  value={clientEmail}
+                  onChange={e => setClientEmail(e.target.value)}
+                  placeholder="client@company.com"
+                  className="bg-muted border-border text-foreground mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Assigned Project Manager</Label>
+                <select
+                  value={assignedPmId}
+                  onChange={e => setAssignedPmId(e.target.value)}
+                  className="w-full mt-1 rounded-md border border-border bg-muted text-foreground px-3 py-2 text-sm h-10"
+                >
+                  <option value="">— Unassigned —</option>
+                  {adminUsers.map(u => (
+                    <option key={u.user_id} value={u.user_id}>{u.display_name || u.email}</option>
+                  ))}
+                </select>
+              </div>
               <div className="sm:col-span-2">
                 <Label className="text-muted-foreground text-xs">Creative Call Scheduling Link (optional)</Label>
                 <Input
@@ -669,6 +709,9 @@ luisdreamslv@gmail.com`;
                     <p className="text-green-400 text-xs mt-1">
                       Signed by {p.client_signature} on {format(new Date(p.signed_at), 'MMM d, yyyy')}
                     </p>
+                  )}
+                  {p.assigned_pm_name && (
+                    <p className="text-primary text-xs mt-1">PM: {p.assigned_pm_name}</p>
                   )}
                 </div>
                 <div className="flex w-full flex-wrap items-center gap-3 xl:flex-1 xl:justify-end">

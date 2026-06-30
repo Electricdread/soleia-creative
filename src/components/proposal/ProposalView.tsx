@@ -73,9 +73,16 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
     contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
+    client_email: proposal.client_email || '',
     creative_call_url: proposal.creative_call_url || '',
     linked_session_id: '',
+    assigned_pm_id: proposal.assigned_pm_id || '',
   });
+  const [adminUsers, setAdminUsers] = useState<{ user_id: string; email: string; display_name: string }[]>([]);
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.rpc('list_admin_users').then(({ data }) => setAdminUsers((data as any[]) || []));
+  }, [isAdmin]);
   const [linkedSessionId, setLinkedSessionId] = useState<string | null>(null);
   const [editingItems, setEditingItems] = useState(false);
   const seedEditItems = (src: any[]) => src.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }));
@@ -191,6 +198,52 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         },
       }).catch(console.error);
 
+      // Build a signed-state PDF and email it to client + PM + Luis
+      (async () => {
+        try {
+          const [itemsRes, galleryRes, timelineRes] = await Promise.all([
+            supabase.from('proposal_items').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+            supabase.from('proposal_gallery').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+            supabase.from('proposal_timeline').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+          ]);
+          const freshItems = itemsRes.data || items;
+          const freshGallery = galleryRes.data || gallery;
+          const freshTimeline = timelineRes.data || timeline;
+          const coverImageUrl = freshGallery?.[0]?.image_url || null;
+          const signedProposal = { ...proposal, signed_at: new Date().toISOString(), client_signature: clientName };
+          const itemsForPdf = freshItems.map((i: any) => ({
+            ...i,
+            quantity: clientQty[i.id] ?? i.quantity ?? 1,
+            client_selected: selectedIds.has(i.id),
+          }));
+          const pdf = await generateProposalPdf(
+            signedProposal,
+            itemsForPdf,
+            freshTimeline,
+            coverImageUrl,
+            freshGallery,
+            { returnBase64: true }
+          );
+          await supabase.functions.invoke('send-signed-proposal', {
+            body: {
+              event_name: proposal.event_name,
+              client_name: proposal.client_name,
+              client_signature: clientName,
+              client_email: proposal.client_email || null,
+              venue_name: proposal.venue_name,
+              event_date: proposal.event_date,
+              proposal_url: window.location.href,
+              assigned_pm_name: proposal.assigned_pm_name || null,
+              assigned_pm_email: proposal.assigned_pm_email || null,
+              pdf_base64: pdf.base64,
+              pdf_filename: pdf.filename,
+            },
+          });
+        } catch (err) {
+          console.error('send-signed-proposal failed', err);
+        }
+      })();
+
       // Auto-create client Google Drive folder (idempotent on backend)
       supabase.functions.invoke('create-client-drive-folder', {
         body: { proposal_id: proposal.id },
@@ -219,6 +272,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       // Defensive whitelist: only these columns exist on `proposals`.
       // Session linkage lives on creative_sessions.proposal_id (NOT proposals.session_id).
       // Never spread editFields here — it contains linked_session_id which is not a proposals column.
+      const pickedPm = adminUsers.find(u => u.user_id === editFields.assigned_pm_id);
       const proposalPayload = {
         event_name: editFields.event_name,
         client_name: editFields.client_name,
@@ -226,7 +280,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         event_date: editFields.event_date || null,
         validity_days: parseInt(editFields.validity_days) || 7,
         contact_email: editFields.contact_email,
+        client_email: editFields.client_email?.trim() || null,
         creative_call_url: editFields.creative_call_url?.trim() || null,
+        assigned_pm_id: editFields.assigned_pm_id || null,
+        assigned_pm_email: pickedPm?.email || null,
+        assigned_pm_name: pickedPm?.display_name || pickedPm?.email || null,
       };
 
       if (import.meta.env.DEV) {
@@ -434,6 +492,28 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               <div>
                 <label className="text-xs text-muted-foreground/80 font-semibold">Contact Email</label>
                 <Input value={editFields.contact_email} onChange={e => setEditFields({ ...editFields, contact_email: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Client Email (for signed PDF)</label>
+                <Input
+                  type="email"
+                  value={editFields.client_email}
+                  onChange={e => setEditFields({ ...editFields, client_email: e.target.value })}
+                  placeholder="client@company.com"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Assigned Project Manager</label>
+                <select
+                  value={editFields.assigned_pm_id}
+                  onChange={e => setEditFields({ ...editFields, assigned_pm_id: e.target.value })}
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">— Unassigned —</option>
+                  {adminUsers.map(u => (
+                    <option key={u.user_id} value={u.user_id}>{u.display_name || u.email}</option>
+                  ))}
+                </select>
               </div>
               <div className="col-span-2">
                 <label className="text-xs text-muted-foreground/80 font-semibold">Creative Call Scheduling Link (optional)</label>
