@@ -1185,6 +1185,10 @@ export type Database = {
       }
       proposals: {
         Row: {
+          assigned_pm_email: string | null
+          assigned_pm_id: string | null
+          assigned_pm_name: string | null
+          client_email: string | null
           client_name: string
           client_signature: string | null
           contact_email: string | null
@@ -1209,6 +1213,10 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          assigned_pm_email?: string | null
+          assigned_pm_id?: string | null
+          assigned_pm_name?: string | null
+          client_email?: string | null
           client_name: string
           client_signature?: string | null
           contact_email?: string | null
@@ -1233,6 +1241,10 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          assigned_pm_email?: string | null
+          assigned_pm_id?: string | null
+          assigned_pm_name?: string | null
+          client_email?: string | null
           client_name?: string
           client_signature?: string | null
           contact_email?: string | null
@@ -1546,6 +1558,10 @@ export type Database = {
       get_proposal_by_token: {
         Args: { p_token: string }
         Returns: {
+          assigned_pm_email: string | null
+          assigned_pm_id: string | null
+          assigned_pm_name: string | null
+          client_email: string | null
           client_name: string
           client_signature: string | null
           contact_email: string | null
@@ -1590,6 +1606,14 @@ export type Database = {
       is_active_public_proposal: {
         Args: { p_proposal_id: string }
         Returns: boolean
+      }
+      list_admin_users: {
+        Args: never
+        Returns: {
+          display_name: string
+          email: string
+          user_id: string
+        }[]
       }
       move_to_dlq: {
         Args: {
