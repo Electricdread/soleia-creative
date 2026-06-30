@@ -82,6 +82,11 @@ export default function ClientProposal() {
         <ArrowLeft className="w-4 h-4" />
         <span className="hidden sm:inline">Back</span>
       </Button>
+      <ClearCacheButton
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-md border border-border text-muted-foreground hover:text-foreground hover:bg-muted print:hidden min-h-[44px] min-w-[44px]"
+      />
       <ProposalView
         proposal={proposal}
         items={items}
