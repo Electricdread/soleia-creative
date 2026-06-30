@@ -1,35 +1,31 @@
-## Problem
-Clients see stale errors on proposals after deployments because the Vite PWA service worker caches the old app shell. They don’t know how to hard-refresh or unregister the service worker.
+## Reset signed proposal + admin reset button
 
-## Solution
-Add a one-click **Clear Cache & Reload** button to the client-facing proposal page. When clicked it:
-1. Unregisters all service workers
-2. Clears the browser’s Cache Storage (Workbox caches)
-3. Reloads the page with `location.reload(true)` so the browser fetches the latest app version
+### 1. Reset the Fudale × GitHub proposal now
+Run a data update on proposal token `8d55d68d...`:
+- `client_signature` → `NULL`
+- `signed_at` → `NULL`
+- `status` → `sent`
+- `proposal_items.client_selected` → `NULL` for that proposal (clear client selections so they can re-pick)
 
-## Implementation
+Quantities adjusted by the client during signing are left as-is (they were edits, not signature state). Confirm if you'd also like quantities restored to originals — that requires a separate snapshot we don't currently store.
 
-### 1. Reusable utility — `src/lib/clearAppCache.ts`
-Expose an async function that:
-- Calls `navigator.serviceWorker.getRegistrations()` and `.unregister()` on each
-- Calls `caches.keys()` and deletes every cache
-- Returns a promise that resolves when cleanup is complete
+### 2. Add an admin "Reset signature" button
+**Location:** Admin proposal detail/edit view (`src/pages/AdminProposalEdit.tsx` or the proposal row actions in the admin proposals list — whichever you prefer; default to both: row action + detail page header).
 
-### 2. Button component — `src/components/ClearCacheButton.tsx`
-- Uses the utility above
-- Shows a brief loading state while clearing
-- Calls `window.location.reload()` on completion
-- Styled as a small secondary button with a refresh icon (fits in the proposal header or error state)
+**UI:**
+- Button only visible when `status = 'accepted'` AND `client_signature IS NOT NULL`
+- Label: "Reset signature" with an Undo/RotateCcw icon, destructive-outline style
+- Confirmation dialog: "This will clear the client signature and reopen the proposal for signing. Continue?"
 
-### 3. Integrate into proposal page
-Add the button in two places on `ClientProposal.tsx`:
-- **Error state**: When the proposal returns “Not Found” or any error, render the clear-cache button alongside the error message with copy like *“If you’ve seen this before, clear cache and reload.”*
-- **Normal view**: Place a subtle icon button in the top-right header (next to the Back / PDF buttons) so clients can trigger it at any time if the page feels stale.
+**Backend:** New SECURITY DEFINER RPC `reset_proposal_signature(p_proposal_id uuid)`:
+- Requires caller to be admin (`has_role(auth.uid(), 'admin')`)
+- Clears `client_signature`, `signed_at`, sets `status = 'sent'`
+- Clears `client_selected` on related `proposal_items`
+- Returns the proposal id
 
-### 4. Scope
-- This only touches the client proposal page (`/proposal/:token`) because that’s the client-facing page the user is concerned about.
-- No backend changes.
-- No changes to the PWA config in `vite.config.ts`.
+**Client:** On success, toast "Proposal reopened for signing" and refresh the proposal data.
 
-## Result
-Clients see a single button. One tap clears the old PWA cache and reloads the page with the latest version — no need for them to learn browser developer tools.
+### Technical notes
+- New migration adds the RPC + grants execute to `authenticated`
+- No schema changes to tables
+- No changes to client-facing `ProposalView.tsx`

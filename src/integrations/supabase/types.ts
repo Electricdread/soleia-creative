@@ -1608,6 +1608,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      reset_proposal_signature: {
+        Args: { p_proposal_id: string }
+        Returns: string
+      }
       sign_proposal_by_token:
         | {
             Args: {

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, RotateCcw } from 'lucide-react';
 import { downloadLineItemLibraryPdf, printLineItemLibraryPdf } from '@/lib/lineItemLibraryPdf';
 import { Switch } from '@/components/ui/switch';
 import { getPublicOrigin } from '@/lib/ogShare';
@@ -225,6 +225,17 @@ export default function AdminProposals() {
     await supabase.from('proposals').update({ status: 'sent' }).eq('id', id);
     fetchProposals();
     toast({ title: 'Proposal marked as sent' });
+  };
+
+  const resetSignature = async (id: string, eventName: string) => {
+    if (!window.confirm(`Reset signature for "${eventName}"?\n\nThis clears the client signature and reopens the proposal for signing.`)) return;
+    const { error } = await supabase.rpc('reset_proposal_signature', { p_proposal_id: id });
+    if (error) {
+      toast({ title: 'Reset failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Signature reset', description: 'Proposal reopened for signing.' });
+    fetchProposals();
   };
 
   const toggleActive = async (id: string, current: boolean) => {
@@ -672,6 +683,17 @@ luisdreamslv@gmail.com`;
                   {p.status === 'draft' && (
                     <Button variant="ghost" size="sm" onClick={() => markSent(p.id)} className="text-blue-400 hover:text-blue-300 text-xs">
                       Mark Sent
+                    </Button>
+                  )}
+                  {p.signed_at && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => resetSignature(p.id, p.event_name)}
+                      title="Reset signature & reopen for signing"
+                      className="text-amber-400 hover:text-amber-300"
+                    >
+                      <RotateCcw className="w-4 h-4" />
                     </Button>
                   )}
                   {p.drive_folder_url ? (
