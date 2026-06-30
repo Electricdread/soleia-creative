@@ -191,7 +191,16 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         body: { proposal_id: proposal.id },
       }).catch(console.error);
     } catch (e: any) {
-      toast({ title: 'Failed to sign', description: e.message, variant: 'destructive' });
+      const msg = String(e?.message || '');
+      if (/not available for signing/i.test(msg)) {
+        toast({
+          title: 'This proposal is closed for signing',
+          description: 'It may have been archived or withdrawn. Please contact Soleia to have it reopened, then refresh this page.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({ title: 'Failed to sign', description: msg, variant: 'destructive' });
+      }
     } finally {
       setSigning(false);
     }
