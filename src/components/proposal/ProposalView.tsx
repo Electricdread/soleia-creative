@@ -73,9 +73,16 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
     contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
+    client_email: proposal.client_email || '',
     creative_call_url: proposal.creative_call_url || '',
     linked_session_id: '',
+    assigned_pm_id: proposal.assigned_pm_id || '',
   });
+  const [adminUsers, setAdminUsers] = useState<{ user_id: string; email: string; display_name: string }[]>([]);
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.rpc('list_admin_users').then(({ data }) => setAdminUsers((data as any[]) || []));
+  }, [isAdmin]);
   const [linkedSessionId, setLinkedSessionId] = useState<string | null>(null);
   const [editingItems, setEditingItems] = useState(false);
   const seedEditItems = (src: any[]) => src.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }));
