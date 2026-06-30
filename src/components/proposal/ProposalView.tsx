@@ -855,7 +855,22 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         </div>
 
         {/* Sign Section */}
-        {!isAdmin && !signed ? (
+        {!isAdmin && !signed && proposal.status !== 'sent' && proposal.status !== 'draft' ? (
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-lg p-6 mb-12 card-elevated">
+            <p className="text-amber-900 dark:text-amber-200 font-semibold mb-2">
+              This proposal is currently closed for signing
+            </p>
+            <p className="text-amber-800 dark:text-amber-300 text-sm leading-relaxed">
+              It has been archived or withdrawn and can't be accepted in its current state.
+              Please reply to your Soleia contact (or email{' '}
+              <a href="mailto:luisdreamslv@gmail.com" className="underline font-medium">
+                luisdreamslv@gmail.com
+              </a>
+              ) and ask us to reopen it. Once reopened, refresh this page (Cmd/Ctrl + Shift + R)
+              and the signature field will reappear here.
+            </p>
+          </div>
+        ) : !isAdmin && !signed ? (
           <div className="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 mb-12 card-elevated">
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
@@ -872,6 +887,11 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 {signing ? 'Signing...' : 'Accept & Sign Proposal'}
               </Button>
             </div>
+            {selectedIds.size === 0 && (
+              <p className="text-muted-foreground text-xs mt-3">
+                Select at least one line item above to enable signing.
+              </p>
+            )}
           </div>
         ) : signed ? (
           <div className="bg-green-50 border border-green-200 rounded-lg p-5 mb-12 text-center">
