@@ -483,6 +483,29 @@ luisdreamslv@gmail.com`;
                 <Label className="text-muted-foreground text-xs">Contact Email</Label>
                 <Input value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="bg-muted border-border text-foreground mt-1" />
               </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Client Email (for signed PDF)</Label>
+                <Input
+                  type="email"
+                  value={clientEmail}
+                  onChange={e => setClientEmail(e.target.value)}
+                  placeholder="client@company.com"
+                  className="bg-muted border-border text-foreground mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Assigned Project Manager</Label>
+                <select
+                  value={assignedPmId}
+                  onChange={e => setAssignedPmId(e.target.value)}
+                  className="w-full mt-1 rounded-md border border-border bg-muted text-foreground px-3 py-2 text-sm h-10"
+                >
+                  <option value="">— Unassigned —</option>
+                  {adminUsers.map(u => (
+                    <option key={u.user_id} value={u.user_id}>{u.display_name || u.email}</option>
+                  ))}
+                </select>
+              </div>
               <div className="sm:col-span-2">
                 <Label className="text-muted-foreground text-xs">Creative Call Scheduling Link (optional)</Label>
                 <Input
