@@ -217,6 +217,8 @@ export default function AdminProposals() {
     setEventDate('');
     setValidityDays('7');
     setContactEmail('luisdreamslv@gmail.com');
+    setClientEmail('');
+    setAssignedPmId('');
     setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
     setCreativeCallUrl('');
   };
