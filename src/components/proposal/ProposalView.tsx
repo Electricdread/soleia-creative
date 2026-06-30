@@ -78,7 +78,12 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   });
   const [linkedSessionId, setLinkedSessionId] = useState<string | null>(null);
   const [editingItems, setEditingItems] = useState(false);
-  const [editItems, setEditItems] = useState(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee })));
+  const seedEditItems = (src: any[]) => src.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }));
+  const [editItems, setEditItems] = useState(() => seedEditItems(items));
+  // Keep edit buffer in sync with latest items prop whenever we're not actively editing.
+  useEffect(() => {
+    if (!editingItems) setEditItems(seedEditItems(items));
+  }, [items, editingItems]);
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
   const [sessions, setSessions] = useState<{ id: string; project_name: string; client_name: string; cover_images: any }[]>([]);
 
@@ -524,7 +529,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <Button size="sm" onClick={saveItems} className="bg-primary text-foreground hover:bg-primary/90">
                   <Check className="w-3 h-3 mr-1" /> Save
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(items.map(i => ({ ...i, price: String(i.price), quantity: String(i.quantity || 1), category: i.category || '', unit: i.unit || '', is_flat_fee: !!i.is_flat_fee }))); }}>
+                <Button size="sm" variant="ghost" onClick={() => { setEditingItems(false); setEditItems(seedEditItems(items)); }}>
                   <X className="w-3 h-3 mr-1" /> Cancel
                 </Button>
               </div>
@@ -645,7 +650,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           <div id="line-items" className="mb-10 scroll-mt-20">
             {isAdmin && (
               <div className="flex justify-end mb-2">
-                <button onClick={() => setEditingItems(true)} className="text-muted-foreground/80 hover:text-foreground transition-colors flex items-center gap-1 text-xs">
+                <button onClick={() => { setEditItems(seedEditItems(items)); setEditingItems(true); }} className="text-muted-foreground/80 hover:text-foreground transition-colors flex items-center gap-1 text-xs">
                   <Pencil className="w-3 h-3" /> Edit Items
                 </button>
               </div>
@@ -656,7 +661,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                   <ListChecks className="w-8 h-8 text-primary mx-auto mb-3" />
                   <p className="text-foreground font-semibold mb-1">No line items yet</p>
                   <p className="text-muted-foreground text-sm mb-4">Add items so your client can see the menu and pricing.</p>
-                  <Button size="sm" onClick={() => setEditingItems(true)} className="bg-primary text-foreground hover:bg-primary/90 gap-1.5">
+                  <Button size="sm" onClick={() => { setEditItems(seedEditItems(items)); setEditingItems(true); }} className="bg-primary text-foreground hover:bg-primary/90 gap-1.5">
                     <Plus className="w-3 h-3" /> Add items
                   </Button>
                 </div>
