@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import ProposalView from '@/components/proposal/ProposalView';
+import ClearCacheButton from '@/components/ClearCacheButton';
 import { Button } from '@/components/ui/button';
 
 export default function ClientProposal() {
@@ -59,9 +60,11 @@ export default function ClientProposal() {
   if (error || !proposal) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md px-6">
           <h1 className="font-display text-2xl text-foreground mb-2">Proposal Not Found</h1>
-          <p className="text-muted-foreground">{error || 'This proposal may have expired or been removed.'}</p>
+          <p className="text-muted-foreground mb-6">{error || 'This proposal may have expired or been removed.'}</p>
+          <p className="text-sm text-muted-foreground mb-4">If you have seen this page before, your browser may be showing an older version.</p>
+          <ClearCacheButton label="Clear cache & reload" />
         </div>
       </div>
     );
@@ -79,6 +82,11 @@ export default function ClientProposal() {
         <ArrowLeft className="w-4 h-4" />
         <span className="hidden sm:inline">Back</span>
       </Button>
+      <ClearCacheButton
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-md border border-border text-muted-foreground hover:text-foreground hover:bg-muted print:hidden min-h-[44px] min-w-[44px]"
+      />
       <ProposalView
         proposal={proposal}
         items={items}

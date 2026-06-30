@@ -1,21 +1,35 @@
-## Issue
-The Fudale × GitHub proposal (`8d55d68d…`) is in status `archived`. The `sign_proposal_by_token` DB function only signs proposals where `status = 'sent'`, so the client's signature attempt silently fails / errors out.
+## Problem
+Clients see stale errors on proposals after deployments because the Vite PWA service worker caches the old app shell. They don’t know how to hard-refresh or unregister the service worker.
 
-## Fix
-Flip that single proposal back to `status = 'sent'` so the client can complete signing.
+## Solution
+Add a one-click **Clear Cache & Reload** button to the client-facing proposal page. When clicked it:
+1. Unregisters all service workers
+2. Clears the browser’s Cache Storage (Workbox caches)
+3. Reloads the page with `location.reload(true)` so the browser fetches the latest app version
 
-```sql
-UPDATE public.proposals
-   SET status = 'sent'
- WHERE token = '8d55d68d42dba309ecebc01067ff56c6047a9c6963c87b7da9b8783bd6db08de'
-   AND signed_at IS NULL;
-```
+## Implementation
 
-No code or schema changes. Once signed, the RPC will automatically move it to `accepted` and trigger the signed-notification flow.
+### 1. Reusable utility — `src/lib/clearAppCache.ts`
+Expose an async function that:
+- Calls `navigator.serviceWorker.getRegistrations()` and `.unregister()` on each
+- Calls `caches.keys()` and deletes every cache
+- Returns a promise that resolves when cleanup is complete
 
-## Optional follow-up (ask before doing)
-If archived proposals being unsignable has bitten you before, I can either:
-- Add a small admin "Reopen for signing" button on archived proposals, or
-- Extend the RPC to also accept `archived` status.
+### 2. Button component — `src/components/ClearCacheButton.tsx`
+- Uses the utility above
+- Shows a brief loading state while clearing
+- Calls `window.location.reload()` on completion
+- Styled as a small secondary button with a refresh icon (fits in the proposal header or error state)
 
-Tell me if you want either; otherwise the SQL above resolves the immediate client issue.
+### 3. Integrate into proposal page
+Add the button in two places on `ClientProposal.tsx`:
+- **Error state**: When the proposal returns “Not Found” or any error, render the clear-cache button alongside the error message with copy like *“If you’ve seen this before, clear cache and reload.”*
+- **Normal view**: Place a subtle icon button in the top-right header (next to the Back / PDF buttons) so clients can trigger it at any time if the page feels stale.
+
+### 4. Scope
+- This only touches the client proposal page (`/proposal/:token`) because that’s the client-facing page the user is concerned about.
+- No backend changes.
+- No changes to the PWA config in `vite.config.ts`.
+
+## Result
+Clients see a single button. One tap clears the old PWA cache and reloads the page with the latest version — no need for them to learn browser developer tools.
