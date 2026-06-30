@@ -66,12 +66,20 @@ export default function AdminProposals() {
   const [eventDate, setEventDate] = useState('');
   const [validityDays, setValidityDays] = useState('7');
   const [contactEmail, setContactEmail] = useState('luisdreamslv@gmail.com');
+  const [clientEmail, setClientEmail] = useState('');
+  const [assignedPmId, setAssignedPmId] = useState('');
+  const [adminUsers, setAdminUsers] = useState<{ user_id: string; email: string; display_name: string }[]>([]);
   const [creativeCallUrl, setCreativeCallUrl] = useState('');
   const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
   const [saving, setSaving] = useState(false);
   const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
   const [emailCopying, setEmailCopying] = useState<string | null>(null);
   const [folderGenerating, setFolderGenerating] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    supabase.rpc('list_admin_users').then(({ data }) => setAdminUsers((data as any[]) || []));
+  }, [isAdmin]);
 
   const generateClientFolder = async (proposalId: string) => {
     setFolderGenerating(proposalId);
