@@ -493,6 +493,28 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 <label className="text-xs text-muted-foreground/80 font-semibold">Contact Email</label>
                 <Input value={editFields.contact_email} onChange={e => setEditFields({ ...editFields, contact_email: e.target.value })} />
               </div>
+              <div>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Client Email (for signed PDF)</label>
+                <Input
+                  type="email"
+                  value={editFields.client_email}
+                  onChange={e => setEditFields({ ...editFields, client_email: e.target.value })}
+                  placeholder="client@company.com"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground/80 font-semibold">Assigned Project Manager</label>
+                <select
+                  value={editFields.assigned_pm_id}
+                  onChange={e => setEditFields({ ...editFields, assigned_pm_id: e.target.value })}
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">— Unassigned —</option>
+                  {adminUsers.map(u => (
+                    <option key={u.user_id} value={u.user_id}>{u.display_name || u.email}</option>
+                  ))}
+                </select>
+              </div>
               <div className="col-span-2">
                 <label className="text-xs text-muted-foreground/80 font-semibold">Creative Call Scheduling Link (optional)</label>
                 <Input
