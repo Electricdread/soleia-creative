@@ -227,6 +227,17 @@ export default function AdminProposals() {
     toast({ title: 'Proposal marked as sent' });
   };
 
+  const resetSignature = async (id: string, eventName: string) => {
+    if (!window.confirm(`Reset signature for "${eventName}"?\n\nThis clears the client signature and reopens the proposal for signing.`)) return;
+    const { error } = await supabase.rpc('reset_proposal_signature', { p_proposal_id: id });
+    if (error) {
+      toast({ title: 'Reset failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Signature reset', description: 'Proposal reopened for signing.' });
+    fetchProposals();
+  };
+
   const toggleActive = async (id: string, current: boolean) => {
     const next = !current;
     const { error } = await supabase.from('proposals').update({ is_active: next }).eq('id', id);
