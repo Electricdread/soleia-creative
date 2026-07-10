@@ -135,30 +135,10 @@ export function InteractiveVenueMap() {
     </div>
   );
 
-  const tourButtons = TOUR_LINKS.length > 0 ? (
-    <div className="space-y-2.5 shrink-0">
-      <p className="text-[10px] uppercase tracking-[0.22em] text-primary">Step into the 360° tour</p>
-      <div className="flex flex-wrap gap-2">
-        {TOUR_LINKS.map((l) => (
-          <a
-            key={l.id}
-            href={l.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
-          >
-            <View className="w-3.5 h-3.5" /> {l.label}
-          </a>
-        ))}
-      </div>
-    </div>
-  ) : null;
-
   if (fs) {
     return (
       <div className="fixed inset-0 z-[80] bg-background flex flex-col gap-4 p-3 sm:p-5">
         {stage}
-        {tourButtons}
       </div>
     );
   }
@@ -166,7 +146,6 @@ export function InteractiveVenueMap() {
   return (
     <div className="space-y-4">
       {stage}
-      {tourButtons}
     </div>
   );
 }
