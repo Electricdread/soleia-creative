@@ -228,16 +228,6 @@ const CreativeGuideView = () => {
             <InteractiveVenueMap />
           </Reveal>
 
-          <Reveal delay={0.05} className="mb-10">
-            <div className="grid grid-cols-2 md:grid-cols-4 border border-primary/15">
-              {LAYOUT_STATS.map(([v, l], i) => (
-                <div key={l} className={`p-5 text-center ${i % 2 === 0 ? 'border-r border-primary/15' : ''} ${i < 2 ? 'border-b border-primary/15 md:border-b-0' : ''} ${i === 1 ? 'md:border-r' : ''} ${i === 2 ? 'md:border-r' : ''}`}>
-                  <div className="font-display text-2xl sm:text-3xl text-gradient-gold leading-none">{v}</div>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{l}</div>
-                </div>
-              ))}
-            </div>
-          </Reveal>
 
           <div className="grid gap-4 md:grid-cols-3">
             {WORLDS.map((w, i) => (
