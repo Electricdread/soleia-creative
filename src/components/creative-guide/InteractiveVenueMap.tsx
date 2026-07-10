@@ -126,7 +126,7 @@ export function InteractiveVenueMap() {
       </div>
 
       <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-1.5">
-        <MapBtn onClick={() => window.open(TOUR_360_URL, '_blank', 'noopener,noreferrer')} label="Open 360° tour"><View className="w-4 h-4" /></MapBtn>
+        
         <MapBtn onClick={() => zoomAt(1.4)} label="Zoom in"><ZoomIn className="w-4 h-4" /></MapBtn>
         <MapBtn onClick={() => zoomAt(1 / 1.4)} label="Zoom out"><ZoomOut className="w-4 h-4" /></MapBtn>
         <MapBtn onClick={reset} label="Reset"><RotateCcw className="w-4 h-4" /></MapBtn>
