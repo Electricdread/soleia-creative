@@ -361,15 +361,12 @@ const CreativeGuideView = () => {
               <div>
                 <h4 className="text-[10.5px] uppercase tracking-[0.2em] text-primary mb-3.5">Venue</h4>
                 <a href="#layout" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Layout</a>
-                <a href="#tour" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">360° Tour</a>
                 <button onClick={() => navigate('/creative-guide/video-mapping')} className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors text-left">Video Mapping</button>
-                
               </div>
               <div>
                 <h4 className="text-[10.5px] uppercase tracking-[0.2em] text-primary mb-3.5">Plan</h4>
                 <a href="#branding" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Buyout Inclusions</a>
                 <a href="#specs" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Specs</a>
-                <a href={TOUR_360_URL} target="_blank" rel="noopener noreferrer" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Virtual Tour</a>
               </div>
             </div>
           </div>
