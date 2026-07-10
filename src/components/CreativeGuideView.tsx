@@ -8,7 +8,7 @@ import { Reveal } from '@/components/motion/Reveal';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import solIcon from '@/assets/sol-icon.png';
 
-const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
+
 
 const NAV_LINKS: { label: string; href?: string; to?: string }[] = [
   { href: '#venue', label: 'Venue' },
@@ -49,12 +49,6 @@ const ZONE_GROUPS = [
   },
 ];
 
-const LAYOUT_STATS = [
-  ['15', 'Cabanas'],
-  ['9', 'Bungalows'],
-  ['2', 'Mezzanine Levels'],
-  ['30+', 'Display Zones'],
-];
 
 const WORLDS = [
   {
