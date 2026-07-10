@@ -1,27 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X, View } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X } from 'lucide-react';
 
 // Isometric venue render. Pan / zoom only — no HUD, cards or zone overlays.
 const VENUE_IMG = '/creative-guide/venue-layout-iso.png';
 
-// Soleia 360° virtual tour (direct link from the map controls).
-const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
-
-// Deep-link buttons shown below the venue render — each opens its exact scene
-// inside the 360° tour. Add one entry per location.
-interface TourLink {
-  id: string;
-  label: string;
-  url: string;
-}
-
-const TOUR_LINKS: TourLink[] = [
-  { id: 'main-interior', label: 'Interior Main Room', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=GhUwtyZ48l' },
-  { id: 'bungalow-tvs', label: 'Bungalow TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=ZNRIu-Lz46' },
-  { id: 'cabana-tvs', label: 'Cabana TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=wdJgz6i7nX' },
-  { id: 'cabana-bar-tvs', label: 'Cabana Bar TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=8fSEUnHezw' },
-  { id: 'east-cabana-tvs', label: 'East Cabana TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=OlPzRAlRV5' },
-];
 
 const MIN = 1;
 const MAX = 5;
