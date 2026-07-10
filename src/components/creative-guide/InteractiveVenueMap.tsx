@@ -1,27 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X, View } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X } from 'lucide-react';
 
 // Isometric venue render. Pan / zoom only — no HUD, cards or zone overlays.
 const VENUE_IMG = '/creative-guide/venue-layout-iso.png';
 
-// Soleia 360° virtual tour (direct link from the map controls).
-const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
-
-// Deep-link buttons shown below the venue render — each opens its exact scene
-// inside the 360° tour. Add one entry per location.
-interface TourLink {
-  id: string;
-  label: string;
-  url: string;
-}
-
-const TOUR_LINKS: TourLink[] = [
-  { id: 'main-interior', label: 'Interior Main Room', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=GhUwtyZ48l' },
-  { id: 'bungalow-tvs', label: 'Bungalow TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=ZNRIu-Lz46' },
-  { id: 'cabana-tvs', label: 'Cabana TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=wdJgz6i7nX' },
-  { id: 'cabana-bar-tvs', label: 'Cabana Bar TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=8fSEUnHezw' },
-  { id: 'east-cabana-tvs', label: 'East Cabana TVs', url: 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-?sceneId=OlPzRAlRV5' },
-];
 
 const MIN = 1;
 const MAX = 5;
@@ -144,7 +126,7 @@ export function InteractiveVenueMap() {
       </div>
 
       <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-1.5">
-        <MapBtn onClick={() => window.open(TOUR_360_URL, '_blank', 'noopener,noreferrer')} label="Open 360° tour"><View className="w-4 h-4" /></MapBtn>
+        
         <MapBtn onClick={() => zoomAt(1.4)} label="Zoom in"><ZoomIn className="w-4 h-4" /></MapBtn>
         <MapBtn onClick={() => zoomAt(1 / 1.4)} label="Zoom out"><ZoomOut className="w-4 h-4" /></MapBtn>
         <MapBtn onClick={reset} label="Reset"><RotateCcw className="w-4 h-4" /></MapBtn>
@@ -153,30 +135,10 @@ export function InteractiveVenueMap() {
     </div>
   );
 
-  const tourButtons = TOUR_LINKS.length > 0 ? (
-    <div className="space-y-2.5 shrink-0">
-      <p className="text-[10px] uppercase tracking-[0.22em] text-primary">Step into the 360° tour</p>
-      <div className="flex flex-wrap gap-2">
-        {TOUR_LINKS.map((l) => (
-          <a
-            key={l.id}
-            href={l.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
-          >
-            <View className="w-3.5 h-3.5" /> {l.label}
-          </a>
-        ))}
-      </div>
-    </div>
-  ) : null;
-
   if (fs) {
     return (
       <div className="fixed inset-0 z-[80] bg-background flex flex-col gap-4 p-3 sm:p-5">
         {stage}
-        {tourButtons}
       </div>
     );
   }
@@ -184,7 +146,6 @@ export function InteractiveVenueMap() {
   return (
     <div className="space-y-4">
       {stage}
-      {tourButtons}
     </div>
   );
 }
