@@ -196,11 +196,6 @@ const CreativeGuideView = () => {
         <Reveal delay={0.1} className="mt-6">
           <span className="text-[11px] uppercase tracking-[0.34em] text-muted-foreground/70">Creative Guide</span>
         </Reveal>
-        <Reveal delay={0.15} className="mt-10">
-          <a href="#tour" className="inline-block px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
-            Take the 360° tour
-          </a>
-        </Reveal>
       </section>
 
       {/* 01 — DIGITAL REALM */}
