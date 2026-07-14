@@ -200,6 +200,12 @@ export function generateLineItemLibraryPdf(
   doc.setTextColor(...SOFT_INK);
   doc.text('Pricing is a guide; final proposals are tailored to each engagement.', pageW / 2, y, { align: 'center' });
 
+  // ============ EDITORIAL EXPLAINER PAGES ============
+  renderEditorialPages(doc, templates as EditorialTemplate[], categoryIntros, {
+    sectionTitle: 'Our Services',
+    sectionKicker: 'The Editorial Guide',
+  });
+
   // Page footers (skip cover)
   const pageCount = doc.getNumberOfPages();
   for (let i = 2; i <= pageCount; i++) {
@@ -214,18 +220,19 @@ export function generateLineItemLibraryPdf(
   return doc;
 }
 
-export function downloadLineItemLibraryPdf(templates: LineItemTemplate[]) {
-  const doc = generateLineItemLibraryPdf(templates);
+export function downloadLineItemLibraryPdf(templates: LineItemTemplate[], categoryIntros: CategoryIntro[] = []) {
+  const doc = generateLineItemLibraryPdf(templates, categoryIntros);
   const date = new Date().toISOString().split('T')[0];
   doc.save(`soleia-price-sheet-${date}.pdf`);
 }
 
-export function printLineItemLibraryPdf(templates: LineItemTemplate[]) {
-  const doc = generateLineItemLibraryPdf(templates);
+export function printLineItemLibraryPdf(templates: LineItemTemplate[], categoryIntros: CategoryIntro[] = []) {
+  const doc = generateLineItemLibraryPdf(templates, categoryIntros);
   doc.autoPrint();
   const url = doc.output('bloburl');
   const win = window.open(url, '_blank');
   if (!win) {
-    downloadLineItemLibraryPdf(templates);
+    downloadLineItemLibraryPdf(templates, categoryIntros);
   }
 }
+
