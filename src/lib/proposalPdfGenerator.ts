@@ -578,6 +578,26 @@ export async function generateProposalPdf(
     doc.text(`Signed on ${formatDate(proposal.signed_at.split('T')[0])}`, MARGIN + 10, y + 24);
   }
 
+  // === EDITORIAL SERVICES EXPLAINER PAGES ===
+  try {
+    const [tplRes, catRes] = await Promise.all([
+      supabase.from('line_item_templates').select('*'),
+      supabase.from('line_item_categories').select('*'),
+    ]);
+    const tpls = (tplRes.data || []) as EditorialTemplate[];
+    const cats = (catRes.data || []) as CategoryIntro[];
+    if (tpls.length) {
+      renderEditorialPages(doc, tpls, cats, {
+        sectionTitle: 'About Our Services',
+        sectionKicker: 'The Editorial Guide',
+        sectionStandfirst:
+          'A closer look at every service in our catalog. Consider this a companion to the scope on the previous pages \u2014 context, not additional charges.',
+      });
+    }
+  } catch {
+    // Non-fatal: skip editorial section if fetch fails
+  }
+
   // === REFERENCE IMAGES GRID PAGE ===
   const images = galleryImages?.filter(g => g.image_url) || [];
   if (images.length > 0) {
