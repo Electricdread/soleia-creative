@@ -78,50 +78,8 @@ export function renderEditorialPages(
     });
   }
 
-  // ============ SECTION OPENER PAGE ============
-  doc.addPage();
-  doc.setFillColor(...CREAM);
-  doc.rect(0, 0, pageW, pageH, 'F');
+  // (Section opener page intentionally removed — chapters open directly.)
 
-  // Gold frame
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.5);
-  doc.rect(36, 36, pageW - 72, pageH - 72);
-
-  // Kicker
-  doc.setTextColor(...GOLD);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text(ascii(options.sectionKicker || 'The Editorial Guide').toUpperCase(), pageW / 2, 130, { align: 'center' });
-
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.4);
-  doc.line(pageW / 2 - 24, 140, pageW / 2 + 24, 140);
-
-  // Serif title
-  doc.setTextColor(...INK);
-  doc.setFont('times', 'normal');
-  doc.setFontSize(52);
-  doc.text(ascii(options.sectionTitle || 'Our Services'), pageW / 2, pageH / 2 - 20, { align: 'center' });
-
-  // Standfirst
-  const stand = options.sectionStandfirst ||
-    'A closer look at each offering - what it includes, who it serves, and how we craft it. Consider this a companion to the numbers on the previous pages.';
-  doc.setFont('times', 'italic');
-  doc.setFontSize(13);
-  doc.setTextColor(...SOFT_INK);
-  const standLines = doc.splitTextToSize(ascii(stand), contentW - 60);
-  let sy = pageH / 2 + 20;
-  standLines.forEach((ln: string) => {
-    doc.text(ln, pageW / 2, sy, { align: 'center' });
-    sy += 18;
-  });
-
-  // Bottom mark
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(...MUTED);
-  doc.text('SOLEIA CREATIVE TEAM', pageW / 2, pageH - 70, { align: 'center' });
 
   // ============ CATEGORY + ITEM PAGES ============
   let y = 0;
