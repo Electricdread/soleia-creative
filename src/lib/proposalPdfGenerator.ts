@@ -1,5 +1,8 @@
 import jsPDF from 'jspdf';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
+import { supabase } from '@/integrations/supabase/client';
+import { renderEditorialPages, type CategoryIntro, type EditorialTemplate } from './editorialServicesPages';
+
 
 const LOGO_ASPECT = 1006 / 345; // width / height
 let cachedLogoDataUri: string | null = null;
