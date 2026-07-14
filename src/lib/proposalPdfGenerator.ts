@@ -332,7 +332,7 @@ export async function generateProposalPdf(
 
   // === CONTRACT INCLUSIONS BAND ===
   y += 46;
-  const inclH = 56;
+  const inclH = 44;
   doc.setFillColor('#faf8f4');
   doc.rect(MARGIN, y, CONTENT_W, inclH, 'F');
   doc.setFillColor(GOLD);
@@ -340,17 +340,13 @@ export async function generateProposalPdf(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(GOLD);
-  doc.text('INCLUDED IN YOUR VENUE CONTRACT', MARGIN + 12, y + 14);
+  doc.text('INCLUDED IN YOUR VENUE CONTRACT', MARGIN + 12, y + 12);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(TEXT);
-  doc.text('• Up to 10 static logos — LED screens', MARGIN + 12, y + 28);
-  doc.text('• 1 static logo — all TVs, Cabanas & Bungalows', MARGIN + 12, y + 40);
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(7);
-  doc.setTextColor(LIGHT_GRAY);
-  doc.text('Standard inclusions — no charge.', PAGE_W - MARGIN - 6, y + 50, { align: 'right' });
-  y += inclH + 12;
+  doc.text('• Up to 10 static logos — LED screens', MARGIN + 12, y + 24);
+  doc.text('• 1 static logo — all TVs, Cabanas & Bungalows', MARGIN + 12, y + 35);
+  y += inclH + 10;
 
   const tableItems = items;
 
@@ -371,24 +367,24 @@ export async function generateProposalPdf(
 
   // Table header
   doc.setFillColor('#f8f9fa');
-  doc.rect(MARGIN, y, CONTENT_W, 16, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 14, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(LIGHT_GRAY);
-  doc.text('ITEM', COL_ITEM_X, y + 11);
-  doc.text('TYPE', COL_TYPE_RIGHT, y + 11, { align: 'right' });
-  doc.text('PRICE', COL_PRICE_RIGHT, y + 11, { align: 'right' });
-  y += 16;
+  doc.text('ITEM', COL_ITEM_X, y + 10);
+  doc.text('TYPE', COL_TYPE_RIGHT, y + 10, { align: 'right' });
+  doc.text('PRICE', COL_PRICE_RIGHT, y + 10, { align: 'right' });
+  y += 14;
 
-  // Spacing constants
+  // Spacing constants — tightened for single-page fit
   const TITLE_SIZE = 8.5;
   const DESC_SIZE = 7;
-  const TITLE_LH = 11;       // line height for wrapped title
-  const DESC_LH = 9;         // line height for wrapped description
-  const ROW_TOP_PAD = 5;
-  const ROW_BOTTOM_PAD = 5;
-  const TITLE_DESC_GAP = 3;
-  const SECTION_HEADER_H = 14;
+  const TITLE_LH = 10;
+  const DESC_LH = 8;
+  const ROW_TOP_PAD = 3;
+  const ROW_BOTTOM_PAD = 3;
+  const TITLE_DESC_GAP = 2;
+  const SECTION_HEADER_H = 12;
 
   let lastCategory = '';
 
