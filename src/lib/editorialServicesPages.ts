@@ -172,7 +172,7 @@ export function renderEditorialPages(
     doc.setFontSize(9);
     const chapterLabel = `CHAPTER ${String(chapter).padStart(2, '0')}`;
     doc.text(chapterLabel, marginX, y);
-    y += 14;
+    y += 34; // extra space so serif title ascender doesn't collide with kicker
 
     doc.setTextColor(...INK);
     doc.setFont('times', 'normal');
@@ -180,8 +180,9 @@ export function renderEditorialPages(
     const catLines = doc.splitTextToSize(ascii(cat), contentW);
     catLines.forEach((ln: string) => {
       doc.text(ln, marginX, y);
-      y += 36;
+      y += 40;
     });
+
 
     doc.setDrawColor(...GOLD);
     doc.setLineWidth(0.8);
