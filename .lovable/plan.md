@@ -1,38 +1,70 @@
-## Elevator Displays Spec Sheet (PDF)
+# Editorial Services Guide — Line Item Explainer Pages
 
-Generate a single, downloadable Soleia-branded PDF explaining the Elevator Displays proposal add-on, using the uploaded elevator photo. Delivered as a `/mnt/documents/` artifact — no changes to the app code.
+Add a magazine-style narrative section to the PDFs that walks the client through every service category and item in the library. Same layout is reused in two places.
 
-### Content (from the reference)
+## What gets built
 
-- Header band (dark #1a1a1a) with Soleia wide logo left, gold "ELEVATOR DISPLAYS" label right
-- Intro line: what this add-on covers
-- **Video Assets**: Resolution 600×800 · Frame Rate 30 fps · Format WMV · Duration 30 sec
-- **Graphic Assets**: Resolution 600×800 · Format PNG or JPG
-- **Total Deliverables: 3 files**
-  - (1) 30-sec video or graphic — elevator moving up
-  - (1) 30-sec video or graphic — elevator moving down
-  - (1) Still graphic — elevator idling
-  - Note: *Up/Down content may be the same file if preferred.*
-- **Creative Note**: For smooth transitions, use the first frame of the video as the idle graphic.
-- Right column: uploaded elevator photo (rounded, subtle shadow)
-- Footer: Soleia Creative Team · contact email · gold rule
+### 1. Data — extend the Line Item Library
 
-### Visual style
+Add long-form editorial fields to `line_item_templates` so admins can author narrative copy per item without touching code:
 
-- Letter portrait, 40pt margins
-- Palette matches existing proposal PDF: dark `#1a1a1a`, gold `#c49a3c`, text `#2c3e50`, muted `#7f8c8d`
-- Helvetica (jsPDF built-in) — same font stack as `proposalPdfGenerator.ts`
-- Gold left-border accent blocks for each section (matches proposal aesthetic)
+- `long_description text` — full paragraph describing what the service is
+- `deliverables text[]` — bulleted list ("What's included")
+- `ideal_for text` — one-line "Best for…" tag
+- `sort_order integer` — controls order within a category (nulls last, then created_at)
 
-### Technical approach
+Category-level intros live in a new tiny table:
 
-1. Copy the uploaded photo to `/tmp/elevator-ref.png` and the Soleia wide logo from `src/assets/soleia-wide-logo.png` for embedding.
-2. Write a Node script (`/tmp/build-elevator-pdf.js`) using `jspdf` (already in project deps) that mirrors the proposal PDF style: dark header band, gold badge, section blocks with gold 3pt left rules, right-column image.
-3. Run with `node /tmp/build-elevator-pdf.js` → outputs `/mnt/documents/Soleia_Elevator_Displays.pdf`.
-4. QA: convert to JPG via `pdftoppm -jpeg -r 150`, inspect each page with `code--view`, fix any overlap/clipping, re-render.
-5. Present via `<presentation-artifact>` for download.
+- `line_item_categories(name text primary key, intro text, sort_order int, updated_at timestamptz)`
 
-### Out of scope
+RLS: authenticated read/write for `line_item_categories` (mirrors `line_item_templates`), plus `GRANT SELECT` to `anon` so the standalone guide can render publicly if ever needed.
 
-- No changes to `ClientProposal`, `proposalPdfGenerator.ts`, or line item library
-- Not attached to any proposal record — this is a standalone download the user can email manually
+### 2. Admin UI — `LineItemLibrary.tsx`
+
+Extend the existing edit form with the new fields:
+- Long description (textarea)
+- Deliverables (chip/line-per-row editor)
+- "Best for" (single line)
+- Sort order (number)
+
+New sibling panel "Category Intros" — lists distinct categories, one textarea each, single save.
+
+### 3. Shared renderer — `src/lib/editorialServicesPages.ts`
+
+One function `renderEditorialPages(doc, templates, categoryIntros)` that draws the pages into an existing jsPDF instance. Reused by both entry points below.
+
+Editorial layout per **category**:
+- Full-bleed cream section-opener page: gold eyebrow (`CHAPTER 0X`), oversized DM-serif-style title (`times` in jsPDF), gold rule, italic intro paragraph, generous whitespace
+- Followed by item pages: two-column asymmetric editorial grid
+  - Left column (40%): item title in serif display, gold hairline, "Best for…" italic tag, price ghosted in muted small caps
+  - Right column (60%): long description paragraph + "What's included" bulleted list with gold ✦ markers
+- Gold running header ("SOLEIA CREATIVE TEAM — SERVICES") and page number footer
+- Auto page-break when an item block doesn't fit; never split a single item across pages
+
+Grouping/order: categories ordered by `line_item_categories.sort_order`, items by `sort_order` then `created_at`.
+
+### 4. Entry point A — Standalone Services Guide
+
+Update `src/lib/lineItemLibraryPdf.ts`:
+- Keep the existing cover page
+- After cover, call `renderEditorialPages(...)` for the full editorial catalog
+- Keep the compact price index as the final section (retitled "Price Index") so clients still have a quick-scan reference
+
+### 5. Entry point B — Inside every proposal PDF
+
+Update `src/lib/proposalPdfGenerator.ts`:
+- After the scope table + timeline + terms, before the Reference Images grid, call `renderEditorialPages(doc, allLibraryTemplates, categoryIntros)` on a fresh page
+- The proposal generator will fetch `line_item_templates` + `line_item_categories` (full catalog, per the user's decision) alongside its current queries
+- Section opener page reads: "About our services" so the client understands this is context, not scope
+
+### 6. QA
+
+Generate a sample PDF with realistic content (Creative Direction, Content Production, Post-Production, On-Site, Add-Ons — 2–4 items each with long descriptions and deliverables), convert every page via `pdftoppm`, and inspect each one for overflow, orphaned bullets, and font issues before shipping.
+
+## Technical notes
+
+- All new DB work goes through the migration tool with GRANTs in the same migration.
+- Editorial renderer uses only jsPDF built-in `helvetica` + `times` (matching current PDFs) — no font loading, keeps bundle small.
+- ASCII-safe strings (existing `ascii()` helper is reused).
+- Deliverables render as wrapped multi-line bullets; each item block is pre-measured so `ensureSpace()` can decide page breaks cleanly.
+- No changes to proposal scope/total logic — editorial pages are informational only.
