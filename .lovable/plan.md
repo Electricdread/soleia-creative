@@ -1,33 +1,38 @@
-Scope
-Update the public Creative Guide page to remove the numbered stats bar shown in the screenshot and the entire "03 — Soleia 360° Tour" section. Also clean up the related 360° tour references so the page no longer has dead links.
+## Elevator Displays Spec Sheet (PDF)
 
-Changes
+Generate a single, downloadable Soleia-branded PDF explaining the Elevator Displays proposal add-on, using the uploaded elevator photo. Delivered as a `/mnt/documents/` artifact — no changes to the app code.
 
-1. Remove the numbered stats section
-   File: `src/components/CreativeGuideView.tsx`
-   - Delete the `LAYOUT_STATS` array.
-   - Delete the grid that renders the four stat cells (15 Cabanas / 9 Bungalows / 2 Mezzanine Levels / 30+ Display Zones) inside the "Venue Layout" section.
-   - Keep the `InteractiveVenueMap` and the three world cards (Nightclub / Beachclub / Cabanas & Bungalows).
+### Content (from the reference)
 
-2. Remove the dedicated 360° tour section
-   File: `src/components/CreativeGuideView.tsx`
-   - Delete the entire `<section id="tour">` block containing the "03 — Soleia 360° Tour" headline, iframe, and descriptive text.
-   - Delete the hero CTA button that links to `#tour`.
-   - Delete the footer links labeled "360° Tour" and "Virtual Tour".
-   - Delete the `TOUR_360_URL` constant.
-   - Remove the now-unused `Compass` and `Maximize2` imports from this file.
+- Header band (dark #1a1a1a) with Soleia wide logo left, gold "ELEVATOR DISPLAYS" label right
+- Intro line: what this add-on covers
+- **Video Assets**: Resolution 600×800 · Frame Rate 30 fps · Format WMV · Duration 30 sec
+- **Graphic Assets**: Resolution 600×800 · Format PNG or JPG
+- **Total Deliverables: 3 files**
+  - (1) 30-sec video or graphic — elevator moving up
+  - (1) 30-sec video or graphic — elevator moving down
+  - (1) Still graphic — elevator idling
+  - Note: *Up/Down content may be the same file if preferred.*
+- **Creative Note**: For smooth transitions, use the first frame of the video as the idle graphic.
+- Right column: uploaded elevator photo (rounded, subtle shadow)
+- Footer: Soleia Creative Team · contact email · gold rule
 
-3. Remove 360° tour links from the interactive venue map
-   File: `src/components/creative-guide/InteractiveVenueMap.tsx`
-   - Delete the `Open 360° tour` map control button.
-   - Delete the `Step into the 360° tour` deep-link button list and its `TOUR_LINKS` data.
-   - Delete the `TOUR_360_URL` constant and the unused `View` import.
-   - Keep the pan, zoom, reset, and fullscreen controls and the venue image itself.
+### Visual style
 
-4. Verification
-   - Search the project for `360virtualtour`, `#tour`, and `Soleia 360° Tour` to confirm no remaining references.
-   - Run a build/type-check to ensure no import/constant errors are introduced.
+- Letter portrait, 40pt margins
+- Palette matches existing proposal PDF: dark `#1a1a1a`, gold `#c49a3c`, text `#2c3e50`, muted `#7f8c8d`
+- Helvetica (jsPDF built-in) — same font stack as `proposalPdfGenerator.ts`
+- Gold left-border accent blocks for each section (matches proposal aesthetic)
 
-Out of scope
-- The printable Creative Guide (`PrintableCreativeGuide.tsx`) does not contain these sections, so it will not be modified.
-- No renumbering of the remaining eyebrow labels (e.g., 01, 02, 04, 05) unless you want me to adjust those as well.
+### Technical approach
+
+1. Copy the uploaded photo to `/tmp/elevator-ref.png` and the Soleia wide logo from `src/assets/soleia-wide-logo.png` for embedding.
+2. Write a Node script (`/tmp/build-elevator-pdf.js`) using `jspdf` (already in project deps) that mirrors the proposal PDF style: dark header band, gold badge, section blocks with gold 3pt left rules, right-column image.
+3. Run with `node /tmp/build-elevator-pdf.js` → outputs `/mnt/documents/Soleia_Elevator_Displays.pdf`.
+4. QA: convert to JPG via `pdftoppm -jpeg -r 150`, inspect each page with `code--view`, fix any overlap/clipping, re-render.
+5. Present via `<presentation-artifact>` for download.
+
+### Out of scope
+
+- No changes to `ClientProposal`, `proposalPdfGenerator.ts`, or line item library
+- Not attached to any proposal record — this is a standalone download the user can email manually
