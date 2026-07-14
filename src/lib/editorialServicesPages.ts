@@ -102,23 +102,16 @@ export function renderEditorialPages(
     doc.line(marginX, 52, pageW - marginX, 52);
   };
 
-  const runningFooter = () => {
-    const pageNum = doc.getNumberOfPages();
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...MUTED);
-    doc.text('soleiacreative.app', marginX, pageH - 36);
-    doc.text(String(pageNum), pageW - marginX, pageH - 36, { align: 'right' });
-  };
+  // Footers are drawn by the outer document (avoid duplicate page numbers).
 
   const newContentPage = () => {
     doc.addPage();
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, pageW, pageH, 'F');
     runningHeader();
-    runningFooter();
     y = 80;
   };
+
 
   const ensureSpace = (h: number) => {
     if (y + h > pageH - 70) newContentPage();
