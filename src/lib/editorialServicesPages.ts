@@ -26,7 +26,15 @@ const MUTED: [number, number, number] = [140, 140, 145];
 const HAIR: [number, number, number] = [225, 220, 210];
 const CREAM: [number, number, number] = [250, 247, 240];
 
-const ascii = (s: string) => (s || '').replace(/[^\x20-\x7E]/g, '');
+const ascii = (s: string) =>
+  (s || '')
+    .replace(/[\u2013\u2014]/g, '-') // en/em dash
+    .replace(/[\u2018\u2019]/g, "'") // curly single quotes
+    .replace(/[\u201C\u201D]/g, '"') // curly double quotes
+    .replace(/\u2026/g, '...')       // ellipsis
+    .replace(/\u00A0/g, ' ')          // nbsp
+    .replace(/[^\x20-\x7E]/g, '');
+
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n || 0);
