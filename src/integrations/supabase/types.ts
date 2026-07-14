@@ -640,32 +640,65 @@ export type Database = {
         }
         Relationships: []
       }
+      line_item_categories: {
+        Row: {
+          intro: string | null
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          intro?: string | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          intro?: string | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       line_item_templates: {
         Row: {
           category: string | null
           created_at: string
           created_by: string | null
+          deliverables: string[]
           description: string | null
           id: string
+          ideal_for: string | null
+          long_description: string | null
           price: number
+          sort_order: number | null
           title: string
         }
         Insert: {
           category?: string | null
           created_at?: string
           created_by?: string | null
+          deliverables?: string[]
           description?: string | null
           id?: string
+          ideal_for?: string | null
+          long_description?: string | null
           price?: number
+          sort_order?: number | null
           title: string
         }
         Update: {
           category?: string | null
           created_at?: string
           created_by?: string | null
+          deliverables?: string[]
           description?: string | null
           id?: string
+          ideal_for?: string | null
+          long_description?: string | null
           price?: number
+          sort_order?: number | null
           title?: string
         }
         Relationships: []
