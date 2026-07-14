@@ -26,7 +26,15 @@ const MUTED: [number, number, number] = [140, 140, 145];
 const HAIR: [number, number, number] = [225, 220, 210];
 const CREAM: [number, number, number] = [250, 247, 240];
 
-const ascii = (s: string) => (s || '').replace(/[^\x20-\x7E]/g, '');
+const ascii = (s: string) =>
+  (s || '')
+    .replace(/[\u2013\u2014]/g, '-') // en/em dash
+    .replace(/[\u2018\u2019]/g, "'") // curly single quotes
+    .replace(/[\u201C\u201D]/g, '"') // curly double quotes
+    .replace(/\u2026/g, '...')       // ellipsis
+    .replace(/\u00A0/g, ' ')          // nbsp
+    .replace(/[^\x20-\x7E]/g, '');
+
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n || 0);
@@ -78,50 +86,8 @@ export function renderEditorialPages(
     });
   }
 
-  // ============ SECTION OPENER PAGE ============
-  doc.addPage();
-  doc.setFillColor(...CREAM);
-  doc.rect(0, 0, pageW, pageH, 'F');
+  // (Section opener page intentionally removed — chapters open directly.)
 
-  // Gold frame
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.5);
-  doc.rect(36, 36, pageW - 72, pageH - 72);
-
-  // Kicker
-  doc.setTextColor(...GOLD);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text(ascii(options.sectionKicker || 'The Editorial Guide').toUpperCase(), pageW / 2, 130, { align: 'center' });
-
-  doc.setDrawColor(...GOLD);
-  doc.setLineWidth(0.4);
-  doc.line(pageW / 2 - 24, 140, pageW / 2 + 24, 140);
-
-  // Serif title
-  doc.setTextColor(...INK);
-  doc.setFont('times', 'normal');
-  doc.setFontSize(52);
-  doc.text(ascii(options.sectionTitle || 'Our Services'), pageW / 2, pageH / 2 - 20, { align: 'center' });
-
-  // Standfirst
-  const stand = options.sectionStandfirst ||
-    'A closer look at each offering - what it includes, who it serves, and how we craft it. Consider this a companion to the numbers on the previous pages.';
-  doc.setFont('times', 'italic');
-  doc.setFontSize(13);
-  doc.setTextColor(...SOFT_INK);
-  const standLines = doc.splitTextToSize(ascii(stand), contentW - 60);
-  let sy = pageH / 2 + 20;
-  standLines.forEach((ln: string) => {
-    doc.text(ln, pageW / 2, sy, { align: 'center' });
-    sy += 18;
-  });
-
-  // Bottom mark
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(...MUTED);
-  doc.text('SOLEIA CREATIVE TEAM', pageW / 2, pageH - 70, { align: 'center' });
 
   // ============ CATEGORY + ITEM PAGES ============
   let y = 0;
@@ -136,23 +102,16 @@ export function renderEditorialPages(
     doc.line(marginX, 52, pageW - marginX, 52);
   };
 
-  const runningFooter = () => {
-    const pageNum = doc.getNumberOfPages();
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...MUTED);
-    doc.text('soleiacreative.app', marginX, pageH - 36);
-    doc.text(String(pageNum), pageW - marginX, pageH - 36, { align: 'right' });
-  };
+  // Footers are drawn by the outer document (avoid duplicate page numbers).
 
   const newContentPage = () => {
     doc.addPage();
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, pageW, pageH, 'F');
     runningHeader();
-    runningFooter();
     y = 80;
   };
+
 
   const ensureSpace = (h: number) => {
     if (y + h > pageH - 70) newContentPage();
