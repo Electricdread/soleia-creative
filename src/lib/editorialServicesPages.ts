@@ -106,7 +106,7 @@ export function renderEditorialPages(
 
   // Standfirst
   const stand = options.sectionStandfirst ||
-    'A closer look at each offering — what it includes, who it serves, and how we craft it. Consider this a companion to the numbers on the previous pages.';
+    'A closer look at each offering - what it includes, who it serves, and how we craft it. Consider this a companion to the numbers on the previous pages.';
   doc.setFont('times', 'italic');
   doc.setFontSize(13);
   doc.setTextColor(...SOFT_INK);
@@ -130,7 +130,7 @@ export function renderEditorialPages(
     doc.setTextColor(...GOLD);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
-    doc.text('SOLEIA CREATIVE TEAM  \u2014  SERVICES', marginX, 44);
+    doc.text('SOLEIA CREATIVE TEAM  -  SERVICES', marginX, 44);
     doc.setDrawColor(...HAIR);
     doc.setLineWidth(0.3);
     doc.line(marginX, 52, pageW - marginX, 52);
