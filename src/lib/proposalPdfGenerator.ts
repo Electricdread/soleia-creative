@@ -332,7 +332,7 @@ export async function generateProposalPdf(
 
   // === CONTRACT INCLUSIONS BAND ===
   y += 46;
-  const inclH = 56;
+  const inclH = 44;
   doc.setFillColor('#faf8f4');
   doc.rect(MARGIN, y, CONTENT_W, inclH, 'F');
   doc.setFillColor(GOLD);
@@ -340,17 +340,13 @@ export async function generateProposalPdf(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(GOLD);
-  doc.text('INCLUDED IN YOUR VENUE CONTRACT', MARGIN + 12, y + 14);
+  doc.text('INCLUDED IN YOUR VENUE CONTRACT', MARGIN + 12, y + 12);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(TEXT);
-  doc.text('• Up to 10 static logos — LED screens', MARGIN + 12, y + 28);
-  doc.text('• 1 static logo — all TVs, Cabanas & Bungalows', MARGIN + 12, y + 40);
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(7);
-  doc.setTextColor(LIGHT_GRAY);
-  doc.text('Standard inclusions — no charge.', PAGE_W - MARGIN - 6, y + 50, { align: 'right' });
-  y += inclH + 12;
+  doc.text('• Up to 10 static logos — LED screens', MARGIN + 12, y + 24);
+  doc.text('• 1 static logo — all TVs, Cabanas & Bungalows', MARGIN + 12, y + 35);
+  y += inclH + 10;
 
   const tableItems = items;
 
@@ -371,24 +367,24 @@ export async function generateProposalPdf(
 
   // Table header
   doc.setFillColor('#f8f9fa');
-  doc.rect(MARGIN, y, CONTENT_W, 16, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 14, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(LIGHT_GRAY);
-  doc.text('ITEM', COL_ITEM_X, y + 11);
-  doc.text('TYPE', COL_TYPE_RIGHT, y + 11, { align: 'right' });
-  doc.text('PRICE', COL_PRICE_RIGHT, y + 11, { align: 'right' });
-  y += 16;
+  doc.text('ITEM', COL_ITEM_X, y + 10);
+  doc.text('TYPE', COL_TYPE_RIGHT, y + 10, { align: 'right' });
+  doc.text('PRICE', COL_PRICE_RIGHT, y + 10, { align: 'right' });
+  y += 14;
 
-  // Spacing constants
+  // Spacing constants — tightened for single-page fit
   const TITLE_SIZE = 8.5;
   const DESC_SIZE = 7;
-  const TITLE_LH = 11;       // line height for wrapped title
-  const DESC_LH = 9;         // line height for wrapped description
-  const ROW_TOP_PAD = 5;
-  const ROW_BOTTOM_PAD = 5;
-  const TITLE_DESC_GAP = 3;
-  const SECTION_HEADER_H = 14;
+  const TITLE_LH = 10;
+  const DESC_LH = 8;
+  const ROW_TOP_PAD = 3;
+  const ROW_BOTTOM_PAD = 3;
+  const TITLE_DESC_GAP = 2;
+  const SECTION_HEADER_H = 12;
 
   let lastCategory = '';
 
@@ -414,8 +410,9 @@ export async function generateProposalPdf(
     const rowH = ROW_TOP_PAD + titleBlockH + descBlockH + ROW_BOTTOM_PAD;
     const sectionH = needsCategory ? SECTION_HEADER_H : 0;
 
-    // Page break check (reserve ~150pt for total + timeline + terms + footer)
-    if (y + sectionH + rowH > PAGE_H - 150) {
+    // Page break check — reserve for total (28) + timeline (32 if any) + terms (~46) + footer (30)
+    const reserve = 30 + 46 + (timeline.length > 0 ? 32 : 0) + 28;
+    if (y + sectionH + rowH > PAGE_H - reserve) {
       doc.addPage();
       y = MARGIN;
     }
@@ -472,75 +469,71 @@ export async function generateProposalPdf(
   }
 
   // === TOTAL ===
-  if (y + 32 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
+  if (y + 28 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
   doc.setDrawColor('#ecf0f1');
   doc.setLineWidth(0.5);
   doc.line(MARGIN, y, MARGIN + CONTENT_W, y);
-  y += 6;
+  y += 4;
   doc.setFillColor('#faf8f4');
-  doc.rect(MARGIN, y, CONTENT_W, 24, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 22, 'F');
   doc.setFillColor(GOLD);
-  doc.rect(MARGIN, y, 3, 24, 'F');
+  doc.rect(MARGIN, y, 3, 22, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(GRAY);
-  doc.text('TOTAL', MARGIN + 12, y + 16);
+  doc.text('TOTAL', MARGIN + 12, y + 15);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(TEXT);
-  doc.text(formatCurrency(grandTotal), PAGE_W - MARGIN - 6, y + 16, { align: 'right' });
-  y += 34;
+  doc.text(formatCurrency(grandTotal), PAGE_W - MARGIN - 6, y + 15, { align: 'right' });
+  y += 28;
 
 
 
   // === TIMELINE (horizontal dots) ===
   if (timeline.length > 0) {
-    if (y + 60 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
+    if (y + 50 > PAGE_H - 70) { doc.addPage(); y = MARGIN; }
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(TEXT);
     doc.text('TIMELINE', MARGIN, y + 4);
-    y += 14;
+    y += 12;
 
     const dotSpacing = CONTENT_W / timeline.length;
     for (let i = 0; i < timeline.length; i++) {
       const cx = MARGIN + dotSpacing * i + dotSpacing / 2;
 
-      // Connector line
       if (i < timeline.length - 1) {
         doc.setDrawColor('#ecf0f1');
         doc.setLineWidth(1);
         doc.line(cx + 4, y + 4, cx + dotSpacing - 4, y + 4);
       }
 
-      // Dot
       doc.setFillColor(GOLD);
-      doc.circle(cx, y + 4, 3, 'F');
+      doc.circle(cx, y + 4, 2.5, 'F');
 
-      // Phase name
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(6.5);
       doc.setTextColor(TEXT);
-      doc.text(timeline[i].phase, cx, y + 16, { align: 'center', maxWidth: dotSpacing - 8 });
+      doc.text(timeline[i].phase, cx, y + 14, { align: 'center', maxWidth: dotSpacing - 8 });
 
-      // Duration
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(6);
       doc.setTextColor(GRAY);
-      doc.text(timeline[i].duration, cx, y + 24, { align: 'center' });
+      doc.text(timeline[i].duration, cx, y + 22, { align: 'center' });
     }
-    y += 36;
+    y += 30;
   }
 
   // === TERMS (2-column) ===
-  if (y + 80 > PAGE_H - 40) { doc.addPage(); y = MARGIN; }
+  if (y + 60 > PAGE_H - 30) { doc.addPage(); y = MARGIN; }
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(TEXT);
   doc.text('TERMS & CONDITIONS', MARGIN, y + 4);
-  y += 14;
+  y += 12;
 
   const terms = [
     'Work begins only after sign-off and all brand assets received.',
@@ -560,11 +553,11 @@ export async function generateProposalPdf(
     const col = i % 2;
     const row = Math.floor(i / 2);
     const tx = MARGIN + col * (colWidth + 12);
-    const ty = y + row * 12;
+    const ty = y + row * 10;
     doc.text(`• ${terms[i]}`, tx, ty, { maxWidth: colWidth });
   }
 
-  y += Math.ceil(terms.length / 2) * 12 + 8;
+  y += Math.ceil(terms.length / 2) * 10 + 6;
 
   // === SIGNATURE (if signed) ===
   if (proposal.signed_at && proposal.client_signature) {
