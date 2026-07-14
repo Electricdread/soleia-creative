@@ -372,16 +372,20 @@ luisdreamslv@gmail.com`;
                   size="sm"
                   className="flex-1 sm:flex-none border-border text-muted-foreground hover:text-foreground hover:bg-muted gap-1.5"
                   onClick={async () => {
-                    const { data, error } = await supabase
-                      .from('line_item_templates')
-                      .select('*')
-                      .order('category', { ascending: true })
-                      .order('title', { ascending: true });
+                    const [{ data, error }, { data: intros }] = await Promise.all([
+                      supabase
+                        .from('line_item_templates')
+                        .select('*')
+                        .order('category', { ascending: true })
+                        .order('title', { ascending: true }),
+                      supabase.from('line_item_categories').select('*'),
+                    ]);
                     if (error || !data?.length) {
                       toast({ title: 'Nothing to print', description: 'Add some templates first.', variant: 'destructive' });
                       return;
                     }
-                    printLineItemLibraryPdf(data as any);
+                    printLineItemLibraryPdf(data as any, (intros as any) || []);
+
                   }}
                 >
                   <Printer className="w-3.5 h-3.5" /> Print
@@ -390,17 +394,21 @@ luisdreamslv@gmail.com`;
                   size="sm"
                   className="flex-1 sm:flex-none bg-primary text-foreground hover:bg-[#b08a30] gap-1.5"
                   onClick={async () => {
-                    const { data, error } = await supabase
-                      .from('line_item_templates')
-                      .select('*')
-                      .order('category', { ascending: true })
-                      .order('title', { ascending: true });
+                    const [{ data, error }, { data: intros }] = await Promise.all([
+                      supabase
+                        .from('line_item_templates')
+                        .select('*')
+                        .order('category', { ascending: true })
+                        .order('title', { ascending: true }),
+                      supabase.from('line_item_categories').select('*'),
+                    ]);
                     if (error || !data?.length) {
                       toast({ title: 'Nothing to download', description: 'Add some templates first.', variant: 'destructive' });
                       return;
                     }
-                    downloadLineItemLibraryPdf(data as any);
+                    downloadLineItemLibraryPdf(data as any, (intros as any) || []);
                     toast({ title: 'PDF downloaded' });
+
                   }}
                 >
                   <Download className="w-3.5 h-3.5" /> Download PDF
