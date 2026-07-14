@@ -29,7 +29,10 @@ const fmt = (n: number) =>
 // Strip non-ASCII so jsPDF default fonts render cleanly
 const ascii = (s: string) => (s || '').replace(/[^\x20-\x7E]/g, '');
 
-export function generateLineItemLibraryPdf(templates: LineItemTemplate[]): jsPDF {
+export function generateLineItemLibraryPdf(
+  templates: LineItemTemplate[],
+  categoryIntros: CategoryIntro[] = []
+): jsPDF {
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
