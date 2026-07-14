@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { renderEditorialPages, type CategoryIntro, type EditorialTemplate } from './editorialServicesPages';
 
 export interface LineItemTemplate {
   id: string;
@@ -6,7 +7,14 @@ export interface LineItemTemplate {
   description: string | null;
   price: number;
   category: string | null;
+  long_description?: string | null;
+  deliverables?: string[] | null;
+  ideal_for?: string | null;
+  sort_order?: number | null;
+  created_at?: string;
 }
+
+
 
 const GOLD: [number, number, number] = [196, 154, 60];
 const INK: [number, number, number] = [24, 24, 27];
