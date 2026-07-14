@@ -492,42 +492,38 @@ export async function generateProposalPdf(
 
   // === TIMELINE (horizontal dots) ===
   if (timeline.length > 0) {
-    if (y + 60 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
+    if (y + 50 > PAGE_H - 70) { doc.addPage(); y = MARGIN; }
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(TEXT);
     doc.text('TIMELINE', MARGIN, y + 4);
-    y += 14;
+    y += 12;
 
     const dotSpacing = CONTENT_W / timeline.length;
     for (let i = 0; i < timeline.length; i++) {
       const cx = MARGIN + dotSpacing * i + dotSpacing / 2;
 
-      // Connector line
       if (i < timeline.length - 1) {
         doc.setDrawColor('#ecf0f1');
         doc.setLineWidth(1);
         doc.line(cx + 4, y + 4, cx + dotSpacing - 4, y + 4);
       }
 
-      // Dot
       doc.setFillColor(GOLD);
-      doc.circle(cx, y + 4, 3, 'F');
+      doc.circle(cx, y + 4, 2.5, 'F');
 
-      // Phase name
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(6.5);
       doc.setTextColor(TEXT);
-      doc.text(timeline[i].phase, cx, y + 16, { align: 'center', maxWidth: dotSpacing - 8 });
+      doc.text(timeline[i].phase, cx, y + 14, { align: 'center', maxWidth: dotSpacing - 8 });
 
-      // Duration
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(6);
       doc.setTextColor(GRAY);
-      doc.text(timeline[i].duration, cx, y + 24, { align: 'center' });
+      doc.text(timeline[i].duration, cx, y + 22, { align: 'center' });
     }
-    y += 36;
+    y += 30;
   }
 
   // === TERMS (2-column) ===
