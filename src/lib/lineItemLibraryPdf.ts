@@ -8,7 +8,13 @@ export interface LineItemTemplate {
   category: string | null;
 }
 
-const GOLD = '#c49a3c';
+const GOLD: [number, number, number] = [196, 154, 60];
+const INK: [number, number, number] = [24, 24, 27];
+const SOFT_INK: [number, number, number] = [90, 90, 95];
+const MUTED: [number, number, number] = [140, 140, 145];
+const HAIR: [number, number, number] = [225, 220, 210];
+const CREAM: [number, number, number] = [250, 247, 240];
+
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n || 0);
 
@@ -19,116 +25,179 @@ export function generateLineItemLibraryPdf(templates: LineItemTemplate[]): jsPDF
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const marginX = 48;
-  let y = 0;
+  const marginX = 64;
+  const contentW = pageW - marginX * 2;
 
-  // Header band
-  doc.setFillColor(15, 15, 17);
-  doc.rect(0, 0, pageW, 90, 'F');
-  doc.setFillColor(GOLD);
-  doc.rect(0, 90, pageW, 2, 'F');
+  // ============ COVER PAGE ============
+  // Cream background
+  doc.setFillColor(...CREAM);
+  doc.rect(0, 0, pageW, pageH, 'F');
 
-  doc.setTextColor(GOLD);
+  // Thin gold frame
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.5);
+  doc.rect(36, 36, pageW - 72, pageH - 72);
+
+  // Top wordmark
+  doc.setTextColor(...GOLD);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.text('SOLEIA CREATIVE TEAM', marginX, 38);
+  doc.text('SOLEIA CREATIVE TEAM', pageW / 2, 110, { align: 'center' });
 
-  doc.setTextColor(255, 255, 255);
+  // Hairline under wordmark
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.4);
+  doc.line(pageW / 2 - 30, 120, pageW / 2 + 30, 120);
+
+  // Editorial serif title
+  doc.setTextColor(...INK);
+  doc.setFont('times', 'normal');
+  doc.setFontSize(48);
+  doc.text('Services', pageW / 2, pageH / 2 - 40, { align: 'center' });
+  doc.setFont('times', 'italic');
+  doc.setFontSize(36);
+  doc.text('& Investment', pageW / 2, pageH / 2 + 4, { align: 'center' });
+
+  // Subtitle
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(20);
-  doc.text('Line Item Library', marginX, 66);
-
-  doc.setTextColor(180, 180, 180);
   doc.setFontSize(9);
-  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  doc.text(`${templates.length} item${templates.length === 1 ? '' : 's'}  ${String.fromCharCode(0xB7)}  ${dateStr}`, marginX, 80);
+  doc.setTextColor(...SOFT_INK);
+  const year = new Date().getFullYear();
+  doc.text(`PRICING GUIDE  ${String.fromCharCode(0xB7)}  ${year}`, pageW / 2, pageH / 2 + 40, { align: 'center' });
 
-  y = 120;
+  // Bottom mark
+  doc.setTextColor(...MUTED);
+  doc.setFontSize(8);
+  doc.text('soleiacreative.app', pageW / 2, pageH - 70, { align: 'center' });
 
-  // Group by category
-  const grouped = new Map<string, LineItemTemplate[]>();
-  for (const t of templates) {
-    const k = t.category?.trim() || 'Uncategorized';
-    if (!grouped.has(k)) grouped.set(k, []);
-    grouped.get(k)!.push(t);
-  }
-  const categories = [...grouped.keys()].sort((a, b) => a.localeCompare(b));
+  // ============ CONTENT PAGES ============
+  doc.addPage();
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, pageW, pageH, 'F');
+
+  let y = 90;
+
+  const drawPageHeader = () => {
+    doc.setTextColor(...GOLD);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('SOLEIA CREATIVE TEAM', marginX, 50);
+    doc.setTextColor(...MUTED);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Services & Investment', pageW - marginX, 50, { align: 'right' });
+    doc.setDrawColor(...HAIR);
+    doc.setLineWidth(0.4);
+    doc.line(marginX, 60, pageW - marginX, 60);
+  };
+  drawPageHeader();
 
   const ensureSpace = (h: number) => {
-    if (y + h > pageH - 60) {
+    if (y + h > pageH - 80) {
       doc.addPage();
-      y = 60;
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pageW, pageH, 'F');
+      drawPageHeader();
+      y = 90;
     }
   };
 
+  // Group by category (preserve original order of first appearance)
+  const grouped = new Map<string, LineItemTemplate[]>();
+  for (const t of templates) {
+    const k = t.category?.trim() || 'Additional Services';
+    if (!grouped.has(k)) grouped.set(k, []);
+    grouped.get(k)!.push(t);
+  }
+  const categories = [...grouped.keys()];
+
   for (const cat of categories) {
-    ensureSpace(40);
-    // Category header
-    doc.setFillColor(245, 243, 238);
-    doc.rect(marginX, y, pageW - marginX * 2, 22, 'F');
-    doc.setTextColor(80, 60, 20);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text(ascii(cat).toUpperCase(), marginX + 10, y + 15);
-    y += 30;
+    ensureSpace(70);
 
-    // Column headers
-    doc.setTextColor(140, 140, 140);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text('ITEM', marginX, y);
-    doc.text('PRICE', pageW - marginX, y, { align: 'right' });
-    y += 6;
-    doc.setDrawColor(220, 220, 220);
-    doc.line(marginX, y, pageW - marginX, y);
-    y += 12;
-
-    for (const item of grouped.get(cat)!) {
-      const titleLines = doc.splitTextToSize(ascii(item.title), pageW - marginX * 2 - 90);
-      const descLines = item.description
-        ? doc.splitTextToSize(ascii(item.description), pageW - marginX * 2 - 90)
-        : [];
-      const rowH = titleLines.length * 12 + descLines.length * 11 + 10;
-      ensureSpace(rowH);
-
-      doc.setTextColor(30, 30, 30);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text(titleLines, marginX, y);
-
-      doc.setTextColor(60, 60, 60);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text(fmt(Number(item.price) || 0), pageW - marginX, y, { align: 'right' });
-
-      let lineY = y + titleLines.length * 12;
-
-      if (descLines.length) {
-        doc.setTextColor(110, 110, 110);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.text(descLines, marginX, lineY);
-        lineY += descLines.length * 11;
-      }
-
-      y = lineY + 8;
-      doc.setDrawColor(235, 235, 235);
-      doc.line(marginX, y, pageW - marginX, y);
-      y += 8;
-    }
+    // Category header — elegant serif with gold rule
+    doc.setTextColor(...INK);
+    doc.setFont('times', 'italic');
+    doc.setFontSize(20);
+    doc.text(ascii(cat), marginX, y);
 
     y += 10;
+    doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.6);
+    doc.line(marginX, y, marginX + 40, y);
+    y += 24;
+
+    const items = grouped.get(cat)!;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const priceStr = fmt(Number(item.price) || 0);
+      const priceW = doc.getTextWidth(priceStr) + 4;
+      const titleMaxW = contentW - priceW - 20;
+
+      const titleLines = doc.splitTextToSize(ascii(item.title), titleMaxW);
+      const descLines = item.description
+        ? doc.splitTextToSize(ascii(item.description), contentW - 20)
+        : [];
+
+      const rowH = titleLines.length * 13 + descLines.length * 12 + (descLines.length ? 8 : 0) + 18;
+      ensureSpace(rowH);
+
+      // Title
+      doc.setTextColor(...INK);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text(titleLines, marginX, y);
+
+      // Price (right)
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(...INK);
+      doc.text(priceStr, pageW - marginX, y, { align: 'right' });
+
+      let lineY = y + titleLines.length * 13;
+
+      if (descLines.length) {
+        doc.setFont('times', 'italic');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...SOFT_INK);
+        lineY += 4;
+        doc.text(descLines, marginX, lineY);
+        lineY += descLines.length * 12;
+      }
+
+      y = lineY + 12;
+
+      // Divider (skip after last item in category)
+      if (i < items.length - 1) {
+        doc.setDrawColor(...HAIR);
+        doc.setLineWidth(0.3);
+        doc.line(marginX, y - 4, pageW - marginX, y - 4);
+        y += 6;
+      }
+    }
+
+    y += 26;
   }
 
-  // Page numbers
+  // Closing note
+  ensureSpace(80);
+  y += 10;
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.4);
+  doc.line(pageW / 2 - 24, y, pageW / 2 + 24, y);
+  y += 22;
+  doc.setFont('times', 'italic');
+  doc.setFontSize(11);
+  doc.setTextColor(...SOFT_INK);
+  doc.text('Pricing is a guide; final proposals are tailored to each engagement.', pageW / 2, y, { align: 'center' });
+
+  // Page footers (skip cover)
   const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
+  for (let i = 2; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.setTextColor(160, 160, 160);
-    doc.text(`${i} / ${pageCount}`, pageW - marginX, pageH - 24, { align: 'right' });
-    doc.text('soleiacreative.app', marginX, pageH - 24);
+    doc.setTextColor(...MUTED);
+    doc.text(`${i - 1} / ${pageCount - 1}`, pageW - marginX, pageH - 40, { align: 'right' });
+    doc.text('soleiacreative.app', marginX, pageH - 40);
   }
 
   return doc;
@@ -137,7 +206,7 @@ export function generateLineItemLibraryPdf(templates: LineItemTemplate[]): jsPDF
 export function downloadLineItemLibraryPdf(templates: LineItemTemplate[]) {
   const doc = generateLineItemLibraryPdf(templates);
   const date = new Date().toISOString().split('T')[0];
-  doc.save(`soleia-line-item-library-${date}.pdf`);
+  doc.save(`soleia-price-sheet-${date}.pdf`);
 }
 
 export function printLineItemLibraryPdf(templates: LineItemTemplate[]) {
@@ -146,7 +215,6 @@ export function printLineItemLibraryPdf(templates: LineItemTemplate[]) {
   const url = doc.output('bloburl');
   const win = window.open(url, '_blank');
   if (!win) {
-    // Fallback: download
     downloadLineItemLibraryPdf(templates);
   }
 }
