@@ -527,13 +527,13 @@ export async function generateProposalPdf(
   }
 
   // === TERMS (2-column) ===
-  if (y + 80 > PAGE_H - 40) { doc.addPage(); y = MARGIN; }
+  if (y + 60 > PAGE_H - 30) { doc.addPage(); y = MARGIN; }
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(TEXT);
   doc.text('TERMS & CONDITIONS', MARGIN, y + 4);
-  y += 14;
+  y += 12;
 
   const terms = [
     'Work begins only after sign-off and all brand assets received.',
@@ -553,11 +553,11 @@ export async function generateProposalPdf(
     const col = i % 2;
     const row = Math.floor(i / 2);
     const tx = MARGIN + col * (colWidth + 12);
-    const ty = y + row * 12;
+    const ty = y + row * 10;
     doc.text(`• ${terms[i]}`, tx, ty, { maxWidth: colWidth });
   }
 
-  y += Math.ceil(terms.length / 2) * 12 + 8;
+  y += Math.ceil(terms.length / 2) * 10 + 6;
 
   // === SIGNATURE (if signed) ===
   if (proposal.signed_at && proposal.client_signature) {
