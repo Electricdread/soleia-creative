@@ -410,8 +410,9 @@ export async function generateProposalPdf(
     const rowH = ROW_TOP_PAD + titleBlockH + descBlockH + ROW_BOTTOM_PAD;
     const sectionH = needsCategory ? SECTION_HEADER_H : 0;
 
-    // Page break check (reserve ~150pt for total + timeline + terms + footer)
-    if (y + sectionH + rowH > PAGE_H - 150) {
+    // Page break check — reserve for total (28) + timeline (32 if any) + terms (~46) + footer (30)
+    const reserve = 30 + 46 + (timeline.length > 0 ? 32 : 0) + 28;
+    if (y + sectionH + rowH > PAGE_H - reserve) {
       doc.addPage();
       y = MARGIN;
     }
