@@ -217,7 +217,7 @@ export function renderEditorialPages(
       doc.setFont('times', 'italic');
       doc.setFontSize(9.5);
       const idealLines = item.ideal_for
-        ? doc.splitTextToSize(ascii(`Best for  \u2014  ${item.ideal_for}`), colLeftW)
+        ? doc.splitTextToSize(ascii(`Best for  -  ${item.ideal_for}`), colLeftW)
         : [];
 
       doc.setFont('helvetica', 'normal');
@@ -301,7 +301,7 @@ export function renderEditorialPages(
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
         doc.setTextColor(...GOLD);
-        doc.text('WHAT\u2019S INCLUDED', colRightX, ry);
+        doc.text("WHAT'S INCLUDED", colRightX, ry);
         ry += 12;
 
         doc.setFont('helvetica', 'normal');
@@ -310,7 +310,7 @@ export function renderEditorialPages(
         deliverableLines.forEach((dl, di) => {
           // Gold star bullet
           doc.setTextColor(...GOLD);
-          doc.text('\u2726', colRightX, ry);
+          doc.text('+', colRightX, ry);
           doc.setTextColor(...INK);
           dl.forEach((ln, li) => {
             doc.text(ln, colRightX + 14, ry);
