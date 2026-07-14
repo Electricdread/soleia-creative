@@ -469,24 +469,24 @@ export async function generateProposalPdf(
   }
 
   // === TOTAL ===
-  if (y + 32 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
+  if (y + 28 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
   doc.setDrawColor('#ecf0f1');
   doc.setLineWidth(0.5);
   doc.line(MARGIN, y, MARGIN + CONTENT_W, y);
-  y += 6;
+  y += 4;
   doc.setFillColor('#faf8f4');
-  doc.rect(MARGIN, y, CONTENT_W, 24, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 22, 'F');
   doc.setFillColor(GOLD);
-  doc.rect(MARGIN, y, 3, 24, 'F');
+  doc.rect(MARGIN, y, 3, 22, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(GRAY);
-  doc.text('TOTAL', MARGIN + 12, y + 16);
+  doc.text('TOTAL', MARGIN + 12, y + 15);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(TEXT);
-  doc.text(formatCurrency(grandTotal), PAGE_W - MARGIN - 6, y + 16, { align: 'right' });
-  y += 34;
+  doc.text(formatCurrency(grandTotal), PAGE_W - MARGIN - 6, y + 15, { align: 'right' });
+  y += 28;
 
 
 
