@@ -35,6 +35,7 @@ import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
 import ShowBloxPreview from "./pages/ShowBloxPreview";
 import SharedLookBook from "./pages/SharedLookBook";
+import RateCard from "./pages/RateCard";
 
 // Lazy-loaded so its heavy 3D (three.js) bundle only downloads when this page
 // is opened — keeps all other pages (proposals, sessions) light.
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/tutorial" element={<Tutorial />} />
               <Route path="/looks/:token" element={<SharedLookBook />} />
+              <Route path="/rate-card" element={<RateCard />} />
               
               {/* Root redirects to Admin Portal */}
               <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
