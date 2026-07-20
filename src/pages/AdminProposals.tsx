@@ -471,6 +471,28 @@ luisdreamslv@gmail.com`;
               >
                 <Download className="w-3.5 h-3.5" /> Library PDF
               </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 sm:flex-none gap-1.5 h-10"
+                onClick={async () => {
+                  const { downloadRateCardPdf } = await import('@/lib/rateCardPdf');
+                  const { data } = await supabase
+                    .from('line_item_templates')
+                    .select('title, price, sort_order')
+                    .order('sort_order', { ascending: true, nullsFirst: false })
+                    .order('title', { ascending: true })
+                    .limit(20);
+                  const addons = (data || [])
+                    .filter((t: any) => !/immersive led environments/i.test(t.title || ''))
+                    .slice(0, 8)
+                    .map((t: any) => ({ title: t.title, price: Number(t.price) || 0 }));
+                  downloadRateCardPdf(addons);
+                  toast({ title: 'Rate card downloaded' });
+                }}
+              >
+                <Download className="w-3.5 h-3.5" /> Rate Card
+              </Button>
             </div>
           </div>
         ) : (
