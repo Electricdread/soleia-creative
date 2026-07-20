@@ -173,7 +173,7 @@ export default function RateCard() {
 
       {/* Framed sheet */}
       <div
-        className="max-w-[820px] mx-auto relative bg-transparent p-8 sm:p-12"
+        className="rate-card-sheet max-w-[820px] mx-auto relative bg-transparent p-8 sm:p-12"
         style={{ border: `1px solid ${GOLD}` }}
       >
         <div
@@ -182,7 +182,7 @@ export default function RateCard() {
         />
 
         {/* Section eyebrow */}
-        <div className="flex items-center gap-3 mt-8 mb-3">
+        <div className="rc-eyebrow-wrap flex items-center gap-3 mt-8 mb-3">
           <span className="text-[10px] tracking-[0.35em]" style={{ color: GOLD_DEEP }}>
             SOLEIA CREATIVE PACKAGE
           </span>
@@ -191,7 +191,7 @@ export default function RateCard() {
 
         {/* Featured package */}
         <section
-          className="p-6 rounded-sm relative"
+          className="rc-package p-6 rounded-sm relative"
           style={{ backgroundColor: GOLD_TINT, border: `1px solid ${GOLD}` }}
         >
           <div className="flex items-start justify-between gap-6">
@@ -215,7 +215,7 @@ export default function RateCard() {
               <div className="text-[10px] tracking-[0.3em]" style={{ color: GOLD_DEEP }}>
                 STARTING AT
               </div>
-              <div className="font-display mt-1" style={{ fontSize: 30, color: INK, lineHeight: 1 }}>
+              <div className="rc-price font-display mt-1" style={{ fontSize: 30, color: INK, lineHeight: 1 }}>
                 $3,000
               </div>
             </div>
@@ -224,13 +224,13 @@ export default function RateCard() {
 
         {/* Venue contract callout */}
         <section
-          className="mt-5 p-4 rounded-sm relative"
+          className="rc-venue mt-5 p-4 rounded-sm relative"
           style={{ backgroundColor: GOLD_TINT + '80', border: `1px solid ${GOLD}`, borderLeft: `3px solid ${GOLD}` }}
         >
           <div className="text-[10px] tracking-[0.3em] mb-2" style={{ color: GOLD_DEEP }}>
             INCLUDED IN YOUR VENUE CONTRACT
           </div>
-          <div className="text-[12px] flex flex-wrap gap-x-6" style={{ color: INK }}>
+          <div className="rc-venue-body text-[12px] flex flex-wrap gap-x-6" style={{ color: INK }}>
             <span>Up to 10 static logos — LED screens</span>
             <span style={{ color: `${GOLD}` }}>·</span>
             <span>1 static logo — all TVs, Cabanas &amp; Bungalows</span>
@@ -255,7 +255,7 @@ export default function RateCard() {
 
         {/* The Process */}
         <SectionLabel>THE PROCESS</SectionLabel>
-        <div className="grid grid-cols-3 gap-3 mt-3">
+        <div className="rc-process grid grid-cols-3 gap-3 mt-3">
           {[
             { big: '14 Days', small: 'CONTENT CREATION' },
             { big: '3 Days', small: 'CLIENT REVIEW' },
@@ -266,7 +266,7 @@ export default function RateCard() {
               className="text-center py-5 rounded-sm"
               style={{ backgroundColor: GOLD_TINT + '88', border: `1px solid ${GOLD}` }}
             >
-              <div className="font-display" style={{ fontSize: 22, color: INK }}>
+              <div className="rc-process-big font-display" style={{ fontSize: 22, color: INK }}>
                 {c.big}
               </div>
               <div className="mt-2 text-[9px] tracking-[0.3em]" style={{ color: GOLD_DEEP }}>
@@ -278,7 +278,7 @@ export default function RateCard() {
 
         {/* Terms */}
         <SectionLabel>TERMS &amp; CONDITIONS</SectionLabel>
-        <ul className="mt-3 space-y-1.5 text-[11.5px]" style={{ color: INK }}>
+        <ul className="rc-terms mt-3 space-y-1.5 text-[11.5px]" style={{ color: INK }}>
           {TERMS.map((t, i) => (
             <li key={i} className="flex gap-3">
               <span style={{ color: GOLD_DEEP }}>•</span>
@@ -288,7 +288,7 @@ export default function RateCard() {
         </ul>
 
         {/* Footer */}
-        <footer className="mt-10 text-center">
+        <footer className="rc-footer mt-10 text-center">
           <div className="text-[10px] tracking-[0.45em]" style={{ color: GOLD_DEEP }}>
             SOLEIA LAS VEGAS
           </div>
