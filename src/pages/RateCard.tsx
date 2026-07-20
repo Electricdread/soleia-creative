@@ -15,17 +15,12 @@ export default function RateCard() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from('line_item_templates')
-        .select('title, price, sort_order')
-        .order('sort_order', { ascending: true, nullsFirst: false })
-        .order('title', { ascending: true })
-        .limit(20);
-      const filtered = (data || [])
-        .filter((t: any) => !/immersive led environments/i.test(t.title || ''))
-        .slice(0, 8)
-        .map((t: any) => ({ title: t.title, price: Number(t.price) || 0 }));
-      setAddons(filtered);
+      const { data } = await supabase.rpc('get_rate_card_addons');
+      const mapped = (data || []).map((t: any) => ({
+        title: t.title,
+        price: Number(t.price) || 0,
+      }));
+      setAddons(mapped);
     })();
   }, []);
 
