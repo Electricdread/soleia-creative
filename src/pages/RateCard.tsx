@@ -124,9 +124,32 @@ export default function RateCard() {
     >
       <style>{`
         @media print {
-          @page { size: letter; margin: 0.35in; }
+          @page { size: letter; margin: 0.28in; }
+          html, body { background: ${IVORY} !important; }
           .no-print { display: none !important; }
-          body { background: ${IVORY} !important; }
+          .rate-card-sheet {
+            padding: 18px 22px !important;
+            max-width: 100% !important;
+            page-break-inside: avoid;
+          }
+          .rate-card-sheet * { page-break-inside: avoid; }
+          .rc-eyebrow-wrap { margin-top: 10px !important; margin-bottom: 4px !important; }
+          .rc-package { padding: 12px 14px !important; }
+          .rc-package h3 { font-size: 14px !important; }
+          .rc-package p { font-size: 10px !important; margin-top: 6px !important; line-height: 1.35 !important; }
+          .rc-package .rc-price { font-size: 22px !important; }
+          .rc-venue { margin-top: 8px !important; padding: 8px 10px !important; }
+          .rc-venue .rc-venue-body { font-size: 10.5px !important; }
+          .rc-row { padding: 5px 0 !important; }
+          .rc-row .rc-row-title { font-size: 12px !important; }
+          .rc-row .rc-row-desc { font-size: 9.5px !important; margin-top: 2px !important; line-height: 1.25 !important; }
+          .rc-row .rc-row-price { font-size: 11.5px !important; }
+          .rc-process { margin-top: 8px !important; gap: 8px !important; }
+          .rc-process > div { padding: 10px 0 !important; }
+          .rc-process .rc-process-big { font-size: 16px !important; }
+          .rc-terms { margin-top: 8px !important; font-size: 10px !important; }
+          .rc-terms li { margin-top: 2px !important; }
+          .rc-footer { margin-top: 14px !important; }
         }
       `}</style>
 
