@@ -158,43 +158,6 @@ export default function RateCard() {
           style={{ border: `1px solid ${GOLD}`, opacity: 0.5 }}
         />
 
-        {/* Header */}
-        <header className="text-center relative">
-          <div className="flex items-center justify-center gap-3">
-            <span
-              className="font-display"
-              style={{ fontSize: 40, color: INK, letterSpacing: '0.06em' }}
-            >
-              SOL
-            </span>
-            <img
-              src="/soleia-icon.png"
-              alt=""
-              style={{ width: 42, height: 42, objectFit: 'contain' }}
-            />
-            <span
-              className="font-display"
-              style={{ fontSize: 40, color: INK, letterSpacing: '0.06em' }}
-            >
-              EIA
-            </span>
-          </div>
-          <div className="mt-1 text-[10px] tracking-[0.45em]" style={{ color: GOLD_DEEP }}>
-            LAS VEGAS
-          </div>
-          <div className="mt-2 text-[10px] tracking-[0.35em]" style={{ color: SOFT_INK }}>
-            CREATIVE SERVICES &amp; RATE CARD
-          </div>
-
-          <h2 className="font-display mt-8" style={{ fontSize: 28, color: INK }}>
-            Soleia Creative{' '}
-            <em style={{ color: GOLD_DEEP, fontStyle: 'italic' }}>&amp;</em> Immersive LED
-          </h2>
-          <div className="mt-2 text-[10px] tracking-[0.35em]" style={{ color: SOFT_INK }}>
-            ENVIRONMENTS · BRANDED OVERLAYS · MAPPING
-          </div>
-        </header>
-
         {/* Section eyebrow */}
         <div className="flex items-center gap-3 mt-8 mb-3">
           <span className="text-[10px] tracking-[0.35em]" style={{ color: GOLD_DEEP }}>
