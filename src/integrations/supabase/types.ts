@@ -1625,6 +1625,19 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_rate_card_addons: {
+        Args: never
+        Returns: {
+          category: string
+          deliverables: string[]
+          id: string
+          ideal_for: string
+          long_description: string
+          price: number
+          sort_order: number
+          title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
