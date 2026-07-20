@@ -82,14 +82,14 @@ const fmt = (n: number) =>
 
 function ServiceRow({ row }: { row: Row }) {
   return (
-    <div className="py-3" style={{ borderTop: `1px solid ${SOFT_INK}22` }}>
+    <div className="rc-row py-3" style={{ borderTop: `1px solid ${SOFT_INK}22` }}>
       <div className="flex items-start justify-between gap-6">
         <div className="flex-1 min-w-0">
-          <div className="font-display" style={{ fontSize: 15, color: INK, lineHeight: 1.3 }}>
+          <div className="rc-row-title font-display" style={{ fontSize: 15, color: INK, lineHeight: 1.3 }}>
             {row.title}
           </div>
           {row.description && (
-            <p className="mt-1 text-[11.5px] leading-snug" style={{ color: SOFT_INK }}>
+            <p className="rc-row-desc mt-1 text-[11.5px] leading-snug" style={{ color: SOFT_INK }}>
               {row.description}
             </p>
           )}
@@ -97,7 +97,7 @@ function ServiceRow({ row }: { row: Row }) {
         <div className="text-[10px] tracking-[0.25em] shrink-0 pt-1" style={{ color: SOFT_INK }}>
           1 × Unit
         </div>
-        <div className="font-medium text-sm shrink-0 text-right pt-0.5" style={{ color: INK, minWidth: 60 }}>
+        <div className="rc-row-price font-medium text-sm shrink-0 text-right pt-0.5" style={{ color: INK, minWidth: 60 }}>
           {fmt(row.price)}
         </div>
       </div>
@@ -107,7 +107,7 @@ function ServiceRow({ row }: { row: Row }) {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 mt-9 mb-1">
+    <div className="rc-eyebrow-wrap flex items-center gap-3 mt-9 mb-1">
       <span className="text-[10px] tracking-[0.35em]" style={{ color: GOLD_DEEP }}>
         {children}
       </span>
