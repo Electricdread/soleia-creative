@@ -16,8 +16,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 beforeEach(() => {
   rpcMock.mockReset();
   fromMock.mockReset();
-  // @ts-expect-error jsdom
-  global.fetch = vi.fn(() => Promise.reject(new Error('no network in test')));
+  (global as any).fetch = vi.fn(() => Promise.reject(new Error('no network in test')));
 });
 
 // --- Helpers ------------------------------------------------------------
