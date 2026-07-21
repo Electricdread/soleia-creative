@@ -580,12 +580,23 @@ export async function generateProposalPdf(
 
   // === EDITORIAL SERVICES EXPLAINER PAGES ===
   try {
+    // Use SECURITY DEFINER RPCs so this works for anon/token-based client
+    // sessions when generating the signed-proposal PDF, not just admins.
     const [tplRes, catRes] = await Promise.all([
-      supabase.from('line_item_templates').select('*'),
-      supabase.from('line_item_categories').select('*'),
+      supabase.rpc('get_rate_card_addons'),
+      supabase.rpc('get_rate_card_categories'),
     ]);
-    const tpls = (tplRes.data || []) as EditorialTemplate[];
-    const cats = (catRes.data || []) as CategoryIntro[];
+    let tpls = (tplRes.data || []) as EditorialTemplate[];
+    let cats = (catRes.data || []) as CategoryIntro[];
+    // Admin fallback: direct table read (RPC filters some items)
+    if (!tpls.length) {
+      const [tplFallback, catFallback] = await Promise.all([
+        supabase.from('line_item_templates').select('*'),
+        supabase.from('line_item_categories').select('*'),
+      ]);
+      tpls = (tplFallback.data || []) as EditorialTemplate[];
+      cats = (catFallback.data || []) as CategoryIntro[];
+    }
     if (tpls.length) {
       renderEditorialPages(doc, tpls, cats, {
         sectionTitle: 'About Our Services',
