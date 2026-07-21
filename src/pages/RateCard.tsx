@@ -176,16 +176,16 @@ export default function RateCard() {
 
       {/* Framed sheet */}
       <div
-        className="rate-card-sheet max-w-[820px] mx-auto relative bg-transparent p-8 sm:p-12"
+        className="rate-card-sheet max-w-[820px] mx-auto relative bg-transparent p-5 sm:p-12"
         style={{ border: `1px solid ${GOLD}` }}
       >
         <div
-          className="absolute inset-2 pointer-events-none"
+          className="absolute inset-2 pointer-events-none hidden sm:block"
           style={{ border: `1px solid ${GOLD}`, opacity: 0.5 }}
         />
 
         {/* Section eyebrow */}
-        <div className="rc-eyebrow-wrap flex items-center gap-3 mt-8 mb-3">
+        <div className="rc-eyebrow-wrap flex items-center gap-3 mt-4 sm:mt-8 mb-3">
           <span className="text-[10px] tracking-[0.35em]" style={{ color: GOLD_DEEP }}>
             SOLEIA CREATIVE PACKAGE
           </span>
@@ -194,15 +194,15 @@ export default function RateCard() {
 
         {/* Featured package */}
         <section
-          className="rc-package p-6 rounded-sm relative"
+          className="rc-package p-4 sm:p-6 rounded-sm relative"
           style={{ backgroundColor: GOLD_TINT, border: `1px solid ${GOLD}` }}
         >
-          <div className="flex items-start justify-between gap-6">
-            <div className="flex-1">
-              <h3 className="font-display leading-tight" style={{ fontSize: 18, color: INK }}>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display leading-tight text-[17px] sm:text-[18px]" style={{ color: INK }}>
                 Immersive LED Environments &amp; Branded Overlay Design
               </h3>
-              <p className="mt-3 text-[12px] leading-relaxed" style={{ color: SOFT_INK }}>
+              <p className="mt-3 text-[12px] leading-relaxed break-words" style={{ color: SOFT_INK }}>
                 We will animate your brand's visual assets and turn them into Soleia's immersive
                 experience. Our team manages the entire video mapping workflow and delivers
                 animations directly to our playback server for stable, optimized performance. You
@@ -211,15 +211,17 @@ export default function RateCard() {
                 animation to greet guests upon arrival.
               </p>
             </div>
-            <div className="text-[10px] tracking-[0.25em] shrink-0 pt-1" style={{ color: SOFT_INK }}>
-              1 × Unit
-            </div>
-            <div className="text-right shrink-0">
-              <div className="text-[10px] tracking-[0.3em]" style={{ color: GOLD_DEEP }}>
-                STARTING AT
+            <div className="flex items-end justify-between sm:block sm:text-right sm:shrink-0 gap-4">
+              <div className="text-[10px] tracking-[0.25em] pt-1" style={{ color: SOFT_INK }}>
+                1 × Unit
               </div>
-              <div className="rc-price font-display mt-1" style={{ fontSize: 30, color: INK, lineHeight: 1 }}>
-                $3,000
+              <div className="text-right">
+                <div className="text-[10px] tracking-[0.3em]" style={{ color: GOLD_DEEP }}>
+                  STARTING AT
+                </div>
+                <div className="rc-price font-display mt-1" style={{ fontSize: 30, color: INK, lineHeight: 1 }}>
+                  $3,000
+                </div>
               </div>
             </div>
           </div>
@@ -233,9 +235,9 @@ export default function RateCard() {
           <div className="text-[10px] tracking-[0.3em] mb-2" style={{ color: GOLD_DEEP }}>
             INCLUDED IN YOUR VENUE CONTRACT
           </div>
-          <div className="rc-venue-body text-[12px] flex flex-wrap gap-x-6" style={{ color: INK }}>
+          <div className="rc-venue-body text-[12px] flex flex-wrap gap-x-6 gap-y-1" style={{ color: INK }}>
             <span>Up to 10 static logos — LED screens</span>
-            <span style={{ color: `${GOLD}` }}>·</span>
+            <span className="hidden sm:inline" style={{ color: `${GOLD}` }}>·</span>
             <span>1 static logo — all TVs, Cabanas &amp; Bungalows</span>
           </div>
         </section>
@@ -258,7 +260,7 @@ export default function RateCard() {
 
         {/* The Process */}
         <SectionLabel>THE PROCESS</SectionLabel>
-        <div className="rc-process grid grid-cols-3 gap-3 mt-3">
+        <div className="rc-process grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
           {[
             { big: '14 Days', small: 'CONTENT CREATION' },
             { big: '3 Days', small: 'CLIENT REVIEW' },
@@ -266,7 +268,7 @@ export default function RateCard() {
           ].map((c, i) => (
             <div
               key={i}
-              className="text-center py-5 rounded-sm"
+              className="text-center py-4 sm:py-5 rounded-sm"
               style={{ backgroundColor: GOLD_TINT + '88', border: `1px solid ${GOLD}` }}
             >
               <div className="rc-process-big font-display" style={{ fontSize: 22, color: INK }}>
@@ -278,6 +280,7 @@ export default function RateCard() {
             </div>
           ))}
         </div>
+
 
         {/* Terms */}
         <SectionLabel>TERMS &amp; CONDITIONS</SectionLabel>
