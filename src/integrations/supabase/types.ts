@@ -1638,6 +1638,14 @@ export type Database = {
           title: string
         }[]
       }
+      get_rate_card_categories: {
+        Args: never
+        Returns: {
+          intro: string
+          name: string
+          sort_order: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
