@@ -155,8 +155,9 @@ export default function RateCard() {
           .rc-terms { margin-top: 6px !important; font-size: 9.5px !important; }
           .rc-terms li { margin-top: 1px !important; }
           .rc-footer { margin-top: 10px !important; }
-
+        }
       `}</style>
+
 
       {/* Action bar */}
       <div className="no-print max-w-[820px] mx-auto mb-6 flex justify-end gap-2">
