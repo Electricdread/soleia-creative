@@ -842,3 +842,46 @@ button, a, [role="button"] {
     display: none !important;
   }
 }
+
+/* ============================================================
+   Mobile-adaptive safety net (iPhone / Android phones)
+   Applies globally without touching individual components.
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Prevent accidental horizontal scroll from any wide child */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Never let media blow out the viewport */
+  img, video, canvas, svg, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Long unbroken strings (tokens, URLs, emails) wrap instead of overflow */
+  p, span, div, li, td, th, a, h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Any semantic <table> gets a horizontal-scroll shell */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* Guarantee 44px tap targets for primary interactive elements */
+  button:not(.h-6):not(.h-7):not(.h-8):not([data-compact]),
+  [role="button"]:not([data-compact]),
+  a.btn, .btn {
+    min-height: 44px;
+  }
+}
+
+/* Respect the iPhone notch / dynamic island on fixed overlays */
+.safe-top    { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
