@@ -213,6 +213,9 @@ export default function RateCard() {
                 develop a storyboard for a memorable guest journey, including a dynamic elevator
                 animation to greet guests upon arrival.
               </p>
+              <p className="mt-2 text-[12px] leading-relaxed break-words" style={{ color: INK }}>
+                <span className="font-medium" style={{ color: GOLD_DEEP }}>Includes:</span> 1–3 looks across all venue LED screens, all cabana &amp; bungalow TVs, and elevator displays.
+              </p>
             </div>
             <div className="flex items-end justify-between sm:block sm:text-right sm:shrink-0 gap-4">
               <div className="text-[10px] tracking-[0.25em] pt-1" style={{ color: SOFT_INK }}>
