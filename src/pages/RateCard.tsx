@@ -83,27 +83,30 @@ const fmt = (n: number) =>
 function ServiceRow({ row }: { row: Row }) {
   return (
     <div className="rc-row py-3" style={{ borderTop: `1px solid ${SOFT_INK}22` }}>
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-6">
         <div className="flex-1 min-w-0">
           <div className="rc-row-title font-display" style={{ fontSize: 15, color: INK, lineHeight: 1.3 }}>
             {row.title}
           </div>
           {row.description && (
-            <p className="rc-row-desc mt-1 text-[11.5px] leading-snug" style={{ color: SOFT_INK }}>
+            <p className="rc-row-desc mt-1 text-[11.5px] leading-snug break-words" style={{ color: SOFT_INK }}>
               {row.description}
             </p>
           )}
         </div>
-        <div className="text-[10px] tracking-[0.25em] shrink-0 pt-1" style={{ color: SOFT_INK }}>
-          1 × Unit
-        </div>
-        <div className="rc-row-price font-medium text-sm shrink-0 text-right pt-0.5" style={{ color: INK, minWidth: 60 }}>
-          {fmt(row.price)}
+        <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-6 sm:contents">
+          <div className="text-[10px] tracking-[0.25em] shrink-0 pt-1" style={{ color: SOFT_INK }}>
+            1 × Unit
+          </div>
+          <div className="rc-row-price font-medium text-sm shrink-0 text-right pt-0.5" style={{ color: INK, minWidth: 60 }}>
+            {fmt(row.price)}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
