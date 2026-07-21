@@ -1,39 +1,37 @@
+
 ## Goal
 
-Rebuild `/rate-card` (screen + PDF) so it matches the uploaded `Soleia_Creative_Services.pdf` exactly — same layout, sections, copy, ornaments, and typography.
+Update the **9.23.26 Whatnot** proposal so its line items match the current `/rate-card` exactly (titles, descriptions, prices).
 
-## Gaps vs. reference
+## Current diffs (Whatnot vs Rate Card)
 
-The current page is missing or mis-styled:
-- SOLEIA sun wordmark (uses text "SOLEIA" instead of the sun-icon logo).
-- Featured package section label ("SOLEIA CREATIVE PACKAGE").
-- Add-ons are rendered as a single dotted-leader list. Reference splits them into two grouped sections with per-row description + `1 × Unit` + price:
-  - **ADDITIONAL OPTIONS**: Additional Transparent Logo Animation ($750), Elevator Dynamic Animation ($750), Elevator Static Logo ($350), Individual Cabana / Bungalow Logo ($300), 3D Previz ($350).
-  - **VIDEO MAPPING & LOAD FEES**: Mapped by Soleia Creative Team ($1,500), Mapped to Spec by Client ($1,000), Outside Arch Specific Video ($500), Performing Artist — Mapped by Soleia Creative Team ($950).
-- **THE PROCESS** block: three gold-bordered cards — 14 Days / Content Creation · 3 Days / Client Review · 1 Round / Revision & Final Delivery.
-- **TERMS & CONDITIONS** bullet list (6 items from the reference).
-- Footer wordmark "SOLEIA LAS VEGAS" (small caps, letter-spaced).
+| Line item | Whatnot now | Rate card | Change |
+|---|---|---|---|
+| Immersive LED Environments & Branded Overlay Design | **$4,000** | $3,000 (starting at) | Lower price to $3,000 |
+| Individual dedicated Cabana / Bungalow Logo | $300 | "Individual Cabana / Bungalow Logo" $300 | Rename |
+| Elevator Static Logo (content to spec provided by client) | $350 | "Elevator Static Logo" $350 | Rename (shorter title, desc moves to description field) |
+| Outside Arch Specific Video (content to spec provided by client.) | $500 | "Outside Arch Specific Video" $500 | Rename |
+| 3D Web Previz - Up to 4 mapped files | $350 | "3D Previz" $350 | Rename |
+| All other add-ons + video mapping fees | match | match | No change |
 
-## Changes
+Also refresh each item's `description` field to match the rate card copy (e.g. "Individual logo in a dedicated cabana or bungalow, up to 24.", the full 3D Previz walkthrough paragraph, revision-fee notes on mapping tiers, etc.).
 
-**1. `src/pages/RateCard.tsx` — full rebuild**
-- Replace text SOLEIA header with `soleia-icon.png` (existing brand asset) inline with the "SOLEIA / LAS VEGAS" wordmark, then the "CREATIVE SERVICES & RATE CARD" eyebrow.
-- Keep the double gold border frame and ivory background.
-- Section 1 (SOLEIA CREATIVE PACKAGE): unchanged copy, add left-aligned `SOLEIA CREATIVE PACKAGE` eyebrow above the card; keep `1 × Unit` and `STARTING AT $3,000`.
-- Venue contract callout: keep as-is.
-- Replace dynamic RPC-fed list with two hardcoded, categorized tables (ADDITIONAL OPTIONS, VIDEO MAPPING & LOAD FEES) using the exact titles, descriptions, and prices from the reference. Drop the `get_rate_card_addons` fetch — this rate card becomes a curated document, not a mirror of the item library.
-- Add THE PROCESS 3-card row and TERMS & CONDITIONS list with the exact wording from the reference.
-- Footer becomes "SOLEIA LAS VEGAS" centered wordmark.
+## Plan
 
-**2. `src/lib/rateCardPdf.ts` — full rebuild**
-- Regenerate the PDF to match the new layout 1:1 (letter, ivory, double gold border, sun-icon header, grouped sections with descriptions + qty + price columns, process cards, terms list, footer).
-- No add-ons parameter — content is static and matches the on-screen page.
-- Update `downloadRateCardPdf()` signature accordingly and update the single caller (`AdminProposals.tsx` Rate Card button).
+1. Run a single SQL update against `proposal_items` scoped to proposal id `0cc84505-acd7-4f5f-837d-713bee290365` to:
+   - Set package price to `3000`.
+   - Rename the 4 items above to their rate-card titles.
+   - Overwrite each item's `description` with the rate-card copy.
+2. Leave quantities (`1 × Unit`), sort_order, and `client_selected` untouched — only titles/prices/descriptions change.
+3. Do **not** touch `line_item_templates` or any other proposal.
 
-**3. QA**
-- Render the page in-browser and via Playwright screenshot at letter proportions; compare against `Soleia_Creative_Services.pdf` page 1.
-- Generate the PDF, run `pdftoppm -jpeg -r 120`, view, and iterate until it visually matches the reference.
+## Verification
 
-## Out of scope
-- No DB, RLS, or RPC changes. `get_rate_card_addons` stays available for other callers.
-- No selectable/submit flow on the rate card (deferred per prior discussion).
+- Re-select the Whatnot proposal_items and confirm titles/prices match the rate card table in `src/pages/RateCard.tsx`.
+- You open the Whatnot proposal in preview to visually confirm before publishing.
+
+## Not in scope
+
+- No code changes.
+- No changes to other proposals.
+- Not resetting the signature or status (proposal stays `sent`).
