@@ -11,15 +11,26 @@ type Row = { title: string; description: string; price: number };
 
 const ADDITIONAL_OPTIONS: Row[] = [
   {
-    title: 'Additional Transparent Logo Animation',
+    title: 'Static Logo',
+    description: 'Individual static brand logo, content to spec provided by client.',
+    price: 200,
+  },
+  {
+    title: 'Transparent Logo Animation',
     description: 'Individual transparent logo animation.',
     price: 750,
   },
   {
     title: 'Elevator Dynamic Animation',
     description:
-      'Dynamic elevator branding with directional content (3 deliverables): static image for stationary position, animated video for ride up, and animated video for ride down.',
+      'Dynamic elevator branding with directional content (3): static image for stationary position, animated video for ride up, and animated video for ride down.',
     price: 750,
+  },
+  {
+    title: 'Elevator Created by Client',
+    description:
+      'Client-created elevator animation delivered to spec (static + up + down). Soleia handles load and playback setup only.',
+    price: 500,
   },
   {
     title: 'Elevator Static Logo',
@@ -39,11 +50,13 @@ const ADDITIONAL_OPTIONS: Row[] = [
   },
 ];
 
+
 const VIDEO_MAPPING: Row[] = [
   {
     title: 'Mapped by Soleia Creative Team',
     description:
-      'Mapping of client animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.',
+      'Mapping of client logo and brand animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.',
+
     price: 1500,
   },
   {
@@ -214,8 +227,9 @@ export default function RateCard() {
                 animation to greet guests upon arrival.
               </p>
               <p className="mt-2 text-[12px] leading-relaxed break-words" style={{ color: INK }}>
-                <span className="font-medium" style={{ color: GOLD_DEEP }}>Includes:</span> 1–3 looks across all venue LED screens, all cabana &amp; bungalow TVs, and elevator displays.
+                <span className="font-medium" style={{ color: GOLD_DEEP }}>Includes:</span> 1–3 looks across all venue LED screens and elevator displays. Cabana &amp; bungalow TVs quoted separately based on asset delivery.
               </p>
+
             </div>
             <div className="flex items-end justify-between sm:block sm:text-right sm:shrink-0 gap-4">
               <div className="text-[10px] tracking-[0.25em] pt-1" style={{ color: SOFT_INK }}>
@@ -226,8 +240,9 @@ export default function RateCard() {
                   STARTING AT
                 </div>
                 <div className="rc-price font-display mt-1" style={{ fontSize: 30, color: INK, lineHeight: 1 }}>
-                  $3,000
+                  $3,000<span style={{ color: GOLD_DEEP }}>*</span>
                 </div>
+
               </div>
             </div>
           </div>
