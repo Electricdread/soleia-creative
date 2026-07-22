@@ -55,7 +55,8 @@ const VIDEO_MAPPING: Row[] = [
   {
     title: 'Mapped by Soleia Creative Team',
     description:
-      'Mapping of client animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.',
+      'Mapping of client logo and brand animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.',
+
     price: 1500,
   },
   {
