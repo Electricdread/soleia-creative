@@ -240,8 +240,9 @@ export default function RateCard() {
                   STARTING AT
                 </div>
                 <div className="rc-price font-display mt-1" style={{ fontSize: 30, color: INK, lineHeight: 1 }}>
-                  $3,000
+                  $3,000<span style={{ color: GOLD_DEEP }}>*</span>
                 </div>
+
               </div>
             </div>
           </div>
