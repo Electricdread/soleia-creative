@@ -11,15 +11,26 @@ type Row = { title: string; description: string; price: number };
 
 const ADDITIONAL_OPTIONS: Row[] = [
   {
-    title: 'Additional Transparent Logo Animation',
+    title: 'Static Logo',
+    description: 'Individual static brand logo, content to spec provided by client.',
+    price: 200,
+  },
+  {
+    title: 'Transparent Logo Animation',
     description: 'Individual transparent logo animation.',
     price: 750,
   },
   {
     title: 'Elevator Dynamic Animation',
     description:
-      'Dynamic elevator branding with directional content (3 deliverables): static image for stationary position, animated video for ride up, and animated video for ride down.',
+      'Dynamic elevator branding with directional content (3): static image for stationary position, animated video for ride up, and animated video for ride down.',
     price: 750,
+  },
+  {
+    title: 'Elevator Created by Client',
+    description:
+      'Client-created elevator animation delivered to spec (static + up + down). Soleia handles load and playback setup only.',
+    price: 500,
   },
   {
     title: 'Elevator Static Logo',
@@ -38,6 +49,7 @@ const ADDITIONAL_OPTIONS: Row[] = [
     price: 350,
   },
 ];
+
 
 const VIDEO_MAPPING: Row[] = [
   {
