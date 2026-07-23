@@ -874,9 +874,12 @@ button, a, [role="button"] {
     max-width: 100%;
   }
 
-  /* Guarantee 44px tap targets for primary interactive elements */
-  button:not(.h-6):not(.h-7):not(.h-8):not([data-compact]),
-  [role="button"]:not([data-compact]),
+  /* Opt-in 44px tap targets. Add class="tap-44" (or data-tap-44) to any
+     control that needs it. We intentionally do NOT force min-height on all
+     buttons/[role="button"] because it stretches square icon buttons
+     (size="icon") and shadcn sm/default buttons into rectangles on mobile. */
+  .tap-44:not([data-compact]),
+  [data-tap-44]:not([data-compact]),
   a.btn, .btn {
     min-height: 44px;
   }
