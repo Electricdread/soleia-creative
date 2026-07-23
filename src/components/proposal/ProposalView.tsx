@@ -412,10 +412,10 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     setDownloadingPdf(true);
     try {
       const [proposalRes, itemsRes, galleryRes, timelineRes] = await Promise.all([
-        supabase.from('proposals').select('*').eq('id', proposal.id).maybeSingle(),
-        supabase.from('proposal_items').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
-        supabase.from('proposal_gallery').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
-        supabase.from('proposal_timeline').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+        supabase.rpc('get_proposal_by_token', { p_token: proposal.token }),
+        supabase.rpc('get_proposal_items_by_token', { p_token: proposal.token }),
+        supabase.rpc('get_proposal_gallery_by_token', { p_token: proposal.token }),
+        supabase.rpc('get_proposal_timeline_by_token', { p_token: proposal.token }),
       ]);
 
       if (proposalRes.error) throw proposalRes.error;
