@@ -108,9 +108,6 @@ function ServiceRow({ row }: { row: Row }) {
           )}
         </div>
         <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-6 sm:contents">
-          <div className="text-[10px] tracking-[0.25em] shrink-0 pt-1" style={{ color: SOFT_INK }}>
-            1 × Unit
-          </div>
           <div className="rc-row-price font-medium text-sm shrink-0 text-right pt-0.5" style={{ color: INK, minWidth: 60 }}>
             {fmt(row.price)}
           </div>
@@ -232,9 +229,6 @@ export default function RateCard() {
 
             </div>
             <div className="flex items-end justify-between sm:block sm:text-right sm:shrink-0 gap-4">
-              <div className="text-[10px] tracking-[0.25em] pt-1" style={{ color: SOFT_INK }}>
-                1 × Unit
-              </div>
               <div className="text-right">
                 <div className="text-[10px] tracking-[0.3em]" style={{ color: GOLD_DEEP }}>
                   STARTING AT
