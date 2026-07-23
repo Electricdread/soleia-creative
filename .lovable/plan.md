@@ -1,53 +1,62 @@
 ## Goal
-Make the item library the single source of truth for new proposals so any new client automatically gets the exact same lineup, pricing, and copy shown on `/rate-card`. No changes to existing proposals or the rate card page itself.
 
-## How new proposals are seeded (confirmed)
-`AdminProposals.handleCreate` already auto-inserts every row from `line_item_templates` into a new proposal when the admin doesn't hand-pick items. So syncing the library rows = syncing new proposals. The package row is included in that seed, satisfying "auto-added, editable."
+Restyle the client-facing proposal page (`/proposal/:token`) to match the ivory + gold editorial rate card, and rework the services table so descriptions read cleanly instead of stacking as a narrow, cramped column.
 
-## Data changes to `line_item_templates`
+Only the proposal's presentation changes. Signing logic, quantity math, admin editing, PDF export, DB, and routing all stay the same.
 
-Add a `sort_order` value to each row so the seeded order matches the rate card (package → Additional Options → Video Mapping & Load Fees), and normalize `category` names to those three exact buckets.
+## What changes
 
-### 1. Package (category: `Soleia Creative Package`, sort 0)
-- Title: **Immersive LED Environments & Branded Overlay Design**
-- Price: **$3,000** (down from $4,000)
-- Description: rate-card package copy + `Includes: 1–3 looks across all venue LED screens and elevator displays. Cabana & bungalow TVs quoted separately based on asset delivery.`
+### 1. Palette + typography (proposal page only)
 
-### 2. Additional Options (category: `Additional Options`, in this order)
-| # | Title | Price | Notes |
-|---|---|---|---|
-| 1 | Static Logo | $200 | **new row** |
-| 2 | Transparent Logo Animation | $750 | rename from "Additional Transparent Logo Animation" |
-| 3 | Elevator Dynamic Animation | $750 | keep |
-| 4 | Elevator Created by Client | $500 | **new row** |
-| 5 | Elevator Static Logo | $350 | move here from Video Mapping |
-| 6 | Individual Cabana / Bungalow Logo | $300 | rename from "Individual dedicated…" |
-| 7 | 3D Previz | $350 | rename from "Previz" and use rate-card description |
+Wrap the proposal in a scoped ivory theme (`#f7f2ea` background, ink text, gold accents) so it visually reads as the same document family as the rate card. Nothing changes for admin views, other routes, or global theme tokens.
 
-### 3. Video Mapping & Load Fees (category: `Video Mapping & Load Fees`, in this order)
-| # | Title | Price |
-|---|---|---|
-| 1 | Mapped by Soleia Creative Team | $1,500 |
-| 2 | Mapped to Spec by Client | $1,000 |
-| 3 | Outside Arch Specific Video | $500 |
-| 4 | Performing Artist — Mapped by Soleia Creative Team | $950 |
+- Ivory sheet inside a thin gold border (matches rate-card sheet).
+- Section eyebrows: uppercase 10px, `0.35em` tracking, gold-deep color, hairline gold rule to the right.
+- Headings: `font-display` (same as rate card).
+- Body: ink/soft-ink instead of muted-foreground.
+- Venue-contract callout restyled as the rate-card gold-tint card with gold left rule.
 
-Each row's `description` gets set to the rate-card copy verbatim.
+### 2. Services layout — no more skinny description column
 
-### 4. Rows to delete (stale / not on rate card)
-- `In-Person Preview` ($400, "Additional Items")
-- `Previz Preview` ($350, "Additional Items")
-- `On-Site Recorded Client Mapped Preview` ($250, "Addition Items")
-- Old duplicate `Previz` row once "3D Previz" replaces it
+Replace the current 6-column table (Category / Line Item / Qty / Unit / Rate / Total) with a rate-card-style row list grouped by category. This is what fixes the "description doesn't read well" complaint — descriptions get the full row width instead of being squeezed under a narrow Line Item cell.
 
-### 5. Category headers
-Upsert three rows in `line_item_categories` with `sort_order` 0/1/2 so the admin item picker and future rate-card RPCs render them in the same order: `Soleia Creative Package`, `Additional Options`, `Video Mapping & Load Fees`.
+Each service row (desktop):
 
-## Technical notes
-- Data-only change: one `supabase--insert` call for the UPDATE/INSERT/DELETE statements on `line_item_templates` and `line_item_categories`. No migration, no schema change, no code change.
-- The existing `get_rate_card_addons()` RPC filter (`title NOT ILIKE '%Immersive LED Environments%'`) still excludes the package from the addons list — no adjustment needed.
-- Existing proposals and the `/rate-card` page are untouched.
+```text
+[✓]  Title                                         Qty −1+     $Rate     $Total
+     Full-width description reads across the row, not a
+     narrow column. Soft-ink, 12px, comfortable leading.
+```
 
-## Out of scope
-- Restyling `ProposalView` / proposal PDF to the rate-card layout.
-- Backfilling any existing proposal (drafts included).
+- Category becomes a rate-card section header (`SectionLabel`) above its group, not a repeated column.
+- Title on its own line, full-width description below it (same pattern as `ServiceRow` in RateCard.tsx), so long copy like the 3D Previz paragraph flows naturally.
+- Qty stepper, rate, and total sit on the right in a fixed strip; the description never gets squeezed by them.
+- Selection checkbox stays on the left; row click still toggles selection.
+- Mobile: stacks (title + description, then a right-aligned qty/price row) — same responsive pattern as the rate card.
+
+Signed / admin views hide the checkbox and qty stepper exactly like today.
+
+### 3. Totals + supporting sections restyled to match
+
+- "Proposal Total" band → ivory card with gold left rule and gold-deep eyebrow (matches rate-card featured package styling).
+- Timeline / Terms / Approved-clips / Gallery section headers reuse the same eyebrow + hairline treatment.
+- Signature panel keeps its green "accepted" tone but sits inside the ivory sheet.
+
+### 4. Out of scope
+
+- No PDF changes.
+- No admin-edit UI restyle (admin edit mode keeps current shadcn inputs).
+- No changes to `src/pages/RateCard.tsx`, DB, RPCs, or line-item content.
+
+## Files touched
+
+- `src/components/proposal/ProposalView.tsx` — scoped ivory theme wrapper, new service-row layout, restyled eyebrows/callouts/total band.
+- Possibly a small new `src/components/proposal/ProposalServiceRow.tsx` to keep `ProposalView.tsx` from bloating.
+- `src/components/proposal/ProposalTimeline.tsx`, `ProposalTerms.tsx`, `ProposalApprovedClips.tsx` — light restyle so their section headers/borders match the eyebrow pattern.
+
+## How to verify
+
+- Load an existing proposal (`/proposal/<token>`) as client: ivory sheet, gold accents, descriptions read full-width, qty stepper still works, sign flow still works.
+- Load same proposal as admin (`?edit=true`): edit buttons still appear, edit mode still functions.
+- Signed proposal: no checkboxes/stepper, totals match, "Signed" state visible.
+- PDF download unchanged.

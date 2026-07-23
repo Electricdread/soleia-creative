@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus, ListChecks, BookOpen, FolderOpen, Calendar, Loader2 } from 'lucide-react';
 import { generateProposalPdf } from '@/lib/proposalPdfGenerator';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
@@ -19,6 +18,21 @@ import ProposalApprovedClips from './ProposalApprovedClips';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
 import { calcProposalTotal, calcLineTotal as calcLineTotalShared } from '@/lib/proposalTotals';
+import ProposalServiceRow, {
+  RC_IVORY, RC_GOLD, RC_GOLD_DEEP, RC_GOLD_TINT, RC_INK, RC_SOFT_INK,
+} from './ProposalServiceRow';
+
+// Section eyebrow used across the ivory sheet — mirrors the rate card.
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 mt-10 mb-4">
+      <span className="text-[10px] tracking-[0.35em] uppercase" style={{ color: RC_GOLD_DEEP }}>
+        {children}
+      </span>
+      <span className="flex-1" style={{ height: 1, backgroundColor: `${RC_GOLD}55` }} />
+    </div>
+  );
+}
 
 
 interface ProposalViewProps {
@@ -443,26 +457,29 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const additionalServicesLabel = 'Services';
 
   return (
-    <div className="min-h-screen bg-surface panel-base">
-      <div className="max-w-3xl mx-auto px-6 py-10">
+    <div className="min-h-screen w-full py-6 sm:py-10 px-3 sm:px-6" style={{ backgroundColor: RC_IVORY }}>
+      <div
+        className="max-w-3xl mx-auto relative p-5 sm:p-10"
+        style={{ backgroundColor: RC_IVORY, border: `1px solid ${RC_GOLD}` }}
+      >
+        <div
+          className="absolute inset-2 pointer-events-none hidden sm:block"
+          style={{ border: `1px solid ${RC_GOLD}`, opacity: 0.45 }}
+        />
         {/* Header */}
-        <header className="flex items-center justify-between mb-10">
-          <img src={soleiaLogo} alt="Soleia" className="h-10 object-contain" />
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase print:hidden">
-              Soleia Creative Team
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadPdf}
-              disabled={downloadingPdf}
-              className="print:hidden gap-2 text-muted-foreground border-border hover:bg-background"
-            >
-              {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-              {downloadingPdf ? 'Preparing PDF' : 'Download PDF'}
-            </Button>
-          </div>
+        <header className="flex items-center justify-between mb-8 relative">
+          <img src={soleiaLogo} alt="Soleia" className="h-10 object-contain" style={{ filter: 'brightness(0.15) sepia(1) saturate(6) hue-rotate(5deg)' }} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            className="print:hidden gap-2 bg-transparent"
+            style={{ borderColor: RC_GOLD, color: RC_GOLD_DEEP }}
+          >
+            {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+            {downloadingPdf ? 'Preparing PDF' : 'Download PDF'}
+          </Button>
         </header>
 
         {/* Event Title & Info */}
@@ -548,29 +565,34 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             </div>
           </div>
         ) : (
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 gap-4">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] tracking-[0.25em] uppercase text-primary font-bold mb-2">
+              <p className="text-[10px] tracking-[0.35em] uppercase font-semibold mb-3" style={{ color: RC_GOLD_DEEP }}>
                 Proposal
               </p>
               <div className="flex items-center gap-2">
-                <h1 className="font-display text-4xl font-light text-foreground mb-1">{proposal.event_name}</h1>
+                <h1 className="font-display font-light" style={{ color: RC_INK, fontSize: 36, lineHeight: 1.1 }}>
+                  {proposal.event_name}
+                </h1>
                 {isAdmin && (
-                  <button onClick={() => setEditingHeader(true)} className="text-muted-foreground/80 hover:text-foreground transition-colors">
+                  <button onClick={() => setEditingHeader(true)} className="transition-colors" style={{ color: RC_SOFT_INK }}>
                     <Pencil className="w-4 h-4" />
                   </button>
                 )}
               </div>
-              <p className="text-muted-foreground">
-                Prepared for <span className="font-medium text-foreground">{proposal.client_name}</span>
+              <p className="mt-2" style={{ color: RC_SOFT_INK }}>
+                Prepared for <span className="font-medium" style={{ color: RC_INK }}>{proposal.client_name}</span>
               </p>
               {proposal.venue_name && (
-                <p className="text-muted-foreground/80 text-sm">at {proposal.venue_name}</p>
+                <p className="text-sm" style={{ color: RC_SOFT_INK }}>at {proposal.venue_name}</p>
               )}
               {eventDate && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {(signed || isProposalClosed(proposal)) ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    <span
+                      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+                      style={{ backgroundColor: '#e6f4ea', color: '#276a3a', border: '1px solid #b9dcc4' }}
+                    >
                       <Check className="w-3.5 h-3.5" />
                       Signed · Ready for invoice
                     </span>
@@ -583,8 +605,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             <div className="text-left sm:text-right text-sm space-y-1 shrink-0">
               {eventDate && (
                 <div>
-                  <span className="block text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Event Date</span>
-                  <span className="text-foreground font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
+                  <span className="block text-[10px] tracking-[0.3em] uppercase font-semibold" style={{ color: RC_GOLD_DEEP }}>Event Date</span>
+                  <span className="font-medium" style={{ color: RC_INK }}>{format(eventDate, 'EEE, MMM d, yyyy')}</span>
                 </div>
               )}
             </div>
@@ -594,22 +616,27 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Venue contract inclusions disclaimer */}
         {!editingItems && (
-          <div className="mb-6 rounded-lg border border-border bg-muted/40 border-l-2 border-l-primary px-4 py-3">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-primary font-semibold mb-2">
+          <div
+            className="mb-2 rounded-sm px-4 py-3.5"
+            style={{
+              backgroundColor: `${RC_GOLD_TINT}88`,
+              border: `1px solid ${RC_GOLD}66`,
+              borderLeft: `3px solid ${RC_GOLD}`,
+            }}
+          >
+            <p className="text-[10px] tracking-[0.3em] uppercase font-semibold mb-2" style={{ color: RC_GOLD_DEEP }}>
               Included in your venue contract
             </p>
-            <ul className="text-xs text-muted-foreground space-y-1">
+            <ul className="text-[12.5px] space-y-1" style={{ color: RC_INK }}>
               <li>• Up to 10 static logos — LED screens</li>
-              <li>• 1 static logo — all TVs, Cabanas & Bungalows</li>
+              <li>• 1 static logo — all TVs, Cabanas &amp; Bungalows</li>
             </ul>
           </div>
         )}
 
         {/* Section label for the menu of optional services */}
         {!editingItems && tableItems.length > 0 && (
-          <p className="text-[10px] tracking-[0.25em] uppercase text-primary font-semibold mb-3">
-            {additionalServicesLabel}
-          </p>
+          <SectionLabel>{additionalServicesLabel}</SectionLabel>
         )}
 
 
@@ -766,199 +793,66 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 </div>
               )
             ) : tableItems.length === 0 ? null : (
-            <>
-            {/* Desktop Table - hidden on mobile */}
-            <div className="hidden sm:block bg-card rounded-lg border border-border shadow-card overflow-hidden card-elevated">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-background border-b border-border">
-                    {!signed && !isAdmin && <TableHead className="w-10" />}
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Category</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Line Item</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-center w-16">Qty</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold w-24">Unit</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-right w-24">Rate</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-right w-28">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(() => {
-                    let lastCategory = '';
-                    return tableItems.map(item => {
-                      const showCategory = item.category && item.category !== lastCategory;
-                      if (item.category) lastCategory = item.category;
-                      const lineTotal = calcLineTotal(item);
-                      const isFlatFee = !!item.is_flat_fee;
-                      return (
-                        <TableRow
-                          key={item.id}
-                          className="border-b border-border/60 hover:bg-muted/40 cursor-pointer transition-colors"
-                          onClick={(event) => handleItemRowClick(event, item.id)}
-                        >
-                          {!signed && !isAdmin && (
-                            <TableCell className="pr-0" onClick={e => e.stopPropagation()}>
-                              <Checkbox
-                                checked={selectedIds.has(item.id)}
-                                aria-label={`Select ${item.title}`}
-                                onCheckedChange={(checked) => setItemSelected(item.id, checked === true)}
-                                onClick={handleCheckboxClick}
-                                onPointerDown={(event) => event.stopPropagation()}
-                              />
-                            </TableCell>
-                          )}
-                          <TableCell className="text-sm text-muted-foreground font-medium align-top">
-                            {showCategory ? item.category : ''}
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <div className="text-sm font-semibold text-foreground">{item.title}</div>
-                            {item.description && (
-                              <p className="text-xs text-muted-foreground/80 mt-0.5 whitespace-pre-line">{item.description}</p>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-sm text-foreground text-center align-top" onClick={e => e.stopPropagation()}>
-                            {isFlatFee ? '—' : (
-                              isClientEditable ? (
-                                <div className="inline-flex items-center gap-1.5">
-                                  <button
-                                    type="button"
-                                    onClick={() => adjustQty(item.id, -1)}
-                                    disabled={getEffectiveQty(item) <= 1}
-                                    aria-label="Decrease quantity"
-                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
-                                  >
-                                    <Minus className="w-3 h-3" />
-                                  </button>
-                                  <span className="min-w-[1.5rem] text-center font-semibold tabular-nums">{getEffectiveQty(item)}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => adjustQty(item.id, 1)}
-                                    aria-label="Increase quantity"
-                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
-                                  >
-                                    <Plus className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              ) : (item.quantity || 1)
-                            )}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground align-top">
-                            {isFlatFee ? 'Flat Fee' : (item.unit || '—')}
-                          </TableCell>
-                          <TableCell className="text-sm text-foreground text-right align-top">
-                            {isFlatFee ? '—' : formatCurrency(Number(item.price))}
-                          </TableCell>
-                          <TableCell className="text-sm font-semibold text-foreground text-right align-top">{formatCurrency(lineTotal)}</TableCell>
-                        </TableRow>
+              <div>
+                {(() => {
+                  let lastCategory = '';
+                  const nodes: React.ReactNode[] = [];
+                  tableItems.forEach((item) => {
+                    const showCategory = item.category && item.category !== lastCategory;
+                    if (item.category) lastCategory = item.category;
+                    if (showCategory) {
+                      nodes.push(
+                        <SectionLabel key={`cat-${item.category}`}>{item.category}</SectionLabel>
                       );
-                    });
-                  })()}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Mobile Card Layout - shown only on mobile */}
-            <div className="sm:hidden space-y-3">
-              {(() => {
-                let lastCategory = '';
-                return tableItems.map(item => {
-                  const showCategory = item.category && item.category !== lastCategory;
-                  if (item.category) lastCategory = item.category;
-                  const lineTotal = calcLineTotal(item);
-                  const isFlatFee = !!item.is_flat_fee;
-                  return (
-                    <div key={item.id}>
-                      {showCategory && (
-                        <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold mt-4 mb-2 px-1">
-                          {item.category}
-                        </div>
-                      )}
-                      <div
-                        className={`bg-background rounded-xl border p-4 transition-colors touch-manipulation active:scale-[0.98] ${
-                          selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-border'
-                        }`}
-                        onClick={(event) => handleItemRowClick(event, item.id)}
-                      >
-                        <div className="flex items-start gap-3">
-                          {!signed && !isAdmin && (
-                            <div className="pt-0.5" onClick={e => e.stopPropagation()}>
-                              <Checkbox
-                                checked={selectedIds.has(item.id)}
-                                aria-label={`Select ${item.title}`}
-                                onCheckedChange={(checked) => setItemSelected(item.id, checked === true)}
-                                onClick={handleCheckboxClick}
-                                onPointerDown={(event) => event.stopPropagation()}
-                                className="w-5 h-5"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-[15px] font-semibold text-foreground leading-snug">{item.title}</h3>
-                            {item.description && (
-                              <p className="text-[13px] text-muted-foreground/80 mt-1.5 whitespace-pre-line leading-relaxed">{item.description}</p>
-                            )}
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/60">
-                              <div className="flex items-center gap-3 text-[12px] text-muted-foreground flex-wrap">
-                                {!isFlatFee && (
-                                  <>
-                                    {isClientEditable ? (
-                                      <div className="inline-flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                        <span className="text-muted-foreground">Qty:</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => adjustQty(item.id, -1)}
-                                          disabled={getEffectiveQty(item) <= 1}
-                                          aria-label="Decrease quantity"
-                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
-                                        >
-                                          <Minus className="w-3.5 h-3.5" />
-                                        </button>
-                                        <span className="min-w-[1.5rem] text-center text-foreground font-semibold tabular-nums">{getEffectiveQty(item)}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => adjustQty(item.id, 1)}
-                                          aria-label="Increase quantity"
-                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
-                                        >
-                                          <Plus className="w-3.5 h-3.5" />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <span>Qty: <span className="text-foreground font-medium">{item.quantity || 1}</span></span>
-                                    )}
-                                    {item.unit && <span>• {item.unit}</span>}
-                                    <span>@ {formatCurrency(Number(item.price))}</span>
-                                  </>
-                                )}
-                                {isFlatFee && <span className="text-muted-foreground">Flat Fee</span>}
-                              </div>
-                              <span className="text-[15px] font-bold text-foreground">{formatCurrency(lineTotal)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-            </>
+                    }
+                    nodes.push(
+                      <ProposalServiceRow
+                        key={item.id}
+                        item={item}
+                        lineTotal={calcLineTotal(item)}
+                        qty={getEffectiveQty(item)}
+                        selected={selectedIds.has(item.id)}
+                        signed={signed}
+                        isAdmin={isAdmin}
+                        clientEditable={isClientEditable}
+                        onToggle={toggleItem}
+                        onAdjustQty={adjustQty}
+                        onRowClick={handleItemRowClick}
+                      />
+                    );
+                  });
+                  return nodes;
+                })()}
+              </div>
             )}
           </div>
         )}
 
         {/* Total */}
-        <div className="bg-card rounded-lg p-5 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 mb-4 flex items-center justify-between card-elevated">
-          <span className="text-muted-foreground font-medium">Total</span>
-          <span className="text-2xl font-bold text-foreground">{formatCurrency(displayedTotal)}</span>
+        <div
+          className="rounded-sm p-5 mb-6 flex items-center justify-between"
+          style={{ backgroundColor: RC_GOLD_TINT, border: `1px solid ${RC_GOLD}`, borderLeft: `4px solid ${RC_GOLD}` }}
+        >
+          <div>
+            <div className="text-[10px] tracking-[0.3em] uppercase" style={{ color: RC_GOLD_DEEP }}>
+              {signed ? 'Accepted Total' : 'Proposal Total'}
+            </div>
+          </div>
+          <span className="font-display text-[28px]" style={{ color: RC_INK, lineHeight: 1 }}>
+            {formatCurrency(displayedTotal)}
+          </span>
         </div>
 
         {/* Sign Section */}
         {!isAdmin && !signed && proposal.status !== 'sent' && proposal.status !== 'draft' ? (
-          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-lg p-6 mb-12 card-elevated">
-            <p className="text-amber-900 dark:text-amber-200 font-semibold mb-2">
+          <div
+            className="rounded-sm p-6 mb-12"
+            style={{ backgroundColor: '#fdf6e3', border: `1px solid #d4a24c` }}
+          >
+            <p className="font-semibold mb-2" style={{ color: '#8a5a12' }}>
               This proposal is currently closed for signing
             </p>
-            <p className="text-amber-800 dark:text-amber-300 text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: '#7a5c2c' }}>
               It has been archived or withdrawn and can't be accepted in its current state.
               Please reply to your Soleia contact (or email{' '}
               <a href="mailto:luisdreamslv@gmail.com" className="underline font-medium">
@@ -969,35 +863,46 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             </p>
           </div>
         ) : !isAdmin && !signed ? (
-          <div className="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 mb-12 card-elevated">
+          <div
+            className="rounded-sm p-6 mb-12"
+            style={{ backgroundColor: '#ffffff', border: `1px solid ${RC_GOLD}66` }}
+          >
+            <div className="text-[10px] tracking-[0.3em] uppercase mb-3" style={{ color: RC_GOLD_DEEP }}>
+              Accept &amp; Sign
+            </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
                 placeholder="Your full name"
                 value={clientName}
                 onChange={e => setClientName(e.target.value)}
-                className="flex-1"
+                className="flex-1 bg-white"
+                style={{ borderColor: `${RC_GOLD}66`, color: RC_INK }}
               />
               <Button
                 onClick={handleSign}
                 disabled={signing || selectedIds.size === 0}
-                className="bg-primary hover:bg-primary/90 text-foreground px-8"
+                className="px-8 tracking-[0.15em] uppercase text-xs"
+                style={{ backgroundColor: RC_GOLD, color: '#fff' }}
               >
-                {signing ? 'Signing...' : 'Accept & Sign Proposal'}
+                {signing ? 'Signing…' : 'Accept & Sign Proposal'}
               </Button>
             </div>
             {selectedIds.size === 0 && (
-              <p className="text-muted-foreground text-xs mt-3">
+              <p className="text-xs mt-3" style={{ color: RC_SOFT_INK }}>
                 Select at least one line item above to enable signing.
               </p>
             )}
           </div>
         ) : signed ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-5 mb-12 text-center">
-            <p className="text-green-700 font-medium">
+          <div
+            className="rounded-sm p-5 mb-12 text-center"
+            style={{ backgroundColor: '#f0f8f2', border: '1px solid #b9dcc4' }}
+          >
+            <p className="font-medium" style={{ color: '#276a3a' }}>
               ✓ Proposal accepted by {proposal.client_signature}
             </p>
             {proposal.signed_at && (
-              <p className="text-green-600 text-sm mt-1">
+              <p className="text-sm mt-1" style={{ color: '#4f8a63' }}>
                 Signed on {format(new Date(proposal.signed_at), 'MMMM d, yyyy')}
               </p>
             )}
@@ -1020,23 +925,26 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Kickoff Conditions */}
         <section className="mb-12">
-          <h2 className="font-display text-xl text-foreground mb-4 border-b border-border pb-2">Kickoff Conditions</h2>
-          <div className="bg-card rounded-lg p-5 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 card-elevated">
-            <p className="text-sm text-foreground/90">
+          <SectionLabel>Kickoff Conditions</SectionLabel>
+          <div
+            className="rounded-sm p-5"
+            style={{ backgroundColor: `${RC_GOLD_TINT}66`, border: `1px solid ${RC_GOLD}55`, borderLeft: `3px solid ${RC_GOLD}` }}
+          >
+            <p className="text-[13px]" style={{ color: RC_INK }}>
               Production begins only once <strong>both</strong> conditions are met: the proposal is signed off and all client brand assets have been delivered.
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              From kickoff: <strong>14 days</strong> to deliver the first review &middot; <strong>3 days</strong> for client review &middot; <strong>1</strong> included revision &middot; final notes due <strong>no later than 4 days before the event</strong>.
+            <p className="text-[12.5px] mt-2" style={{ color: RC_SOFT_INK }}>
+              From kickoff: <strong style={{ color: RC_INK }}>14 days</strong> to deliver the first review &middot; <strong style={{ color: RC_INK }}>3 days</strong> for client review &middot; <strong style={{ color: RC_INK }}>1</strong> included revision &middot; final notes due <strong style={{ color: RC_INK }}>no later than 4 days before the event</strong>.
             </p>
           </div>
         </section>
 
         {/* Contact */}
         <section className="mb-12">
-          <h2 className="font-display text-xl text-foreground mb-4 border-b border-border pb-2">Contact</h2>
-          <p className="text-sm text-foreground/90">
+          <SectionLabel>Contact</SectionLabel>
+          <p className="text-[13px]" style={{ color: RC_INK }}>
             For any questions, please contact us at{' '}
-            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="text-primary underline">
+            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="underline" style={{ color: RC_GOLD_DEEP }}>
               {proposal.contact_email || 'luisdreamslv@gmail.com'}
             </a>
           </p>
@@ -1046,8 +954,10 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         <ProposalTerms />
 
         {/* Footer */}
-        <footer className="text-center pt-8 pb-12 border-t border-border">
-          <img src={soleiaLogo} alt="Soleia" className="h-8 mx-auto opacity-40" />
+        <footer className="text-center pt-8 pb-4 mt-6" style={{ borderTop: `1px solid ${RC_GOLD}44` }}>
+          <div className="text-[10px] tracking-[0.45em]" style={{ color: RC_GOLD_DEEP }}>
+            SOLEIA LAS VEGAS
+          </div>
         </footer>
       </div>
     </div>
