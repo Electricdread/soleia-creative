@@ -780,182 +780,37 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                 </div>
               )
             ) : tableItems.length === 0 ? null : (
-            <>
-            {/* Desktop Table - hidden on mobile */}
-            <div className="hidden sm:block bg-card rounded-lg border border-border shadow-card overflow-hidden card-elevated">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-background border-b border-border">
-                    {!signed && !isAdmin && <TableHead className="w-10" />}
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Category</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Line Item</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-center w-16">Qty</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold w-24">Unit</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-right w-24">Rate</TableHead>
-                    <TableHead className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold text-right w-28">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(() => {
-                    let lastCategory = '';
-                    return tableItems.map(item => {
-                      const showCategory = item.category && item.category !== lastCategory;
-                      if (item.category) lastCategory = item.category;
-                      const lineTotal = calcLineTotal(item);
-                      const isFlatFee = !!item.is_flat_fee;
-                      return (
-                        <TableRow
-                          key={item.id}
-                          className="border-b border-border/60 hover:bg-muted/40 cursor-pointer transition-colors"
-                          onClick={(event) => handleItemRowClick(event, item.id)}
-                        >
-                          {!signed && !isAdmin && (
-                            <TableCell className="pr-0" onClick={e => e.stopPropagation()}>
-                              <Checkbox
-                                checked={selectedIds.has(item.id)}
-                                aria-label={`Select ${item.title}`}
-                                onCheckedChange={(checked) => setItemSelected(item.id, checked === true)}
-                                onClick={handleCheckboxClick}
-                                onPointerDown={(event) => event.stopPropagation()}
-                              />
-                            </TableCell>
-                          )}
-                          <TableCell className="text-sm text-muted-foreground font-medium align-top">
-                            {showCategory ? item.category : ''}
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <div className="text-sm font-semibold text-foreground">{item.title}</div>
-                            {item.description && (
-                              <p className="text-xs text-muted-foreground/80 mt-0.5 whitespace-pre-line">{item.description}</p>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-sm text-foreground text-center align-top" onClick={e => e.stopPropagation()}>
-                            {isFlatFee ? '—' : (
-                              isClientEditable ? (
-                                <div className="inline-flex items-center gap-1.5">
-                                  <button
-                                    type="button"
-                                    onClick={() => adjustQty(item.id, -1)}
-                                    disabled={getEffectiveQty(item) <= 1}
-                                    aria-label="Decrease quantity"
-                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
-                                  >
-                                    <Minus className="w-3 h-3" />
-                                  </button>
-                                  <span className="min-w-[1.5rem] text-center font-semibold tabular-nums">{getEffectiveQty(item)}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => adjustQty(item.id, 1)}
-                                    aria-label="Increase quantity"
-                                    className="w-7 h-7 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation"
-                                  >
-                                    <Plus className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              ) : (item.quantity || 1)
-                            )}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground align-top">
-                            {isFlatFee ? 'Flat Fee' : (item.unit || '—')}
-                          </TableCell>
-                          <TableCell className="text-sm text-foreground text-right align-top">
-                            {isFlatFee ? '—' : formatCurrency(Number(item.price))}
-                          </TableCell>
-                          <TableCell className="text-sm font-semibold text-foreground text-right align-top">{formatCurrency(lineTotal)}</TableCell>
-                        </TableRow>
+              <div>
+                {(() => {
+                  let lastCategory = '';
+                  const nodes: React.ReactNode[] = [];
+                  tableItems.forEach((item) => {
+                    const showCategory = item.category && item.category !== lastCategory;
+                    if (item.category) lastCategory = item.category;
+                    if (showCategory) {
+                      nodes.push(
+                        <SectionLabel key={`cat-${item.category}`}>{item.category}</SectionLabel>
                       );
-                    });
-                  })()}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Mobile Card Layout - shown only on mobile */}
-            <div className="sm:hidden space-y-3">
-              {(() => {
-                let lastCategory = '';
-                return tableItems.map(item => {
-                  const showCategory = item.category && item.category !== lastCategory;
-                  if (item.category) lastCategory = item.category;
-                  const lineTotal = calcLineTotal(item);
-                  const isFlatFee = !!item.is_flat_fee;
-                  return (
-                    <div key={item.id}>
-                      {showCategory && (
-                        <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold mt-4 mb-2 px-1">
-                          {item.category}
-                        </div>
-                      )}
-                      <div
-                        className={`bg-background rounded-xl border p-4 transition-colors touch-manipulation active:scale-[0.98] ${
-                          selectedIds.has(item.id) ? 'border-primary bg-primary/5' : 'border-border'
-                        }`}
-                        onClick={(event) => handleItemRowClick(event, item.id)}
-                      >
-                        <div className="flex items-start gap-3">
-                          {!signed && !isAdmin && (
-                            <div className="pt-0.5" onClick={e => e.stopPropagation()}>
-                              <Checkbox
-                                checked={selectedIds.has(item.id)}
-                                aria-label={`Select ${item.title}`}
-                                onCheckedChange={(checked) => setItemSelected(item.id, checked === true)}
-                                onClick={handleCheckboxClick}
-                                onPointerDown={(event) => event.stopPropagation()}
-                                className="w-5 h-5"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-[15px] font-semibold text-foreground leading-snug">{item.title}</h3>
-                            {item.description && (
-                              <p className="text-[13px] text-muted-foreground/80 mt-1.5 whitespace-pre-line leading-relaxed">{item.description}</p>
-                            )}
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/60">
-                              <div className="flex items-center gap-3 text-[12px] text-muted-foreground flex-wrap">
-                                {!isFlatFee && (
-                                  <>
-                                    {isClientEditable ? (
-                                      <div className="inline-flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                        <span className="text-muted-foreground">Qty:</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => adjustQty(item.id, -1)}
-                                          disabled={getEffectiveQty(item) <= 1}
-                                          aria-label="Decrease quantity"
-                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
-                                        >
-                                          <Minus className="w-3.5 h-3.5" />
-                                        </button>
-                                        <span className="min-w-[1.5rem] text-center text-foreground font-semibold tabular-nums">{getEffectiveQty(item)}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() => adjustQty(item.id, 1)}
-                                          aria-label="Increase quantity"
-                                          className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:bg-background hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors touch-manipulation active:scale-95"
-                                        >
-                                          <Plus className="w-3.5 h-3.5" />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <span>Qty: <span className="text-foreground font-medium">{item.quantity || 1}</span></span>
-                                    )}
-                                    {item.unit && <span>• {item.unit}</span>}
-                                    <span>@ {formatCurrency(Number(item.price))}</span>
-                                  </>
-                                )}
-                                {isFlatFee && <span className="text-muted-foreground">Flat Fee</span>}
-                              </div>
-                              <span className="text-[15px] font-bold text-foreground">{formatCurrency(lineTotal)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-            </>
+                    }
+                    nodes.push(
+                      <ProposalServiceRow
+                        key={item.id}
+                        item={item}
+                        lineTotal={calcLineTotal(item)}
+                        qty={getEffectiveQty(item)}
+                        selected={selectedIds.has(item.id)}
+                        signed={signed}
+                        isAdmin={isAdmin}
+                        clientEditable={isClientEditable}
+                        onToggle={toggleItem}
+                        onAdjustQty={adjustQty}
+                        onRowClick={handleItemRowClick}
+                      />
+                    );
+                  });
+                  return nodes;
+                })()}
+              </div>
             )}
           </div>
         )}
