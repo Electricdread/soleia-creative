@@ -1583,10 +1583,85 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      delete_session_upload_by_token: {
+        Args: { p_token: string; p_upload_id: string }
+        Returns: boolean
+      }
       email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_client_link_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          client_name: string
+          created_at: string
+          event_date: string | null
+          event_name: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          is_public: boolean
+          token: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "client_links"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_lookbook_share_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          category_id: string | null
+          clip_ids: string[] | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          intro_note: string | null
+          is_active: boolean
+          title: string
+          token: string
+          updated_at: string
+          view_count: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "lookbook_shares"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_packet_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          client_name: string | null
+          created_at: string
+          created_by: string | null
+          creative_guide_url: string | null
+          drive_folder_id: string | null
+          drive_folder_url: string | null
+          event_date: string | null
+          id: string
+          inclusions: Json
+          intro: string | null
+          is_active: boolean
+          kind: string
+          notes: string | null
+          scope: string | null
+          title: string
+          token: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "pre_call_packets"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_proposal_by_token: {
         Args: { p_token: string }
@@ -1625,6 +1700,64 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_proposal_gallery_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          proposal_id: string
+          sort_order: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "proposal_gallery"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_proposal_items_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          category: string | null
+          client_selected: boolean
+          created_at: string
+          description: string | null
+          id: string
+          is_flat_fee: boolean
+          price: number
+          proposal_id: string
+          quantity: number
+          sort_order: number | null
+          title: string
+          unit: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "proposal_items"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_proposal_timeline_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          created_at: string
+          details: string | null
+          duration: string
+          id: string
+          phase: string
+          proposal_id: string
+          sort_order: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "proposal_timeline"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_rate_card_addons: {
         Args: never
         Returns: {
@@ -1657,6 +1790,7 @@ export type Database = {
         Args: { p_token: string }
         Returns: undefined
       }
+      is_active_link: { Args: { p_link_id: string }; Returns: boolean }
       is_active_public_proposal: {
         Args: { p_proposal_id: string }
         Returns: boolean
