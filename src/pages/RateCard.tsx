@@ -229,9 +229,6 @@ export default function RateCard() {
 
             </div>
             <div className="flex items-end justify-between sm:block sm:text-right sm:shrink-0 gap-4">
-              <div className="text-[10px] tracking-[0.25em] pt-1" style={{ color: SOFT_INK }}>
-                1 × Unit
-              </div>
               <div className="text-right">
                 <div className="text-[10px] tracking-[0.3em]" style={{ color: GOLD_DEEP }}>
                   STARTING AT
