@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Printer, FileVideo, Boxes } from 'lucide-react';
+import { Menu, X, Printer, FileVideo, Boxes, Compass, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
@@ -8,11 +8,12 @@ import { Reveal } from '@/components/motion/Reveal';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import solIcon from '@/assets/sol-icon.png';
 
-
+const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
 
 const NAV_LINKS: { label: string; href?: string; to?: string }[] = [
   { href: '#venue', label: 'Venue' },
   { href: '#layout', label: 'Layout' },
+  { href: '#tour', label: '360° Tour' },
   { to: '/creative-guide/video-mapping', label: 'Video Mapping' },
   { href: '#branding', label: 'Branding' },
   { href: '#specs', label: 'Specs' },
@@ -49,6 +50,13 @@ const ZONE_GROUPS = [
   },
 ];
 
+
+const LAYOUT_STATS: [string, string][] = [
+  ['15', 'Cabanas'],
+  ['9', 'Bungalows'],
+  ['2', 'Mezzanine Levels'],
+  ['30+', 'Display Zones'],
+];
 
 const WORLDS = [
   {
@@ -228,6 +236,16 @@ const CreativeGuideView = () => {
             <InteractiveVenueMap />
           </Reveal>
 
+          <Reveal delay={0.05} className="mb-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 border border-primary/15">
+              {LAYOUT_STATS.map(([v, l], i) => (
+                <div key={l} className={`p-5 text-center ${i % 2 === 0 ? 'border-r border-primary/15' : ''} ${i < 2 ? 'border-b border-primary/15 md:border-b-0' : ''} ${i === 1 ? 'md:border-r' : ''} ${i === 2 ? 'md:border-r' : ''}`}>
+                  <div className="font-display text-2xl sm:text-3xl text-gradient-gold leading-none">{v}</div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{l}</div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
 
           <div className="grid gap-4 md:grid-cols-3">
             {WORLDS.map((w, i) => (
@@ -242,6 +260,46 @@ const CreativeGuideView = () => {
           </div>
         </div>
       </section>
+
+      {/* 03 — 360 TOUR */}
+      <section id="tour" className="py-24 scroll-mt-20">
+        <div className="container mx-auto max-w-5xl px-6">
+          <SectionHead eyebrow="03 — Soleia 360° Tour" title="Step inside." />
+          <Reveal>
+            <div className="relative rounded-3xl surface-elevated border border-primary/15 bg-black overflow-hidden">
+              <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-10 pointer-events-none" />
+              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 z-10 pointer-events-none" />
+              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 z-10 pointer-events-none" />
+              <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 z-10 pointer-events-none" />
+              <div className="aspect-video w-full">
+                <iframe
+                  src={TOUR_360_URL}
+                  title="SOLEIA Las Vegas — 360° Virtual Tour"
+                  className="w-full h-full border-0"
+                  allow="fullscreen; accelerometer; gyroscope; xr-spatial-tracking"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={0.05} className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-muted-foreground max-w-3xl flex items-start gap-2">
+              <Compass className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <span>
+                Click and drag to explore — Dance Floor, Celebrity 1 & 2, the Rotunda, the 800s, the 200s/300s/400s, plus the beachclub, cabanas and Strip bars. Tour by Invision Studio.
+              </span>
+            </p>
+            <Button variant="outline" size="sm" asChild className="gap-2 border-primary/30 text-primary hover:bg-primary/10 shrink-0">
+              <a href={TOUR_360_URL} target="_blank" rel="noopener noreferrer">
+                <Maximize2 className="w-4 h-4" />
+                Open fullscreen
+              </a>
+            </Button>
+          </Reveal>
+        </div>
+      </section>
+
+
 
 
       {/* 05 — BUYOUT INCLUSIONS */}
