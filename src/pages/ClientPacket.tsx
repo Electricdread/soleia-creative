@@ -38,12 +38,9 @@ export default function ClientPacket() {
         setLoading(false);
         return;
       }
-      const { data, error } = await supabase
-        .from('pre_call_packets')
-        .select('title, client_name, event_date, intro, inclusions, scope, creative_guide_url, drive_folder_url, kind')
-        .eq('token', token)
-        .eq('is_active', true)
-        .maybeSingle();
+      const { data: rows, error } = await supabase
+        .rpc('get_packet_by_token', { p_token: token });
+      const data: any = Array.isArray(rows) ? rows[0] : rows;
       if (error || !data) {
         setNotFound(true);
       } else {

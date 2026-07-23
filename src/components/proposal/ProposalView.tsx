@@ -216,9 +216,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       (async () => {
         try {
           const [itemsRes, galleryRes, timelineRes] = await Promise.all([
-            supabase.from('proposal_items').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
-            supabase.from('proposal_gallery').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
-            supabase.from('proposal_timeline').select('*').eq('proposal_id', proposal.id).order('sort_order', { ascending: true, nullsFirst: false }),
+            supabase.rpc('get_proposal_items_by_token', { p_token: proposal.token }),
+            supabase.rpc('get_proposal_gallery_by_token', { p_token: proposal.token }),
+            supabase.rpc('get_proposal_timeline_by_token', { p_token: proposal.token }),
           ]);
           const freshItems = itemsRes.data || items;
           const freshGallery = galleryRes.data || gallery;
