@@ -562,29 +562,34 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             </div>
           </div>
         ) : (
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 gap-4">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] tracking-[0.25em] uppercase text-primary font-bold mb-2">
+              <p className="text-[10px] tracking-[0.35em] uppercase font-semibold mb-3" style={{ color: RC_GOLD_DEEP }}>
                 Proposal
               </p>
               <div className="flex items-center gap-2">
-                <h1 className="font-display text-4xl font-light text-foreground mb-1">{proposal.event_name}</h1>
+                <h1 className="font-display font-light" style={{ color: RC_INK, fontSize: 36, lineHeight: 1.1 }}>
+                  {proposal.event_name}
+                </h1>
                 {isAdmin && (
-                  <button onClick={() => setEditingHeader(true)} className="text-muted-foreground/80 hover:text-foreground transition-colors">
+                  <button onClick={() => setEditingHeader(true)} className="transition-colors" style={{ color: RC_SOFT_INK }}>
                     <Pencil className="w-4 h-4" />
                   </button>
                 )}
               </div>
-              <p className="text-muted-foreground">
-                Prepared for <span className="font-medium text-foreground">{proposal.client_name}</span>
+              <p className="mt-2" style={{ color: RC_SOFT_INK }}>
+                Prepared for <span className="font-medium" style={{ color: RC_INK }}>{proposal.client_name}</span>
               </p>
               {proposal.venue_name && (
-                <p className="text-muted-foreground/80 text-sm">at {proposal.venue_name}</p>
+                <p className="text-sm" style={{ color: RC_SOFT_INK }}>at {proposal.venue_name}</p>
               )}
               {eventDate && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {(signed || isProposalClosed(proposal)) ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    <span
+                      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+                      style={{ backgroundColor: '#e6f4ea', color: '#276a3a', border: '1px solid #b9dcc4' }}
+                    >
                       <Check className="w-3.5 h-3.5" />
                       Signed · Ready for invoice
                     </span>
@@ -597,8 +602,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             <div className="text-left sm:text-right text-sm space-y-1 shrink-0">
               {eventDate && (
                 <div>
-                  <span className="block text-[10px] tracking-[0.15em] uppercase text-muted-foreground/80 font-semibold">Event Date</span>
-                  <span className="text-foreground font-medium">{format(eventDate, 'EEE, MMM d, yyyy')}</span>
+                  <span className="block text-[10px] tracking-[0.3em] uppercase font-semibold" style={{ color: RC_GOLD_DEEP }}>Event Date</span>
+                  <span className="font-medium" style={{ color: RC_INK }}>{format(eventDate, 'EEE, MMM d, yyyy')}</span>
                 </div>
               )}
             </div>
