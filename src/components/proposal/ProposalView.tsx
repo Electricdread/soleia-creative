@@ -1034,23 +1034,26 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Kickoff Conditions */}
         <section className="mb-12">
-          <h2 className="font-display text-xl text-foreground mb-4 border-b border-border pb-2">Kickoff Conditions</h2>
-          <div className="bg-card rounded-lg p-5 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 card-elevated">
-            <p className="text-sm text-foreground/90">
+          <SectionLabel>Kickoff Conditions</SectionLabel>
+          <div
+            className="rounded-sm p-5"
+            style={{ backgroundColor: `${RC_GOLD_TINT}66`, border: `1px solid ${RC_GOLD}55`, borderLeft: `3px solid ${RC_GOLD}` }}
+          >
+            <p className="text-[13px]" style={{ color: RC_INK }}>
               Production begins only once <strong>both</strong> conditions are met: the proposal is signed off and all client brand assets have been delivered.
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              From kickoff: <strong>14 days</strong> to deliver the first review &middot; <strong>3 days</strong> for client review &middot; <strong>1</strong> included revision &middot; final notes due <strong>no later than 4 days before the event</strong>.
+            <p className="text-[12.5px] mt-2" style={{ color: RC_SOFT_INK }}>
+              From kickoff: <strong style={{ color: RC_INK }}>14 days</strong> to deliver the first review &middot; <strong style={{ color: RC_INK }}>3 days</strong> for client review &middot; <strong style={{ color: RC_INK }}>1</strong> included revision &middot; final notes due <strong style={{ color: RC_INK }}>no later than 4 days before the event</strong>.
             </p>
           </div>
         </section>
 
         {/* Contact */}
         <section className="mb-12">
-          <h2 className="font-display text-xl text-foreground mb-4 border-b border-border pb-2">Contact</h2>
-          <p className="text-sm text-foreground/90">
+          <SectionLabel>Contact</SectionLabel>
+          <p className="text-[13px]" style={{ color: RC_INK }}>
             For any questions, please contact us at{' '}
-            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="text-primary underline">
+            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="underline" style={{ color: RC_GOLD_DEEP }}>
               {proposal.contact_email || 'luisdreamslv@gmail.com'}
             </a>
           </p>
@@ -1060,8 +1063,10 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         <ProposalTerms />
 
         {/* Footer */}
-        <footer className="text-center pt-8 pb-12 border-t border-border">
-          <img src={soleiaLogo} alt="Soleia" className="h-8 mx-auto opacity-40" />
+        <footer className="text-center pt-8 pb-4 mt-6" style={{ borderTop: `1px solid ${RC_GOLD}44` }}>
+          <div className="text-[10px] tracking-[0.45em]" style={{ color: RC_GOLD_DEEP }}>
+            SOLEIA LAS VEGAS
+          </div>
         </footer>
       </div>
     </div>
