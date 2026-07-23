@@ -961,18 +961,30 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         )}
 
         {/* Total */}
-        <div className="bg-card rounded-lg p-5 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 mb-4 flex items-center justify-between card-elevated">
-          <span className="text-muted-foreground font-medium">Total</span>
-          <span className="text-2xl font-bold text-foreground">{formatCurrency(displayedTotal)}</span>
+        <div
+          className="rounded-sm p-5 mb-6 flex items-center justify-between"
+          style={{ backgroundColor: RC_GOLD_TINT, border: `1px solid ${RC_GOLD}`, borderLeft: `4px solid ${RC_GOLD}` }}
+        >
+          <div>
+            <div className="text-[10px] tracking-[0.3em] uppercase" style={{ color: RC_GOLD_DEEP }}>
+              {signed ? 'Accepted Total' : 'Proposal Total'}
+            </div>
+          </div>
+          <span className="font-display text-[28px]" style={{ color: RC_INK, lineHeight: 1 }}>
+            {formatCurrency(displayedTotal)}
+          </span>
         </div>
 
         {/* Sign Section */}
         {!isAdmin && !signed && proposal.status !== 'sent' && proposal.status !== 'draft' ? (
-          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-lg p-6 mb-12 card-elevated">
-            <p className="text-amber-900 dark:text-amber-200 font-semibold mb-2">
+          <div
+            className="rounded-sm p-6 mb-12"
+            style={{ backgroundColor: '#fdf6e3', border: `1px solid #d4a24c` }}
+          >
+            <p className="font-semibold mb-2" style={{ color: '#8a5a12' }}>
               This proposal is currently closed for signing
             </p>
-            <p className="text-amber-800 dark:text-amber-300 text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: '#7a5c2c' }}>
               It has been archived or withdrawn and can't be accepted in its current state.
               Please reply to your Soleia contact (or email{' '}
               <a href="mailto:luisdreamslv@gmail.com" className="underline font-medium">
@@ -983,35 +995,46 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             </p>
           </div>
         ) : !isAdmin && !signed ? (
-          <div className="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 mb-12 card-elevated">
+          <div
+            className="rounded-sm p-6 mb-12"
+            style={{ backgroundColor: '#ffffff', border: `1px solid ${RC_GOLD}66` }}
+          >
+            <div className="text-[10px] tracking-[0.3em] uppercase mb-3" style={{ color: RC_GOLD_DEEP }}>
+              Accept &amp; Sign
+            </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
                 placeholder="Your full name"
                 value={clientName}
                 onChange={e => setClientName(e.target.value)}
-                className="flex-1"
+                className="flex-1 bg-white"
+                style={{ borderColor: `${RC_GOLD}66`, color: RC_INK }}
               />
               <Button
                 onClick={handleSign}
                 disabled={signing || selectedIds.size === 0}
-                className="bg-primary hover:bg-primary/90 text-foreground px-8"
+                className="px-8 tracking-[0.15em] uppercase text-xs"
+                style={{ backgroundColor: RC_GOLD, color: '#fff' }}
               >
-                {signing ? 'Signing...' : 'Accept & Sign Proposal'}
+                {signing ? 'Signing…' : 'Accept & Sign Proposal'}
               </Button>
             </div>
             {selectedIds.size === 0 && (
-              <p className="text-muted-foreground text-xs mt-3">
+              <p className="text-xs mt-3" style={{ color: RC_SOFT_INK }}>
                 Select at least one line item above to enable signing.
               </p>
             )}
           </div>
         ) : signed ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-5 mb-12 text-center">
-            <p className="text-green-700 font-medium">
+          <div
+            className="rounded-sm p-5 mb-12 text-center"
+            style={{ backgroundColor: '#f0f8f2', border: '1px solid #b9dcc4' }}
+          >
+            <p className="font-medium" style={{ color: '#276a3a' }}>
               ✓ Proposal accepted by {proposal.client_signature}
             </p>
             {proposal.signed_at && (
-              <p className="text-green-600 text-sm mt-1">
+              <p className="text-sm mt-1" style={{ color: '#4f8a63' }}>
                 Signed on {format(new Date(proposal.signed_at), 'MMMM d, yyyy')}
               </p>
             )}
