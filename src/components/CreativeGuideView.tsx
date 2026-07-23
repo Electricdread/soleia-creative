@@ -8,11 +8,12 @@ import { Reveal } from '@/components/motion/Reveal';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import solIcon from '@/assets/sol-icon.png';
 
-
+const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
 
 const NAV_LINKS: { label: string; href?: string; to?: string }[] = [
   { href: '#venue', label: 'Venue' },
   { href: '#layout', label: 'Layout' },
+  { href: '#tour', label: '360° Tour' },
   { to: '/creative-guide/video-mapping', label: 'Video Mapping' },
   { href: '#branding', label: 'Branding' },
   { href: '#specs', label: 'Specs' },
