@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus, ListChecks, BookOpen, FolderOpen, Calendar, Loader2 } from 'lucide-react';
 import { generateProposalPdf } from '@/lib/proposalPdfGenerator';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
@@ -19,6 +18,21 @@ import ProposalApprovedClips from './ProposalApprovedClips';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
 import { calcProposalTotal, calcLineTotal as calcLineTotalShared } from '@/lib/proposalTotals';
+import ProposalServiceRow, {
+  RC_IVORY, RC_GOLD, RC_GOLD_DEEP, RC_GOLD_TINT, RC_INK, RC_SOFT_INK,
+} from './ProposalServiceRow';
+
+// Section eyebrow used across the ivory sheet — mirrors the rate card.
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 mt-10 mb-4">
+      <span className="text-[10px] tracking-[0.35em] uppercase" style={{ color: RC_GOLD_DEEP }}>
+        {children}
+      </span>
+      <span className="flex-1" style={{ height: 1, backgroundColor: `${RC_GOLD}55` }} />
+    </div>
+  );
+}
 
 
 interface ProposalViewProps {
