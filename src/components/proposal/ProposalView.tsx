@@ -457,26 +457,29 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const additionalServicesLabel = 'Services';
 
   return (
-    <div className="min-h-screen bg-surface panel-base">
-      <div className="max-w-3xl mx-auto px-6 py-10">
+    <div className="min-h-screen w-full py-6 sm:py-10 px-3 sm:px-6" style={{ backgroundColor: RC_IVORY }}>
+      <div
+        className="max-w-3xl mx-auto relative p-5 sm:p-10"
+        style={{ backgroundColor: RC_IVORY, border: `1px solid ${RC_GOLD}` }}
+      >
+        <div
+          className="absolute inset-2 pointer-events-none hidden sm:block"
+          style={{ border: `1px solid ${RC_GOLD}`, opacity: 0.45 }}
+        />
         {/* Header */}
-        <header className="flex items-center justify-between mb-10">
-          <img src={soleiaLogo} alt="Soleia" className="h-10 object-contain" />
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase print:hidden">
-              Soleia Creative Team
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadPdf}
-              disabled={downloadingPdf}
-              className="print:hidden gap-2 text-muted-foreground border-border hover:bg-background"
-            >
-              {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-              {downloadingPdf ? 'Preparing PDF' : 'Download PDF'}
-            </Button>
-          </div>
+        <header className="flex items-center justify-between mb-8 relative">
+          <img src={soleiaLogo} alt="Soleia" className="h-10 object-contain" style={{ filter: 'brightness(0.15) sepia(1) saturate(6) hue-rotate(5deg)' }} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            className="print:hidden gap-2 bg-transparent"
+            style={{ borderColor: RC_GOLD, color: RC_GOLD_DEEP }}
+          >
+            {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+            {downloadingPdf ? 'Preparing PDF' : 'Download PDF'}
+          </Button>
         </header>
 
         {/* Event Title & Info */}
