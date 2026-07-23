@@ -57,7 +57,6 @@ export function ContentDeliveryView() {
         <section className="pt-16 pb-10">
           <Reveal>
             <span className="block text-[11px] uppercase tracking-[0.34em] text-primary mb-3.5">Content Delivery Guide</span>
-            <h1 className="font-display text-4xl sm:text-5xl text-foreground leading-tight">Building your own content?</h1>
             <p className="mt-5 text-sm text-muted-foreground leading-relaxed max-w-3xl">
               We provide an After Effects project file prepared specifically for our LED video configuration mapping — pre-built to match the venue's exact screen layout, so you can drop in your content and export with confidence. Everything you need to build to spec is below.
             </p>
