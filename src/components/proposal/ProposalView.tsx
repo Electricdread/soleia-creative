@@ -423,7 +423,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       if (galleryRes.error) throw galleryRes.error;
       if (timelineRes.error) throw timelineRes.error;
 
-      const freshProposal = proposalRes.data || proposal;
+      const freshProposal = (Array.isArray(proposalRes.data) ? proposalRes.data[0] : proposalRes.data) || proposal;
       const freshItemsAll = itemsRes.data?.length ? itemsRes.data : items;
       const freshGallery = galleryRes.data || gallery;
       const freshTimeline = timelineRes.data || timeline;
