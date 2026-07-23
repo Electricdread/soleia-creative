@@ -377,6 +377,7 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
         <div className="mb-8">
           <SessionFileUploader 
             linkId={clientLink.id} 
+            token={clientLink.token}
             uploads={uploads} 
             onUploadComplete={onUploadComplete}
           />
