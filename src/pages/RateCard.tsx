@@ -224,7 +224,7 @@ export default function RateCard() {
                 animation to greet guests upon arrival.
               </p>
               <p className="mt-2 text-[12px] leading-relaxed break-words" style={{ color: INK }}>
-                <span className="font-medium" style={{ color: GOLD_DEEP }}>Includes:</span> 1–3 looks across all venue LED screens and elevator displays. Cabana &amp; bungalow TVs quoted separately based on asset delivery.
+                <span className="font-medium" style={{ color: GOLD_DEEP }}>Includes:</span> 1–3 looks across all venue LED screens and elevator displays, plus a 3D previz to view your content on the screens before the event. Cabana &amp; bungalow TVs quoted separately based on asset delivery.
               </p>
 
             </div>
