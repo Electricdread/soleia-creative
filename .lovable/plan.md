@@ -1,35 +1,16 @@
-## Goal
+Bring back the two elements removed earlier from the Creative Guide (`src/components/CreativeGuideView.tsx`):
 
-Refine the `/rate-card` copy and line items per client feedback.
+1. **Venue Layout stats strip** — the 4-cell counter that lives just under the InteractiveVenueMap in the "02 — Venue Layout" section:
+   - 15 Cabanas · 9 Bungalows · 2 Mezzanine Levels · 30+ Display Zones
+   - Restore the `LAYOUT_STATS` constant and its `Reveal` grid block.
 
-## Changes to `src/pages/RateCard.tsx`
+2. **03 — Soleia 360° Tour section** — an embedded iframe of the Invision Studio virtual tour, placed between the Venue Layout and "What's Included" sections:
+   - Restore `TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-'`.
+   - Re-add the `<section id="tour">` with SectionHead ("03 — Soleia 360° Tour" / "Step inside."), the framed iframe, the Compass caption, and the "Open fullscreen" outline button.
+   - Renumber the following sections' eyebrows so numbering stays sequential: "04 — What's Included", "05 — Creative Content Design".
 
-**1. Package section**
-- Change price display from `$3,000` to `$3,000*` (asterisk denoting "starting at").
-- Update the "Includes" line — remove cabana & bungalow TVs (they're quoted separately based on asset delivery). New text:
-  > **Includes:** 1–3 looks across all venue LED screens and elevator displays. Cabana & bungalow TVs quoted separately based on asset delivery.
+3. **Nav + imports**:
+   - Add `{ href: '#tour', label: '360° Tour' }` to `NAV_LINKS` (between Layout and Video Mapping).
+   - Re-import `Compass` and `Maximize2` from `lucide-react`.
 
-**2. `ADDITIONAL_OPTIONS` array**
-- Rename `"Additional Transparent Logo Animation"` → `"Transparent Logo Animation"`.
-- Insert a new item **above** the transparent logo line:
-  - Title: `Static Logo`
-  - Description: `Individual static brand logo, content to spec provided by client.`
-  - Price: `$200`
-- In `Elevator Dynamic Animation` description, remove the word "deliverables": change `"(3 deliverables): static image..."` → `"(3): static image..."` (keeps the count without the word).
-- Insert a new item **below** `Elevator Dynamic Animation`:
-  - Title: `Elevator Created by Client`
-  - Description: `Client-created elevator animation delivered to spec (static + up + down). Soleia handles load and playback setup only.`
-  - Price: `$500`
-
-**3. `VIDEO_MAPPING` array**
-- Update `Mapped by Soleia Creative Team` description to reference both logo and client animations. New:
-  > `Mapping of client logo and brand animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.`
-
-## Out of scope
-
-- No changes to Whatnot proposal or other DB records (rate card page only, per this request).
-- No layout, CSS, or print-tuning changes — only copy/items.
-
-## Verification
-
-- Preview `/rate-card` on desktop + mobile — confirm all copy changes and new rows render, and the sheet still fits one page in print preview.
+No other sections or behavior change. Content, styling, and copy match the pre-removal version verbatim.
