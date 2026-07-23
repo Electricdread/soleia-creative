@@ -608,22 +608,27 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
         {/* Venue contract inclusions disclaimer */}
         {!editingItems && (
-          <div className="mb-6 rounded-lg border border-border bg-muted/40 border-l-2 border-l-primary px-4 py-3">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-primary font-semibold mb-2">
+          <div
+            className="mb-2 rounded-sm px-4 py-3.5"
+            style={{
+              backgroundColor: `${RC_GOLD_TINT}88`,
+              border: `1px solid ${RC_GOLD}66`,
+              borderLeft: `3px solid ${RC_GOLD}`,
+            }}
+          >
+            <p className="text-[10px] tracking-[0.3em] uppercase font-semibold mb-2" style={{ color: RC_GOLD_DEEP }}>
               Included in your venue contract
             </p>
-            <ul className="text-xs text-muted-foreground space-y-1">
+            <ul className="text-[12.5px] space-y-1" style={{ color: RC_INK }}>
               <li>• Up to 10 static logos — LED screens</li>
-              <li>• 1 static logo — all TVs, Cabanas & Bungalows</li>
+              <li>• 1 static logo — all TVs, Cabanas &amp; Bungalows</li>
             </ul>
           </div>
         )}
 
         {/* Section label for the menu of optional services */}
         {!editingItems && tableItems.length > 0 && (
-          <p className="text-[10px] tracking-[0.25em] uppercase text-primary font-semibold mb-3">
-            {additionalServicesLabel}
-          </p>
+          <SectionLabel>{additionalServicesLabel}</SectionLabel>
         )}
 
 
