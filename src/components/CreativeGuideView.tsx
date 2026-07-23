@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Printer, FileVideo, Boxes } from 'lucide-react';
+import { Menu, X, Printer, FileVideo, Boxes, Compass, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
