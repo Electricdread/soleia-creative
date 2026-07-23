@@ -18,6 +18,7 @@ interface SessionUpload {
 
 interface SessionFileUploaderProps {
   linkId: string;
+  token: string;
   uploads: SessionUpload[];
   onUploadComplete: () => void;
 }
@@ -28,7 +29,7 @@ const FILE_CATEGORIES = [
   { id: 'document', label: 'Documents', accept: '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx', icon: FileText },
 ];
 
-export default function SessionFileUploader({ linkId, uploads, onUploadComplete }: SessionFileUploaderProps) {
+export default function SessionFileUploader({ linkId, token, uploads, onUploadComplete }: SessionFileUploaderProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -121,12 +122,11 @@ export default function SessionFileUploader({ linkId, uploads, onUploadComplete 
         await supabase.storage.from('session-uploads').remove([filePath]);
       }
 
-      const { error } = await supabase
-        .from('session_uploads')
-        .delete()
-        .eq('id', uploadId);
+      const { data: ok, error } = await supabase
+        .rpc('delete_session_upload_by_token', { p_token: token, p_upload_id: uploadId });
 
       if (error) throw error;
+      if (!ok) throw new Error('Not authorized to delete this file');
 
       toast({
         title: 'File Deleted',
