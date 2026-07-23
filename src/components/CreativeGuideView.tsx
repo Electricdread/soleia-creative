@@ -51,6 +51,13 @@ const ZONE_GROUPS = [
 ];
 
 
+const LAYOUT_STATS: [string, string][] = [
+  ['15', 'Cabanas'],
+  ['9', 'Bungalows'],
+  ['2', 'Mezzanine Levels'],
+  ['30+', 'Display Zones'],
+];
+
 const WORLDS = [
   {
     k: 'Indoor',
