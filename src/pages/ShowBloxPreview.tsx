@@ -38,13 +38,10 @@ export default function ShowBloxPreview() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Fetch client link
-        const { data: linkData, error: linkError } = await supabase
-          .from("client_links")
-          .select("id, client_name, event_name, event_date")
-          .eq("token", token)
-          .eq("is_active", true)
-          .maybeSingle();
+        // Fetch client link via token-scoped RPC
+        const { data: linkRows, error: linkError } = await supabase
+          .rpc("get_client_link_by_token", { p_token: token });
+        const linkData = Array.isArray(linkRows) ? linkRows[0] : linkRows;
 
         if (linkError) throw linkError;
         if (!linkData) {

@@ -35,15 +35,24 @@ export default function ClientProposal() {
     }
     setProposal(p);
 
+    // For anonymous visitors, fetch via token-scoped RPCs.
+    // Admin edit sessions can still use direct table reads.
+    const useDirect = isAdmin;
     const [itemsRes, galleryRes, timelineRes] = await Promise.all([
-      supabase.from('proposal_items').select('*').eq('proposal_id', p.id).order('sort_order'),
-      supabase.from('proposal_gallery').select('*').eq('proposal_id', p.id).order('sort_order'),
-      supabase.from('proposal_timeline').select('*').eq('proposal_id', p.id).order('sort_order'),
+      useDirect
+        ? supabase.from('proposal_items').select('*').eq('proposal_id', p.id).order('sort_order')
+        : supabase.rpc('get_proposal_items_by_token', { p_token: token }),
+      useDirect
+        ? supabase.from('proposal_gallery').select('*').eq('proposal_id', p.id).order('sort_order')
+        : supabase.rpc('get_proposal_gallery_by_token', { p_token: token }),
+      useDirect
+        ? supabase.from('proposal_timeline').select('*').eq('proposal_id', p.id).order('sort_order')
+        : supabase.rpc('get_proposal_timeline_by_token', { p_token: token }),
     ]);
 
-    setItems(itemsRes.data || []);
-    setGallery(galleryRes.data || []);
-    setTimeline(timelineRes.data || []);
+    setItems((itemsRes.data as any[]) || []);
+    setGallery((galleryRes.data as any[]) || []);
+    setTimeline((timelineRes.data as any[]) || []);
     setLoading(false);
   };
 

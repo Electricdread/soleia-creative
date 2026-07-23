@@ -42,19 +42,11 @@ export default function SharedLookBook() {
     if (!token) return;
     (async () => {
       setLoading(true);
-      const { data: s, error } = await supabase
-        .from('lookbook_shares')
-        .select('*')
-        .eq('token', token)
-        .eq('is_active', true)
-        .maybeSingle();
+      const { data: rows, error } = await supabase
+        .rpc('get_lookbook_share_by_token', { p_token: token });
+      const s: any = Array.isArray(rows) ? rows[0] : rows;
 
       if (error || !s) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-      if (s.expires_at && new Date(s.expires_at).getTime() < Date.now()) {
         setNotFound(true);
         setLoading(false);
         return;
