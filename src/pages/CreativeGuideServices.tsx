@@ -8,10 +8,6 @@ import solIcon from '@/assets/sol-icon.png';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
-// Real venue references (do not swap for stock)
-const VENUE_PHOTO = '/venue-screens.png';
-const PIXEL_MAP = '/SOLEIA-Pixel-Map.png';
-const PREVIZ_VIDEO = '/venue/previz-vanderpump.mp4';
 
 type Item = {
   id: string;
@@ -24,164 +20,38 @@ type Item = {
   sort_order: number | null;
 };
 
-// Editorial blurbs keyed by exact template title.
+// Editorial blurbs keyed by exact template title. Each one is written to help
+// a client actually understand what they're buying — what it lives on, what
+// we deliver, and how they'll experience it in the room.
 const BLURBS: Record<string, string> = {
   'Immersive LED Environments & Branded Overlay Design':
-    "The Soleia Creative Package: our team designs 1–3 custom looks that live across every venue LED — main room, beachclub, cabana & bungalow TVs, and elevators — plus a 3D previz so you can see your content on the screens before the doors open.",
+    "The full Soleia Creative Package. Our team designs 1 to 3 custom 'looks' — cinematic moving environments built for your event — that play across every LED surface in the venue: the main-room sunburst and IMAG walls, the outdoor arch and outdoor side panels, all cabana and bungalow TVs, and the elevator display. Included: creative direction, animation, pixel-perfect mapping in Resolume, a 3D previz so you can approve the content on the actual screens before load-in, and onsite playback the night of the event.",
   'Static Logo':
-    "A high-resolution static brand mark, color-graded for LED and placed cleanly across the screens you specify. The simplest, most versatile brand presence in the venue.",
+    "A single high-resolution static logo, color-graded and re-sized for LED so it reads cleanly on the venue's large-format displays. We place it on the screens you choose — main room, TVs, elevator, or a specific zone — and program it into the show file. The simplest way to put your brand in the room without commissioning motion content.",
   'Transparent Logo Animation':
-    "A transparent, alpha-channel logo animation designed to sit on top of Soleia's live visual environments — your brand breathes through the room without covering the show underneath.",
+    "A short-form logo animation delivered with a real alpha channel (transparent background), so your brand sits on top of Soleia's live environments instead of blocking them. The room keeps moving underneath — light, atmosphere, textures — and your logo breathes in and out over it. See the explainer above for exactly how the transparency layer behaves on the wall.",
   'Mapped by Soleia Creative Team':
-    "Our creative team maps your content — logos, animations, brand assets — pixel-perfect to every LED zone in the venue, calibrated in Resolume for flawless playback.",
+    "You supply the raw assets — logos, animations, brand videos — and our team handles the technical work: reformatting for each LED zone's exact resolution, color-correcting for the panels, pixel-perfect mapping in Resolume, QC on venue hardware, and onsite playback. You focus on the creative; we make sure it lands correctly on every screen.",
   'Mapped to Spec by Client':
-    "You deliver finished, pre-mapped content built to our published pixel maps. We handle load-in, QC, and onsite playback.",
+    "For teams delivering their own finished, pre-mapped content. You build to Soleia's published pixel maps (we send exact dimensions and specs per zone). We handle intake, technical QC, loading into the show system, and onsite playback. No creative work on our side — pure technical execution.",
   'Elevator Dynamic Animation':
-    "Bespoke portrait animation designed for the elevator LED — up, down, and idle states — a small surface with a strong first impression.",
+    "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day.",
   'LED Screens Specific Zone Mapping':
-    "Custom mapping to specific LED zones outside the main architecture — ideal when a moment needs to live on one screen, one wall, or one custom canvas.",
+    "Custom mapping to specific LED zones outside the main sunburst architecture — designed for moments that need to live on one focused surface instead of the whole room. Typically applied to the SR IMAG wall, SL IMAG wall, and the outdoor arch (see below). Includes creative treatment, exact-resolution build-out, and onsite playback for the zones you select.",
   'Performing Artist — Mapped by Soleia Creative Team':
-    "Show-facing visuals designed and mapped around a performing artist — set graphics, transitions, stage looks — built with the artist's brand at the center.",
+    "Show-facing visuals designed around a headlining performer or DJ — set graphics, transitions, drops, artist branding, and stage-cued moments — mapped across the IMAG walls, center panel, DJ booth strip, and stage curves. Built in coordination with the artist's team so the visuals belong to the performance, not just play behind it.",
   'Elevator Created by Client':
-    "You supply the elevator content following our brief and specs. We coordinate playback and onsite testing so it lands correctly on the portrait LED.",
+    "You deliver the finished elevator content built to our portrait spec, and we handle the rest: intake, QC on the actual elevator LED, mapping into the playback system, and onsite testing so it plays back correctly the day of the event.",
   'Elevator Static Logo':
-    "A single static portrait logo for the elevator's idle state — clean, elegant, always-on brand presence.",
+    "A single static portrait logo built for the elevator LED's idle state — always-on brand presence between rides. Color-graded and sized for the exact panel, tested onsite before doors.",
   'Individual Cabana / Bungalow Logo':
-    "Dedicated logo playback on a specific cabana or bungalow TV — each selected screen runs its own feed instead of the shared narrowcasting loop.",
+    "Dedicated logo playback on a specific cabana or bungalow TV — that screen gets its own feed instead of running the shared narrowcasting loop. Ideal for sponsor activations, private hosts, or VIP tables that need their own on-screen identity.",
   '3D Previz':
-    "A 3D preview of your content running on the venue's real screens — reviewed and approved before load-in, so there are no surprises on show day.",
+    "A full 3D preview of your content running on Soleia's real screens, rendered from our venue model. You review the actual visuals in the actual room before load-in — pacing, brightness, brand placement, coverage — and approve or request revisions. Included with the Creative Package; also available standalone.",
   'Client-Supplied Device Presentation Playback':
-    "Support for client-provided laptops or devices used for PowerPoint presentations, awards, and other presentation content — including connection, playback coordination, screen routing, and onsite testing for proper display.",
+    "Onsite technical support for client-provided laptops or devices running PowerPoint decks, keynote videos, award reels, or live presentation content. Covers signal connection, screen routing to the correct LED zones, playback coordination with the show operator, and pre-event testing so your presentation lands correctly the moment you cue it.",
 };
 
-// Per-service pixel-map highlights. Each service maps to the specific LED zones
-// it actually covers, rendered as overlays on the real Soleia pixel map.
-const SERVICE_ZONES: Record<string, { zones: string[] | 'all'; caption: string }> = {
-  'Immersive LED Environments & Branded Overlay Design': {
-    zones: 'all',
-    caption: 'Custom looks distributed across every LED zone in the venue.',
-  },
-  'Static Logo': {
-    zones: 'all',
-    caption: 'Static brand mark placed cleanly across selected LED zones.',
-  },
-  'Mapped by Soleia Creative Team': {
-    zones: 'all',
-    caption: 'Full pixel-perfect mapping across every zone, calibrated in Resolume.',
-  },
-  'Mapped to Spec by Client': {
-    zones: 'all',
-    caption: 'Client-delivered content built to the published pixel map — every zone.',
-  },
-  'Performing Artist — Mapped by Soleia Creative Team': {
-    zones: ['SR IMAG', 'SL IMAG', 'CENTER', 'DJ BOOTH', 'SR CURVE', 'SL CURVE'],
-    caption: 'Show-facing surfaces surrounding the DJ booth and performance area.',
-  },
-  'LED Screens Specific Zone Mapping': {
-    zones: ['SR IMAG', 'SL IMAG', 'OUTDOOR ARCH'],
-    caption: 'Custom mapping isolated to specific zones outside the main architecture.',
-  },
-};
-
-type Media =
-  | { kind: 'image'; src: string }
-  | { kind: 'video'; src: string }
-  | { kind: 'pixelmap'; zones: string[] | 'all'; caption: string };
-
-// Real pixel-map segments (viewBox 3840×2160). Coordinates match /SOLEIA-Pixel-Map.png.
-const PIXEL_SEGMENTS: { name: string; x: number; y: number; w: number; h: number; res: string }[] = [
-  { name: 'SR IMAG', x: 0, y: 0, w: 1216, h: 592, res: '1216×592' },
-  { name: 'CENTER', x: 1216, y: 0, w: 640, h: 272, res: '640×272' },
-  { name: 'SL IMAG', x: 1856, y: 0, w: 1216, h: 592, res: '1216×592' },
-  { name: 'DJ BOOTH', x: 906, y: 594, w: 1260, h: 168, res: '1260×168' },
-  { name: 'SR CURVE', x: 0, y: 794, w: 2304, h: 272, res: '2304×272' },
-  { name: 'SL CURVE', x: 0, y: 1066, w: 2304, h: 272, res: '2304×272' },
-  { name: 'SUNRAY 1', x: 0, y: 1368, w: 1920, h: 128, res: '1920×128' },
-  { name: 'SUNRAY 2', x: 0, y: 1496, w: 1536, h: 128, res: '1536×128' },
-  { name: 'SUNRAY 3', x: 0, y: 1624, w: 1792, h: 128, res: '1792×128' },
-  { name: 'SUNRAY 4', x: 0, y: 1752, w: 1792, h: 128, res: '1792×128' },
-  { name: 'SUNRAY 5', x: 0, y: 1880, w: 1792, h: 128, res: '1792×128' },
-  { name: 'SUNRAY 6', x: 0, y: 2008, w: 1536, h: 128, res: '1536×128' },
-  { name: 'OUTDOOR SR', x: 2322, y: 793, w: 588, h: 840, res: '588×840' },
-  { name: 'OUTDOOR SL', x: 2916, y: 793, w: 588, h: 840, res: '588×840' },
-  { name: 'OUTDOOR ARCH', x: 2322, y: 1639, w: 1512, h: 504, res: '1512×504' },
-];
-
-// Zone descriptions for the LED Screens Specific Zone Mapping service.
-const ZONE_MAPPING_ZONES = [
-  {
-    name: 'SR IMAG',
-    res: '1216 × 592',
-    detail:
-      'Stage-right IMAG panel above the DJ booth. Landscape LED for artist-facing visuals, brand keys, and moment-specific graphics that frame the main room.',
-  },
-  {
-    name: 'SL IMAG',
-    res: '1216 × 592',
-    detail:
-      'Stage-left IMAG — mirror to SR. The pair frames the DJ booth and holds directional brand or performance content without interrupting the sunburst above.',
-  },
-  {
-    name: 'Outdoor Arch',
-    res: '1512 × 504',
-    detail:
-      'The exterior arched LED at the beachclub. First impression on arrival — logo animations, welcome loops, or moment-specific creative that greets guests outdoors.',
-  },
-];
-
-function PixelMapDiagram({ zones, caption }: { zones: string[] | 'all'; caption: string }) {
-  const highlightAll = zones === 'all';
-  const set = highlightAll ? null : new Set(zones);
-  return (
-    <div className="relative w-full aspect-video bg-black overflow-hidden">
-      <svg viewBox="0 0 3840 2160" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
-        <rect x="0" y="0" width="3840" height="2160" fill="#0a0a0a" />
-        {PIXEL_SEGMENTS.map((s) => {
-          const highlighted = highlightAll || (set?.has(s.name) ?? false);
-          return (
-            <g key={s.name}>
-              <rect
-                x={s.x}
-                y={s.y}
-                width={s.w}
-                height={s.h}
-                fill={highlighted ? 'rgba(196,154,60,0.28)' : 'rgba(255,255,255,0.03)'}
-                stroke={highlighted ? '#c49a3c' : 'rgba(255,255,255,0.12)'}
-                strokeWidth={highlighted ? 6 : 2}
-              />
-              {highlighted && s.w > 400 && s.h > 150 && (
-                <text
-                  x={s.x + s.w / 2}
-                  y={s.y + s.h / 2 + 14}
-                  textAnchor="middle"
-                  fill="#c49a3c"
-                  fontFamily="ui-monospace, monospace"
-                  fontSize={38}
-                  letterSpacing="4"
-                >
-                  {s.name}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-4 pointer-events-none">
-        <span className="text-[10px] uppercase tracking-[0.28em] text-primary/80 font-mono">
-          Soleia Pixel Map
-        </span>
-        <span className="text-[10px] uppercase tracking-[0.22em] text-primary/70 font-mono text-right max-w-[60%]">
-          {caption}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// Non-pixel-map media (video explainers and elevator/cabana/device references).
-const MEDIA: Record<string, Media> = {
-  '3D Previz': { kind: 'video', src: PREVIZ_VIDEO },
-};
 
 
 const CATEGORY_ORDER = [
@@ -195,7 +65,7 @@ export default function CreativeGuideServices() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullscreenVideo, setFullscreenVideo] = useState<string | null>(null);
-  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  
 
   useEffect(() => {
     (async () => {
@@ -267,12 +137,10 @@ export default function CreativeGuideServices() {
               <div className="space-y-8">
                 {group.items.map((item) => {
                   const isTransparent = item.title === 'Transparent Logo Animation';
-                  const zoneSpec = SERVICE_ZONES[item.title];
-                  const media = MEDIA[item.title];
                   return (
                     <Reveal key={item.id}>
                       <article className="rounded-2xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden">
-                        {isTransparent ? (
+                        {isTransparent && (
                           <div
                             className="relative w-full aspect-video bg-black cursor-pointer group"
                             onClick={() => setFullscreenVideo(transparentLogoVideo.url)}
@@ -293,31 +161,7 @@ export default function CreativeGuideServices() {
                               </div>
                             </div>
                           </div>
-                        ) : zoneSpec ? (
-                          <PixelMapDiagram zones={zoneSpec.zones} caption={zoneSpec.caption} />
-                        ) : media?.kind === 'video' ? (
-                          <div
-                            className="relative w-full aspect-video bg-black cursor-pointer group"
-                            onClick={() => setFullscreenVideo(media.src)}
-                          >
-                            <video
-                              src={media.src}
-                              className="w-full h-full object-cover"
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
-                              preload="metadata"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/90 text-xs uppercase tracking-[0.18em]">
-                                <Maximize2 className="w-3.5 h-3.5" />
-                                Tap for fullscreen
-                              </div>
-                            </div>
-                          </div>
-                        ) : null}
-
+                        )}
 
                         <div className="p-6 sm:p-8">
                           <h3 className="font-display text-xl sm:text-2xl text-foreground mb-3">
@@ -327,37 +171,6 @@ export default function CreativeGuideServices() {
                             {BLURBS[item.title] || item.long_description || 'Details available on request.'}
                           </p>
 
-                          {/* Zone breakdown for LED Screens Specific Zone Mapping */}
-                          {item.title === 'LED Screens Specific Zone Mapping' && (
-                            <div className="mt-7 border-t border-border/60 pt-6">
-                              <span className="text-[10px] uppercase tracking-[0.28em] text-primary">
-                                Applicable Screen Zones
-                              </span>
-                              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                                {ZONE_MAPPING_ZONES.map((z) => (
-                                  <div
-                                    key={z.name}
-                                    className="rounded-xl border border-primary/20 bg-primary/5 p-4"
-                                  >
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-                                        <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-primary">
-                                          {z.name}
-                                        </span>
-                                      </div>
-                                      <span className="font-mono text-[10px] text-muted-foreground">
-                                        {z.res}
-                                      </span>
-                                    </div>
-                                    <p className="text-xs leading-relaxed text-muted-foreground">
-                                      {z.detail}
-                                    </p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
 
                           {item.deliverables && item.deliverables.length > 0 && (
                             <ul className="mt-5 space-y-1.5">
@@ -405,27 +218,6 @@ export default function CreativeGuideServices() {
         </div>
       )}
 
-      {/* Fullscreen image modal */}
-      {fullscreenImage && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
-          onClick={() => setFullscreenImage(null)}
-        >
-          <img
-            src={fullscreenImage}
-            alt=""
-            className="max-w-full max-h-full object-contain"
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute top-5 right-5 text-white"
-            onClick={() => setFullscreenImage(null)}
-          >
-            Close
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
