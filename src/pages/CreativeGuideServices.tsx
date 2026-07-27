@@ -24,35 +24,38 @@ type Item = {
   sort_order: number | null;
 };
 
-// Editorial blurbs keyed by exact template title.
+// Editorial blurbs keyed by exact template title. Each one is written to help
+// a client actually understand what they're buying — what it lives on, what
+// we deliver, and how they'll experience it in the room.
 const BLURBS: Record<string, string> = {
   'Immersive LED Environments & Branded Overlay Design':
-    "The Soleia Creative Package: our team designs 1–3 custom looks that live across every venue LED — main room, beachclub, cabana & bungalow TVs, and elevators — plus a 3D previz so you can see your content on the screens before the doors open.",
+    "The full Soleia Creative Package. Our team designs 1 to 3 custom 'looks' — cinematic moving environments built for your event — that play across every LED surface in the venue: the main-room sunburst and IMAG walls, the outdoor arch and outdoor side panels, all cabana and bungalow TVs, and the elevator display. Included: creative direction, animation, pixel-perfect mapping in Resolume, a 3D previz so you can approve the content on the actual screens before load-in, and onsite playback the night of the event.",
   'Static Logo':
-    "A high-resolution static brand mark, color-graded for LED and placed cleanly across the screens you specify. The simplest, most versatile brand presence in the venue.",
+    "A single high-resolution static logo, color-graded and re-sized for LED so it reads cleanly on the venue's large-format displays. We place it on the screens you choose — main room, TVs, elevator, or a specific zone — and program it into the show file. The simplest way to put your brand in the room without commissioning motion content.",
   'Transparent Logo Animation':
-    "A transparent, alpha-channel logo animation designed to sit on top of Soleia's live visual environments — your brand breathes through the room without covering the show underneath.",
+    "A short-form logo animation delivered with a real alpha channel (transparent background), so your brand sits on top of Soleia's live environments instead of blocking them. The room keeps moving underneath — light, atmosphere, textures — and your logo breathes in and out over it. See the explainer above for exactly how the transparency layer behaves on the wall.",
   'Mapped by Soleia Creative Team':
-    "Our creative team maps your content — logos, animations, brand assets — pixel-perfect to every LED zone in the venue, calibrated in Resolume for flawless playback.",
+    "You supply the raw assets — logos, animations, brand videos — and our team handles the technical work: reformatting for each LED zone's exact resolution, color-correcting for the panels, pixel-perfect mapping in Resolume, QC on venue hardware, and onsite playback. You focus on the creative; we make sure it lands correctly on every screen.",
   'Mapped to Spec by Client':
-    "You deliver finished, pre-mapped content built to our published pixel maps. We handle load-in, QC, and onsite playback.",
+    "For teams delivering their own finished, pre-mapped content. You build to Soleia's published pixel maps (we send exact dimensions and specs per zone). We handle intake, technical QC, loading into the show system, and onsite playback. No creative work on our side — pure technical execution.",
   'Elevator Dynamic Animation':
-    "Bespoke portrait animation designed for the elevator LED — up, down, and idle states — a small surface with a strong first impression.",
+    "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day.",
   'LED Screens Specific Zone Mapping':
-    "Custom mapping to specific LED zones outside the main architecture — ideal when a moment needs to live on one screen, one wall, or one custom canvas.",
+    "Custom mapping to specific LED zones outside the main sunburst architecture — designed for moments that need to live on one focused surface instead of the whole room. Typically applied to the SR IMAG wall, SL IMAG wall, and the outdoor arch (see below). Includes creative treatment, exact-resolution build-out, and onsite playback for the zones you select.",
   'Performing Artist — Mapped by Soleia Creative Team':
-    "Show-facing visuals designed and mapped around a performing artist — set graphics, transitions, stage looks — built with the artist's brand at the center.",
+    "Show-facing visuals designed around a headlining performer or DJ — set graphics, transitions, drops, artist branding, and stage-cued moments — mapped across the IMAG walls, center panel, DJ booth strip, and stage curves. Built in coordination with the artist's team so the visuals belong to the performance, not just play behind it.",
   'Elevator Created by Client':
-    "You supply the elevator content following our brief and specs. We coordinate playback and onsite testing so it lands correctly on the portrait LED.",
+    "You deliver the finished elevator content built to our portrait spec, and we handle the rest: intake, QC on the actual elevator LED, mapping into the playback system, and onsite testing so it plays back correctly the day of the event.",
   'Elevator Static Logo':
-    "A single static portrait logo for the elevator's idle state — clean, elegant, always-on brand presence.",
+    "A single static portrait logo built for the elevator LED's idle state — always-on brand presence between rides. Color-graded and sized for the exact panel, tested onsite before doors.",
   'Individual Cabana / Bungalow Logo':
-    "Dedicated logo playback on a specific cabana or bungalow TV — each selected screen runs its own feed instead of the shared narrowcasting loop.",
+    "Dedicated logo playback on a specific cabana or bungalow TV — that screen gets its own feed instead of running the shared narrowcasting loop. Ideal for sponsor activations, private hosts, or VIP tables that need their own on-screen identity.",
   '3D Previz':
-    "A 3D preview of your content running on the venue's real screens — reviewed and approved before load-in, so there are no surprises on show day.",
+    "A full 3D preview of your content running on Soleia's real screens, rendered from our venue model. You review the actual visuals in the actual room before load-in — pacing, brightness, brand placement, coverage — and approve or request revisions. Included with the Creative Package; also available standalone.",
   'Client-Supplied Device Presentation Playback':
-    "Support for client-provided laptops or devices used for PowerPoint presentations, awards, and other presentation content — including connection, playback coordination, screen routing, and onsite testing for proper display.",
+    "Onsite technical support for client-provided laptops or devices running PowerPoint decks, keynote videos, award reels, or live presentation content. Covers signal connection, screen routing to the correct LED zones, playback coordination with the show operator, and pre-event testing so your presentation lands correctly the moment you cue it.",
 };
+
 
 // Per-service pixel-map highlights. Each service maps to the specific LED zones
 // it actually covers, rendered as overlays on the real Soleia pixel map.
