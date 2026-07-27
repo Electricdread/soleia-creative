@@ -267,7 +267,7 @@ export default function CreativeGuideServices() {
               <div className="space-y-8">
                 {group.items.map((item) => {
                   const isTransparent = item.title === 'Transparent Logo Animation';
-                  const isZoneMapping = item.title === 'LED Screens Specific Zone Mapping';
+                  const zoneSpec = SERVICE_ZONES[item.title];
                   const media = MEDIA[item.title];
                   return (
                     <Reveal key={item.id}>
@@ -293,8 +293,8 @@ export default function CreativeGuideServices() {
                               </div>
                             </div>
                           </div>
-                        ) : isZoneMapping ? (
-                          <ZoneMappingDiagram />
+                        ) : zoneSpec ? (
+                          <PixelMapDiagram zones={zoneSpec.zones} caption={zoneSpec.caption} />
                         ) : media?.kind === 'video' ? (
                           <div
                             className="relative w-full aspect-video bg-black cursor-pointer group"
@@ -316,25 +316,8 @@ export default function CreativeGuideServices() {
                               </div>
                             </div>
                           </div>
-                        ) : media?.kind === 'image' ? (
-                          <div
-                            className="relative w-full aspect-video bg-black cursor-pointer group overflow-hidden"
-                            onClick={() => setFullscreenImage(media.src)}
-                          >
-                            <img
-                              src={media.src}
-                              alt={item.title}
-                              loading="lazy"
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/90 text-xs uppercase tracking-[0.18em]">
-                                <Maximize2 className="w-3.5 h-3.5" />
-                                Tap for fullscreen
-                              </div>
-                            </div>
-                          </div>
                         ) : null}
+
 
                         <div className="p-6 sm:p-8">
                           <h3 className="font-display text-xl sm:text-2xl text-foreground mb-3">
