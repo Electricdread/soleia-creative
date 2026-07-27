@@ -328,7 +328,7 @@ export default function CreativeGuideServices() {
                           </p>
 
                           {/* Zone breakdown for LED Screens Specific Zone Mapping */}
-                          {isZoneMapping && (
+                          {item.title === 'LED Screens Specific Zone Mapping' && (
                             <div className="mt-7 border-t border-border/60 pt-6">
                               <span className="text-[10px] uppercase tracking-[0.28em] text-primary">
                                 Applicable Screen Zones
