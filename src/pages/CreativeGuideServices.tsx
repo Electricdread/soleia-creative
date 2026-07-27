@@ -54,19 +54,39 @@ const BLURBS: Record<string, string> = {
     "Support for client-provided laptops or devices used for PowerPoint presentations, awards, and other presentation content — including connection, playback coordination, screen routing, and onsite testing for proper display.",
 };
 
-// Real venue reference per line item (photo, pixel map, or video)
-type Media = { kind: 'image' | 'video'; src: string };
-const MEDIA: Record<string, Media> = {
-  'Immersive LED Environments & Branded Overlay Design': { kind: 'image', src: VENUE_PHOTO },
-  'Static Logo': { kind: 'image', src: VENUE_PHOTO },
-  'Mapped by Soleia Creative Team': { kind: 'image', src: VENUE_PHOTO },
-  'Mapped to Spec by Client': { kind: 'image', src: PIXEL_MAP },
-  'Performing Artist — Mapped by Soleia Creative Team': { kind: 'image', src: VENUE_PHOTO },
-  '3D Previz': { kind: 'video', src: PREVIZ_VIDEO },
+// Per-service pixel-map highlights. Each service maps to the specific LED zones
+// it actually covers, rendered as overlays on the real Soleia pixel map.
+const SERVICE_ZONES: Record<string, { zones: string[] | 'all'; caption: string }> = {
+  'Immersive LED Environments & Branded Overlay Design': {
+    zones: 'all',
+    caption: 'Custom looks distributed across every LED zone in the venue.',
+  },
+  'Static Logo': {
+    zones: 'all',
+    caption: 'Static brand mark placed cleanly across selected LED zones.',
+  },
+  'Mapped by Soleia Creative Team': {
+    zones: 'all',
+    caption: 'Full pixel-perfect mapping across every zone, calibrated in Resolume.',
+  },
+  'Mapped to Spec by Client': {
+    zones: 'all',
+    caption: 'Client-delivered content built to the published pixel map — every zone.',
+  },
+  'Performing Artist — Mapped by Soleia Creative Team': {
+    zones: ['SR IMAG', 'SL IMAG', 'CENTER', 'DJ BOOTH', 'SR CURVE', 'SL CURVE'],
+    caption: 'Show-facing surfaces surrounding the DJ booth and performance area.',
+  },
+  'LED Screens Specific Zone Mapping': {
+    zones: ['SR IMAG', 'SL IMAG', 'OUTDOOR ARCH'],
+    caption: 'Custom mapping isolated to specific zones outside the main architecture.',
+  },
 };
 
-// Zones highlighted by "LED Screens Specific Zone Mapping" — pulled from the real pixel map.
-const HIGHLIGHT_ZONES = new Set(['SR IMAG', 'SL IMAG', 'OUTDOOR ARCH']);
+type Media =
+  | { kind: 'image'; src: string }
+  | { kind: 'video'; src: string }
+  | { kind: 'pixelmap'; zones: string[] | 'all'; caption: string };
 
 // Real pixel-map segments (viewBox 3840×2160). Coordinates match /SOLEIA-Pixel-Map.png.
 const PIXEL_SEGMENTS: { name: string; x: number; y: number; w: number; h: number; res: string }[] = [
@@ -109,14 +129,15 @@ const ZONE_MAPPING_ZONES = [
   },
 ];
 
-function ZoneMappingDiagram() {
+function PixelMapDiagram({ zones, caption }: { zones: string[] | 'all'; caption: string }) {
+  const highlightAll = zones === 'all';
+  const set = highlightAll ? null : new Set(zones);
   return (
     <div className="relative w-full aspect-video bg-black overflow-hidden">
       <svg viewBox="0 0 3840 2160" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
-        {/* Base plate */}
         <rect x="0" y="0" width="3840" height="2160" fill="#0a0a0a" />
         {PIXEL_SEGMENTS.map((s) => {
-          const highlighted = HIGHLIGHT_ZONES.has(s.name);
+          const highlighted = highlightAll || (set?.has(s.name) ?? false);
           return (
             <g key={s.name}>
               <rect
@@ -124,18 +145,18 @@ function ZoneMappingDiagram() {
                 y={s.y}
                 width={s.w}
                 height={s.h}
-                fill={highlighted ? 'rgba(196,154,60,0.28)' : 'rgba(255,255,255,0.04)'}
-                stroke={highlighted ? '#c49a3c' : 'rgba(255,255,255,0.18)'}
+                fill={highlighted ? 'rgba(196,154,60,0.28)' : 'rgba(255,255,255,0.03)'}
+                stroke={highlighted ? '#c49a3c' : 'rgba(255,255,255,0.12)'}
                 strokeWidth={highlighted ? 6 : 2}
               />
-              {highlighted && (
+              {highlighted && s.w > 400 && s.h > 150 && (
                 <text
                   x={s.x + s.w / 2}
                   y={s.y + s.h / 2 + 14}
                   textAnchor="middle"
                   fill="#c49a3c"
                   fontFamily="ui-monospace, monospace"
-                  fontSize={42}
+                  fontSize={38}
                   letterSpacing="4"
                 >
                   {s.name}
@@ -145,12 +166,23 @@ function ZoneMappingDiagram() {
           );
         })}
       </svg>
-      <div className="absolute top-3 left-3 text-[10px] uppercase tracking-[0.28em] text-primary/80 font-mono">
-        Soleia Pixel Map · Highlighted Zones
+      <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-4 pointer-events-none">
+        <span className="text-[10px] uppercase tracking-[0.28em] text-primary/80 font-mono">
+          Soleia Pixel Map
+        </span>
+        <span className="text-[10px] uppercase tracking-[0.22em] text-primary/70 font-mono text-right max-w-[60%]">
+          {caption}
+        </span>
       </div>
     </div>
   );
 }
+
+// Non-pixel-map media (video explainers and elevator/cabana/device references).
+const MEDIA: Record<string, Media> = {
+  '3D Previz': { kind: 'video', src: PREVIZ_VIDEO },
+};
+
 
 const CATEGORY_ORDER = [
   'Soleia Creative Package',
