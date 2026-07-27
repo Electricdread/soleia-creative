@@ -1,30 +1,48 @@
-## Verify token-scoped RPCs against live proposals
+# Editable Rate Card — Admin Drag-to-Reorder
 
-Run an automated end-to-end check against the two known client proposal tokens (Whatnot and the GitHub one previously reset) to confirm the security fixes did not break the anonymous client flow.
+Make `/rate-card` fully database-driven and let signed-in admins reorder line items with drag-and-drop. New order persists to `line_item_templates.sort_order` and is what every client sees.
 
-### What the check does
+## 1. Data migration (one-time)
 
-For each token, in a fresh headless Chromium session with no auth:
+Sync the hardcoded arrays in `src/pages/RateCard.tsx` into `line_item_templates` so the DB is the single source of truth:
 
-1. Navigate to `https://soleiacreative.app/proposal/<token>` and wait for network idle.
-2. Capture:
-   - Final URL and HTTP status
-   - Console errors / warnings
-   - Network calls to `get_proposal_by_token`, `get_proposal_items_by_token`, `get_proposal_gallery_by_token`, `get_proposal_timeline_by_token` — status codes and row counts
-3. Assert the rendered page shows:
-   - Proposal title / client name
-   - At least one line item row
-   - Signature panel present (or the "closed for signing" alert if `status != 'sent'`)
-4. Screenshot the top of the page and the line-items section for visual confirmation.
-5. Repeat for `/packet/<token>` and `/creative/<token>` if tokens are available, to cover the other RPCs changed in the same migration (`get_packet_by_token`, `get_client_link_by_token`).
+- **Additional Options**: Static Logo, Transparent Logo Animation, Elevator Dynamic Animation, Elevator Created by Client, Elevator Static Logo, Individual Cabana / Bungalow Logo, 3D Previz.
+- **Video Mapping & Load Fees**: Mapped by Soleia Creative Team, Mapped to Spec by Client, Outside Arch Specific Video, Performing Artist — Mapped by Soleia Creative Team.
+- Ensure `line_item_categories` has rows for `Additional Options` and `Video Mapping & Load Fees` with the current `sort_order` (Additional Options first).
 
-### Deliverable
+Idempotent upsert by `title` so re-running is safe and existing IDs used by proposals are preserved.
 
-A short report per token: pass/fail, any failing RPC with its error, and the screenshots. No code changes unless the check surfaces a regression — in which case I'll come back with a follow-up plan describing the exact fix.
+## 2. Public read RPC
 
-### Tokens I'll use
+`get_rate_card_addons()` already returns items ordered by category + `sort_order`. Confirm/keep that ordering — no schema change needed for reads.
 
-- Whatnot: known active proposal token
-- GitHub: the one reset earlier in this thread
+## 3. Admin reorder RPC
 
-Let me know if you'd like me to include a different token (e.g. Transperfect) or skip the packet/session-link checks.
+Add `admin_reorder_rate_card_items(p_items jsonb)` — `SECURITY DEFINER`, `has_role(auth.uid(),'admin')` gate. Accepts `[{id, sort_order}, ...]` and updates `line_item_templates.sort_order` in a single statement. Grant EXECUTE to `authenticated`.
+
+(RLS on `line_item_templates` already restricts writes to admins; the RPC just makes batching one round-trip.)
+
+## 4. `/rate-card` page changes (`src/pages/RateCard.tsx`)
+
+- Remove the hardcoded `ADDITIONAL_OPTIONS` and `VIDEO_MAPPING` arrays.
+- Fetch categories via `get_rate_card_categories()` and items via `get_rate_card_addons()` on mount; render each category section from the fetched data (keep the exact ivory/gold visual layout, `ServiceRow`, section labels, print CSS, etc.).
+- Featured "Soleia Creative Package" section, venue-contract callout, "The Process", and "Terms & Conditions" stay hardcoded (they aren't line items).
+- Detect admin via `useAuth()`:
+  - Anonymous / non-admin: identical read-only view they see today.
+  - Admin: each row gets a drag handle (grip icon, left side, `no-print` + `tap-44`). Use `@dnd-kit/core` + `@dnd-kit/sortable` (already in the project for other DND lists) with `TouchSensor` (200ms delay, 5px tolerance) per the mobile-reordering memory.
+  - Reordering is scoped **within a category** (Additional Options items reorder among themselves; Video Mapping items among themselves). No cross-category drops.
+  - On drop: optimistic local reorder → call `admin_reorder_rate_card_items` with the new `sort_order` values for just that category → toast on success/failure, revert on error.
+- Hide drag handles, Print/PDF buttons keep working unchanged (`no-print`).
+
+## 5. Verification
+
+- Admin: reorder items on desktop and mobile viewport, refresh, confirm order persists and matches what an anonymous browser sees.
+- Anonymous: `/rate-card` renders identical layout to today with the DB-sourced items.
+- Print preview still fits one page (existing print CSS is unaffected — same rows, same section labels).
+- New proposals seeded from `line_item_templates` continue to pick up the same categories/order.
+
+## Technical notes
+
+- No changes to `ProposalView`, PDF generator, or editorial services pages — they already read from `line_item_templates`.
+- `@dnd-kit` packages are already installed (used by `SortableClipCard`, etc.), so no new dependency.
+- Migration will only touch `line_item_templates` / `line_item_categories` rows and add the reorder RPC; no destructive drops.
