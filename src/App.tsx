@@ -11,6 +11,7 @@ import { FloatingThemeToggle } from "@/components/FloatingThemeToggle";
 import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
+import CreativeGuideServices from "./pages/CreativeGuideServices";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import ContentDelivery from "./pages/ContentDelivery";
 import CreativeSession from "./pages/CreativeSession";
@@ -71,6 +72,7 @@ const App = () => (
               
               {/* Protected Routes - Require Authentication */}
               <Route path="/creative-guide" element={<CreativeGuide />} />
+              <Route path="/creative-guide/services" element={<CreativeGuideServices />} />
               <Route path="/creative-director" element={<ProtectedRoute requireAdmin><CreativeDirector /></ProtectedRoute>} />
               <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
               <Route path="/creative-guide/content-delivery" element={<ContentDelivery />} />

@@ -15,9 +15,9 @@ const NAV_LINKS: { label: string; href?: string; to?: string }[] = [
   { href: '#layout', label: 'Layout' },
   { href: '#tour', label: '360° Tour' },
   { to: '/creative-guide/video-mapping', label: 'Video Mapping' },
+  { to: '/creative-guide/services', label: 'Services' },
   { href: '#branding', label: 'Branding' },
   { href: '#specs', label: 'Specs' },
-  
 ];
 
 const ZONE_GROUPS = [
