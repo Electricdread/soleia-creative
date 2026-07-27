@@ -8,20 +8,10 @@ import solIcon from '@/assets/sol-icon.png';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
-// Service imagery
-import imgImmersive from '@/assets/services/immersive-led.jpg';
-import imgStaticLogo from '@/assets/services/static-logo.jpg';
-import imgTransparent from '@/assets/services/transparent-logo.jpg';
-import imgMappedSoleia from '@/assets/services/mapped-by-soleia.jpg';
-import imgMappedClient from '@/assets/services/mapped-by-client.jpg';
-import imgElevatorDynamic from '@/assets/services/elevator-dynamic.jpg';
-import imgElevatorStatic from '@/assets/services/elevator-static.jpg';
-import imgElevatorClient from '@/assets/services/elevator-client.jpg';
-import imgZoneMapping from '@/assets/services/led-zone-mapping.jpg';
-import imgPerformer from '@/assets/services/performing-artist.jpg';
-import imgCabana from '@/assets/services/cabana-logo.jpg';
-import imgPreviz from '@/assets/services/3d-previz.jpg';
-import imgClientDevice from '@/assets/services/client-device.jpg';
+// Real venue references (do not swap for stock)
+const VENUE_PHOTO = '/venue-screens.png';
+const PIXEL_MAP = '/SOLEIA-Pixel-Map.png';
+const PREVIZ_VIDEO = '/venue/previz-vanderpump.mp4';
 
 type Item = {
   id: string;
@@ -64,41 +54,103 @@ const BLURBS: Record<string, string> = {
     "Support for client-provided laptops or devices used for PowerPoint presentations, awards, and other presentation content — including connection, playback coordination, screen routing, and onsite testing for proper display.",
 };
 
-// Static hero image per line item (by exact title)
-const IMAGES: Record<string, string> = {
-  'Immersive LED Environments & Branded Overlay Design': imgImmersive,
-  'Static Logo': imgStaticLogo,
-  'Transparent Logo Animation': imgTransparent,
-  'Mapped by Soleia Creative Team': imgMappedSoleia,
-  'Mapped to Spec by Client': imgMappedClient,
-  'Elevator Dynamic Animation': imgElevatorDynamic,
-  'Elevator Static Logo': imgElevatorStatic,
-  'Elevator Created by Client': imgElevatorClient,
-  'LED Screens Specific Zone Mapping': imgZoneMapping,
-  'Performing Artist — Mapped by Soleia Creative Team': imgPerformer,
-  'Individual Cabana / Bungalow Logo': imgCabana,
-  '3D Previz': imgPreviz,
-  'Client-Supplied Device Presentation Playback': imgClientDevice,
+// Real venue reference per line item (photo, pixel map, or video)
+type Media = { kind: 'image' | 'video'; src: string };
+const MEDIA: Record<string, Media> = {
+  'Immersive LED Environments & Branded Overlay Design': { kind: 'image', src: VENUE_PHOTO },
+  'Static Logo': { kind: 'image', src: VENUE_PHOTO },
+  'Mapped by Soleia Creative Team': { kind: 'image', src: VENUE_PHOTO },
+  'Mapped to Spec by Client': { kind: 'image', src: PIXEL_MAP },
+  'Performing Artist — Mapped by Soleia Creative Team': { kind: 'image', src: VENUE_PHOTO },
+  '3D Previz': { kind: 'video', src: PREVIZ_VIDEO },
 };
+
+// Zones highlighted by "LED Screens Specific Zone Mapping" — pulled from the real pixel map.
+const HIGHLIGHT_ZONES = new Set(['SR IMAG', 'SL IMAG', 'OUTDOOR ARCH']);
+
+// Real pixel-map segments (viewBox 3840×2160). Coordinates match /SOLEIA-Pixel-Map.png.
+const PIXEL_SEGMENTS: { name: string; x: number; y: number; w: number; h: number; res: string }[] = [
+  { name: 'SR IMAG', x: 0, y: 0, w: 1216, h: 592, res: '1216×592' },
+  { name: 'CENTER', x: 1216, y: 0, w: 640, h: 272, res: '640×272' },
+  { name: 'SL IMAG', x: 1856, y: 0, w: 1216, h: 592, res: '1216×592' },
+  { name: 'DJ BOOTH', x: 906, y: 594, w: 1260, h: 168, res: '1260×168' },
+  { name: 'SR CURVE', x: 0, y: 794, w: 2304, h: 272, res: '2304×272' },
+  { name: 'SL CURVE', x: 0, y: 1066, w: 2304, h: 272, res: '2304×272' },
+  { name: 'SUNRAY 1', x: 0, y: 1368, w: 1920, h: 128, res: '1920×128' },
+  { name: 'SUNRAY 2', x: 0, y: 1496, w: 1536, h: 128, res: '1536×128' },
+  { name: 'SUNRAY 3', x: 0, y: 1624, w: 1792, h: 128, res: '1792×128' },
+  { name: 'SUNRAY 4', x: 0, y: 1752, w: 1792, h: 128, res: '1792×128' },
+  { name: 'SUNRAY 5', x: 0, y: 1880, w: 1792, h: 128, res: '1792×128' },
+  { name: 'SUNRAY 6', x: 0, y: 2008, w: 1536, h: 128, res: '1536×128' },
+  { name: 'OUTDOOR SR', x: 2322, y: 793, w: 588, h: 840, res: '588×840' },
+  { name: 'OUTDOOR SL', x: 2916, y: 793, w: 588, h: 840, res: '588×840' },
+  { name: 'OUTDOOR ARCH', x: 2322, y: 1639, w: 1512, h: 504, res: '1512×504' },
+];
 
 // Zone descriptions for the LED Screens Specific Zone Mapping service.
 const ZONE_MAPPING_ZONES = [
   {
-    name: 'IMAG SL',
+    name: 'SR IMAG',
+    res: '1216 × 592',
     detail:
-      'Stage-left IMAG — the tall vertical LED panel flanking the main stage. Used for stage-adjacent moments, artist visuals, and brand keys that live beside the performance.',
+      'Stage-right IMAG panel above the DJ booth. Landscape LED for artist-facing visuals, brand keys, and moment-specific graphics that frame the main room.',
   },
   {
-    name: 'IMAG SR',
+    name: 'SL IMAG',
+    res: '1216 × 592',
     detail:
-      'Stage-right IMAG — mirror to SL. The pair frames the stage and holds artist-facing or brand-facing content without interrupting the main room narrative.',
+      'Stage-left IMAG — mirror to SR. The pair frames the DJ booth and holds directional brand or performance content without interrupting the sunburst above.',
   },
   {
-    name: 'Outside Arch',
+    name: 'Outdoor Arch',
+    res: '1512 × 504',
     detail:
-      'The exterior arched LED at the venue entrance. First impression on arrival — logo animations, welcome loops, or moment-specific creative that greets guests before they walk in.',
+      'The exterior arched LED at the beachclub. First impression on arrival — logo animations, welcome loops, or moment-specific creative that greets guests outdoors.',
   },
 ];
+
+function ZoneMappingDiagram() {
+  return (
+    <div className="relative w-full aspect-video bg-black overflow-hidden">
+      <svg viewBox="0 0 3840 2160" className="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
+        {/* Base plate */}
+        <rect x="0" y="0" width="3840" height="2160" fill="#0a0a0a" />
+        {PIXEL_SEGMENTS.map((s) => {
+          const highlighted = HIGHLIGHT_ZONES.has(s.name);
+          return (
+            <g key={s.name}>
+              <rect
+                x={s.x}
+                y={s.y}
+                width={s.w}
+                height={s.h}
+                fill={highlighted ? 'rgba(196,154,60,0.28)' : 'rgba(255,255,255,0.04)'}
+                stroke={highlighted ? '#c49a3c' : 'rgba(255,255,255,0.18)'}
+                strokeWidth={highlighted ? 6 : 2}
+              />
+              {highlighted && (
+                <text
+                  x={s.x + s.w / 2}
+                  y={s.y + s.h / 2 + 14}
+                  textAnchor="middle"
+                  fill="#c49a3c"
+                  fontFamily="ui-monospace, monospace"
+                  fontSize={42}
+                  letterSpacing="4"
+                >
+                  {s.name}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+      <div className="absolute top-3 left-3 text-[10px] uppercase tracking-[0.28em] text-primary/80 font-mono">
+        Soleia Pixel Map · Highlighted Zones
+      </div>
+    </div>
+  );
+}
 
 const CATEGORY_ORDER = [
   'Soleia Creative Package',
@@ -162,7 +214,7 @@ export default function CreativeGuideServices() {
         </Reveal>
         <Reveal delay={0.15}>
           <p className="mt-6 text-muted-foreground text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-            A plain-language breakdown of every line item on your Soleia proposal — what it is, what it lives on, and what you get.
+            A plain-language breakdown of every line item on your Soleia proposal — what it is, what it lives on, and what you get. All visuals reference the actual Soleia Las Vegas venue and pixel map.
           </p>
         </Reveal>
       </section>
@@ -184,7 +236,7 @@ export default function CreativeGuideServices() {
                 {group.items.map((item) => {
                   const isTransparent = item.title === 'Transparent Logo Animation';
                   const isZoneMapping = item.title === 'LED Screens Specific Zone Mapping';
-                  const heroImage = IMAGES[item.title];
+                  const media = MEDIA[item.title];
                   return (
                     <Reveal key={item.id}>
                       <article className="rounded-2xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden">
@@ -209,13 +261,36 @@ export default function CreativeGuideServices() {
                               </div>
                             </div>
                           </div>
-                        ) : heroImage ? (
+                        ) : isZoneMapping ? (
+                          <ZoneMappingDiagram />
+                        ) : media?.kind === 'video' ? (
+                          <div
+                            className="relative w-full aspect-video bg-black cursor-pointer group"
+                            onClick={() => setFullscreenVideo(media.src)}
+                          >
+                            <video
+                              src={media.src}
+                              className="w-full h-full object-cover"
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/90 text-xs uppercase tracking-[0.18em]">
+                                <Maximize2 className="w-3.5 h-3.5" />
+                                Tap for fullscreen
+                              </div>
+                            </div>
+                          </div>
+                        ) : media?.kind === 'image' ? (
                           <div
                             className="relative w-full aspect-video bg-black cursor-pointer group overflow-hidden"
-                            onClick={() => setFullscreenImage(heroImage)}
+                            onClick={() => setFullscreenImage(media.src)}
                           >
                             <img
-                              src={heroImage}
+                              src={media.src}
                               alt={item.title}
                               loading="lazy"
                               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
@@ -249,10 +324,15 @@ export default function CreativeGuideServices() {
                                     key={z.name}
                                     className="rounded-xl border border-primary/20 bg-primary/5 p-4"
                                   >
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-                                      <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-primary">
-                                        {z.name}
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+                                        <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-primary">
+                                          {z.name}
+                                        </span>
+                                      </div>
+                                      <span className="font-mono text-[10px] text-muted-foreground">
+                                        {z.res}
                                       </span>
                                     </div>
                                     <p className="text-xs leading-relaxed text-muted-foreground">
