@@ -1578,6 +1578,10 @@ export type Database = {
     }
     Functions: {
       admin_exists: { Args: never; Returns: boolean }
+      admin_reorder_rate_card_items: {
+        Args: { p_items: Json }
+        Returns: undefined
+      }
       claim_admin_role: { Args: { target_user_id: string }; Returns: boolean }
       delete_email: {
         Args: { message_id: number; queue_name: string }
