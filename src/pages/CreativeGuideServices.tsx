@@ -218,27 +218,6 @@ export default function CreativeGuideServices() {
         </div>
       )}
 
-      {/* Fullscreen image modal */}
-      {fullscreenImage && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
-          onClick={() => setFullscreenImage(null)}
-        >
-          <img
-            src={fullscreenImage}
-            alt=""
-            className="max-w-full max-h-full object-contain"
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute top-5 right-5 text-white"
-            onClick={() => setFullscreenImage(null)}
-          >
-            Close
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
