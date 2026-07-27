@@ -270,12 +270,10 @@ export default function CreativeGuideServices() {
               <div className="space-y-8">
                 {group.items.map((item) => {
                   const isTransparent = item.title === 'Transparent Logo Animation';
-                  const zoneSpec = SERVICE_ZONES[item.title];
-                  const media = MEDIA[item.title];
                   return (
                     <Reveal key={item.id}>
                       <article className="rounded-2xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden">
-                        {isTransparent ? (
+                        {isTransparent && (
                           <div
                             className="relative w-full aspect-video bg-black cursor-pointer group"
                             onClick={() => setFullscreenVideo(transparentLogoVideo.url)}
@@ -296,31 +294,7 @@ export default function CreativeGuideServices() {
                               </div>
                             </div>
                           </div>
-                        ) : zoneSpec ? (
-                          <PixelMapDiagram zones={zoneSpec.zones} caption={zoneSpec.caption} />
-                        ) : media?.kind === 'video' ? (
-                          <div
-                            className="relative w-full aspect-video bg-black cursor-pointer group"
-                            onClick={() => setFullscreenVideo(media.src)}
-                          >
-                            <video
-                              src={media.src}
-                              className="w-full h-full object-cover"
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
-                              preload="metadata"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/90 text-xs uppercase tracking-[0.18em]">
-                                <Maximize2 className="w-3.5 h-3.5" />
-                                Tap for fullscreen
-                              </div>
-                            </div>
-                          </div>
-                        ) : null}
-
+                        )}
 
                         <div className="p-6 sm:p-8">
                           <h3 className="font-display text-xl sm:text-2xl text-foreground mb-3">
@@ -330,37 +304,6 @@ export default function CreativeGuideServices() {
                             {BLURBS[item.title] || item.long_description || 'Details available on request.'}
                           </p>
 
-                          {/* Zone breakdown for LED Screens Specific Zone Mapping */}
-                          {item.title === 'LED Screens Specific Zone Mapping' && (
-                            <div className="mt-7 border-t border-border/60 pt-6">
-                              <span className="text-[10px] uppercase tracking-[0.28em] text-primary">
-                                Applicable Screen Zones
-                              </span>
-                              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                                {ZONE_MAPPING_ZONES.map((z) => (
-                                  <div
-                                    key={z.name}
-                                    className="rounded-xl border border-primary/20 bg-primary/5 p-4"
-                                  >
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-                                        <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-primary">
-                                          {z.name}
-                                        </span>
-                                      </div>
-                                      <span className="font-mono text-[10px] text-muted-foreground">
-                                        {z.res}
-                                      </span>
-                                    </div>
-                                    <p className="text-xs leading-relaxed text-muted-foreground">
-                                      {z.detail}
-                                    </p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
 
                           {item.deliverables && item.deliverables.length > 0 && (
                             <ul className="mt-5 space-y-1.5">
