@@ -65,7 +65,7 @@ export default function CreativeGuideServices() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullscreenVideo, setFullscreenVideo] = useState<string | null>(null);
-  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  
 
   useEffect(() => {
     (async () => {
