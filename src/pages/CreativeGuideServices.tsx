@@ -8,6 +8,21 @@ import solIcon from '@/assets/sol-icon.png';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
+// Service imagery
+import imgImmersive from '@/assets/services/immersive-led.jpg';
+import imgStaticLogo from '@/assets/services/static-logo.jpg';
+import imgTransparent from '@/assets/services/transparent-logo.jpg';
+import imgMappedSoleia from '@/assets/services/mapped-by-soleia.jpg';
+import imgMappedClient from '@/assets/services/mapped-by-client.jpg';
+import imgElevatorDynamic from '@/assets/services/elevator-dynamic.jpg';
+import imgElevatorStatic from '@/assets/services/elevator-static.jpg';
+import imgElevatorClient from '@/assets/services/elevator-client.jpg';
+import imgZoneMapping from '@/assets/services/led-zone-mapping.jpg';
+import imgPerformer from '@/assets/services/performing-artist.jpg';
+import imgCabana from '@/assets/services/cabana-logo.jpg';
+import imgPreviz from '@/assets/services/3d-previz.jpg';
+import imgClientDevice from '@/assets/services/client-device.jpg';
+
 type Item = {
   id: string;
   title: string;
@@ -49,6 +64,42 @@ const BLURBS: Record<string, string> = {
     "Support for client-provided laptops or devices used for PowerPoint presentations, awards, and other presentation content — including connection, playback coordination, screen routing, and onsite testing for proper display.",
 };
 
+// Static hero image per line item (by exact title)
+const IMAGES: Record<string, string> = {
+  'Immersive LED Environments & Branded Overlay Design': imgImmersive,
+  'Static Logo': imgStaticLogo,
+  'Transparent Logo Animation': imgTransparent,
+  'Mapped by Soleia Creative Team': imgMappedSoleia,
+  'Mapped to Spec by Client': imgMappedClient,
+  'Elevator Dynamic Animation': imgElevatorDynamic,
+  'Elevator Static Logo': imgElevatorStatic,
+  'Elevator Created by Client': imgElevatorClient,
+  'LED Screens Specific Zone Mapping': imgZoneMapping,
+  'Performing Artist — Mapped by Soleia Creative Team': imgPerformer,
+  'Individual Cabana / Bungalow Logo': imgCabana,
+  '3D Previz': imgPreviz,
+  'Client-Supplied Device Presentation Playback': imgClientDevice,
+};
+
+// Zone descriptions for the LED Screens Specific Zone Mapping service.
+const ZONE_MAPPING_ZONES = [
+  {
+    name: 'IMAG SL',
+    detail:
+      'Stage-left IMAG — the tall vertical LED panel flanking the main stage. Used for stage-adjacent moments, artist visuals, and brand keys that live beside the performance.',
+  },
+  {
+    name: 'IMAG SR',
+    detail:
+      'Stage-right IMAG — mirror to SL. The pair frames the stage and holds artist-facing or brand-facing content without interrupting the main room narrative.',
+  },
+  {
+    name: 'Outside Arch',
+    detail:
+      'The exterior arched LED at the venue entrance. First impression on arrival — logo animations, welcome loops, or moment-specific creative that greets guests before they walk in.',
+  },
+];
+
 const CATEGORY_ORDER = [
   'Soleia Creative Package',
   'Video Mapping & Load Fees',
@@ -60,6 +111,7 @@ export default function CreativeGuideServices() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullscreenVideo, setFullscreenVideo] = useState<string | null>(null);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -69,7 +121,6 @@ export default function CreativeGuideServices() {
         .select('id,title,price,category,ideal_for,long_description,deliverables,sort_order')
         .ilike('title', '%Immersive LED Environments%');
       const merged = [...(pkg || []), ...((data as Item[]) || [])];
-      // De-dupe by id
       const seen = new Set<string>();
       const unique = merged.filter((i) => (seen.has(i.id) ? false : (seen.add(i.id), true)));
       setItems(unique);
@@ -132,10 +183,12 @@ export default function CreativeGuideServices() {
               <div className="space-y-8">
                 {group.items.map((item) => {
                   const isTransparent = item.title === 'Transparent Logo Animation';
+                  const isZoneMapping = item.title === 'LED Screens Specific Zone Mapping';
+                  const heroImage = IMAGES[item.title];
                   return (
                     <Reveal key={item.id}>
                       <article className="rounded-2xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden">
-                        {isTransparent && (
+                        {isTransparent ? (
                           <div
                             className="relative w-full aspect-video bg-black cursor-pointer group"
                             onClick={() => setFullscreenVideo(transparentLogoVideo.url)}
@@ -156,19 +209,61 @@ export default function CreativeGuideServices() {
                               </div>
                             </div>
                           </div>
-                        )}
-                        <div className="p-6 sm:p-8">
-                          <div className="flex flex-wrap items-baseline justify-between gap-3 mb-3">
-                            <h3 className="font-display text-xl sm:text-2xl text-foreground">{item.title}</h3>
-                            {item.price > 0 && (
-                              <span className="text-primary font-mono text-sm tracking-widest">
-                                ${Number(item.price).toLocaleString()}
-                              </span>
-                            )}
+                        ) : heroImage ? (
+                          <div
+                            className="relative w-full aspect-video bg-black cursor-pointer group overflow-hidden"
+                            onClick={() => setFullscreenImage(heroImage)}
+                          >
+                            <img
+                              src={heroImage}
+                              alt={item.title}
+                              loading="lazy"
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/90 text-xs uppercase tracking-[0.18em]">
+                                <Maximize2 className="w-3.5 h-3.5" />
+                                Tap for fullscreen
+                              </div>
+                            </div>
                           </div>
+                        ) : null}
+
+                        <div className="p-6 sm:p-8">
+                          <h3 className="font-display text-xl sm:text-2xl text-foreground mb-3">
+                            {item.title}
+                          </h3>
                           <p className="text-muted-foreground text-[15px] leading-relaxed">
                             {BLURBS[item.title] || item.long_description || 'Details available on request.'}
                           </p>
+
+                          {/* Zone breakdown for LED Screens Specific Zone Mapping */}
+                          {isZoneMapping && (
+                            <div className="mt-7 border-t border-border/60 pt-6">
+                              <span className="text-[10px] uppercase tracking-[0.28em] text-primary">
+                                Applicable Screen Zones
+                              </span>
+                              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                                {ZONE_MAPPING_ZONES.map((z) => (
+                                  <div
+                                    key={z.name}
+                                    className="rounded-xl border border-primary/20 bg-primary/5 p-4"
+                                  >
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+                                      <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-primary">
+                                        {z.name}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs leading-relaxed text-muted-foreground">
+                                      {z.detail}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                           {item.deliverables && item.deliverables.length > 0 && (
                             <ul className="mt-5 space-y-1.5">
                               {item.deliverables.map((d, i) => (
@@ -209,6 +304,28 @@ export default function CreativeGuideServices() {
             size="sm"
             className="absolute top-5 right-5 text-white"
             onClick={() => setFullscreenVideo(null)}
+          >
+            Close
+          </Button>
+        </div>
+      )}
+
+      {/* Fullscreen image modal */}
+      {fullscreenImage && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setFullscreenImage(null)}
+        >
+          <img
+            src={fullscreenImage}
+            alt=""
+            className="max-w-full max-h-full object-contain"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-5 right-5 text-white"
+            onClick={() => setFullscreenImage(null)}
           >
             Close
           </Button>
