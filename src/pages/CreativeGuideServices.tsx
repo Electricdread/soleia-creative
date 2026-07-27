@@ -8,10 +8,6 @@ import solIcon from '@/assets/sol-icon.png';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
-// Real venue references (do not swap for stock)
-const VENUE_PHOTO = '/venue-screens.png';
-const PIXEL_MAP = '/SOLEIA-Pixel-Map.png';
-const PREVIZ_VIDEO = '/venue/previz-vanderpump.mp4';
 
 type Item = {
   id: string;
