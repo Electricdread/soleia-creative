@@ -70,14 +70,17 @@ export default function CreativeGuideServices() {
   useEffect(() => {
     (async () => {
       const { data } = await supabase.rpc('get_rate_card_addons');
-      const { data: pkg } = await supabase
-        .from('line_item_templates')
-        .select('id,title,price,category,ideal_for,long_description,deliverables,sort_order')
-        .ilike('title', '%Immersive LED Environments%');
-      const merged = [...(pkg || []), ...((data as Item[]) || [])];
-      const seen = new Set<string>();
-      const unique = merged.filter((i) => (seen.has(i.id) ? false : (seen.add(i.id), true)));
-      setItems(unique);
+      const pkg: Item = {
+        id: 'pkg-immersive',
+        title: 'Immersive LED Environments & Branded Overlay Design',
+        price: 3000,
+        category: 'Soleia Creative Package',
+        ideal_for: null,
+        long_description: null,
+        deliverables: null,
+        sort_order: 0,
+      };
+      setItems([pkg, ...((data as Item[]) || [])]);
       setLoading(false);
     })();
   }, []);
