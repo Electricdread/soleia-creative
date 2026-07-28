@@ -113,7 +113,17 @@ export default function CreativeGuideServices() {
         deliverables: null,
         sort_order: 0,
       };
-      setItems([pkg, ...((data as Item[]) || [])]);
+      const marquee: Item = {
+        id: 'led-marquee',
+        title: 'LED Marquee',
+        price: 0,
+        category: 'Additional Options',
+        ideal_for: null,
+        long_description: null,
+        deliverables: null,
+        sort_order: 999,
+      };
+      setItems([pkg, ...((data as Item[]) || []), marquee]);
       setLoading(false);
     })();
   }, []);
