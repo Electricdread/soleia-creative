@@ -148,11 +148,6 @@ export default function CreativeGuideServices() {
             Soleia Creative Team Services
           </h1>
         </Reveal>
-        <Reveal delay={0.15}>
-          <p className="mt-6 text-muted-foreground text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-            A plain-language breakdown of every line item on your Soleia proposal — what it is, what it lives on, and what you get. All visuals reference the actual Soleia Las Vegas venue and pixel map.
-          </p>
-        </Reveal>
       </section>
 
       {/* SERVICES */}
