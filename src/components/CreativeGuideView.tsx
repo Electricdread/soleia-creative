@@ -13,9 +13,9 @@ const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC
 const NAV_LINKS: { label: string; href?: string; to?: string }[] = [
   { href: '#venue', label: 'Venue' },
   { href: '#layout', label: 'Layout' },
+  { to: '/creative-guide/services', label: 'Services' },
   { href: '#tour', label: '360° Tour' },
   { to: '/creative-guide/video-mapping', label: 'Video Mapping' },
-  { to: '/creative-guide/services', label: 'Services' },
   { href: '#branding', label: 'Branding' },
   { href: '#specs', label: 'Specs' },
 ];
