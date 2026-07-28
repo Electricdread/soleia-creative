@@ -56,6 +56,33 @@ const BLURBS: Record<string, string> = {
     "Onsite technical support for client-provided laptops or devices running PowerPoint decks, keynote videos, award reels, or live presentation content. Covers signal connection, screen routing to the correct LED zones, playback coordination with the show operator, and pre-event testing so your presentation lands correctly the moment you cue it.",
 };
 
+const CREATIVE_PACKAGE_SECTIONS: PackageSection[] = [
+  {
+    body: "Soleia is not a standard screen setup. The venue runs one of the more advanced LED layouts you'll find anywhere: the main-room IMAG walls, curves, and sunburst (sky ceiling panels); the outdoor arch (wide aspect ratio) and outdoor side panels (portrait aspect ratios); and carrying through the rest of the property, the cabana and bungalow TVs and the elevator displays — each surface a different shape, resolution, and position in the room. Content that isn't built for this layout shows it immediately. Content that is built for it turns the entire venue into one connected, immersive environment. That is exactly what this package covers, handled end to end by our team.",
+  },
+  {
+    heading: 'Built by a Team Proven in Immersive Experiences',
+    body: "Designing for an immersive room is a different discipline than making video for a screen. It takes understanding how the room actually works — how energy moves through the space, where guests' attention lands, and how each surface either builds that energy or breaks it. The content has to flow with the night: pacing that rises and settles with the room, moments of intensity balanced with moments of rest, every screen adding to the engagement instead of competing for it. That understanding is what our team brings — it's the difference between screens that play content and a room that carries a feeling. When you book the Full Creative Package, that load — creative, technical, and show-night — is ours to carry, not yours.",
+  },
+  {
+    heading: 'What We Deliver',
+    body: 'For your event, we design one to three custom looks: cinematic moving environments created specifically for your night and your brand, built to play across every LED surface in the venue in sync. Each look is composed for the actual layout — nothing stretched, cropped, or repurposed from a generic frame. The package includes the complete pipeline:',
+    bullets: [
+      'Creative direction. We work from your event\'s brief and brand to define the looks before animation begins.',
+      'Custom animation. Each look is produced as broadcast-quality motion content, with branded overlays integrated into the environment.',
+      'Pixel-perfect Resolume mapping. Every surface — the main-room IMAG walls, curves, and sunburst sky ceiling panels; the wide-aspect outdoor arch; the portrait outdoor side panels; the cabana and bungalow TVs; and the elevator displays — receives content mapped to its exact pixel dimensions and position.',
+      '3D previz approval. Before load-in, you review the content on a 3D model of the actual venue screens.',
+      'Onsite playback. Our operator runs the show the night of the event, managing playback and transitions from start to finish.',
+    ],
+  },
+  {
+    heading: 'Why It Matters',
+    body: 'A room this connected only works when one team owns the whole picture. Splitting design, mapping, and playback across vendors is where immersive shows break. We deliver it as one package because that\'s how the result stays consistent. It\'s the part of the event we take the most pride in: guests walk into a space where everything flows, and it simply works.',
+  },
+  {
+    body: 'Included: creative direction, one to three custom looks, pixel-perfect Resolume mapping to all LED surfaces, 3D previz approval, and onsite playback the night of the event. Contact the Soleia creative team with your event date to begin.',
+  },
+];
 
 
 const CATEGORY_ORDER = [
