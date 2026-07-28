@@ -114,7 +114,7 @@ export default function CreativeGuideServices() {
         </Reveal>
         <Reveal delay={0.1}>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl mt-8 leading-[1.05]">
-            What we build, <span className="text-primary italic">explained.</span>
+            Soleia Creative Team Services
           </h1>
         </Reveal>
         <Reveal delay={0.15}>
