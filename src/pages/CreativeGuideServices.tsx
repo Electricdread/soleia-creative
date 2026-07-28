@@ -54,6 +54,8 @@ const BLURBS: Record<string, string> = {
     "A full 3D preview of your content running on Soleia's real screens, rendered from our venue model. You review the actual visuals in the actual room before load-in — pacing, brightness, brand placement, coverage — and approve or request revisions. Included with the Creative Package; also available standalone.",
   'Client-Supplied Device Presentation Playback':
     "Onsite technical support for client-provided laptops or devices running PowerPoint decks, keynote videos, award reels, or live presentation content. Covers signal connection, screen routing to the correct LED zones, playback coordination with the show operator, and pre-event testing so your presentation lands correctly the moment you cue it.",
+  'LED Marquee':
+    "Soleia's exterior LED marquee — the street-facing sign guests see on approach — can carry your event's branding for the night. We build a marquee-formatted graphic (static or short animated loop) sized to the sign's exact resolution and schedule it into the venue's marquee playback so it runs during your event window. Great for arrivals, step-and-repeat moments, and social capture outside the venue. Available on request through the Soleia creative team — not billed on the rate card, coordinated directly per event.",
 };
 
 const CREATIVE_PACKAGE_SECTIONS: PackageSection[] = [
@@ -111,7 +113,17 @@ export default function CreativeGuideServices() {
         deliverables: null,
         sort_order: 0,
       };
-      setItems([pkg, ...((data as Item[]) || [])]);
+      const marquee: Item = {
+        id: 'led-marquee',
+        title: 'LED Marquee',
+        price: 0,
+        category: 'Additional Options',
+        ideal_for: null,
+        long_description: null,
+        deliverables: null,
+        sort_order: 999,
+      };
+      setItems([pkg, ...((data as Item[]) || []), marquee]);
       setLoading(false);
     })();
   }, []);
