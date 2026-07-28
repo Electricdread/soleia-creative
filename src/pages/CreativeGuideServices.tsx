@@ -201,10 +201,36 @@ export default function CreativeGuideServices() {
                           <h3 className="font-display text-xl sm:text-2xl text-foreground mb-3">
                             {item.title}
                           </h3>
-                          <p className="text-muted-foreground text-[15px] leading-relaxed whitespace-pre-wrap">
-                            {BLURBS[item.title] || item.long_description || 'Details available on request.'}
-                          </p>
-
+                          {item.title === 'The Full Soleia Creative Package' ? (
+                            <div className="space-y-5">
+                              {CREATIVE_PACKAGE_SECTIONS.map((section, idx) => (
+                                <div key={idx}>
+                                  {section.heading && (
+                                    <h4 className="font-display text-base text-foreground mb-2">
+                                      {section.heading}
+                                    </h4>
+                                  )}
+                                  <p className="text-muted-foreground text-[15px] leading-relaxed">
+                                    {section.body}
+                                  </p>
+                                  {section.bullets && section.bullets.length > 0 && (
+                                    <ul className="mt-4 space-y-2">
+                                      {section.bullets.map((bullet, bIdx) => (
+                                        <li key={bIdx} className="text-[15px] text-muted-foreground flex gap-3">
+                                          <span className="text-primary flex-shrink-0">—</span>
+                                          <span>{bullet}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-muted-foreground text-[15px] leading-relaxed whitespace-pre-wrap">
+                              {BLURBS[item.title] || item.long_description || 'Details available on request.'}
+                            </p>
+                          )}
 
                           {item.deliverables && item.deliverables.length > 0 && (
                             <ul className="mt-5 space-y-1.5">
