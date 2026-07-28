@@ -33,7 +33,7 @@ const BLURBS: Record<string, string> = {
   'Static Logo':
     "A single high-resolution static logo, color-graded and re-sized for LED so it reads cleanly on the venue's large-format displays. We place it on the screens you choose — main room, TVs, elevator, or a specific zone — and program it into the show file. The simplest way to put your brand in the room without commissioning motion content.",
   'Transparent Logo Animation':
-    "A short-form logo animation delivered with a real alpha channel (transparent background), so your brand sits on top of Soleia's live environments instead of blocking them. The room keeps moving underneath — light, atmosphere, textures — and your logo breathes in and out over it. See the explainer above for exactly how the transparency layer behaves on the wall.",
+    "A refined logo animation delivered with a true alpha channel, allowing it to sit cleanly over live content and environmental footage without blocking the screen. Your mark remains visible while the room continues to move underneath — ideal for branding moments that need to feel integrated, not interruptive. See the explainer above for a live preview of how the transparency layer behaves on the wall.",
   'Mapped by Soleia Creative Team':
     "You supply the raw assets — logos, animations, brand videos — and our team handles the technical work: reformatting for each LED zone's exact resolution, color-correcting for the panels, pixel-perfect mapping in Resolume, QC on venue hardware, and onsite playback. You focus on the creative; we make sure it lands correctly on every screen.",
   'Mapped to Spec by Client':
