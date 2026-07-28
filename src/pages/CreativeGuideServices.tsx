@@ -72,7 +72,7 @@ export default function CreativeGuideServices() {
       const { data } = await supabase.rpc('get_rate_card_addons');
       const pkg: Item = {
         id: 'pkg-immersive',
-        title: 'Immersive LED Environments & Branded Overlay Design',
+        title: 'The Full Soleia Creative Package',
         price: 3000,
         category: 'Soleia Creative Package',
         ideal_for: null,
