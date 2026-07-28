@@ -170,7 +170,7 @@ export default function CreativeGuideServices() {
                           <h3 className="font-display text-xl sm:text-2xl text-foreground mb-3">
                             {item.title}
                           </h3>
-                          <p className="text-muted-foreground text-[15px] leading-relaxed">
+                          <p className="text-muted-foreground text-[15px] leading-relaxed whitespace-pre-wrap">
                             {BLURBS[item.title] || item.long_description || 'Details available on request.'}
                           </p>
 
