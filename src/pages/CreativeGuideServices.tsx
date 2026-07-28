@@ -259,14 +259,20 @@ export default function CreativeGuideServices() {
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
           onClick={() => setFullscreenVideo(null)}
         >
-          <video
-            src={fullscreenVideo}
-            className="max-w-full max-h-full"
-            autoPlay
-            loop
-            controls
-            playsInline
-          />
+          <div
+            className="relative w-full h-full max-w-5xl max-h-[80vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <video
+              src={fullscreenVideo}
+              className="max-w-full max-h-full"
+              autoPlay
+              loop
+              muted
+              controls
+              playsInline
+            />
+          </div>
           <Button
             variant="ghost"
             size="sm"
