@@ -70,7 +70,7 @@ const CREATIVE_PACKAGE_SECTIONS: PackageSection[] = [
     bullets: [
       'Creative direction. We work from your event\'s brief and brand to define the looks before animation begins.',
       'Custom animation. Each look is produced as broadcast-quality motion content, with branded overlays integrated into the environment.',
-      'Pixel-perfect Resolume mapping. Every surface — the main-room IMAG walls, curves, and sunburst sky ceiling panels; the wide-aspect outdoor arch; the portrait outdoor side panels; the cabana and bungalow TVs; and the elevator displays — receives content mapped to its exact pixel dimensions and position.',
+      'Pixel-perfect Resolume mapping. Every surface — the main-room IMAG walls, curves, and sunburst sky ceiling panels; the wide-aspect outdoor arch; and the portrait outdoor side panels — receives content mapped to its exact pixel dimensions and position.',
       '3D previz approval. Before load-in, you review the content on a 3D model of the actual venue screens.',
       'Onsite playback. Our operator runs the show the night of the event, managing playback and transitions from start to finish.',
     ],
