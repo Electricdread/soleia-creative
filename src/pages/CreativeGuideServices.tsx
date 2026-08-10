@@ -52,7 +52,7 @@ const BLURBS: Record<string, string> = {
     "Dedicated logo playback on a specific cabana or bungalow TV — that screen gets its own feed instead of running the shared narrowcasting loop. Ideal for sponsor activations, private hosts, or VIP tables that need their own on-screen identity.",
   '3D Previz':
     "A full 3D preview of your content running on Soleia's real screens, rendered from our venue model. You review the actual visuals in the actual room before load-in — pacing, brightness, brand placement, coverage — and approve or request revisions. Included with the Creative Package; also available standalone.",
-  'Client-Supplied Device Presentation Playback':
+  'Presentation':
     "Onsite technical support for client-provided laptops or devices running PowerPoint decks, keynote videos, award reels, or live presentation content. Covers signal connection, screen routing to the correct LED zones, playback coordination with the show operator, and pre-event testing so your presentation lands correctly the moment you cue it.",
   'LED Marquee':
     "Soleia's exterior LED marquee — the street-facing sign guests see on approach — can carry your event's branding for the night. We build a marquee-formatted graphic (static or short animated loop) sized to the sign's exact resolution and schedule it into the venue's marquee playback so it runs during your event window. Great for arrivals, step-and-repeat moments, and social capture outside the venue. Available on request through the Soleia creative team — not billed on the rate card, coordinated directly per event.",
