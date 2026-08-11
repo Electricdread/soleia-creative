@@ -188,6 +188,56 @@ function CategorySection({
   );
 }
 
+/**
+ * Compact typography used for the printed sheet. The same rules are also applied
+ * via `.rc-measuring` on screen so the fit calculation measures real print height.
+ */
+const compactDeclarations = (sheet: string, scope: string) => `
+  ${sheet} {
+    padding: 14px 18px !important;
+    width: 768px !important;
+    max-width: 768px !important;
+    margin: 0 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    transform-origin: top left;
+  }
+  ${sheet} * { page-break-inside: avoid; break-inside: avoid; }
+  ${scope} .rc-eyebrow-wrap { margin-top: 8px !important; margin-bottom: 3px !important; }
+  ${scope} .rc-package { padding: 10px 12px !important; }
+  ${scope} .rc-package h3 { font-size: 13px !important; line-height: 1.2 !important; }
+  ${scope} .rc-package p { font-size: 9.5px !important; margin-top: 4px !important; line-height: 1.3 !important; }
+  ${scope} .rc-package .rc-price { font-size: 20px !important; }
+  ${scope} .rc-venue { margin-top: 6px !important; padding: 6px 10px !important; }
+  ${scope} .rc-venue .rc-venue-body { font-size: 10px !important; }
+  ${scope} .rc-row { padding: 3px 0 !important; }
+  ${scope} .rc-row .rc-row-title { font-size: 11px !important; line-height: 1.2 !important; }
+  ${scope} .rc-row .rc-row-desc { font-size: 8.75px !important; margin-top: 1px !important; line-height: 1.22 !important; }
+  ${scope} .rc-row .rc-row-price { font-size: 11px !important; }
+  ${scope} .rc-process { margin-top: 6px !important; gap: 6px !important; }
+  ${scope} .rc-process > div { padding: 8px 0 !important; }
+  ${scope} .rc-process .rc-process-big { font-size: 14px !important; }
+  ${scope} .rc-terms { margin-top: 6px !important; font-size: 9.5px !important; }
+  ${scope} .rc-terms li { margin-top: 1px !important; }
+  ${scope} .rc-footer { margin-top: 10px !important; }
+`;
+
+const COMPACT_RULES = (ivory: string) => `
+  @media print {
+    @page { size: letter; margin: 0.25in; }
+    html, body { background: ${ivory} !important; }
+    .no-print { display: none !important; }
+    ${compactDeclarations('.rate-card-sheet', '')}
+    .rate-card-sheet {
+      transform: scale(var(--rc-print-scale, 1));
+      height: var(--rc-print-height, auto);
+      overflow: hidden;
+    }
+  }
+  ${compactDeclarations('.rate-card-sheet.rc-measuring', '.rate-card-sheet.rc-measuring')}
+`;
+
+
 export default function RateCard() {
   const { isAdmin } = useAuth();
   const { toast } = useToast();
