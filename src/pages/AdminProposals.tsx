@@ -427,51 +427,6 @@ luisdreamslv@gmail.com`;
             </Button>
             <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
               <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none border-border text-muted-foreground hover:text-foreground hover:bg-muted gap-1.5 h-10"
-                onClick={async () => {
-                  const [{ data, error }, { data: intros }] = await Promise.all([
-                    supabase
-                      .from('line_item_templates')
-                      .select('*')
-                      .order('category', { ascending: true })
-                      .order('title', { ascending: true }),
-                    supabase.from('line_item_categories').select('*'),
-                  ]);
-                  if (error || !data?.length) {
-                    toast({ title: 'Nothing to print', description: 'Add some templates first.', variant: 'destructive' });
-                    return;
-                  }
-                  printLineItemLibraryPdf(data as any, (intros as any) || []);
-                }}
-              >
-                <Printer className="w-3.5 h-3.5" /> Print Library
-              </Button>
-              <Button
-                size="sm"
-                className="flex-1 sm:flex-none bg-primary text-foreground hover:bg-[#b08a30] gap-1.5 h-10"
-                onClick={async () => {
-                  const [{ data, error }, { data: intros }] = await Promise.all([
-                    supabase
-                      .from('line_item_templates')
-                      .select('*')
-                      .order('category', { ascending: true })
-                      .order('title', { ascending: true }),
-                    supabase.from('line_item_categories').select('*'),
-                  ]);
-                  if (error || !data?.length) {
-                    toast({ title: 'Nothing to download', description: 'Add some templates first.', variant: 'destructive' });
-                    return;
-                  }
-                  downloadLineItemLibraryPdf(data as any, (intros as any) || []);
-                  toast({ title: 'PDF downloaded' });
-                }}
-
-              >
-                <Download className="w-3.5 h-3.5" /> Library PDF
-              </Button>
-              <Button
                 size="sm"
                 variant="outline"
                 className="flex-1 sm:flex-none gap-1.5 h-10"
