@@ -15,6 +15,12 @@ const APP_ORIGIN = 'https://soleiacreative.app';
 const MAX_ATTEMPTS = 4;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+async function backoff(path: string, attempt: number, err: Error) {
+  const wait = 500 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250);
+  console.warn(`Drive gateway ${path} attempt ${attempt} failed, retrying in ${wait}ms: ${err.message}`);
+  await sleep(wait);
+}
+
 // Retries transient gateway failures (5xx / 429 / network resets) with exponential backoff + jitter.
 async function gw(path: string, lovableKey: string, driveKey: string) {
   let lastError: Error | null = null;
@@ -42,13 +48,6 @@ async function gw(path: string, lovableKey: string, driveKey: string) {
     const retryable = res.status >= 500 || res.status === 429;
     if (!retryable) throw lastError;
     if (attempt < MAX_ATTEMPTS) await backoff(path, attempt, lastError);
-  }
-
-    if (attempt < MAX_ATTEMPTS) {
-      const backoff = 500 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250);
-      console.warn(`Drive gateway ${path} attempt ${attempt} failed, retrying in ${backoff}ms: ${lastError?.message}`);
-      await sleep(backoff);
-    }
   }
 
   throw lastError ?? new Error(`Drive gateway ${path} failed after ${MAX_ATTEMPTS} attempts`);
