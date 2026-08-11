@@ -49,7 +49,7 @@ const BLURBS: Record<string, string> = {
   'Elevator Static Logo':
     "A single static portrait logo built for the elevator LED's idle state — always-on brand presence between rides. Color-graded and sized for the exact panel, tested onsite before doors.",
   'Individual Cabana / Bungalow Logo':
-    "Dedicated logo playback on a specific cabana or bungalow TV — that screen gets its own feed instead of running the shared narrowcasting loop. Ideal for sponsor activations, private hosts, or VIP tables that need their own on-screen identity.",
+    "Branded content assigned to a specific cabana or bungalow TV ( supported still image PNG, or video .MOV).",
   '3D Previz':
     "A full 3D preview of your content running on Soleia's real screens, rendered from our venue model. You review the actual visuals in the actual room before load-in — pacing, brightness, brand placement, coverage — and approve or request revisions. Included with the Creative Package; also available standalone.",
   'Presentation':
