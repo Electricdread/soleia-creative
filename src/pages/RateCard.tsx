@@ -195,6 +195,37 @@ export default function RateCard() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Scale the sheet down so it always prints on a single Letter page.
+  useEffect(() => {
+    const sheet = () => document.querySelector<HTMLElement>('.rate-card-sheet');
+    const fit = () => {
+      const el = sheet();
+      if (!el) return;
+      el.style.setProperty('--rc-print-scale', '1');
+      // Letter @96dpi minus 0.25in margins: 8.0in x 10.5in
+      const availW = 8.0 * 96;
+      const availH = 10.5 * 96;
+      const h = el.scrollHeight;
+      const w = el.scrollWidth;
+      const scale = Math.min(1, availH / h, availW / w);
+      el.style.setProperty('--rc-print-scale', String(scale));
+      el.style.setProperty('--rc-print-height', `${h * scale}px`);
+    };
+    const reset = () => {
+      const el = sheet();
+      if (!el) return;
+      el.style.removeProperty('--rc-print-scale');
+      el.style.removeProperty('--rc-print-height');
+    };
+    window.addEventListener('beforeprint', fit);
+    window.addEventListener('afterprint', reset);
+    return () => {
+      window.removeEventListener('beforeprint', fit);
+      window.removeEventListener('afterprint', reset);
+    };
+  }, []);
+
+
   useEffect(() => {
     (async () => {
       setLoading(true);
