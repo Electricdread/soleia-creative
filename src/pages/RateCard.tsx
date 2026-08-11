@@ -364,8 +364,7 @@ export default function RateCard() {
       style={{ backgroundColor: IVORY, color: INK }}
     >
       <style>{`
-        ${COMPACT_RULES('@media print')}
-        ${COMPACT_RULES('.rc-measuring')}
+        ${COMPACT_RULES(IVORY)}
       `}</style>
 
       {/* Action bar */}
