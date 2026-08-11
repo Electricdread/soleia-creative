@@ -255,11 +255,11 @@ export default function RateCard() {
       // Measure with the print typography applied (Letter @96dpi minus 0.25in margins).
       const availH = 10.5 * 96;
       el.classList.add('rc-measuring');
-      const h = el.scrollHeight + 28; // safety pad for trailing margins / rounding
+      const h = el.scrollHeight + 80; // safety pad: measurement underestimates print layout
       el.classList.remove('rc-measuring');
       const scale = Math.min(1, availH / h);
       el.style.setProperty('--rc-print-scale', String(scale));
-      el.style.setProperty('--rc-print-height', `${Math.ceil(h * scale)}px`);
+      el.style.setProperty('--rc-print-height', `${Math.ceil(availH)}px`);
     };
     const reset = () => {
       const el = sheet();
