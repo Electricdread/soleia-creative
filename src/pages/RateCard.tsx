@@ -245,24 +245,23 @@ export default function RateCard() {
   // Scale the sheet down so it always prints on a single Letter page.
   useEffect(() => {
     const sheet = () => document.querySelector<HTMLElement>('.rate-card-sheet');
+    const root = document.documentElement;
     const fit = () => {
       const el = sheet();
       if (!el) return;
-      el.style.setProperty('--rc-print-scale', '1');
+      root.style.setProperty('--rc-print-scale', '1');
       // Measure with the print typography applied (Letter @96dpi minus 0.25in margins).
       const availH = 10.5 * 96;
       el.classList.add('rc-measuring');
-      const h = el.scrollHeight + 80; // safety pad: measurement underestimates print layout
+      const h = el.scrollHeight + 24;
       el.classList.remove('rc-measuring');
       const scale = Math.min(1, availH / h);
-      el.style.setProperty('--rc-print-scale', String(scale));
-      el.style.setProperty('--rc-print-height', `${Math.ceil(availH)}px`);
+      root.style.setProperty('--rc-print-scale', String(scale));
+      root.style.setProperty('--rc-print-height', `${Math.ceil(Math.min(availH, h * scale))}px`);
     };
     const reset = () => {
-      const el = sheet();
-      if (!el) return;
-      el.style.removeProperty('--rc-print-scale');
-      el.style.removeProperty('--rc-print-height');
+      root.style.removeProperty('--rc-print-scale');
+      root.style.removeProperty('--rc-print-height');
     };
     window.addEventListener('beforeprint', fit);
     window.addEventListener('afterprint', reset);
