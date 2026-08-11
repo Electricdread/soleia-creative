@@ -12,18 +12,45 @@ const corsHeaders = {
 const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
 const APP_ORIGIN = 'https://soleiacreative.app';
 
+const MAX_ATTEMPTS = 4;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Retries transient gateway failures (5xx / 429 / network resets) with exponential backoff + jitter.
 async function gw(path: string, lovableKey: string, driveKey: string) {
-  const res = await fetch(`${GATEWAY}${path}`, {
-    headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      'X-Connection-Api-Key': driveKey,
-    },
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    throw new Error(`Drive gateway ${path} [${res.status}]: ${text.slice(0, 400)}`);
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(`${GATEWAY}${path}`, {
+        headers: {
+          Authorization: `Bearer ${lovableKey}`,
+          'X-Connection-Api-Key': driveKey,
+        },
+      });
+      const text = await res.text();
+      if (res.ok) return text ? JSON.parse(text) : null;
+
+      const err = new Error(`Drive gateway ${path} [${res.status}]: ${text.slice(0, 400)}`);
+      const retryable = res.status >= 500 || res.status === 429;
+      if (!retryable) throw err;
+      lastError = err;
+    } catch (e) {
+      // Network-level failure (connection reset, DNS, timeout) — retryable.
+      if (e instanceof Error && e.message.startsWith('Drive gateway ') && lastError !== e) {
+        const status = Number(e.message.match(/\[(\d{3})\]/)?.[1] ?? 0);
+        if (status && status < 500 && status !== 429) throw e;
+      }
+      lastError = e instanceof Error ? e : new Error(String(e));
+    }
+
+    if (attempt < MAX_ATTEMPTS) {
+      const backoff = 500 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250);
+      console.warn(`Drive gateway ${path} attempt ${attempt} failed, retrying in ${backoff}ms: ${lastError?.message}`);
+      await sleep(backoff);
+    }
   }
-  return text ? JSON.parse(text) : null;
+
+  throw lastError ?? new Error(`Drive gateway ${path} failed after ${MAX_ATTEMPTS} attempts`);
 }
 
 interface DriveFile {
