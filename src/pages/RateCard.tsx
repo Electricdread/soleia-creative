@@ -320,10 +320,15 @@ export default function RateCard() {
           .no-print { display: none !important; }
           .rate-card-sheet {
             padding: 14px 18px !important;
-            max-width: 100% !important;
+            width: 768px !important;
+            max-width: 768px !important;
+            margin: 0 !important;
             page-break-inside: avoid;
             break-inside: avoid;
             transform-origin: top left;
+            transform: scale(var(--rc-print-scale, 1));
+            height: var(--rc-print-height, auto);
+            overflow: hidden;
           }
           .rate-card-sheet * { page-break-inside: avoid; break-inside: avoid; }
           .rc-eyebrow-wrap { margin-top: 8px !important; margin-bottom: 3px !important; }
