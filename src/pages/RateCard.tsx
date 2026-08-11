@@ -228,11 +228,8 @@ const COMPACT_RULES = (ivory: string) => `
     html, body { background: ${ivory} !important; }
     .no-print { display: none !important; }
     ${compactDeclarations('.rate-card-sheet', '')}
-    .rate-card-sheet {
-      transform: scale(var(--rc-print-scale, 1));
-      height: var(--rc-print-height, auto);
-      overflow: hidden;
-    }
+    .rate-card-sheet { transform: scale(var(--rc-print-scale, 1)); }
+    .rate-card-clip { height: var(--rc-print-height, auto); overflow: hidden; }
   }
   ${compactDeclarations('.rate-card-sheet.rc-measuring', '.rate-card-sheet.rc-measuring')}
 `;
@@ -391,6 +388,7 @@ export default function RateCard() {
       </div>
 
       {/* Framed sheet */}
+      <div className="rate-card-clip">
       <div
         className="rate-card-sheet max-w-[820px] mx-auto relative bg-transparent p-5 sm:p-12"
         style={{ border: `1px solid ${GOLD}` }}
@@ -515,6 +513,7 @@ export default function RateCard() {
             SOLEIA LAS VEGAS
           </div>
         </footer>
+      </div>
       </div>
     </div>
   );
