@@ -31,7 +31,7 @@ type PackageSection = {
 // we deliver, and how they'll experience it in the room.
 const BLURBS: Record<string, string> = {
   'Static Logo':
-    "Your venue contract includes up to ten static logos across the LED screens. This line item covers each additional static logo beyond that allotment. We take your high-resolution artwork, color-grade and re-size it for LED so it reads cleanly on large-format panels, place it on the screens you select — main room, TVs, elevator, or a specific zone — and program it into the show file. The simplest way to extend your brand presence in the room without commissioning motion content.",
+    "Your contract includes up to ten static logos across the LED screens. This line item covers each additional static logo beyond that allotment. We take your high-resolution artwork, color-grade and re-size it for LED so it reads cleanly on large-format panels, place it on the screens you select — main room, TVs, elevator, or a specific zone — and program it into the show file. The simplest way to extend your brand presence in the room without commissioning motion content.",
   'Transparent Logo Animation':
     "A refined logo animation delivered with a true alpha channel, allowing it to sit cleanly over live content and environmental footage without blocking the screen. Your mark remains visible while the room continues to move underneath — ideal for branding moments that need to feel integrated, not interruptive. See the explainer above for a live preview of how the transparency layer behaves on the wall.",
   'Mapped by Soleia Creative Team':
