@@ -20,28 +20,29 @@ async function gw(path: string, lovableKey: string, driveKey: string) {
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    let res: Response;
     try {
-      const res = await fetch(`${GATEWAY}${path}`, {
+      res = await fetch(`${GATEWAY}${path}`, {
         headers: {
           Authorization: `Bearer ${lovableKey}`,
           'X-Connection-Api-Key': driveKey,
         },
       });
-      const text = await res.text();
-      if (res.ok) return text ? JSON.parse(text) : null;
-
-      const err = new Error(`Drive gateway ${path} [${res.status}]: ${text.slice(0, 400)}`);
-      const retryable = res.status >= 500 || res.status === 429;
-      if (!retryable) throw err;
-      lastError = err;
     } catch (e) {
       // Network-level failure (connection reset, DNS, timeout) — retryable.
-      if (e instanceof Error && e.message.startsWith('Drive gateway ') && lastError !== e) {
-        const status = Number(e.message.match(/\[(\d{3})\]/)?.[1] ?? 0);
-        if (status && status < 500 && status !== 429) throw e;
-      }
       lastError = e instanceof Error ? e : new Error(String(e));
+      if (attempt < MAX_ATTEMPTS) await backoff(path, attempt, lastError);
+      continue;
     }
+
+    const text = await res.text();
+    if (res.ok) return text ? JSON.parse(text) : null;
+
+    lastError = new Error(`Drive gateway ${path} [${res.status}]: ${text.slice(0, 400)}`);
+    const retryable = res.status >= 500 || res.status === 429;
+    if (!retryable) throw lastError;
+    if (attempt < MAX_ATTEMPTS) await backoff(path, attempt, lastError);
+  }
 
     if (attempt < MAX_ATTEMPTS) {
       const backoff = 500 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250);
