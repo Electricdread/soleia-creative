@@ -320,41 +320,8 @@ export default function RateCard() {
       style={{ backgroundColor: IVORY, color: INK }}
     >
       <style>{`
-        @media print {
-          @page { size: letter; margin: 0.25in; }
-          html, body { background: ${IVORY} !important; }
-          .no-print { display: none !important; }
-          .rate-card-sheet {
-            padding: 14px 18px !important;
-            width: 768px !important;
-            max-width: 768px !important;
-            margin: 0 !important;
-            page-break-inside: avoid;
-            break-inside: avoid;
-            transform-origin: top left;
-            transform: scale(var(--rc-print-scale, 1));
-            height: var(--rc-print-height, auto);
-            overflow: hidden;
-          }
-          .rate-card-sheet * { page-break-inside: avoid; break-inside: avoid; }
-          .rc-eyebrow-wrap { margin-top: 8px !important; margin-bottom: 3px !important; }
-          .rc-package { padding: 10px 12px !important; }
-          .rc-package h3 { font-size: 13px !important; line-height: 1.2 !important; }
-          .rc-package p { font-size: 9.5px !important; margin-top: 4px !important; line-height: 1.3 !important; }
-          .rc-package .rc-price { font-size: 20px !important; }
-          .rc-venue { margin-top: 6px !important; padding: 6px 10px !important; }
-          .rc-venue .rc-venue-body { font-size: 10px !important; }
-          .rc-row { padding: 3px 0 !important; }
-          .rc-row .rc-row-title { font-size: 11px !important; line-height: 1.2 !important; }
-          .rc-row .rc-row-desc { font-size: 8.75px !important; margin-top: 1px !important; line-height: 1.22 !important; }
-          .rc-row .rc-row-price { font-size: 11px !important; }
-          .rc-process { margin-top: 6px !important; gap: 6px !important; }
-          .rc-process > div { padding: 8px 0 !important; }
-          .rc-process .rc-process-big { font-size: 14px !important; }
-          .rc-terms { margin-top: 6px !important; font-size: 9.5px !important; }
-          .rc-terms li { margin-top: 1px !important; }
-          .rc-footer { margin-top: 10px !important; }
-        }
+        ${COMPACT_RULES('@media print')}
+        ${COMPACT_RULES('.rc-measuring')}
       `}</style>
 
       {/* Action bar */}
