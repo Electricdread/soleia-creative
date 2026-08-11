@@ -35,9 +35,9 @@ const BLURBS: Record<string, string> = {
   'Transparent Logo Animation':
     "A refined logo animation delivered with a true alpha channel, allowing it to sit cleanly over live content and environmental footage without blocking the screen. Your mark remains visible while the room continues to move underneath — ideal for branding moments that need to feel integrated, not interruptive. See the explainer above for a live preview of how the transparency layer behaves on the wall.",
   'Mapped by Soleia Creative Team':
-    "You supply the raw assets — logos, animations, brand videos — and our team handles the technical work: reformatting for each LED zone's exact resolution, color-correcting for the panels, pixel-perfect mapping in Resolume, QC on venue hardware, and onsite playback. You focus on the creative; we make sure it lands correctly on every screen.",
+    "Mapping of client animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.",
   'Mapped to Spec by Client':
-    "For teams delivering their own finished, pre-mapped content. You build to Soleia's published pixel maps (we send exact dimensions and specs per zone). We handle intake, technical QC, loading into the show system, and onsite playback. No creative work on our side — pure technical execution.",
+    "Client maps content to spec and provides to Soleia (no edits needed by Soleia Creative Team), max 50 GB. Revisions after delivery will incur additional fees.",
   'Elevator Dynamic Animation':
     "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day.",
   'LED Screens Specific Zone Mapping':
