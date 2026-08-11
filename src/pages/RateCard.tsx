@@ -202,14 +202,20 @@ export default function RateCard() {
       const el = sheet();
       if (!el) return;
       el.style.setProperty('--rc-print-scale', '1');
-      // Letter @96dpi minus 0.25in margins: 8.0in x 10.5in
+      // Measure at the exact print geometry (Letter @96dpi minus 0.25in margins).
       const availW = 8.0 * 96;
       const availH = 10.5 * 96;
+      const prev = { width: el.style.width, maxWidth: el.style.maxWidth, padding: el.style.padding };
+      el.style.width = `${availW}px`;
+      el.style.maxWidth = `${availW}px`;
+      el.style.padding = '14px 18px';
       const h = el.scrollHeight;
-      const w = el.scrollWidth;
-      const scale = Math.min(1, availH / h, availW / w);
+      el.style.width = prev.width;
+      el.style.maxWidth = prev.maxWidth;
+      el.style.padding = prev.padding;
+      const scale = Math.min(1, availH / h);
       el.style.setProperty('--rc-print-scale', String(scale));
-      el.style.setProperty('--rc-print-height', `${h * scale}px`);
+      el.style.setProperty('--rc-print-height', `${Math.ceil(h * scale)}px`);
     };
     const reset = () => {
       const el = sheet();
