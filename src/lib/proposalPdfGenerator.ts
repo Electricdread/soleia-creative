@@ -579,7 +579,10 @@ export async function generateProposalPdf(
   }
 
   // === EDITORIAL SERVICES EXPLAINER PAGES ===
+  // Only attached to signed proposals (the countersigned packet clients keep).
+  // Draft/sent proposals stay a clean single-page quote.
   try {
+    if (!signed) throw new Error('skip appendix for unsigned proposal');
     // Use SECURITY DEFINER RPCs so this works for anon/token-based client
     // sessions when generating the signed-proposal PDF, not just admins.
     const [tplRes, catRes] = await Promise.all([
