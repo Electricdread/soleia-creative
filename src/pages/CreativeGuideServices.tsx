@@ -259,6 +259,30 @@ export default function CreativeGuideServices() {
                             </p>
                           )}
 
+                          {item.title === 'Presentation' && (
+                            <div className="mt-6 flex flex-wrap items-center gap-3">
+                              <a
+                                href={presentationGuidePdf.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                View Presentation Guide
+                              </a>
+                              <a
+                                href={presentationGuidePdf.url}
+                                download="Soleia-Presentation-Guide.pdf"
+                                className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                Download
+                              </a>
+                            </div>
+                          )}
+
+
+
                           {item.deliverables && item.deliverables.length > 0 && (
                             <ul className="mt-5 space-y-1.5">
                               {item.deliverables.map((d, i) => (
