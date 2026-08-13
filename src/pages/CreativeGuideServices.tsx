@@ -8,6 +8,7 @@ import solIcon from '@/assets/sol-icon.png';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 import servicesPdf from '@/assets/soleia-creative-services.pdf.asset.json';
+import presentationGuidePdf from '@/assets/soleia-presentation-guide.pdf.asset.json';
 
 
 
