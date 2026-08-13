@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Maximize2 } from 'lucide-react';
+import { ArrowLeft, Maximize2, Eye, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Reveal } from '@/components/motion/Reveal';
 import solIcon from '@/assets/sol-icon.png';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
+import servicesPdf from '@/assets/soleia-creative-services.pdf.asset.json';
+
 
 
 type Item = {
@@ -155,7 +157,29 @@ export default function CreativeGuideServices() {
             Soleia Creative Team Services
           </h1>
         </Reveal>
+        <Reveal delay={0.15}>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href={servicesPdf.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              View Services PDF
+            </a>
+            <a
+              href={servicesPdf.url}
+              download="Soleia-Creative-Services.pdf"
+              className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download
+            </a>
+          </div>
+        </Reveal>
       </section>
+
 
       {/* SERVICES */}
       <section className="px-5 sm:px-8 pb-32 max-w-5xl mx-auto">
