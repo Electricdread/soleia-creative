@@ -563,8 +563,6 @@ export default function VideoMapExplainer() {
     <div
       ref={hostRef}
       className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated"
-      // eslint-disable-next-line react/no-unknown-property
-      data-palette={isLight ? 'light' : 'dark'}
       style={{ aspectRatio: '16 / 9', background: P.GROUND }}
     >
       <div style={{ position: 'absolute', left: 0, top: 0, width: W, height: H, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
