@@ -164,13 +164,13 @@ export default function CreativeGuideServices() {
         </Reveal>
         <Reveal delay={0.15}>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href={SERVICES_PDF_URL}
+            <button
+              onClick={() => navigate('/creative-guide/doc/services')}
               className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
             >
               <Eye className="w-3.5 h-3.5" />
-              View Services PDF
-            </a>
+              View Services
+            </button>
             <a
               href={SERVICES_PDF_URL}
               download="Soleia-Creative-Services.pdf"
