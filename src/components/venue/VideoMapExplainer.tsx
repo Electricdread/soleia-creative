@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Maximize2, Minimize2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
 
 /**
  * Soleia — LED Video Map Explainer.
@@ -8,7 +7,6 @@ import { useTheme } from 'next-themes';
  * pass flowing across every surface, the map folding into the room, three zone
  * passes, and the alpha logo landing centred on every screen.
  * Authored on a 1920×1080 stage and scaled to fit its container.
- * Renders in a dark or a bright (light-mode) palette.
  */
 
 const W = 1920, H = 1080;
@@ -38,32 +36,11 @@ const DARK_PALETTE = {
   BLOOM: ['#c2542a', '#8a3418'],
 };
 
-const LIGHT_PALETTE = {
-  GROUND: '#f7f4ec', INK: '#141009', SURF: '#efe9db',
-  N400: '#4f4636', N600: '#3f382b', N700: '#2b251b',
-  PANEL: '#ffffff', BORDER: '#5b5140', ACCENT: '#9a5c05',
-  DIV: 'rgba(20,16,9,0.32)',
-  EDGE: 'rgba(20,16,9,0.55)',
-  LABEL_BG: 'rgba(255,255,255,0.94)',
-  MAP_BG: 'rgba(255,255,255,0.82)',
-  HUB_TINT: 'rgba(154,92,5,0.12)',
-  BLEND: 'multiply' as 'screen' | 'multiply',
-  LOGO_FILTER: 'brightness(0) drop-shadow(0 0 6px rgba(255,255,255,0.85))',
-  CLOSE_LOGO_FILTER: 'brightness(0)',
-  FLOW_LINES:
-    'repeating-linear-gradient(102deg,'
-    + ' rgba(255,255,255,0) 0 2.6%, rgba(20,16,9,0.30) 2.6% 3.0%, rgba(255,255,255,0) 3.0% 3.35%,'
-    + ' rgba(255,255,255,0) 3.35% 6.4%, rgba(20,16,9,0.72) 6.4% 6.62%, rgba(255,255,255,0) 6.62% 12.8%)',
-  TRAIL_COLORS: ['#5a4a12', '#7a4a0c', '#9a5c05', '#8a2f14', '#6a1f2c', '#3f4a1a', '#a86f10', '#2f2716'],
-  TRAIL_HEAD: '#241a06',
-  BLOOM: ['#9a5c05', '#5a2a08'],
-};
 
 type Palette = typeof DARK_PALETTE;
 
-// Single mutable palette reference: the whole composition renders synchronously
-// from the exported component, which sets this before the tree renders.
-let P: Palette = DARK_PALETTE;
+// Fixed dark palette — the explainer always renders in its original dark look.
+const P: Palette = DARK_PALETTE;
 
 
 const MAPW = 3840, MAPH = 2160;
@@ -513,11 +490,6 @@ function Stage({ T }: { T: number }) {
 }
 
 export default function VideoMapExplainer() {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === 'light';
-  // Set before the composition renders — Stage and its children read this synchronously.
-  P = isLight ? LIGHT_PALETTE : DARK_PALETTE;
-
   const hostRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [offsetXY, setOffsetXY] = useState({ x: 0, y: 0 });
