@@ -390,7 +390,7 @@ export default function VenueVideoMappingView({
           </h1>
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             {subheading ??
-              'Every screen in the venue is a different shape and resolution. Step inside an interactive 3D model of the room and preview real mapped content on every surface — see how motion, branding and pixel-perfect mapping turn the space into one immersive canvas.'}
+              'Every screen in the venue is a different shape and resolution — and all of them live on one 3840 × 2160 file. Watch the pixelmap fold into the room, one motion pass travel across every surface, and the alpha logo land centred on each screen.'}
           </p>
         </Reveal>
       </section>
