@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pause, Play, RotateCcw } from 'lucide-react';
+import { SolBurstMaster } from './solBurstMaster';
 
 /**
  * Soleia — LED Video Map Explainer.
@@ -98,9 +99,6 @@ const SCREENS: Screen[] = [
   { zone: 2, id: 'ARCH', map: [2322, 1639, 1512, 504], room: [1636, 482, 158, 62], ry: 0, label: 'Outdoor Arch', logo: true },
 ];
 
-const FLOW_LINES = 'repeating-linear-gradient(102deg,'
-  + ' rgba(0,0,0,0) 0 2.6%, rgba(247,243,232,0.16) 2.6% 3.0%, rgba(0,0,0,0) 3.0% 3.35%,'
-  + ' rgba(0,0,0,0) 3.35% 6.4%, rgba(247,243,232,0.55) 6.4% 6.62%, rgba(0,0,0,0) 6.62% 12.8%)';
 const FLOW_HEAD = 'linear-gradient(102deg,'
   + ' rgba(0,0,0,0) 0%, rgba(0,0,0,0) 41%, ' + ACCENT + '00 43%, ' + ACCENT + '99 48.4%,'
   + ' ' + ACCENT + 'cc 50%, ' + ACCENT + '99 51.6%, ' + ACCENT + '00 57%,'
@@ -181,7 +179,7 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
   );
 }
 
-function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
+function ScreenPanel({ s, T, fold, on, logoIn, flow, headOn, registerPanel }: any) {
   const [mx, my, mw, mh] = s.map;
   const [rx, ry, rw, rh] = s.room;
   const x = mx * S + MX + (rx - (mx * S + MX)) * fold;
@@ -200,9 +198,6 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
   const fw = FW * k, fh = FH * k;
   const lerp = (a: number, b: number) => a + (b - a) * sizeF;
   const by = lerp(-my * kM, -30 - py);
-  const flowT = T * 300;
-  const bxFlow = lerp(-mx * kM - flowT * kM, -40 - px - flowT * kR * 0.5);
-  const byFlow = lerp(-my * kM - flowT * 0.22 * kM, -30 - py - flowT * kR * 0.1);
   const headX = ((T * 0.13) % 1) * (FW + 900) - 450;
   const bxHead = lerp(-(mx - headX) * kM, -40 - px + (headX - FW / 2) * kR * 0.5);
   const logoOn = s.logo ? logoIn : 0;
@@ -220,11 +215,11 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
       border: `2px solid ${fold > 0.5 ? BORDER : 'rgba(247,243,232,0.35)'}`,
       background: PANEL, overflow: 'hidden', boxSizing: 'border-box',
     }}>
-      <div style={{
-        position: 'absolute', inset: 0, backgroundImage: FLOW_LINES,
-        backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxFlow}px ${byFlow}px`,
-        backgroundRepeat: 'repeat', opacity: 0.62 * flow, mixBlendMode: 'screen',
-      }} />
+      {/* live Sol Burst content — this panel's slice of the shared master frame */}
+      <canvas
+        ref={(el: HTMLCanvasElement | null) => registerPanel(s, el)}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.92 * flow }}
+      />
       <div style={{
         position: 'absolute', inset: 0, backgroundImage: FLOW_HEAD,
         backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxHead}px ${by}px`,
@@ -321,11 +316,10 @@ function CloseCard({ T }: { T: number }) {
 }
 
 /* ---------- the composition ---------- */
-function Stage({ T }: { T: number }) {
+function Stage({ T, registerPanel }: { T: number; registerPanel: any }) {
   const fold = interpolate(
     [CUES.Fold + 0.3, CUES.Fold + 2.3, CUES.Remap + 0.2, CUES.Remap + 1.7],
     [0, 1, 1, 0], easeInOutCubic)(T);
-  const sweepX = (T * 168) % FW;
   const flowOn = interpolate(
     [0.6, CUES.Flow - 0.2, CUES.Flow + 1.0, CUES.Fold + 0.5, CUES.Zones + 0.8, CUES.Remap + 0.4, CUES.Close - 0.3],
     [0, 0.35, 1, 0.9, 0.55, 0.7, 0.35])(T);
@@ -386,7 +380,7 @@ function Stage({ T }: { T: number }) {
           {SCREENS.map((s, i) => (
             <ScreenPanel key={s.id} s={s} T={T} fold={fold}
               on={anim(0.35 + i * 0.05, 0.45)(T)} logoIn={Math.max(logoAll, zonesLogo)}
-              sweepX={sweepX} flow={flowOn} headOn={headOn} />
+              flow={flowOn} headOn={headOn} registerPanel={registerPanel} />
           ))}
 
           <FlowTrails T={T} fold={fold} amp={flowOn} />
@@ -475,6 +469,43 @@ export default function VideoMapExplainer() {
   const [playing, setPlaying] = useState(true);
   const startRef = useRef<number | null>(null);
   const offsetRef = useRef(0);
+  const tRef = useRef(0);
+
+  /* Sol Burst demo content: one master WebGL frame; each screen panel blits
+     its own map rectangle from it every tick (one file, every surface). */
+  const masterRef = useRef<SolBurstMaster | null>(null);
+  const panelsRef = useRef(new Map<string, {
+    el: HTMLCanvasElement; ctx: CanvasRenderingContext2D | null;
+    map: [number, number, number, number];
+  }>());
+
+  const registerPanel = useCallback((s: Screen, el: HTMLCanvasElement | null) => {
+    const panels = panelsRef.current;
+    if (!el) { panels.delete(s.id); return; }
+    const [, , mw, mh] = s.map;
+    el.width = Math.max(8, Math.round(mw * 0.2));
+    el.height = Math.max(8, Math.round(mh * 0.2));
+    panels.set(s.id, { el, ctx: el.getContext('2d'), map: s.map });
+  }, []);
+
+  const blit = useCallback((t: number) => {
+    const master = masterRef.current;
+    if (!master || !master.ok) return;
+    master.render(t);
+    const mc = master.canvas;
+    const sx = mc.width / MAPW, sy = mc.height / MAPH;
+    for (const p of panelsRef.current.values()) {
+      if (!p.ctx) continue;
+      const [mx, my, mw, mh] = p.map;
+      p.ctx.drawImage(mc, mx * sx, my * sy, mw * sx, mh * sy, 0, 0, p.el.width, p.el.height);
+    }
+  }, []);
+
+  useEffect(() => {
+    masterRef.current = new SolBurstMaster();
+    blit(tRef.current);
+    return () => { masterRef.current?.dispose(); masterRef.current = null; };
+  }, [blit]);
 
   useEffect(() => {
     const el = hostRef.current;
@@ -492,18 +523,24 @@ export default function VideoMapExplainer() {
     const tick = (now: number) => {
       if (startRef.current == null) startRef.current = now;
       const t = (offsetRef.current + (now - startRef.current) / 1000) % TOTAL;
+      tRef.current = t;
       setT(t);
+      blit(t);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(raf);
-      offsetRef.current = T;
+      /* read the live clock from the ref — the old closure-over-T here made
+         pause/resume rewind to wherever the previous play started */
+      offsetRef.current = tRef.current;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing]);
+  }, [playing, blit]);
 
-  const restart = () => { offsetRef.current = 0; startRef.current = null; setT(0); setPlaying(true); };
+  const restart = () => {
+    offsetRef.current = 0; startRef.current = null; tRef.current = 0;
+    setT(0); blit(0); setPlaying(true);
+  };
   const label = useMemo(() => {
     let name = SCENES[0].name as string;
     SCENES.forEach((s) => { if (T >= CUES[s.name]) name = s.name; });
@@ -517,7 +554,7 @@ export default function VideoMapExplainer() {
       style={{ aspectRatio: '16 / 9' }}
     >
       <div style={{ position: 'absolute', left: 0, top: 0, width: W, height: H, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
-        <Stage T={T} />
+        <Stage T={T} registerPanel={registerPanel} />
       </div>
 
       <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-primary/30 bg-black/55 px-2 py-1.5 backdrop-blur-md">

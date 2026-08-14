@@ -3,13 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Soleia — Background 01 · Fluid Field</title>
+<title>Soleia — Background 01 · Sol Burst</title>
 <!--
   Soleia Creative — LED screen-content background.
-  BACKGROUND 01 · FLUID FIELD
-  Ambient motion system for mapped scenic screens: a domain-warped fluid wave
-  field with sparse gold ribbons, glassy cream fog and a slow breathing pulse.
-  Pure background — no text, UI, or website framing.
+  BACKGROUND 01 · SOL BURST
+  Ambient motion system for mapped scenic screens: a radial burst of fine soft
+  rays converging on an off-center luminous core — bent and gated by a
+  domain-warped fluid field, with a slow breathing pulse. Pure background —
+  no text, UI, or website framing. (Filename kept as fluid-field for a stable
+  URL; the ray shape is the revised direction.)
 
   Palette
     base   #18110E   near-black warm ground
@@ -31,14 +33,15 @@
     unavailable or the context is lost.
 
   Configuration (URL query or the window.SoleiaField API)
-    ?wave=1        wave scale        (0.4 tight … 2.5 broad)
+    ?wave=1        burst scale       (0.4 tight … 2.5 broad)
     ?pulse=1       breathing/flow speed multiplier
     ?contrast=1    contrast about the base tone
-    ?density=1     ribbon count/spacing (lower = sparser)
-    ?blur=0.5      ribbon softness 0 crisp … 1 vapor
+    ?density=1     ray count multiplier (~44 rays at 1; lower = sparser)
+    ?blur=0.5      ray softness 0 crisp … 1 vapor
     ?grain=1       film grain amount
     ?parallax=0.6  pointer-parallax depth (with pointer=1)
     ?green=0.5     pale-green accent amount (keep low)
+    ?cx=0.18&cy=-0.06  burst-core position, height-normalized from center
     ?pointer=0     pointer-reactive drift — optional mode, off by default
     ?aspect=21:9   letterbox to a scenic surface ratio (e.g. 32:9, 9:16);
                    omit for full-bleed
@@ -54,29 +57,27 @@
   html, body { height: 100%; }
   body { margin: 0; overflow: hidden; background: #18110E; }
   #gl { position: fixed; display: block; }
-  /* ------- DOM fallback: slow layered gradients, same palette ------- */
+  /* ------- DOM fallback: blurred conic ray burst, same palette ------- */
   #fallback {
-    position: fixed; inset: 0; display: none;
+    position: fixed; inset: 0; display: none; overflow: hidden;
     background:
-      radial-gradient(120% 90% at 22% 30%, rgba(243, 233, 216, 0.10), transparent 60%),
-      radial-gradient(110% 80% at 78% 72%, rgba(215, 181, 109, 0.12), transparent 55%),
+      radial-gradient(circle at 63% 55%, rgba(243, 233, 216, 0.22), transparent 22%),
       #18110E;
   }
-  #fallback::before, #fallback::after {
-    content: ''; position: absolute; inset: -20%;
-    background:
-      radial-gradient(60% 24% at 50% 38%, rgba(215, 181, 109, 0.14), transparent 70%),
-      radial-gradient(70% 20% at 40% 66%, rgba(243, 233, 216, 0.08), transparent 70%);
-    animation: drift 36s ease-in-out infinite alternate;
+  #fallback::before {
+    content: ''; position: absolute; inset: -12%;
+    background: repeating-conic-gradient(from 0deg at 63% 55%,
+      rgba(215, 181, 109, 0.15) 0deg 3.6deg,
+      rgba(24, 17, 14, 0) 5.4deg 8.8deg);
+    filter: blur(14px);
+    animation: spin 240s linear infinite, breathe 9s ease-in-out infinite;
   }
   #fallback::after {
-    background:
-      radial-gradient(50% 18% at 62% 52%, rgba(215, 181, 109, 0.10), transparent 70%);
-    animation: drift 28s ease-in-out infinite alternate-reverse, breathe 9s ease-in-out infinite;
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 63% 55%, transparent 30%, rgba(24, 17, 14, 0.8) 95%);
   }
-  @keyframes drift   { from { transform: translate3d(-2.5%, -1.5%, 0) scale(1.02); }
-                       to   { transform: translate3d(2.5%, 1.5%, 0) scale(1.06); } }
-  @keyframes breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+  @keyframes spin    { to { transform: rotate(6deg); } }
+  @keyframes breathe { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
   #stats {
     position: fixed; right: 14px; top: 12px; display: none;
     color: #F3E9D8; opacity: 0.8; text-align: right; user-select: none;
@@ -105,6 +106,8 @@ const CFG = {
   grain:    num('grain', 1.0),
   parallax: num('parallax', 0.6),
   green:    num('green', 0.5),
+  cx:       num('cx', 0.18),
+  cy:       num('cy', -0.06),
 };
 const POINTER_DEFAULT = qs.get('pointer') === '1';
 const DPR_CAP = num('dpr', 1.5);
@@ -163,7 +166,8 @@ uniform float uDensity;
 uniform float uSoft;     // ribbon softness 0..1
 uniform float uGrain;
 uniform float uGreen;
-uniform vec2  uPtr;      // pointer, field coords
+uniform vec2  uCenter;   // burst core, height-normalized from frame center
+uniform vec2  uPtr;      // pointer, screen (pv) coords
 uniform float uPtrGain;  // 0..1 micro accent (~150ms)
 
 const vec3 BASE  = vec3(0.094, 0.067, 0.055);  /* #18110E */
@@ -193,50 +197,58 @@ float fbm3(vec2 p) {
 void main() {
   vec2 frag = gl_FragCoord.xy;
   vec2 pv = (frag - 0.5 * uRes) / uRes.y;   /* screen space, for vignette */
-  vec2 p = pv / max(uWave, 0.1) + uDrift;   /* field space */
+  vec2 c = uCenter + uDrift * 0.35;         /* burst core drifts/parallaxes */
+  vec2 d = (pv - c) / max(uWave, 0.1);
+  float rad = length(d);
+  float theta = atan(d.y, d.x);
   float ft = uT * 0.045;                    /* slow field flow */
 
-  /* fluid domain warp — two noise fields folding into a third */
+  /* fluid warp field — bends the rays so they stay organic, not mechanical */
+  vec2 p = d * 1.4;
   vec2 q = vec2(
     fbm2(p + vec2(0.0, ft * 0.30)),
     fbm2(p + vec2(5.2, 1.3) + vec2(-ft * 0.24, 0.0)));
-  vec2 r = vec2(
-    fbm2(p + 1.8 * q + vec2(1.7, 9.2) + vec2(ft * 0.10, 0.0)),
-    fbm2(p + 1.8 * q + vec2(8.3, 2.8) + vec2(0.0, ft * 0.08)));
-  float f = fbm3(p + 1.6 * r);
+  float f = fbm3(p + 1.6 * q);
+
+  /* seamless angular brightness clusters (sampled on the unit circle) —
+     whole sectors brighten and rest, like light through a slatted shade */
+  float cluster = fbm2(vec2(cos(theta), sin(theta)) * 2.3 + vec2(ft * 0.06, -ft * 0.05));
+  float bright = 0.16 + 0.84 * smoothstep(0.34, 0.82, cluster);
+
+  /* fine soft rays converging on the core — integer count avoids a seam,
+     phase bent by the fluid field, near-imperceptible rotation.
+     Two exponents layered: a wide blurred wedge under a firmer core line. */
+  float N = max(2.0, floor(44.0 * uDensity + 0.5));
+  float phase = (theta + uT * 0.006) * N + (f - 0.5) * 2.6;
+  float crest = 0.5 + 0.5 * sin(phase);
+  float soft = clamp(uSoft, 0.0, 1.0);
+  float wedge = pow(crest, mix(1.6, 1.05, soft));
+  float line  = pow(crest, mix(5.0, 2.6, soft));
+  float env = smoothstep(0.02, 0.20, rad) * (0.30 + 0.70 * exp(-rad * 1.1));
+  float ray = (0.62 * wedge + 0.38 * line) * env * bright;
 
   vec3 col = BASE;
 
-  /* glassy cream fog where the warped field gathers */
-  float fog = smoothstep(0.42, 0.88, f);
-  col += CREAM * fog * 0.16 * (0.72 + 0.46 * uBreath);
+  /* faint glassy fog from the warp field */
+  col += CREAM * smoothstep(0.50, 0.95, f) * 0.06 * (0.7 + 0.4 * uBreath);
 
-  /* sparse gold ribbons — wave phase bent by the field; energy gates them so
-     each ribbon breathes in and out along its own length */
-  float phase = p.y * 2.4 * uDensity + (f - 0.5) * 2.4 + ft * 0.35;
-  float crest = 0.5 + 0.5 * sin(phase * 6.2831853);
-  crest = pow(crest, mix(8.0, 2.4, clamp(uSoft, 0.0, 1.0)));
-  float energy = smoothstep(0.24, 0.68, f);
-  float ribbon = crest * energy;
-  col += GOLD * ribbon * (0.42 + 0.30 * uBreath);
-  col += CREAM * ribbon * ribbon * 0.32;      /* hot glassy core */
+  /* the rays — gold body, cream where they burn hottest */
+  col += GOLD * ray * (0.34 + 0.22 * uBreath);
+  col += CREAM * ray * ray * 0.22;
 
-  /* pale green accent — only where the warp field peaks, very sparse */
-  float acc = smoothstep(0.80, 0.96, r.y) * ribbon;
-  col += GREEN * acc * 0.12 * uGreen * (0.6 + 0.4 * uBreath);
+  /* pale green accent — only on the strongest cluster peaks, very sparse */
+  col += GREEN * ray * smoothstep(0.86, 0.98, cluster) * 0.12 * uGreen;
 
-  /* two broad luminous glows drifting almost imperceptibly */
-  vec2 g1 = vec2(-0.34 + 0.05 * sin(uT * 0.021), 0.16 + 0.04 * sin(uT * 0.017 + 2.0));
-  vec2 g2 = vec2(0.38 + 0.05 * sin(uT * 0.015 + 4.2), -0.20 + 0.04 * sin(uT * 0.019 + 1.1));
-  col += CREAM * exp(-dot(pv - g1, pv - g1) * 2.4) * 0.085 * (0.7 + 0.5 * uBreath);
-  col += GOLD  * exp(-dot(pv - g2, pv - g2) * 2.8) * 0.075 * (0.8 + 0.4 * uBreath);
+  /* luminous core with a wide warm halo, breathing gently */
+  col += CREAM * exp(-rad * rad * 9.0) * (0.30 + 0.12 * uBreath);
+  col += GOLD  * exp(-rad * rad * 2.4) * (0.10 + 0.05 * uBreath);
 
   /* optional pointer accent (~150ms reactive) */
-  float pd = dot(p - uPtr, p - uPtr);
+  float pd = dot(pv - uPtr, pv - uPtr);
   col += GOLD * exp(-pd * 26.0) * 0.10 * uPtrGain;
 
   /* vignette, contrast about the base tone, environmental fade */
-  col *= 1.0 - dot(pv, pv) * 0.28;
+  col *= 1.0 - dot(pv, pv) * 0.42;
   col = BASE + (col - BASE) * uContrast;
   col = mix(BASE, col, uFade);
 
@@ -276,7 +288,7 @@ if (gl) {
     gl.enableVertexAttribArray(aPos);
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
     for (const n of ['uRes', 'uT', 'uBreath', 'uDrift', 'uFade', 'uWave', 'uContrast',
-                     'uDensity', 'uSoft', 'uGrain', 'uGreen', 'uPtr', 'uPtrGain']) {
+                     'uDensity', 'uSoft', 'uGrain', 'uGreen', 'uCenter', 'uPtr', 'uPtrGain']) {
       U[n] = gl.getUniformLocation(prog, n);
     }
   } catch (e) {
@@ -383,9 +395,8 @@ function frame(now) {
 
   /* pointer accent (micro, ~150ms), only in pointer mode */
   state.ptrGain = approach(state.ptrGain, state.modeGain, dt, TAU_MICRO);
-  const w = Math.max(P.wave.v, 0.1);
-  state.ptrField.x = px / w + state.drift.x;
-  state.ptrField.y = py / w + state.drift.y;
+  state.ptrField.x = px;
+  state.ptrField.y = py;
 
   let b = 0.5 - 0.5 * Math.cos((state.simT * 2 * Math.PI) / BREATH_PERIOD);
   b = b * b * (3 - 2 * b);
@@ -401,6 +412,7 @@ function frame(now) {
   gl.uniform1f(U.uSoft, P.blur.v);
   gl.uniform1f(U.uGrain, P.grain.v);
   gl.uniform1f(U.uGreen, P.green.v);
+  gl.uniform2f(U.uCenter, P.cx.v, P.cy.v);
   gl.uniform2f(U.uPtr, state.ptrField.x, state.ptrField.y);
   gl.uniform1f(U.uPtrGain, state.ptrGain);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
