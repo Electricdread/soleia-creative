@@ -39,24 +39,24 @@ const DARK_PALETTE = {
 };
 
 const LIGHT_PALETTE = {
-  GROUND: '#f4efe3', INK: '#1b1610', SURF: '#ece4d4',
-  N400: '#6f6049', N600: '#7c6c53', N700: '#4c4132',
-  PANEL: '#fbf7ee', BORDER: '#c9b795', ACCENT: '#b46f0c',
-  DIV: 'rgba(27,22,16,0.18)',
-  EDGE: 'rgba(27,22,16,0.28)',
-  LABEL_BG: 'rgba(255,252,245,0.88)',
-  MAP_BG: 'rgba(255,252,245,0.6)',
-  HUB_TINT: 'rgba(180,111,12,0.07)',
+  GROUND: '#f7f4ec', INK: '#141009', SURF: '#efe9db',
+  N400: '#4f4636', N600: '#3f382b', N700: '#2b251b',
+  PANEL: '#ffffff', BORDER: '#5b5140', ACCENT: '#9a5c05',
+  DIV: 'rgba(20,16,9,0.32)',
+  EDGE: 'rgba(20,16,9,0.55)',
+  LABEL_BG: 'rgba(255,255,255,0.94)',
+  MAP_BG: 'rgba(255,255,255,0.82)',
+  HUB_TINT: 'rgba(154,92,5,0.12)',
   BLEND: 'multiply' as 'screen' | 'multiply',
-  LOGO_FILTER: 'brightness(0) drop-shadow(0 0 6px rgba(255,255,255,0.75))',
+  LOGO_FILTER: 'brightness(0) drop-shadow(0 0 6px rgba(255,255,255,0.85))',
   CLOSE_LOGO_FILTER: 'brightness(0)',
   FLOW_LINES:
     'repeating-linear-gradient(102deg,'
-    + ' rgba(255,255,255,0) 0 2.6%, rgba(27,22,16,0.16) 2.6% 3.0%, rgba(255,255,255,0) 3.0% 3.35%,'
-    + ' rgba(255,255,255,0) 3.35% 6.4%, rgba(27,22,16,0.45) 6.4% 6.62%, rgba(255,255,255,0) 6.62% 12.8%)',
-  TRAIL_COLORS: ['#8a6a1f', '#a5722a', '#b46f0c', '#9c4a1c', '#7d2f2f', '#6b5a2a', '#c08a2e', '#5c4a22'],
-  TRAIL_HEAD: '#6b4a12',
-  BLOOM: ['#d08a4a', '#b46f0c'],
+    + ' rgba(255,255,255,0) 0 2.6%, rgba(20,16,9,0.30) 2.6% 3.0%, rgba(255,255,255,0) 3.0% 3.35%,'
+    + ' rgba(255,255,255,0) 3.35% 6.4%, rgba(20,16,9,0.72) 6.4% 6.62%, rgba(255,255,255,0) 6.62% 12.8%)',
+  TRAIL_COLORS: ['#5a4a12', '#7a4a0c', '#9a5c05', '#8a2f14', '#6a1f2c', '#3f4a1a', '#a86f10', '#2f2716'],
+  TRAIL_HEAD: '#241a06',
+  BLOOM: ['#9a5c05', '#5a2a08'],
 };
 
 type Palette = typeof DARK_PALETTE;
