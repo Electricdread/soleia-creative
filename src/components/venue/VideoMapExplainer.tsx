@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 /**
@@ -519,42 +520,95 @@ export default function VideoMapExplainer() {
 
   const hostRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [offsetXY, setOffsetXY] = useState({ x: 0, y: 0 });
   const [T, setT] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const [isFull, setIsFull] = useState(false);
+
+  // Lazy-mount: only build and animate the composition once it scrolls into view.
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === 'undefined') { setVisible(true); return; }
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => setVisible(e.isIntersecting)),
+      { rootMargin: '200px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setScale(el.clientWidth / W));
+    const measure = () => {
+      const w = el.clientWidth, h = el.clientHeight;
+      const s = Math.min(w / W, h / H) || w / W;
+      setScale(s);
+      setOffsetXY({ x: (w - W * s) / 2, y: (h - H * s) / 2 });
+    };
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
-    setScale(el.clientWidth / W);
+    measure();
     return () => ro.disconnect();
-  }, []);
+  }, [isFull]);
 
   useEffect(() => {
+    const onFs = () => setIsFull(document.fullscreenElement === hostRef.current);
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+
+  const toggleFullscreen = () => {
+    const el = hostRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else el.requestFullscreen?.();
+  };
+
+  useEffect(() => {
+    if (!visible) return;
     let raf = 0;
     let start: number | null = null;
-    let offset = 0;
     const tick = (now: number) => {
       if (start == null) start = now;
-      const t = (offset + (now - start) / 1000) % TOTAL;
+      const t = ((now - start) / 1000) % TOTAL;
       setT(t);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf);
-    };
-  }, []);
+    return () => cancelAnimationFrame(raf);
+  }, [visible]);
 
   return (
     <div
       ref={hostRef}
       className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated"
-      style={{ aspectRatio: '16 / 9', background: P.GROUND }}
+      style={isFull
+        ? { width: '100vw', height: '100vh', borderRadius: 0, background: P.GROUND }
+        : { aspectRatio: '16 / 9', background: P.GROUND }}
     >
-      <div style={{ position: 'absolute', left: 0, top: 0, width: W, height: H, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
-        <Stage T={T} />
-      </div>
+      {visible && (
+        <div
+          style={{
+            position: 'absolute', left: offsetXY.x, top: offsetXY.y, width: W, height: H,
+            transform: `scale(${scale})`, transformOrigin: '0 0',
+          }}
+        >
+          <Stage T={T} />
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={toggleFullscreen}
+        aria-label={isFull ? 'Exit fullscreen' : 'View fullscreen'}
+        className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border transition-opacity hover:opacity-100 opacity-70"
+        style={{ background: P.LABEL_BG, borderColor: P.BORDER, color: P.INK }}
+      >
+        {isFull ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+      </button>
     </div>
   );
 }
+
