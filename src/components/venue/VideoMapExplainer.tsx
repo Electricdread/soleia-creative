@@ -22,7 +22,7 @@ const DARK_PALETTE = {
   N400: '#d5c7b1', N600: '#c2b096', N700: '#cabba3',
   PANEL: '#0f0c09', BORDER: '#392e22', ACCENT: '#d4790f',
   DIV: 'rgba(247,243,232,0.16)',
-  EDGE: P.EDGE,
+  EDGE: 'rgba(247,243,232,0.35)',
   LABEL_BG: 'rgba(14,11,7,0.82)',
   MAP_BG: 'rgba(33,26,19,0.55)',
   HUB_TINT: 'rgba(190,168,132,0.08)',
