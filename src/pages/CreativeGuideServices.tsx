@@ -11,8 +11,8 @@ import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asse
 // Use the public site for documents so mobile Safari does not open them through
 // the authenticated preview host, which loses preview auth in a new tab.
 const PUBLIC_DOCUMENTS_ORIGIN = 'https://soleiacreative.app';
-const DOCUMENT_VERSION = '2026-08-14';
-const SERVICES_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Creative-Services.pdf?v=${DOCUMENT_VERSION}`;
+const DOCUMENT_VERSION = '2026-08-14b';
+const SERVICES_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Creative-Services-No-Pricing.pdf?v=${DOCUMENT_VERSION}`;
 const PRESENTATION_GUIDE_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Presentation-Guide.pdf?v=${DOCUMENT_VERSION}`;
 
 
