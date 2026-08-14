@@ -160,7 +160,7 @@ const ZBB = [92, 288, 1764, 348];
 const zc = (b: readonly number[]) => [b[0] + b[2] / 2, b[1] + b[3] / 2];
 
 /* ---------- small pieces ---------- */
-function Kicker({ children, color = INK, size = 24, style }: any) {
+function Kicker({ children, color = P.INK, size = 24, style }: any) {
   return (
     <div style={{ font: `700 ${size}px ${HEAD}`, letterSpacing: '0.18em', color, textTransform: 'uppercase', ...style }}>
       {children}
@@ -262,16 +262,16 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
       transformOrigin: spk ? '0% 50%' : '50% 50%',
       transformStyle: 'preserve-3d',
       opacity: on * (s.pair2 ? clamp((fold - 0.1) / 0.28, 0, 1) : 1),
-      border: `2px solid ${fold > 0.5 ? BORDER : 'rgba(247,243,232,0.35)'}`,
-      background: PANEL, overflow: 'hidden', boxSizing: 'border-box',
+      border: `2px solid ${fold > 0.5 ? P.BORDER : 'rgba(247,243,232,0.35)'}`,
+      background: P.PANEL, overflow: 'hidden', boxSizing: 'border-box',
     }}>
       <div style={{
-        position: 'absolute', inset: 0, backgroundImage: FLOW_LINES,
+        position: 'absolute', inset: 0, backgroundImage: P.FLOW_LINES,
         backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxFlow}px ${byFlow}px`,
         backgroundRepeat: 'repeat', opacity: 0.62 * flow, mixBlendMode: 'screen',
       }} />
       <div style={{
-        position: 'absolute', inset: 0, backgroundImage: FLOW_HEAD,
+        position: 'absolute', inset: 0, backgroundImage: flowHead(),
         backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxHead}px ${by}px`,
         backgroundRepeat: 'no-repeat', opacity: 0.6 * headOn, mixBlendMode: 'screen',
       }} />
@@ -289,7 +289,7 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
         </div>
       )}
       {!s.logo && logoOn > 0 && (
-        <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 2, background: ACCENT, opacity: 0.7 * logoOn }} />
+        <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 2, background: P.ACCENT, opacity: 0.7 * logoOn }} />
       )}
     </div>
   );
@@ -313,7 +313,7 @@ function ScreenLabel({ s, fold, on, labelOut, cs }: any) {
       background: 'rgba(14,11,7,0.82)', padding: '3px 7px',
       transform: `scale(${k})`, transformOrigin: '0% 0%',
     }}>
-      <Kicker size={size} color={N400}>{short}</Kicker>
+      <Kicker size={size} color={P.N400}>{short}</Kicker>
     </div>
   );
 }
@@ -325,11 +325,11 @@ function CaptionBlock({ index, title, body, spec, a }: any) {
       position: 'absolute', left: 120, bottom: 70, width: 1020,
       opacity: a, transform: `translateY(${(1 - a) * 24}px)`,
     }}>
-      <Kicker color={ACCENT}>{index}</Kicker>
-      <div style={{ font: `700 50px/1.06 ${HEAD}`, letterSpacing: '-0.02em', color: INK, marginTop: 14 }}>{title}</div>
-      <div style={{ font: `400 26px/1.42 ${HEAD}`, color: N700, marginTop: 16 }}>{body}</div>
-      <div style={{ height: 2, background: DIV, marginTop: 20 }} />
-      <Kicker size={24} color={N600} style={{ marginTop: 14 }}>{spec}</Kicker>
+      <Kicker color={P.ACCENT}>{index}</Kicker>
+      <div style={{ font: `700 50px/1.06 ${HEAD}`, letterSpacing: '-0.02em', color: P.INK, marginTop: 14 }}>{title}</div>
+      <div style={{ font: `400 26px/1.42 ${HEAD}`, color: P.N700, marginTop: 16 }}>{body}</div>
+      <div style={{ height: 2, background: P.DIV, marginTop: 20 }} />
+      <Kicker size={24} color={P.N600} style={{ marginTop: 14 }}>{spec}</Kicker>
     </div>
   );
 }
@@ -340,17 +340,17 @@ function CloseCard({ T }: { T: number }) {
   const l1 = anim(s + 0.4, 0.7)(T);
   const foot = anim(s + 0.85, 0.6)(T);
   return (
-    <div style={{ position: 'absolute', inset: 0, background: SURF, transform: `translateX(${(1 - wipe) * 100}%)` }}>
+    <div style={{ position: 'absolute', inset: 0, background: P.SURF, transform: `translateX(${(1 - wipe) * 100}%)` }}>
       <div style={{ position: 'absolute', left: 140, top: 330 }}>
         <div style={{ height: 128, overflow: 'hidden' }}>
           <div style={{
-            font: `700 108px/122px ${HEAD}`, letterSpacing: '-0.03em', color: ACCENT,
+            font: `700 108px/122px ${HEAD}`, letterSpacing: '-0.03em', color: P.ACCENT,
             transform: `translateY(${(1 - l1) * 130}px)`,
           }}>One map. Every surface.</div>
         </div>
         <div style={{ opacity: foot, marginTop: 26, width: 1180 }}>
           <div style={{ height: 2, background: 'rgba(245,158,10,0.5)' }} />
-          <div style={{ font: `400 28px/1.45 ${HEAD}`, color: INK, marginTop: 18 }}>
+          <div style={{ font: `400 28px/1.45 ${HEAD}`, color: P.INK, marginTop: 18 }}>
             Every look is built on the 3840 × 2160 map, so one motion path reaches every
             surface at once. Logos centre on every screen; the curves carry motion only.
           </div>
@@ -358,7 +358,7 @@ function CloseCard({ T }: { T: number }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 28, marginTop: 34, opacity: foot }}>
           <img src={LOGO} alt="Soleia" style={{ height: 56, filter: 'brightness(0) invert(1)' }} />
           <div style={{ width: 2, height: 42, background: 'rgba(247,243,232,0.4)' }} />
-          <Kicker color={N400}>Soleia Creative</Kicker>
+          <Kicker color={P.N400}>Soleia Creative</Kicker>
         </div>
       </div>
     </div>
@@ -413,19 +413,19 @@ function Stage({ T }: { T: number }) {
   const progress = clamp(T / TOTAL, 0, 1);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: GROUND, fontFamily: HEAD, overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, background: P.GROUND, fontFamily: HEAD, overflow: 'hidden' }}>
       {beforeClose && (
         <div style={{ position: 'absolute', inset: 0, transform: camT, transformOrigin: '960px 400px' }}>
           <div style={{
             position: 'absolute', left: MX, top: MY, width: MAPW * S, height: MAPH * S,
-            border: `2px solid ${BORDER}`, opacity: (1 - frameOut) * anim(0.1, 0.5)(T),
+            border: `2px solid ${P.BORDER}`, opacity: (1 - frameOut) * anim(0.1, 0.5)(T),
             background: 'rgba(33,26,19,0.55)',
           }} />
           <div style={{
             position: 'absolute', left: MX + MAPW * S - 470, width: 470, textAlign: 'right',
             top: MY + MAPH * S + 14, opacity: (1 - frameOut) * anim(0.25, 0.5)(T),
           }}>
-            <Kicker size={19} color={N600}>Pixelmap — 3840 × 2160</Kicker>
+            <Kicker size={19} color={P.N600}>Pixelmap — 3840 × 2160</Kicker>
           </div>
 
           {SCREENS.map((s, i) => (
@@ -448,7 +448,7 @@ function Stage({ T }: { T: number }) {
               position: 'absolute', left: z.box[0], top: z.box[1], width: z.box[2], height: z.box[3],
               opacity: fold * anim(CUES.Fold + 1.1, 0.7)(T) * (zoneAct < 0 || zoneAct === zi ? 1 : 0.2),
             }}>
-              <div style={{ position: 'absolute', inset: 0, border: `${2 / camS}px solid ${ACCENT}`, opacity: zoneAct === zi ? 0.85 : 0.5 }} />
+              <div style={{ position: 'absolute', inset: 0, border: `${2 / camS}px solid ${P.ACCENT}`, opacity: zoneAct === zi ? 0.85 : 0.5 }} />
               <div style={{
                 position: 'absolute',
                 left: z.align === 'left' ? 0 : undefined,
@@ -456,7 +456,7 @@ function Stage({ T }: { T: number }) {
                 top: -36 / camS, whiteSpace: 'nowrap',
                 transform: `scale(${1 / camS})`, transformOrigin: z.align === 'left' ? '0% 100%' : '100% 100%',
               }}>
-                <Kicker size={19} color={ACCENT}>{z.label}</Kicker>
+                <Kicker size={19} color={P.ACCENT}>{z.label}</Kicker>
               </div>
             </div>
           ))}
@@ -465,7 +465,7 @@ function Stage({ T }: { T: number }) {
             position: 'absolute', left: MX - 228, top: MY + 1680 * S,
             opacity: (1 - labelOut) * (1 - fold) * anim(1.1, 0.5)(T),
           }}>
-            <Kicker size={19} color={N600}>Sol Rays 1–6</Kicker>
+            <Kicker size={19} color={P.N600}>Sol Rays 1–6</Kicker>
           </div>
         </div>
       )}
@@ -502,11 +502,11 @@ function Stage({ T }: { T: number }) {
 
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: T >= CUES.Close + 0.1 ? 0 : 1 }}>
         <div style={{ position: 'absolute', left: 60, top: 44, display: 'flex', gap: 22, alignItems: 'center' }}>
-          <div style={{ width: 16, height: 16, background: ACCENT }} />
+          <div style={{ width: 16, height: 16, background: P.ACCENT }} />
           <Kicker>Soleia Creative — video map</Kicker>
         </div>
-        <div style={{ position: 'absolute', left: 60, right: 60, bottom: 44, height: 2, background: DIV }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, height: 2, width: `${progress * 100}%`, background: ACCENT }} />
+        <div style={{ position: 'absolute', left: 60, right: 60, bottom: 44, height: 2, background: P.DIV }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, height: 2, width: `${progress * 100}%`, background: P.ACCENT }} />
         </div>
       </div>
     </div>
