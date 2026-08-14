@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
 import CreativeGuideServices from "./pages/CreativeGuideServices";
+import DocumentViewer from "./pages/DocumentViewer";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import ContentDelivery from "./pages/ContentDelivery";
 import CreativeSession from "./pages/CreativeSession";
