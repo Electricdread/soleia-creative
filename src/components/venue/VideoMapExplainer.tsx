@@ -22,7 +22,7 @@ const DARK_PALETTE = {
   N400: '#d5c7b1', N600: '#c2b096', N700: '#cabba3',
   PANEL: '#0f0c09', BORDER: '#392e22', ACCENT: '#d4790f',
   DIV: 'rgba(247,243,232,0.16)',
-  EDGE: 'rgba(247,243,232,0.35)',
+  EDGE: P.EDGE,
   LABEL_BG: 'rgba(14,11,7,0.82)',
   MAP_BG: 'rgba(33,26,19,0.55)',
   HUB_TINT: 'rgba(190,168,132,0.08)',
@@ -168,7 +168,6 @@ function Kicker({ children, color = P.INK, size = 24, style }: any) {
   );
 }
 
-const TRAIL_COLORS = ['#f7e3bd', '#f2c98d', '#e8b26a', '#d4790f', '#c2542a', '#b8324a', '#e0d08a', '#fff6e2'];
 const hash = (i: number, k: number) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
 const TRAIL_N = 260, TRAIL_SEG = 6;
 
@@ -183,7 +182,7 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
     const spd = (0.03 + hash(i, 2) * 0.052) * (1 - rr * 0.35);
     const len = (0.3 + hash(i, 3) * 0.42) * (1 - rr * 0.32);
     const a0 = -0.75 + hash(i, 4) * 2.25 + T * spd;
-    const col = TRAIL_COLORS[Math.floor(hash(i, 7) * TRAIL_COLORS.length)];
+    const col = P.TRAIL_COLORS[Math.floor(hash(i, 7) * P.TRAIL_COLORS.length)];
     const wob = 1 + 0.05 * Math.sin(T * 0.42 + i * 1.7);
     const ry = r * 0.78 * wob, rx = r * wob;
     const wMax = 0.55 + hash(i, 5) * 0.95;
@@ -202,7 +201,7 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
     }
     const hp = pt(a0 + len);
     segs.push(<circle key={`${i}-h`} cx={hp[0].toFixed(1)} cy={hp[1].toFixed(1)}
-      r={Number((0.9 + wMax * 0.9).toFixed(2))} fill="#fff8ea" opacity={(0.55 + bright * 0.45) * a} />);
+      r={Number((0.9 + wMax * 0.9).toFixed(2))} fill={P.TRAIL_HEAD} opacity={(0.55 + bright * 0.45) * a} />);
   }
   return (
     <svg width={W} height={H} style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none', zIndex: 4 }}>
@@ -213,14 +212,14 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
           ))}
         </clipPath>
         <radialGradient id="soleia-flowbloom" cx="26%" cy="18%" r="72%">
-          <stop offset="0%" stopColor="#c2542a" stopOpacity="0.42" />
-          <stop offset="46%" stopColor="#8a3418" stopOpacity="0.16" />
+          <stop offset="0%" stopColor={P.BLOOM[0]} stopOpacity="0.42" />
+          <stop offset="46%" stopColor={P.BLOOM[1]} stopOpacity="0.16" />
           <stop offset="100%" stopColor="#000000" stopOpacity="0" />
         </radialGradient>
       </defs>
       <g clipPath="url(#soleia-panels)">
         <rect x="0" y="0" width={W} height={H} fill="url(#soleia-flowbloom)" opacity={a} />
-        <g style={{ mixBlendMode: 'screen' }}>{segs}</g>
+        <g style={{ mixBlendMode: P.BLEND }}>{segs}</g>
       </g>
     </svg>
   );
@@ -262,20 +261,20 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
       transformOrigin: spk ? '0% 50%' : '50% 50%',
       transformStyle: 'preserve-3d',
       opacity: on * (s.pair2 ? clamp((fold - 0.1) / 0.28, 0, 1) : 1),
-      border: `2px solid ${fold > 0.5 ? P.BORDER : 'rgba(247,243,232,0.35)'}`,
+      border: `2px solid ${fold > 0.5 ? P.BORDER : P.EDGE}`,
       background: P.PANEL, overflow: 'hidden', boxSizing: 'border-box',
     }}>
       <div style={{
         position: 'absolute', inset: 0, backgroundImage: P.FLOW_LINES,
         backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxFlow}px ${byFlow}px`,
-        backgroundRepeat: 'repeat', opacity: 0.62 * flow, mixBlendMode: 'screen',
+        backgroundRepeat: 'repeat', opacity: 0.62 * flow, mixBlendMode: P.BLEND,
       }} />
       <div style={{
         position: 'absolute', inset: 0, backgroundImage: flowHead(),
         backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxHead}px ${by}px`,
-        backgroundRepeat: 'no-repeat', opacity: 0.6 * headOn, mixBlendMode: 'screen',
+        backgroundRepeat: 'no-repeat', opacity: 0.6 * headOn, mixBlendMode: P.BLEND,
       }} />
-      {s.logoHub && <div style={{ position: 'absolute', inset: 0, background: 'rgba(190,168,132,0.08)' }} />}
+      {s.logoHub && <div style={{ position: 'absolute', inset: 0, background: P.HUB_TINT }} />}
       {s.logo && (
         <div style={{
           position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -284,7 +283,7 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
           <img src={LOGO} alt="" style={{
             width: s.logoHub ? 'auto' : '56%', height: s.logoHub ? '88%' : 'auto',
             maxWidth: s.logoHub ? '82%' : '56%', maxHeight: '90%', objectFit: 'contain',
-            filter: 'brightness(0) invert(1) drop-shadow(0 0 8px rgba(15,12,9,0.9))',
+            filter: P.LOGO_FILTER,
           }} />
         </div>
       )}
@@ -310,7 +309,7 @@ function ScreenLabel({ s, fold, on, labelOut, cs }: any) {
     <div style={{
       position: 'absolute', left: x + 5 * k, top: y + 5 * k,
       opacity: (1 - labelOut) * on, whiteSpace: 'nowrap',
-      background: 'rgba(14,11,7,0.82)', padding: '3px 7px',
+      background: P.LABEL_BG, padding: '3px 7px',
       transform: `scale(${k})`, transformOrigin: '0% 0%',
     }}>
       <Kicker size={size} color={P.N400}>{short}</Kicker>
@@ -349,15 +348,15 @@ function CloseCard({ T }: { T: number }) {
           }}>One map. Every surface.</div>
         </div>
         <div style={{ opacity: foot, marginTop: 26, width: 1180 }}>
-          <div style={{ height: 2, background: 'rgba(245,158,10,0.5)' }} />
+          <div style={{ height: 2, background: P.ACCENT + '80' }} />
           <div style={{ font: `400 28px/1.45 ${HEAD}`, color: P.INK, marginTop: 18 }}>
             Every look is built on the 3840 × 2160 map, so one motion path reaches every
             surface at once. Logos centre on every screen; the curves carry motion only.
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 28, marginTop: 34, opacity: foot }}>
-          <img src={LOGO} alt="Soleia" style={{ height: 56, filter: 'brightness(0) invert(1)' }} />
-          <div style={{ width: 2, height: 42, background: 'rgba(247,243,232,0.4)' }} />
+          <img src={LOGO} alt="Soleia" style={{ height: 56, filter: P.CLOSE_LOGO_FILTER }} />
+          <div style={{ width: 2, height: 42, background: P.DIV }} />
           <Kicker color={P.N400}>Soleia Creative</Kicker>
         </div>
       </div>
@@ -419,7 +418,7 @@ function Stage({ T }: { T: number }) {
           <div style={{
             position: 'absolute', left: MX, top: MY, width: MAPW * S, height: MAPH * S,
             border: `2px solid ${P.BORDER}`, opacity: (1 - frameOut) * anim(0.1, 0.5)(T),
-            background: 'rgba(33,26,19,0.55)',
+            background: P.MAP_BG,
           }} />
           <div style={{
             position: 'absolute', left: MX + MAPW * S - 470, width: 470, textAlign: 'right',
