@@ -145,13 +145,11 @@ const SCREENS: Screen[] = [
   { zone: 2, id: 'ARCH', map: [2322, 1639, 1512, 504], room: [1636, 482, 158, 62], ry: 0, label: 'Outdoor Arch', logo: true },
 ];
 
-const FLOW_LINES = 'repeating-linear-gradient(102deg,'
-  + ' rgba(0,0,0,0) 0 2.6%, rgba(247,243,232,0.16) 2.6% 3.0%, rgba(0,0,0,0) 3.0% 3.35%,'
-  + ' rgba(0,0,0,0) 3.35% 6.4%, rgba(247,243,232,0.55) 6.4% 6.62%, rgba(0,0,0,0) 6.62% 12.8%)';
-const FLOW_HEAD = 'linear-gradient(102deg,'
-  + ' rgba(0,0,0,0) 0%, rgba(0,0,0,0) 41%, ' + ACCENT + '00 43%, ' + ACCENT + '99 48.4%,'
-  + ' ' + ACCENT + 'cc 50%, ' + ACCENT + '99 51.6%, ' + ACCENT + '00 57%,'
+const flowHead = () => 'linear-gradient(102deg,'
+  + ' rgba(0,0,0,0) 0%, rgba(0,0,0,0) 41%, ' + P.ACCENT + '00 43%, ' + P.ACCENT + '99 48.4%,'
+  + ' ' + P.ACCENT + 'cc 50%, ' + P.ACCENT + '99 51.6%, ' + P.ACCENT + '00 57%,'
   + ' rgba(0,0,0,0) 59%, rgba(0,0,0,0) 100%)';
+
 
 const ZONES = [
   { box: [92, 322, 672, 272], label: 'Main interior — walls', align: 'left', cam: 2.0 },
