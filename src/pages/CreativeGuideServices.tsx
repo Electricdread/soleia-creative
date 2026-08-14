@@ -11,8 +11,9 @@ import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asse
 // Use the public site for documents so mobile Safari does not open them through
 // the authenticated preview host, which loses preview auth in a new tab.
 const PUBLIC_DOCUMENTS_ORIGIN = 'https://soleiacreative.app';
-const SERVICES_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Creative-Services.pdf`;
-const PRESENTATION_GUIDE_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Presentation-Guide.pdf`;
+const DOCUMENT_VERSION = '2026-08-14';
+const SERVICES_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Creative-Services.pdf?v=${DOCUMENT_VERSION}`;
+const PRESENTATION_GUIDE_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Presentation-Guide.pdf?v=${DOCUMENT_VERSION}`;
 
 
 
@@ -166,8 +167,6 @@ export default function CreativeGuideServices() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
               href={SERVICES_PDF_URL}
-              target="_blank"
-              rel="noopener noreferrer"
               className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
             >
               <Eye className="w-3.5 h-3.5" />
@@ -267,8 +266,6 @@ export default function CreativeGuideServices() {
                             <div className="mt-6 flex flex-wrap items-center gap-3">
                               <a
                                 href={PRESENTATION_GUIDE_PDF_URL}
-                                target="_blank"
-                                rel="noopener noreferrer"
                                 className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
                               >
                                 <Eye className="w-3.5 h-3.5" />
