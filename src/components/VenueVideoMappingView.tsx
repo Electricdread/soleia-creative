@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move, Layers, Check, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import RoomScene from '@/components/venue/RoomScene';
+import VideoMapExplainer from '@/components/venue/VideoMapExplainer';
 import { supabase } from '@/integrations/supabase/client';
 import solIcon from '@/assets/sol-icon.png';
 // Note: intentionally NOT using Radix Popover here — it portals to document.body,
@@ -389,7 +390,7 @@ export default function VenueVideoMappingView({
           </h1>
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             {subheading ??
-              'Every screen in the venue is a different shape and resolution. Step inside an interactive 3D model of the room and preview real mapped content on every surface — see how motion, branding and pixel-perfect mapping turn the space into one immersive canvas.'}
+              'Every screen in the venue is a different shape and resolution — and all of them live on one 3840 × 2160 file. Watch the pixelmap fold into the room, one motion pass travel across every surface, and the alpha logo land centred on each screen.'}
           </p>
         </Reveal>
       </section>
@@ -397,14 +398,13 @@ export default function VenueVideoMappingView({
       <section className="pb-24">
         <div className="container mx-auto max-w-6xl px-6">
           <Reveal className="mb-11">
-            <span className="mb-3.5 block text-[11px] uppercase tracking-[0.34em] text-primary">The Venue in 3D</span>
-            <h2 className="font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">Preview the room, live.</h2>
+            <span className="mb-3.5 block text-[11px] uppercase tracking-[0.34em] text-primary">How the map works</span>
+            <h2 className="font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">One map. Every surface.</h2>
           </Reveal>
           <Reveal>
-            <VenueRoom roomRef={roomRef} clips={clips} fallbackUrl={fallbackUrl} />
+            <VideoMapExplainer />
             <p className="mt-4 text-center text-sm text-muted-foreground">
-              Drag to orbit · scroll to zoom · <span className="text-primary">Play Previz</span>
-              {clips.length > 1 ? ' — open the playlist to switch between clips.' : ' to map a show onto every screen.'}
+              The 3840 × 2160 pixelmap, one continuous motion pass across every LED surface, and the alpha logo centred on each screen.
             </p>
           </Reveal>
         </div>
