@@ -8,8 +8,11 @@ import solIcon from '@/assets/sol-icon.png';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
-const SERVICES_PDF_URL = '/Soleia-Creative-Services.pdf';
-const PRESENTATION_GUIDE_PDF_URL = '/Soleia-Presentation-Guide.pdf';
+// Use the public site for documents so mobile Safari does not open them through
+// the authenticated preview host, which loses preview auth in a new tab.
+const PUBLIC_DOCUMENTS_ORIGIN = 'https://soleiacreative.app';
+const SERVICES_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Creative-Services.pdf`;
+const PRESENTATION_GUIDE_PDF_URL = `${PUBLIC_DOCUMENTS_ORIGIN}/Soleia-Presentation-Guide.pdf`;
 
 
 
