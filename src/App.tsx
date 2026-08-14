@@ -74,6 +74,7 @@ const App = () => (
               {/* Protected Routes - Require Authentication */}
               <Route path="/creative-guide" element={<CreativeGuide />} />
               <Route path="/creative-guide/services" element={<CreativeGuideServices />} />
+              <Route path="/creative-guide/doc/:slug" element={<DocumentViewer />} />
               <Route path="/creative-director" element={<ProtectedRoute requireAdmin><CreativeDirector /></ProtectedRoute>} />
               <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
               <Route path="/creative-guide/content-delivery" element={<ContentDelivery />} />
