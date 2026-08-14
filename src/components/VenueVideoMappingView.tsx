@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Power, Maximize, Minimize2, Orbit, ZoomIn, Move, Layers, Check, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import RoomScene from '@/components/venue/RoomScene';
+import VideoMapExplainer from '@/components/venue/VideoMapExplainer';
 import { supabase } from '@/integrations/supabase/client';
 import solIcon from '@/assets/sol-icon.png';
 // Note: intentionally NOT using Radix Popover here — it portals to document.body,
