@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 
 /**
@@ -7,17 +8,63 @@ import { Pause, Play, RotateCcw } from 'lucide-react';
  * pass flowing across every surface, the map folding into the room, three zone
  * passes, and the alpha logo landing centred on every screen.
  * Authored on a 1920×1080 stage and scaled to fit its container.
+ * Renders in a dark or a bright (light-mode) palette.
  */
 
 const W = 1920, H = 1080;
-const GROUND = '#18140f', INK = '#f7f3e8', SURF = '#211a13';
-const N400 = '#d5c7b1', N600 = '#c2b096', N700 = '#cabba3';
-const PANEL = '#0f0c09';
-const BORDER = '#392e22';
-const ACCENT = '#d4790f';
+
 const HEAD = '"Archivo", Inter, system-ui, sans-serif';
-const DIV = 'rgba(247,243,232,0.16)';
 const LOGO = '/soleia-logo-black.png';
+
+/* ---------- palettes ---------- */
+const DARK_PALETTE = {
+  GROUND: '#18140f', INK: '#f7f3e8', SURF: '#211a13',
+  N400: '#d5c7b1', N600: '#c2b096', N700: '#cabba3',
+  PANEL: '#0f0c09', BORDER: '#392e22', ACCENT: '#d4790f',
+  DIV: 'rgba(247,243,232,0.16)',
+  EDGE: 'rgba(247,243,232,0.35)',
+  LABEL_BG: 'rgba(14,11,7,0.82)',
+  MAP_BG: 'rgba(33,26,19,0.55)',
+  HUB_TINT: 'rgba(190,168,132,0.08)',
+  BLEND: 'screen' as const,
+  LOGO_FILTER: 'brightness(0) invert(1) drop-shadow(0 0 8px rgba(15,12,9,0.9))',
+  CLOSE_LOGO_FILTER: 'brightness(0) invert(1)',
+  FLOW_LINES:
+    'repeating-linear-gradient(102deg,'
+    + ' rgba(0,0,0,0) 0 2.6%, rgba(247,243,232,0.16) 2.6% 3.0%, rgba(0,0,0,0) 3.0% 3.35%,'
+    + ' rgba(0,0,0,0) 3.35% 6.4%, rgba(247,243,232,0.55) 6.4% 6.62%, rgba(0,0,0,0) 6.62% 12.8%)',
+  TRAIL_COLORS: ['#f7e3bd', '#f2c98d', '#e8b26a', '#d4790f', '#c2542a', '#b8324a', '#e0d08a', '#fff6e2'],
+  TRAIL_HEAD: '#fff8ea',
+  BLOOM: ['#c2542a', '#8a3418'] as const,
+};
+
+const LIGHT_PALETTE = {
+  GROUND: '#f4efe3', INK: '#1b1610', SURF: '#ece4d4',
+  N400: '#6f6049', N600: '#7c6c53', N700: '#4c4132',
+  PANEL: '#fbf7ee', BORDER: '#c9b795', ACCENT: '#b46f0c',
+  DIV: 'rgba(27,22,16,0.18)',
+  EDGE: 'rgba(27,22,16,0.28)',
+  LABEL_BG: 'rgba(255,252,245,0.88)',
+  MAP_BG: 'rgba(255,252,245,0.6)',
+  HUB_TINT: 'rgba(180,111,12,0.07)',
+  BLEND: 'multiply' as const,
+  LOGO_FILTER: 'brightness(0) drop-shadow(0 0 6px rgba(255,255,255,0.75))',
+  CLOSE_LOGO_FILTER: 'brightness(0)',
+  FLOW_LINES:
+    'repeating-linear-gradient(102deg,'
+    + ' rgba(255,255,255,0) 0 2.6%, rgba(27,22,16,0.16) 2.6% 3.0%, rgba(255,255,255,0) 3.0% 3.35%,'
+    + ' rgba(255,255,255,0) 3.35% 6.4%, rgba(27,22,16,0.45) 6.4% 6.62%, rgba(255,255,255,0) 6.62% 12.8%)',
+  TRAIL_COLORS: ['#8a6a1f', '#a5722a', '#b46f0c', '#9c4a1c', '#7d2f2f', '#6b5a2a', '#c08a2e', '#5c4a22'],
+  TRAIL_HEAD: '#6b4a12',
+  BLOOM: ['#d08a4a', '#b46f0c'] as const,
+};
+
+type Palette = typeof DARK_PALETTE;
+
+// Single mutable palette reference: the whole composition renders synchronously
+// from the exported component, which sets this before the tree renders.
+let P: Palette = DARK_PALETTE;
+
 
 const MAPW = 3840, MAPH = 2160;
 const S = 0.3;
