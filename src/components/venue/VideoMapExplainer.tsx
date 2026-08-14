@@ -520,9 +520,6 @@ export default function VideoMapExplainer() {
   const hostRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [T, setT] = useState(0);
-  const [playing, setPlaying] = useState(true);
-  const startRef = useRef<number | null>(null);
-  const offsetRef = useRef(0);
 
   useEffect(() => {
     const el = hostRef.current;
@@ -534,29 +531,20 @@ export default function VideoMapExplainer() {
   }, []);
 
   useEffect(() => {
-    if (!playing) return;
     let raf = 0;
-    startRef.current = null;
+    let start: number | null = null;
+    let offset = 0;
     const tick = (now: number) => {
-      if (startRef.current == null) startRef.current = now;
-      const t = (offsetRef.current + (now - startRef.current) / 1000) % TOTAL;
+      if (start == null) start = now;
+      const t = (offset + (now - start) / 1000) % TOTAL;
       setT(t);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(raf);
-      offsetRef.current = T;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing]);
-
-  const restart = () => { offsetRef.current = 0; startRef.current = null; setT(0); setPlaying(true); };
-  const label = useMemo(() => {
-    let name = SCENES[0].name as string;
-    SCENES.forEach((s) => { if (T >= CUES[s.name]) name = s.name; });
-    return name;
-  }, [T]);
+  }, []);
 
   return (
     <div
@@ -566,22 +554,6 @@ export default function VideoMapExplainer() {
     >
       <div style={{ position: 'absolute', left: 0, top: 0, width: W, height: H, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
         <Stage T={T} />
-      </div>
-
-      <div className={`absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-primary/30 px-2 py-1.5 backdrop-blur-md ${isLight ? 'bg-white/70' : 'bg-black/55'}`}>
-        <button
-          onClick={() => setPlaying((p) => !p)}
-          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors ${isLight ? 'text-foreground hover:bg-black/5' : 'text-white hover:bg-white/10'}`}
-        >
-          {playing ? <><Pause className="h-3.5 w-3.5" /> Pause</> : <><Play className="h-3.5 w-3.5" /> Play</>}
-        </button>
-        <button
-          onClick={restart}
-          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors ${isLight ? 'text-foreground hover:bg-black/5' : 'text-white hover:bg-white/10'}`}
-        >
-          <RotateCcw className="h-3.5 w-3.5" /> Restart
-        </button>
-        <span className="px-3 text-[10px] uppercase tracking-[0.18em] text-primary/90">{label}</span>
       </div>
     </div>
   );
