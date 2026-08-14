@@ -513,6 +513,11 @@ function Stage({ T }: { T: number }) {
 }
 
 export default function VideoMapExplainer() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
+  // Set before the composition renders — Stage and its children read this synchronously.
+  P = isLight ? LIGHT_PALETTE : DARK_PALETTE;
+
   const hostRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [T, setT] = useState(0);
@@ -557,23 +562,25 @@ export default function VideoMapExplainer() {
   return (
     <div
       ref={hostRef}
-      className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated bg-black"
-      style={{ aspectRatio: '16 / 9' }}
+      className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated"
+      // eslint-disable-next-line react/no-unknown-property
+      data-palette={isLight ? 'light' : 'dark'}
+      style={{ aspectRatio: '16 / 9', background: P.GROUND }}
     >
       <div style={{ position: 'absolute', left: 0, top: 0, width: W, height: H, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
         <Stage T={T} />
       </div>
 
-      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-primary/30 bg-black/55 px-2 py-1.5 backdrop-blur-md">
+      <div className={`absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-primary/30 px-2 py-1.5 backdrop-blur-md ${isLight ? 'bg-white/70' : 'bg-black/55'}`}>
         <button
           onClick={() => setPlaying((p) => !p)}
-          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
+          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors ${isLight ? 'text-foreground hover:bg-black/5' : 'text-white hover:bg-white/10'}`}
         >
           {playing ? <><Pause className="h-3.5 w-3.5" /> Pause</> : <><Play className="h-3.5 w-3.5" /> Play</>}
         </button>
         <button
           onClick={restart}
-          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
+          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors ${isLight ? 'text-foreground hover:bg-black/5' : 'text-white hover:bg-white/10'}`}
         >
           <RotateCcw className="h-3.5 w-3.5" /> Restart
         </button>
