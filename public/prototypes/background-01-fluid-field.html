@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Soleia — Background 01 · Fluid Field</title>
+<!--
+  Soleia Creative — LED screen-content background.
+  BACKGROUND 01 · FLUID FIELD
+  Ambient motion system for mapped scenic screens: a domain-warped fluid wave
+  field with sparse gold ribbons, glassy cream fog and a slow breathing pulse.
+  Pure background — no text, UI, or website framing.
+
+  Palette
+    base   #18110E   near-black warm ground
+    cream  #F3E9D8   soft illumination / fog
+    gold   #D7B56D   restrained ribbon energy
+    green  #EFF7DF   pale accent, used very sparingly
+
+  Architecture / performance
+  - Raw WebGL1, one fullscreen triangle, one draw call, zero textures/libraries.
+  - DPR clamped (default 1.5) to bound fill cost; rAF pauses when tab is hidden.
+  - All motion is delta-time driven — identical look at 60 / 120 / 240 Hz.
+  - Ambient field is slow (breath ≈ 9s, drift ≈ 0.01 field-units/s).
+  - Motion timing clusters:
+      150ms  micro accents (pointer glow)
+      300ms  reactive state (parallax settle, pointer-mode engage)
+      950ms  environmental fades (intro, resume)
+      1250ms parameter/environment transitions (API-driven changes)
+  - DOM fallback: layered CSS gradients + keyframe breathing when WebGL is
+    unavailable or the context is lost.
+
+  Configuration (URL query or the window.SoleiaField API)
+    ?wave=1        wave scale        (0.4 tight … 2.5 broad)
+    ?pulse=1       breathing/flow speed multiplier
+    ?contrast=1    contrast about the base tone
+    ?density=1     ribbon count/spacing (lower = sparser)
+    ?blur=0.5      ribbon softness 0 crisp … 1 vapor
+    ?grain=1       film grain amount
+    ?parallax=0.6  pointer-parallax depth (with pointer=1)
+    ?green=0.5     pale-green accent amount (keep low)
+    ?pointer=0     pointer-reactive drift — optional mode, off by default
+    ?aspect=21:9   letterbox to a scenic surface ratio (e.g. 32:9, 9:16);
+                   omit for full-bleed
+    ?dpr=1.5       DPR cap
+    ?stats=1       tiny FPS/frame-time readout (diagnostic only, off by default)
+
+  Runtime API (for embedding in the app / driving from show control):
+    SoleiaField.set('density', 0.6)  → eases over ~1250ms
+    SoleiaField.pointer(true|false)  → toggles the optional reactive mode
+-->
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; overflow: hidden; background: #18110E; }
+  #gl { position: fixed; display: block; }
+  /* ------- DOM fallback: slow layered gradients, same palette ------- */
+  #fallback {
+    position: fixed; inset: 0; display: none;
+    background:
+      radial-gradient(120% 90% at 22% 30%, rgba(243, 233, 216, 0.10), transparent 60%),
+      radial-gradient(110% 80% at 78% 72%, rgba(215, 181, 109, 0.12), transparent 55%),
+      #18110E;
+  }
+  #fallback::before, #fallback::after {
+    content: ''; position: absolute; inset: -20%;
+    background:
+      radial-gradient(60% 24% at 50% 38%, rgba(215, 181, 109, 0.14), transparent 70%),
+      radial-gradient(70% 20% at 40% 66%, rgba(243, 233, 216, 0.08), transparent 70%);
+    animation: drift 36s ease-in-out infinite alternate;
+  }
+  #fallback::after {
+    background:
+      radial-gradient(50% 18% at 62% 52%, rgba(215, 181, 109, 0.10), transparent 70%);
+    animation: drift 28s ease-in-out infinite alternate-reverse, breathe 9s ease-in-out infinite;
+  }
+  @keyframes drift   { from { transform: translate3d(-2.5%, -1.5%, 0) scale(1.02); }
+                       to   { transform: translate3d(2.5%, 1.5%, 0) scale(1.06); } }
+  @keyframes breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+  #stats {
+    position: fixed; right: 14px; top: 12px; display: none;
+    color: #F3E9D8; opacity: 0.8; text-align: right; user-select: none;
+    font: 500 11px/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+<div id="fallback"></div>
+<canvas id="gl"></canvas>
+<div id="stats"></div>
+
+<script>
+'use strict';
+
+/* ---------------- configuration -------------------------------------------- */
+const qs = new URLSearchParams(location.search);
+const num = (k, d) => { const v = parseFloat(qs.get(k)); return Number.isFinite(v) ? v : d; };
+
+const CFG = {
+  wave:     num('wave', 1.0),
+  pulse:    num('pulse', 1.0),
+  contrast: num('contrast', 1.0),
+  density:  num('density', 1.0),
+  blur:     num('blur', 0.5),
+  grain:    num('grain', 1.0),
+  parallax: num('parallax', 0.6),
+  green:    num('green', 0.5),
+};
+const POINTER_DEFAULT = qs.get('pointer') === '1';
+const DPR_CAP = num('dpr', 1.5);
+const SHOW_STATS = qs.get('stats') === '1';
+const ASPECT = (() => {
+  const a = qs.get('aspect');
+  if (!a) return 0;
+  const m = a.match(/^([\d.]+)[:x/]([\d.]+)$/);
+  if (m) return parseFloat(m[1]) / parseFloat(m[2]);
+  const f = parseFloat(a);
+  return Number.isFinite(f) && f > 0 ? f : 0;
+})();
+
+/* timing clusters (seconds). Exponential approach: settles ≈ 3·tau. */
+const TAU_MICRO = 0.05;   // ~150ms — pointer accents
+const TAU_STATE = 0.10;   // ~300ms — parallax settle, mode engage
+const TAU_FADE  = 0.32;   // ~950ms — intro / resume fades
+const TAU_ENV   = 0.42;   // ~1250ms — environmental parameter eases
+
+/* ---------------- WebGL ----------------------------------------------------- */
+const canvas = document.getElementById('gl');
+const fallback = document.getElementById('fallback');
+const statsEl = document.getElementById('stats');
+if (SHOW_STATS) statsEl.style.display = 'block';
+
+let gl = null;
+try {
+  gl = canvas.getContext('webgl', {
+    alpha: false, antialias: false, depth: false, stencil: false,
+    powerPreference: 'high-performance',
+  });
+} catch (e) { /* fall through to DOM fallback */ }
+
+function useFallback() {
+  canvas.style.display = 'none';
+  fallback.style.display = 'block';
+}
+if (!gl) useFallback();
+
+const VERT = `
+attribute vec2 aPos;
+void main() { gl_Position = vec4(aPos, 0.0, 1.0); }
+`;
+
+const FRAG = `
+precision highp float;
+
+uniform vec2  uRes;
+uniform float uT;        // simulation seconds
+uniform float uBreath;   // 0..1 eased breathing
+uniform vec2  uDrift;    // parallax / autonomous drift, field units
+uniform float uFade;     // environmental fade (intro ≈ 950ms)
+uniform float uWave;     // wave scale
+uniform float uContrast;
+uniform float uDensity;
+uniform float uSoft;     // ribbon softness 0..1
+uniform float uGrain;
+uniform float uGreen;
+uniform vec2  uPtr;      // pointer, field coords
+uniform float uPtrGain;  // 0..1 micro accent (~150ms)
+
+const vec3 BASE  = vec3(0.094, 0.067, 0.055);  /* #18110E */
+const vec3 CREAM = vec3(0.953, 0.914, 0.847);  /* #F3E9D8 */
+const vec3 GOLD  = vec3(0.843, 0.710, 0.427);  /* #D7B56D */
+const vec3 GREEN = vec3(0.937, 0.969, 0.875);  /* #EFF7DF */
+
+float hash(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash(i), b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0)), d = hash(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+float fbm2(vec2 p) {
+  return noise(p) * 0.667 + noise(p * 2.03 + 11.3) * 0.333;
+}
+float fbm3(vec2 p) {
+  return noise(p) * 0.571 + noise(p * 2.03 + 11.3) * 0.286 + noise(p * 4.11 + 27.7) * 0.143;
+}
+
+void main() {
+  vec2 frag = gl_FragCoord.xy;
+  vec2 pv = (frag - 0.5 * uRes) / uRes.y;   /* screen space, for vignette */
+  vec2 p = pv / max(uWave, 0.1) + uDrift;   /* field space */
+  float ft = uT * 0.045;                    /* slow field flow */
+
+  /* fluid domain warp — two noise fields folding into a third */
+  vec2 q = vec2(
+    fbm2(p + vec2(0.0, ft * 0.30)),
+    fbm2(p + vec2(5.2, 1.3) + vec2(-ft * 0.24, 0.0)));
+  vec2 r = vec2(
+    fbm2(p + 1.8 * q + vec2(1.7, 9.2) + vec2(ft * 0.10, 0.0)),
+    fbm2(p + 1.8 * q + vec2(8.3, 2.8) + vec2(0.0, ft * 0.08)));
+  float f = fbm3(p + 1.6 * r);
+
+  vec3 col = BASE;
+
+  /* glassy cream fog where the warped field gathers */
+  float fog = smoothstep(0.42, 0.88, f);
+  col += CREAM * fog * 0.16 * (0.72 + 0.46 * uBreath);
+
+  /* sparse gold ribbons — wave phase bent by the field; energy gates them so
+     each ribbon breathes in and out along its own length */
+  float phase = p.y * 2.4 * uDensity + (f - 0.5) * 2.4 + ft * 0.35;
+  float crest = 0.5 + 0.5 * sin(phase * 6.2831853);
+  crest = pow(crest, mix(8.0, 2.4, clamp(uSoft, 0.0, 1.0)));
+  float energy = smoothstep(0.24, 0.68, f);
+  float ribbon = crest * energy;
+  col += GOLD * ribbon * (0.42 + 0.30 * uBreath);
+  col += CREAM * ribbon * ribbon * 0.32;      /* hot glassy core */
+
+  /* pale green accent — only where the warp field peaks, very sparse */
+  float acc = smoothstep(0.80, 0.96, r.y) * ribbon;
+  col += GREEN * acc * 0.12 * uGreen * (0.6 + 0.4 * uBreath);
+
+  /* two broad luminous glows drifting almost imperceptibly */
+  vec2 g1 = vec2(-0.34 + 0.05 * sin(uT * 0.021), 0.16 + 0.04 * sin(uT * 0.017 + 2.0));
+  vec2 g2 = vec2(0.38 + 0.05 * sin(uT * 0.015 + 4.2), -0.20 + 0.04 * sin(uT * 0.019 + 1.1));
+  col += CREAM * exp(-dot(pv - g1, pv - g1) * 2.4) * 0.085 * (0.7 + 0.5 * uBreath);
+  col += GOLD  * exp(-dot(pv - g2, pv - g2) * 2.8) * 0.075 * (0.8 + 0.4 * uBreath);
+
+  /* optional pointer accent (~150ms reactive) */
+  float pd = dot(p - uPtr, p - uPtr);
+  col += GOLD * exp(-pd * 26.0) * 0.10 * uPtrGain;
+
+  /* vignette, contrast about the base tone, environmental fade */
+  col *= 1.0 - dot(pv, pv) * 0.28;
+  col = BASE + (col - BASE) * uContrast;
+  col = mix(BASE, col, uFade);
+
+  /* filmic grain, time-quantized so it reads as texture, not shimmer */
+  float gt = floor(uT * 12.0);
+  col += (hash(frag * 0.6031 + gt) - 0.5) * 0.014 * uGrain;
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+let prog = null;
+const U = {};
+if (gl) {
+  try {
+    const sh = (type, src) => {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+        throw new Error(gl.getShaderInfoLog(s) || 'compile failed');
+      }
+      return s;
+    };
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(prog) || 'link failed');
+    }
+    gl.useProgram(prog);
+    const quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(prog, 'aPos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+    for (const n of ['uRes', 'uT', 'uBreath', 'uDrift', 'uFade', 'uWave', 'uContrast',
+                     'uDensity', 'uSoft', 'uGrain', 'uGreen', 'uPtr', 'uPtrGain']) {
+      U[n] = gl.getUniformLocation(prog, n);
+    }
+  } catch (e) {
+    gl = null;
+    useFallback();
+  }
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); useFallback(); });
+}
+
+/* ---------------- sizing: full-bleed or scenic aspect letterbox -------------- */
+let dpr = 1, cw = 0, ch = 0;
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+  let w = innerWidth, h = innerHeight, x = 0, y = 0;
+  if (ASPECT > 0) {
+    if (w / h > ASPECT) { w = Math.round(h * ASPECT); x = Math.round((innerWidth - w) / 2); }
+    else { h = Math.round(w / ASPECT); y = Math.round((innerHeight - h) / 2); }
+  }
+  canvas.style.left = x + 'px';
+  canvas.style.top = y + 'px';
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  cw = Math.round(w * dpr); ch = Math.round(h * dpr);
+  if (canvas.width !== cw || canvas.height !== ch) {
+    canvas.width = cw; canvas.height = ch;
+    if (gl) gl.viewport(0, 0, cw, ch);
+  }
+}
+addEventListener('resize', resize);
+resize();
+
+/* ---------------- animation state ------------------------------------------- */
+const approach = (cur, target, dt, tau) => cur + (target - cur) * (1 - Math.exp(-dt / tau));
+
+/* eased params: URL sets the start value; SoleiaField.set() eases to new
+   targets over the ~1250ms environmental cluster */
+const P = {};
+for (const k of Object.keys(CFG)) P[k] = { v: CFG[k], t: CFG[k] };
+
+const state = {
+  simT: 0,
+  fade: 0,
+  pointerMode: POINTER_DEFAULT,
+  modeGain: POINTER_DEFAULT ? 1 : 0,   // eases ~300ms on toggle
+  ptrGain: 0,
+  ptrScreen: { x: 0.5, y: 0.5 },
+  drift: { x: 0, y: 0 },
+  ptrField: { x: 99, y: 99 },          // offscreen until pointer arrives
+};
+
+addEventListener('pointermove', (e) => {
+  state.ptrScreen.x = e.clientX / innerWidth;
+  state.ptrScreen.y = e.clientY / innerHeight;
+});
+document.addEventListener('mouseleave', () => { state.ptrGain = 0; });
+
+/* runtime API for embedding / show control */
+window.SoleiaField = {
+  params: CFG,
+  set(k, v) {
+    if (P[k] && Number.isFinite(v)) { P[k].t = v; CFG[k] = v; }
+  },
+  pointer(on) { state.pointerMode = !!on; },
+};
+
+/* ---------------- FPS (diagnostic, ?stats=1 only) ---------------------------- */
+let frames = 0, statClock = 0, worst = 0;
+function stats(rawDt) {
+  if (!SHOW_STATS) return;
+  frames++; statClock += rawDt; worst = Math.max(worst, rawDt);
+  if (statClock >= 0.25) {
+    statsEl.textContent =
+      `${Math.round(frames / statClock)} fps · ${(worst * 1000).toFixed(1)} ms · dpr ${dpr.toFixed(2)}`;
+    frames = 0; statClock = 0; worst = 0;
+  }
+}
+
+/* ---------------- main loop (delta time, pauses when hidden) ----------------- */
+const BREATH_PERIOD = 9.0;
+let last = performance.now();
+let running = true;
+
+function frame(now) {
+  if (!running || !gl) return;
+  const rawDt = (now - last) / 1000;
+  last = now;
+  const dt = Math.min(rawDt, 0.05);
+
+  for (const k of Object.keys(P)) P[k].v = approach(P[k].v, P[k].t, dt, TAU_ENV);
+
+  state.simT += dt * P.pulse.v;
+  state.fade = approach(state.fade, 1, dt, TAU_FADE);
+  state.modeGain = approach(state.modeGain, state.pointerMode ? 1 : 0, dt, TAU_STATE);
+
+  /* drift: autonomous slow wander, plus pointer parallax in the optional mode */
+  const wanderX = Math.sin(state.simT * 0.013) * 0.05;
+  const wanderY = Math.cos(state.simT * 0.011) * 0.04;
+  const aspect = cw / Math.max(ch, 1);
+  const px = (state.ptrScreen.x - 0.5) * aspect;
+  const py = (0.5 - state.ptrScreen.y);
+  const depth = P.parallax.v * 0.16 * state.modeGain;
+  state.drift.x = approach(state.drift.x, wanderX - px * depth, dt, TAU_STATE);
+  state.drift.y = approach(state.drift.y, wanderY - py * depth, dt, TAU_STATE);
+
+  /* pointer accent (micro, ~150ms), only in pointer mode */
+  state.ptrGain = approach(state.ptrGain, state.modeGain, dt, TAU_MICRO);
+  const w = Math.max(P.wave.v, 0.1);
+  state.ptrField.x = px / w + state.drift.x;
+  state.ptrField.y = py / w + state.drift.y;
+
+  let b = 0.5 - 0.5 * Math.cos((state.simT * 2 * Math.PI) / BREATH_PERIOD);
+  b = b * b * (3 - 2 * b);
+
+  gl.uniform2f(U.uRes, cw, ch);
+  gl.uniform1f(U.uT, state.simT);
+  gl.uniform1f(U.uBreath, b);
+  gl.uniform2f(U.uDrift, state.drift.x, state.drift.y);
+  gl.uniform1f(U.uFade, state.fade);
+  gl.uniform1f(U.uWave, P.wave.v);
+  gl.uniform1f(U.uContrast, P.contrast.v);
+  gl.uniform1f(U.uDensity, P.density.v);
+  gl.uniform1f(U.uSoft, P.blur.v);
+  gl.uniform1f(U.uGrain, P.grain.v);
+  gl.uniform1f(U.uGreen, P.green.v);
+  gl.uniform2f(U.uPtr, state.ptrField.x, state.ptrField.y);
+  gl.uniform1f(U.uPtrGain, state.ptrGain);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  stats(rawDt);
+  requestAnimationFrame(frame);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    running = false;
+  } else if (!running) {
+    running = true;
+    last = performance.now();
+    state.fade = Math.min(state.fade, 0.35);  /* re-enter with a ~950ms fade */
+    requestAnimationFrame(frame);
+  }
+});
+
+if (gl) requestAnimationFrame(frame);
+</script>
+</body>
+</html>

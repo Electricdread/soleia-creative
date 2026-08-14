@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Soleia — Motion Study · Calm Lattice</title>
+<!--
+  Soleia Creative — LED screen-content prototype.
+  MOTION STUDY · CALM LATTICE
+  Fine line lattice · sparse anchors · perspective grid · slow breathing pulse.
+
+  Architecture / performance notes:
+  - Raw WebGL1, one fullscreen quad, one draw call, zero textures, no libraries.
+  - DPR clamped to 1.5 to bound fill cost.
+  - All motion is delta-time driven (simulation clock), so the look is identical
+    at 60 / 120 / 240 Hz. High-refresh displays should pace at their native rate.
+  - Ambient motion is deliberately slow (breath ≈ 9.5s period, drift < 0.02 uv/s).
+  - Interactive state (pause, alpha mode, pointer accent, HUD) settles in ~150ms.
+  - Alpha-friendly: "Alpha" mode outputs premultiplied light-over-transparent,
+    ready to composite over live video or other passes.
+  - Press M for the 3840×2160 pixelmap screen overlay (all 15 surfaces sample
+    this one frame — same rects as VideoMapExplainer / RoomScene REGIONS).
+-->
+<style>
+  :root {
+    --ink: #f7f3e8;
+    --n400: #d5c7b1;
+    --n600: #c2b096;
+    --accent: #d4790f;
+    --panel: #0f0c09;
+    --hud-bg: rgba(15, 12, 9, 0.72);
+    --t: 150ms;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--panel);
+    font-family: 'Archivo', Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* checkerboard shown behind the canvas in Alpha mode */
+  #checker {
+    position: fixed; inset: 0; opacity: 0;
+    transition: opacity var(--t) ease;
+    background-color: #191919;
+    background-image:
+      linear-gradient(45deg, #232323 25%, transparent 25%, transparent 75%, #232323 75%),
+      linear-gradient(45deg, #232323 25%, transparent 25%, transparent 75%, #232323 75%);
+    background-size: 28px 28px;
+    background-position: 0 0, 14px 14px;
+  }
+  #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #map {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    overflow: visible; opacity: 0; pointer-events: none;
+    transition: opacity var(--t) ease;
+  }
+  .kicker {
+    text-transform: uppercase; letter-spacing: 0.18em; font-weight: 700;
+  }
+  #hud-top-left {
+    position: fixed; left: 28px; top: 24px; display: flex; gap: 14px;
+    align-items: center; user-select: none;
+  }
+  #hud-top-left .chip { width: 12px; height: 12px; background: var(--accent); }
+  #hud-top-left .title { color: var(--ink); font-size: 12px; }
+  #hud-top-left .sub { color: var(--n600); font-size: 10px; margin-top: 3px; }
+  #hud-fps {
+    position: fixed; right: 28px; top: 24px; text-align: right;
+    color: var(--ink); user-select: none;
+    font: 600 12px/1.4 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+  #hud-fps .big { font-size: 20px; color: var(--accent); }
+  #hud-fps .dim { color: var(--n600); font-size: 10px; }
+  #controls {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 4px;
+    background: var(--hud-bg); border: 1px solid rgba(212, 121, 15, 0.3);
+    border-radius: 999px; padding: 6px 8px; backdrop-filter: blur(10px);
+  }
+  #controls button {
+    appearance: none; border: 0; background: transparent; color: var(--ink);
+    font: 600 10px/1 'Archivo', Inter, system-ui, sans-serif;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 9px 14px; border-radius: 999px; cursor: pointer;
+    transition: background-color var(--t) ease, color var(--t) ease;
+  }
+  #controls button:hover { background: rgba(247, 243, 232, 0.1); }
+  #controls button.on { color: var(--accent); }
+  #controls .key {
+    color: var(--n600); font-size: 9px; letter-spacing: 0.1em;
+    padding: 0 6px 0 2px;
+  }
+  #controls .div { width: 1px; height: 18px; background: rgba(247, 243, 232, 0.18); }
+</style>
+</head>
+<body>
+<div id="checker"></div>
+<canvas id="gl"></canvas>
+<svg id="map" viewBox="0 0 3840 2160" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+
+<div id="hud-top-left">
+  <div class="chip"></div>
+  <div>
+    <div class="title kicker">Soleia — Motion Study · Calm Lattice</div>
+    <div class="sub kicker">Breathing lattice · sparse anchors · perspective grid</div>
+  </div>
+</div>
+<div id="hud-fps"><span class="big" id="fps">—</span> FPS<br /><span class="dim" id="ms">— ms · dpr —</span></div>
+
+<div id="controls">
+  <button id="b-pause">Pause</button><span class="key">Space</span>
+  <div class="div"></div>
+  <button id="b-map">Screen map</button><span class="key">M</span>
+  <div class="div"></div>
+  <button id="b-alpha">Alpha</button><span class="key">A</span>
+</div>
+
+<script>
+'use strict';
+
+/* ---------------- pixelmap overlay (same rects as VideoMapExplainer) -------- */
+const MAP_SCREENS = [
+  { label: 'IMAG SR',    r: [0, 0, 1216, 592] },
+  { label: 'Center',     r: [1216, 0, 640, 272] },
+  { label: 'IMAG SL',    r: [1856, 0, 1216, 592] },
+  { label: 'DJ Booth',   r: [906, 594, 1260, 168] },
+  { label: 'Curve SR',   r: [0, 794, 2304, 272] },
+  { label: 'Curve SL',   r: [0, 1066, 2304, 272] },
+  ...Array.from({ length: 6 }, (_, i) => ({
+    label: i === 0 ? 'Sol Rays 1–12' : '',
+    r: [0, 1368 + i * 128, 1792, 112],
+  })),
+  { label: 'Outdoor SR', r: [2322, 793, 588, 840] },
+  { label: 'Outdoor SL', r: [2916, 793, 588, 840] },
+  { label: 'Arch',       r: [2322, 1639, 1512, 504] },
+];
+
+(function buildOverlay() {
+  const svg = document.getElementById('map');
+  const NS = 'http://www.w3.org/2000/svg';
+  // dim everything except the screen rects (evenodd holes), well past the frame
+  let d = 'M-9000 -6000 H13000 V8000 H-9000 Z';
+  for (const s of MAP_SCREENS) {
+    const [x, y, w, h] = s.r;
+    d += ` M${x} ${y} h${w} v${h} h${-w} Z`;
+  }
+  const mask = document.createElementNS(NS, 'path');
+  mask.setAttribute('d', d);
+  mask.setAttribute('fill', 'rgba(15,12,9,0.78)');
+  mask.setAttribute('fill-rule', 'evenodd');
+  svg.appendChild(mask);
+
+  const frame = document.createElementNS(NS, 'rect');
+  frame.setAttribute('x', 0); frame.setAttribute('y', 0);
+  frame.setAttribute('width', 3840); frame.setAttribute('height', 2160);
+  frame.setAttribute('fill', 'none');
+  frame.setAttribute('stroke', 'rgba(247,243,232,0.4)');
+  frame.setAttribute('stroke-width', 4);
+  svg.appendChild(frame);
+
+  for (const s of MAP_SCREENS) {
+    const [x, y, w, h] = s.r;
+    const rc = document.createElementNS(NS, 'rect');
+    rc.setAttribute('x', x); rc.setAttribute('y', y);
+    rc.setAttribute('width', w); rc.setAttribute('height', h);
+    rc.setAttribute('fill', 'none');
+    rc.setAttribute('stroke', '#d4790f');
+    rc.setAttribute('stroke-width', 3);
+    rc.setAttribute('stroke-opacity', 0.85);
+    svg.appendChild(rc);
+    if (!s.label) continue;
+    const tx = document.createElementNS(NS, 'text');
+    tx.setAttribute('x', x + 18);
+    tx.setAttribute('y', y + 52);
+    tx.setAttribute('fill', '#d5c7b1');
+    tx.setAttribute('font-size', 38);
+    tx.setAttribute('font-weight', 700);
+    tx.setAttribute('letter-spacing', 5);
+    tx.setAttribute('style', 'text-transform:uppercase;font-family:Archivo,Inter,system-ui,sans-serif');
+    tx.textContent = s.label;
+    svg.appendChild(tx);
+  }
+})();
+
+/* ---------------- WebGL ------------------------------------------------------ */
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl', {
+  alpha: true,
+  premultipliedAlpha: true,
+  antialias: false,
+  depth: false,
+  stencil: false,
+  powerPreference: 'high-performance',
+});
+if (!gl) document.body.innerHTML = '<p style="color:#f7f3e8;padding:40px">WebGL unavailable.</p>';
+const hasDeriv = !!gl.getExtension('OES_standard_derivatives');
+
+const VERT = `
+attribute vec2 aPos;
+void main() { gl_Position = vec4(aPos, 0.0, 1.0); }
+`;
+
+const FRAG = `
+${hasDeriv ? '#extension GL_OES_standard_derivatives : enable' : ''}
+precision highp float;
+
+uniform vec2  uRes;
+uniform float uT;       // simulation seconds (delta-time accumulated)
+uniform float uBreath;  // 0..1 eased breathing, ~9.5s period
+uniform vec2  uPtr;     // pointer, uv (y up)
+uniform float uPtrOn;   // 0..1, ~150ms tween
+uniform float uFade;    // ambient intro fade
+uniform float uAlpha;   // 0 opaque ground · 1 premultiplied light-over-alpha
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+
+/* anti-aliased unit-grid lines; p in cell units */
+float latt(vec2 p) {
+  vec2 d = abs(fract(p + 0.5) - 0.5);
+${hasDeriv
+    ? '  vec2 aa = fwidth(p) * 1.1 + 1e-4;'
+    : '  vec2 aa = vec2(28.0 / uRes.y);'}
+  vec2 l = vec2(1.0) - smoothstep(vec2(0.0), aa * 1.5, d);
+  return max(l.x, l.y);
+}
+
+void main() {
+  vec2 frag = gl_FragCoord.xy;
+  vec2 uv = frag / uRes;
+  float aspect = uRes.x / uRes.y;
+  vec2 sp = vec2((uv.x - 0.5) * aspect, uv.y - 0.5);
+
+  float breath = uBreath;
+  vec3 cream = vec3(0.969, 0.953, 0.910);   /* #f7f3e8 */
+  vec3 amber = vec3(0.831, 0.475, 0.059);   /* #d4790f */
+  vec3 col = vec3(0.0);
+
+  /* 1 · fine line lattice — two scales, sub-pixel-slow diagonal drift */
+  vec2 pFine = sp * 30.0 + vec2(uT * 0.011, uT * 0.007);
+  float fine  = latt(pFine) * 0.045;
+  float major = latt(pFine / 5.0) * 0.07;
+  col += cream * (fine + major) * (0.72 + 0.42 * breath);
+
+  /* 2 · perspective plane — floor grid converging on a horizon, faint mirrored
+         ceiling above it (the Sol Rays sky). Slow forward drift. */
+  float horizon = 0.615;
+  {
+    float t = horizon - uv.y;
+    float side = t >= 0.0 ? 1.0 : 0.42;
+    t = max(abs(t), 1e-4);
+    float z = 0.16 / t;
+    vec2 pw = vec2(sp.x * z * 1.15, z * 0.62 + uT * 0.055);
+    float g = latt(pw);
+    float fade = smoothstep(0.012, 0.16, t) * exp(-z * 0.16);
+    col += cream * g * fade * 0.17 * side * (0.68 + 0.5 * breath);
+  }
+
+  /* 3 · sparse anchors — hashed cells, ~30% occupancy, individual slow pulses */
+  {
+    vec2 ap = sp * 5.2 + vec2(uT * 0.014, -uT * 0.009);
+    vec2 cell = floor(ap);
+    float glow = 0.0, core = 0.0, ring = 0.0;
+    for (int i = -1; i <= 1; i++)
+    for (int j = -1; j <= 1; j++) {
+      vec2 c = cell + vec2(float(i), float(j));
+      float h = hash(c);
+      if (h < 0.70) continue;
+      vec2 pos = c + 0.5 + (vec2(hash(c + 19.7), hash(c + 47.3)) - 0.5) * 0.7;
+      float d = length(ap - pos);
+      float lb = 0.5 + 0.5 * sin(uT * 0.55 + h * 43.0);
+      float amp = mix(0.45, 1.0, lb) * mix(0.55, 1.0, breath);
+      glow += exp(-d * d * 26.0) * 0.5 * amp;
+      core += (1.0 - smoothstep(0.012, 0.03, d)) * amp;
+      if (h > 0.90) ring += exp(-abs(d - (0.16 + 0.05 * lb)) * 60.0) * 0.2 * amp;
+    }
+    col += amber * glow + cream * core * 0.85 + amber * ring;
+  }
+
+  /* 4 · pointer accent — reactive, settles in ~150ms */
+  {
+    vec2 pp = vec2((uPtr.x - 0.5) * aspect, uPtr.y - 0.5);
+    float d = length(sp - pp);
+    col += amber * exp(-d * d * 34.0) * 0.16 * uPtrOn;
+  }
+
+  /* 5 · horizon glow, vignette, breathing lift */
+  col += amber * exp(-abs(uv.y - horizon) * 9.0) * (0.05 + 0.04 * breath);
+  col *= 1.0 - dot(sp, sp) * 0.55;
+  col *= uFade;
+
+  /* dither to keep the dark ramps clean on LED */
+  col += (hash(frag + fract(uT)) - 0.5) / 255.0;
+
+  float lum = clamp(max(col.r, max(col.g, col.b)) * 1.15, 0.0, 1.0);
+  vec3 ground = vec3(0.059, 0.047, 0.035);  /* #0f0c09 */
+  gl_FragColor = mix(vec4(ground + col, 1.0), vec4(col, lum), uAlpha);
+}
+`;
+
+function shader(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    throw new Error(gl.getShaderInfoLog(s) || 'shader compile failed');
+  }
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, shader(gl.VERTEX_SHADER, VERT));
+gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FRAG));
+gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+  throw new Error(gl.getProgramInfoLog(prog) || 'program link failed');
+}
+gl.useProgram(prog);
+
+const quad = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+const aPos = gl.getAttribLocation(prog, 'aPos');
+gl.enableVertexAttribArray(aPos);
+gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+const U = {};
+for (const n of ['uRes', 'uT', 'uBreath', 'uPtr', 'uPtrOn', 'uFade', 'uAlpha']) {
+  U[n] = gl.getUniformLocation(prog, n);
+}
+
+/* ---------------- sizing (DPR clamp) ---------------------------------------- */
+const DPR_CAP = 1.5;
+let dpr = 1;
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+  const w = Math.round(innerWidth * dpr), h = Math.round(innerHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w; canvas.height = h;
+    gl.viewport(0, 0, w, h);
+  }
+}
+addEventListener('resize', resize);
+resize();
+
+/* ---------------- state + ~150ms tweens -------------------------------------- */
+/* exponential approach with tau=50ms reaches ~95% in 150ms */
+const TAU = 0.05;
+const approach = (cur, target, dt, tau) => cur + (target - cur) * (1 - Math.exp(-dt / (tau || TAU)));
+
+const state = {
+  simT: 0,
+  speed: 1, speedT: 1,           // pause tween
+  alpha: 0, alphaT: 0,           // alpha-mode tween
+  fade: 0,                       // ambient intro (slower on purpose: ~1.2s)
+  ptrOn: 0, ptrOnT: 0,
+  ptr: { x: 0.5, y: 0.5 }, ptrT: { x: 0.5, y: 0.5 },
+};
+
+addEventListener('pointermove', (e) => {
+  state.ptrT.x = e.clientX / innerWidth;
+  state.ptrT.y = 1 - e.clientY / innerHeight;
+  state.ptrOnT = 1;
+});
+addEventListener('pointerleave', () => { state.ptrOnT = 0; });
+document.addEventListener('mouseleave', () => { state.ptrOnT = 0; });
+
+const bPause = document.getElementById('b-pause');
+const bMap = document.getElementById('b-map');
+const bAlpha = document.getElementById('b-alpha');
+const mapSvg = document.getElementById('map');
+const checker = document.getElementById('checker');
+
+let paused = false, mapOn = false, alphaOn = false;
+function setPaused(v) {
+  paused = v;
+  state.speedT = v ? 0 : 1;
+  bPause.textContent = v ? 'Play' : 'Pause';
+  bPause.classList.toggle('on', v);
+}
+function setMap(v) {
+  mapOn = v;
+  mapSvg.style.opacity = v ? 1 : 0;
+  bMap.classList.toggle('on', v);
+}
+function setAlpha(v) {
+  alphaOn = v;
+  state.alphaT = v ? 1 : 0;
+  checker.style.opacity = v ? 1 : 0;
+  bAlpha.classList.toggle('on', v);
+}
+bPause.addEventListener('click', () => setPaused(!paused));
+bMap.addEventListener('click', () => setMap(!mapOn));
+bAlpha.addEventListener('click', () => setAlpha(!alphaOn));
+addEventListener('keydown', (e) => {
+  if (e.code === 'Space') { e.preventDefault(); setPaused(!paused); }
+  else if (e.key === 'm' || e.key === 'M') setMap(!mapOn);
+  else if (e.key === 'a' || e.key === 'A') setAlpha(!alphaOn);
+});
+
+/* ---------------- FPS meter -------------------------------------------------- */
+const fpsEl = document.getElementById('fps');
+const msEl = document.getElementById('ms');
+let frames = 0, statClock = 0, worst = 0;
+function stats(dt) {
+  frames++; statClock += dt; worst = Math.max(worst, dt);
+  if (statClock >= 0.25) {
+    fpsEl.textContent = Math.round(frames / statClock);
+    msEl.textContent = `${(worst * 1000).toFixed(1)} ms · dpr ${dpr.toFixed(2)}`;
+    frames = 0; statClock = 0; worst = 0;
+  }
+}
+
+/* ---------------- main loop (delta time) ------------------------------------- */
+const BREATH_PERIOD = 9.5;
+let last = performance.now();
+function frame(now) {
+  const rawDt = (now - last) / 1000;
+  last = now;
+  const dt = Math.min(rawDt, 0.05); // clamp tab-switch spikes
+
+  state.speed = approach(state.speed, state.speedT, dt);
+  state.alpha = approach(state.alpha, state.alphaT, dt);
+  state.ptrOn = approach(state.ptrOn, state.ptrOnT, dt);
+  state.ptr.x = approach(state.ptr.x, state.ptrT.x, dt, 0.06);
+  state.ptr.y = approach(state.ptr.y, state.ptrT.y, dt, 0.06);
+  state.fade = approach(state.fade, 1, dt, 0.4); // ambient intro, not interface
+  state.simT += dt * state.speed;
+
+  let b = 0.5 - 0.5 * Math.cos((state.simT * 2 * Math.PI) / BREATH_PERIOD);
+  b = b * b * (3 - 2 * b); // eased plateau — breathing, not a sine hum
+
+  gl.uniform2f(U.uRes, canvas.width, canvas.height);
+  gl.uniform1f(U.uT, state.simT);
+  gl.uniform1f(U.uBreath, b);
+  gl.uniform2f(U.uPtr, state.ptr.x, state.ptr.y);
+  gl.uniform1f(U.uPtrOn, state.ptrOn);
+  gl.uniform1f(U.uFade, state.fade);
+  gl.uniform1f(U.uAlpha, state.alpha);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  stats(rawDt);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
