@@ -7,8 +7,9 @@ import { Reveal } from '@/components/motion/Reveal';
 import solIcon from '@/assets/sol-icon.png';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
-import servicesPdf from '@/assets/soleia-creative-services.pdf.asset.json';
-import presentationGuidePdf from '@/assets/soleia-presentation-guide.pdf.asset.json';
+
+const SERVICES_PDF_URL = '/Soleia-Creative-Services.pdf';
+const PRESENTATION_GUIDE_PDF_URL = '/Soleia-Presentation-Guide.pdf';
 
 
 
@@ -161,7 +162,7 @@ export default function CreativeGuideServices() {
         <Reveal delay={0.15}>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
-              href={servicesPdf.url}
+              href={SERVICES_PDF_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
@@ -170,7 +171,7 @@ export default function CreativeGuideServices() {
               View Services PDF
             </a>
             <a
-              href={servicesPdf.url}
+              href={SERVICES_PDF_URL}
               download="Soleia-Creative-Services.pdf"
               className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
             >
@@ -262,7 +263,7 @@ export default function CreativeGuideServices() {
                           {item.title === 'Presentation' && (
                             <div className="mt-6 flex flex-wrap items-center gap-3">
                               <a
-                                href={presentationGuidePdf.url}
+                                href={PRESENTATION_GUIDE_PDF_URL}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
@@ -271,7 +272,7 @@ export default function CreativeGuideServices() {
                                 View Presentation Guide
                               </a>
                               <a
-                                href={presentationGuidePdf.url}
+                                href={PRESENTATION_GUIDE_PDF_URL}
                                 download="Soleia-Presentation-Guide.pdf"
                                 className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
                               >
