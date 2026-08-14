@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 
 /**
@@ -7,17 +8,63 @@ import { Pause, Play, RotateCcw } from 'lucide-react';
  * pass flowing across every surface, the map folding into the room, three zone
  * passes, and the alpha logo landing centred on every screen.
  * Authored on a 1920×1080 stage and scaled to fit its container.
+ * Renders in a dark or a bright (light-mode) palette.
  */
 
 const W = 1920, H = 1080;
-const GROUND = '#18140f', INK = '#f7f3e8', SURF = '#211a13';
-const N400 = '#d5c7b1', N600 = '#c2b096', N700 = '#cabba3';
-const PANEL = '#0f0c09';
-const BORDER = '#392e22';
-const ACCENT = '#d4790f';
+
 const HEAD = '"Archivo", Inter, system-ui, sans-serif';
-const DIV = 'rgba(247,243,232,0.16)';
 const LOGO = '/soleia-logo-black.png';
+
+/* ---------- palettes ---------- */
+const DARK_PALETTE = {
+  GROUND: '#18140f', INK: '#f7f3e8', SURF: '#211a13',
+  N400: '#d5c7b1', N600: '#c2b096', N700: '#cabba3',
+  PANEL: '#0f0c09', BORDER: '#392e22', ACCENT: '#d4790f',
+  DIV: 'rgba(247,243,232,0.16)',
+  EDGE: 'rgba(247,243,232,0.35)',
+  LABEL_BG: 'rgba(14,11,7,0.82)',
+  MAP_BG: 'rgba(33,26,19,0.55)',
+  HUB_TINT: 'rgba(190,168,132,0.08)',
+  BLEND: 'screen' as 'screen' | 'multiply',
+  LOGO_FILTER: 'brightness(0) invert(1) drop-shadow(0 0 8px rgba(15,12,9,0.9))',
+  CLOSE_LOGO_FILTER: 'brightness(0) invert(1)',
+  FLOW_LINES:
+    'repeating-linear-gradient(102deg,'
+    + ' rgba(0,0,0,0) 0 2.6%, rgba(247,243,232,0.16) 2.6% 3.0%, rgba(0,0,0,0) 3.0% 3.35%,'
+    + ' rgba(0,0,0,0) 3.35% 6.4%, rgba(247,243,232,0.55) 6.4% 6.62%, rgba(0,0,0,0) 6.62% 12.8%)',
+  TRAIL_COLORS: ['#f7e3bd', '#f2c98d', '#e8b26a', '#d4790f', '#c2542a', '#b8324a', '#e0d08a', '#fff6e2'],
+  TRAIL_HEAD: '#fff8ea',
+  BLOOM: ['#c2542a', '#8a3418'],
+};
+
+const LIGHT_PALETTE = {
+  GROUND: '#f4efe3', INK: '#1b1610', SURF: '#ece4d4',
+  N400: '#6f6049', N600: '#7c6c53', N700: '#4c4132',
+  PANEL: '#fbf7ee', BORDER: '#c9b795', ACCENT: '#b46f0c',
+  DIV: 'rgba(27,22,16,0.18)',
+  EDGE: 'rgba(27,22,16,0.28)',
+  LABEL_BG: 'rgba(255,252,245,0.88)',
+  MAP_BG: 'rgba(255,252,245,0.6)',
+  HUB_TINT: 'rgba(180,111,12,0.07)',
+  BLEND: 'multiply' as 'screen' | 'multiply',
+  LOGO_FILTER: 'brightness(0) drop-shadow(0 0 6px rgba(255,255,255,0.75))',
+  CLOSE_LOGO_FILTER: 'brightness(0)',
+  FLOW_LINES:
+    'repeating-linear-gradient(102deg,'
+    + ' rgba(255,255,255,0) 0 2.6%, rgba(27,22,16,0.16) 2.6% 3.0%, rgba(255,255,255,0) 3.0% 3.35%,'
+    + ' rgba(255,255,255,0) 3.35% 6.4%, rgba(27,22,16,0.45) 6.4% 6.62%, rgba(255,255,255,0) 6.62% 12.8%)',
+  TRAIL_COLORS: ['#8a6a1f', '#a5722a', '#b46f0c', '#9c4a1c', '#7d2f2f', '#6b5a2a', '#c08a2e', '#5c4a22'],
+  TRAIL_HEAD: '#6b4a12',
+  BLOOM: ['#d08a4a', '#b46f0c'],
+};
+
+type Palette = typeof DARK_PALETTE;
+
+// Single mutable palette reference: the whole composition renders synchronously
+// from the exported component, which sets this before the tree renders.
+let P: Palette = DARK_PALETTE;
+
 
 const MAPW = 3840, MAPH = 2160;
 const S = 0.3;
@@ -98,13 +145,11 @@ const SCREENS: Screen[] = [
   { zone: 2, id: 'ARCH', map: [2322, 1639, 1512, 504], room: [1636, 482, 158, 62], ry: 0, label: 'Outdoor Arch', logo: true },
 ];
 
-const FLOW_LINES = 'repeating-linear-gradient(102deg,'
-  + ' rgba(0,0,0,0) 0 2.6%, rgba(247,243,232,0.16) 2.6% 3.0%, rgba(0,0,0,0) 3.0% 3.35%,'
-  + ' rgba(0,0,0,0) 3.35% 6.4%, rgba(247,243,232,0.55) 6.4% 6.62%, rgba(0,0,0,0) 6.62% 12.8%)';
-const FLOW_HEAD = 'linear-gradient(102deg,'
-  + ' rgba(0,0,0,0) 0%, rgba(0,0,0,0) 41%, ' + ACCENT + '00 43%, ' + ACCENT + '99 48.4%,'
-  + ' ' + ACCENT + 'cc 50%, ' + ACCENT + '99 51.6%, ' + ACCENT + '00 57%,'
+const flowHead = () => 'linear-gradient(102deg,'
+  + ' rgba(0,0,0,0) 0%, rgba(0,0,0,0) 41%, ' + P.ACCENT + '00 43%, ' + P.ACCENT + '99 48.4%,'
+  + ' ' + P.ACCENT + 'cc 50%, ' + P.ACCENT + '99 51.6%, ' + P.ACCENT + '00 57%,'
   + ' rgba(0,0,0,0) 59%, rgba(0,0,0,0) 100%)';
+
 
 const ZONES = [
   { box: [92, 322, 672, 272], label: 'Main interior — walls', align: 'left', cam: 2.0 },
@@ -115,7 +160,7 @@ const ZBB = [92, 288, 1764, 348];
 const zc = (b: readonly number[]) => [b[0] + b[2] / 2, b[1] + b[3] / 2];
 
 /* ---------- small pieces ---------- */
-function Kicker({ children, color = INK, size = 24, style }: any) {
+function Kicker({ children, color = P.INK, size = 24, style }: any) {
   return (
     <div style={{ font: `700 ${size}px ${HEAD}`, letterSpacing: '0.18em', color, textTransform: 'uppercase', ...style }}>
       {children}
@@ -123,7 +168,6 @@ function Kicker({ children, color = INK, size = 24, style }: any) {
   );
 }
 
-const TRAIL_COLORS = ['#f7e3bd', '#f2c98d', '#e8b26a', '#d4790f', '#c2542a', '#b8324a', '#e0d08a', '#fff6e2'];
 const hash = (i: number, k: number) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
 const TRAIL_N = 260, TRAIL_SEG = 6;
 
@@ -138,7 +182,7 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
     const spd = (0.03 + hash(i, 2) * 0.052) * (1 - rr * 0.35);
     const len = (0.3 + hash(i, 3) * 0.42) * (1 - rr * 0.32);
     const a0 = -0.75 + hash(i, 4) * 2.25 + T * spd;
-    const col = TRAIL_COLORS[Math.floor(hash(i, 7) * TRAIL_COLORS.length)];
+    const col = P.TRAIL_COLORS[Math.floor(hash(i, 7) * P.TRAIL_COLORS.length)];
     const wob = 1 + 0.05 * Math.sin(T * 0.42 + i * 1.7);
     const ry = r * 0.78 * wob, rx = r * wob;
     const wMax = 0.55 + hash(i, 5) * 0.95;
@@ -157,7 +201,7 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
     }
     const hp = pt(a0 + len);
     segs.push(<circle key={`${i}-h`} cx={hp[0].toFixed(1)} cy={hp[1].toFixed(1)}
-      r={Number((0.9 + wMax * 0.9).toFixed(2))} fill="#fff8ea" opacity={(0.55 + bright * 0.45) * a} />);
+      r={Number((0.9 + wMax * 0.9).toFixed(2))} fill={P.TRAIL_HEAD} opacity={(0.55 + bright * 0.45) * a} />);
   }
   return (
     <svg width={W} height={H} style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none', zIndex: 4 }}>
@@ -168,14 +212,14 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
           ))}
         </clipPath>
         <radialGradient id="soleia-flowbloom" cx="26%" cy="18%" r="72%">
-          <stop offset="0%" stopColor="#c2542a" stopOpacity="0.42" />
-          <stop offset="46%" stopColor="#8a3418" stopOpacity="0.16" />
+          <stop offset="0%" stopColor={P.BLOOM[0]} stopOpacity="0.42" />
+          <stop offset="46%" stopColor={P.BLOOM[1]} stopOpacity="0.16" />
           <stop offset="100%" stopColor="#000000" stopOpacity="0" />
         </radialGradient>
       </defs>
       <g clipPath="url(#soleia-panels)">
         <rect x="0" y="0" width={W} height={H} fill="url(#soleia-flowbloom)" opacity={a} />
-        <g style={{ mixBlendMode: 'screen' }}>{segs}</g>
+        <g style={{ mixBlendMode: P.BLEND }}>{segs}</g>
       </g>
     </svg>
   );
@@ -217,20 +261,20 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
       transformOrigin: spk ? '0% 50%' : '50% 50%',
       transformStyle: 'preserve-3d',
       opacity: on * (s.pair2 ? clamp((fold - 0.1) / 0.28, 0, 1) : 1),
-      border: `2px solid ${fold > 0.5 ? BORDER : 'rgba(247,243,232,0.35)'}`,
-      background: PANEL, overflow: 'hidden', boxSizing: 'border-box',
+      border: `2px solid ${fold > 0.5 ? P.BORDER : P.EDGE}`,
+      background: P.PANEL, overflow: 'hidden', boxSizing: 'border-box',
     }}>
       <div style={{
-        position: 'absolute', inset: 0, backgroundImage: FLOW_LINES,
+        position: 'absolute', inset: 0, backgroundImage: P.FLOW_LINES,
         backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxFlow}px ${byFlow}px`,
-        backgroundRepeat: 'repeat', opacity: 0.62 * flow, mixBlendMode: 'screen',
+        backgroundRepeat: 'repeat', opacity: 0.62 * flow, mixBlendMode: P.BLEND,
       }} />
       <div style={{
-        position: 'absolute', inset: 0, backgroundImage: FLOW_HEAD,
+        position: 'absolute', inset: 0, backgroundImage: flowHead(),
         backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxHead}px ${by}px`,
-        backgroundRepeat: 'no-repeat', opacity: 0.6 * headOn, mixBlendMode: 'screen',
+        backgroundRepeat: 'no-repeat', opacity: 0.6 * headOn, mixBlendMode: P.BLEND,
       }} />
-      {s.logoHub && <div style={{ position: 'absolute', inset: 0, background: 'rgba(190,168,132,0.08)' }} />}
+      {s.logoHub && <div style={{ position: 'absolute', inset: 0, background: P.HUB_TINT }} />}
       {s.logo && (
         <div style={{
           position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -239,12 +283,12 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
           <img src={LOGO} alt="" style={{
             width: s.logoHub ? 'auto' : '56%', height: s.logoHub ? '88%' : 'auto',
             maxWidth: s.logoHub ? '82%' : '56%', maxHeight: '90%', objectFit: 'contain',
-            filter: 'brightness(0) invert(1) drop-shadow(0 0 8px rgba(15,12,9,0.9))',
+            filter: P.LOGO_FILTER,
           }} />
         </div>
       )}
       {!s.logo && logoOn > 0 && (
-        <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 2, background: ACCENT, opacity: 0.7 * logoOn }} />
+        <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 2, background: P.ACCENT, opacity: 0.7 * logoOn }} />
       )}
     </div>
   );
@@ -265,10 +309,10 @@ function ScreenLabel({ s, fold, on, labelOut, cs }: any) {
     <div style={{
       position: 'absolute', left: x + 5 * k, top: y + 5 * k,
       opacity: (1 - labelOut) * on, whiteSpace: 'nowrap',
-      background: 'rgba(14,11,7,0.82)', padding: '3px 7px',
+      background: P.LABEL_BG, padding: '3px 7px',
       transform: `scale(${k})`, transformOrigin: '0% 0%',
     }}>
-      <Kicker size={size} color={N400}>{short}</Kicker>
+      <Kicker size={size} color={P.N400}>{short}</Kicker>
     </div>
   );
 }
@@ -280,11 +324,11 @@ function CaptionBlock({ index, title, body, spec, a }: any) {
       position: 'absolute', left: 120, bottom: 70, width: 1020,
       opacity: a, transform: `translateY(${(1 - a) * 24}px)`,
     }}>
-      <Kicker color={ACCENT}>{index}</Kicker>
-      <div style={{ font: `700 50px/1.06 ${HEAD}`, letterSpacing: '-0.02em', color: INK, marginTop: 14 }}>{title}</div>
-      <div style={{ font: `400 26px/1.42 ${HEAD}`, color: N700, marginTop: 16 }}>{body}</div>
-      <div style={{ height: 2, background: DIV, marginTop: 20 }} />
-      <Kicker size={24} color={N600} style={{ marginTop: 14 }}>{spec}</Kicker>
+      <Kicker color={P.ACCENT}>{index}</Kicker>
+      <div style={{ font: `700 50px/1.06 ${HEAD}`, letterSpacing: '-0.02em', color: P.INK, marginTop: 14 }}>{title}</div>
+      <div style={{ font: `400 26px/1.42 ${HEAD}`, color: P.N700, marginTop: 16 }}>{body}</div>
+      <div style={{ height: 2, background: P.DIV, marginTop: 20 }} />
+      <Kicker size={24} color={P.N600} style={{ marginTop: 14 }}>{spec}</Kicker>
     </div>
   );
 }
@@ -295,25 +339,25 @@ function CloseCard({ T }: { T: number }) {
   const l1 = anim(s + 0.4, 0.7)(T);
   const foot = anim(s + 0.85, 0.6)(T);
   return (
-    <div style={{ position: 'absolute', inset: 0, background: SURF, transform: `translateX(${(1 - wipe) * 100}%)` }}>
+    <div style={{ position: 'absolute', inset: 0, background: P.SURF, transform: `translateX(${(1 - wipe) * 100}%)` }}>
       <div style={{ position: 'absolute', left: 140, top: 330 }}>
         <div style={{ height: 128, overflow: 'hidden' }}>
           <div style={{
-            font: `700 108px/122px ${HEAD}`, letterSpacing: '-0.03em', color: ACCENT,
+            font: `700 108px/122px ${HEAD}`, letterSpacing: '-0.03em', color: P.ACCENT,
             transform: `translateY(${(1 - l1) * 130}px)`,
           }}>One map. Every surface.</div>
         </div>
         <div style={{ opacity: foot, marginTop: 26, width: 1180 }}>
-          <div style={{ height: 2, background: 'rgba(245,158,10,0.5)' }} />
-          <div style={{ font: `400 28px/1.45 ${HEAD}`, color: INK, marginTop: 18 }}>
+          <div style={{ height: 2, background: P.ACCENT + '80' }} />
+          <div style={{ font: `400 28px/1.45 ${HEAD}`, color: P.INK, marginTop: 18 }}>
             Every look is built on the 3840 × 2160 map, so one motion path reaches every
             surface at once. Logos centre on every screen; the curves carry motion only.
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 28, marginTop: 34, opacity: foot }}>
-          <img src={LOGO} alt="Soleia" style={{ height: 56, filter: 'brightness(0) invert(1)' }} />
-          <div style={{ width: 2, height: 42, background: 'rgba(247,243,232,0.4)' }} />
-          <Kicker color={N400}>Soleia Creative</Kicker>
+          <img src={LOGO} alt="Soleia" style={{ height: 56, filter: P.CLOSE_LOGO_FILTER }} />
+          <div style={{ width: 2, height: 42, background: P.DIV }} />
+          <Kicker color={P.N400}>Soleia Creative</Kicker>
         </div>
       </div>
     </div>
@@ -368,19 +412,19 @@ function Stage({ T }: { T: number }) {
   const progress = clamp(T / TOTAL, 0, 1);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: GROUND, fontFamily: HEAD, overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0, background: P.GROUND, fontFamily: HEAD, overflow: 'hidden' }}>
       {beforeClose && (
         <div style={{ position: 'absolute', inset: 0, transform: camT, transformOrigin: '960px 400px' }}>
           <div style={{
             position: 'absolute', left: MX, top: MY, width: MAPW * S, height: MAPH * S,
-            border: `2px solid ${BORDER}`, opacity: (1 - frameOut) * anim(0.1, 0.5)(T),
-            background: 'rgba(33,26,19,0.55)',
+            border: `2px solid ${P.BORDER}`, opacity: (1 - frameOut) * anim(0.1, 0.5)(T),
+            background: P.MAP_BG,
           }} />
           <div style={{
             position: 'absolute', left: MX + MAPW * S - 470, width: 470, textAlign: 'right',
             top: MY + MAPH * S + 14, opacity: (1 - frameOut) * anim(0.25, 0.5)(T),
           }}>
-            <Kicker size={19} color={N600}>Pixelmap — 3840 × 2160</Kicker>
+            <Kicker size={19} color={P.N600}>Pixelmap — 3840 × 2160</Kicker>
           </div>
 
           {SCREENS.map((s, i) => (
@@ -403,7 +447,7 @@ function Stage({ T }: { T: number }) {
               position: 'absolute', left: z.box[0], top: z.box[1], width: z.box[2], height: z.box[3],
               opacity: fold * anim(CUES.Fold + 1.1, 0.7)(T) * (zoneAct < 0 || zoneAct === zi ? 1 : 0.2),
             }}>
-              <div style={{ position: 'absolute', inset: 0, border: `${2 / camS}px solid ${ACCENT}`, opacity: zoneAct === zi ? 0.85 : 0.5 }} />
+              <div style={{ position: 'absolute', inset: 0, border: `${2 / camS}px solid ${P.ACCENT}`, opacity: zoneAct === zi ? 0.85 : 0.5 }} />
               <div style={{
                 position: 'absolute',
                 left: z.align === 'left' ? 0 : undefined,
@@ -411,7 +455,7 @@ function Stage({ T }: { T: number }) {
                 top: -36 / camS, whiteSpace: 'nowrap',
                 transform: `scale(${1 / camS})`, transformOrigin: z.align === 'left' ? '0% 100%' : '100% 100%',
               }}>
-                <Kicker size={19} color={ACCENT}>{z.label}</Kicker>
+                <Kicker size={19} color={P.ACCENT}>{z.label}</Kicker>
               </div>
             </div>
           ))}
@@ -420,7 +464,7 @@ function Stage({ T }: { T: number }) {
             position: 'absolute', left: MX - 228, top: MY + 1680 * S,
             opacity: (1 - labelOut) * (1 - fold) * anim(1.1, 0.5)(T),
           }}>
-            <Kicker size={19} color={N600}>Sol Rays 1–6</Kicker>
+            <Kicker size={19} color={P.N600}>Sol Rays 1–6</Kicker>
           </div>
         </div>
       )}
@@ -457,11 +501,11 @@ function Stage({ T }: { T: number }) {
 
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: T >= CUES.Close + 0.1 ? 0 : 1 }}>
         <div style={{ position: 'absolute', left: 60, top: 44, display: 'flex', gap: 22, alignItems: 'center' }}>
-          <div style={{ width: 16, height: 16, background: ACCENT }} />
+          <div style={{ width: 16, height: 16, background: P.ACCENT }} />
           <Kicker>Soleia Creative — video map</Kicker>
         </div>
-        <div style={{ position: 'absolute', left: 60, right: 60, bottom: 44, height: 2, background: DIV }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, height: 2, width: `${progress * 100}%`, background: ACCENT }} />
+        <div style={{ position: 'absolute', left: 60, right: 60, bottom: 44, height: 2, background: P.DIV }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, height: 2, width: `${progress * 100}%`, background: P.ACCENT }} />
         </div>
       </div>
     </div>
@@ -469,6 +513,11 @@ function Stage({ T }: { T: number }) {
 }
 
 export default function VideoMapExplainer() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
+  // Set before the composition renders — Stage and its children read this synchronously.
+  P = isLight ? LIGHT_PALETTE : DARK_PALETTE;
+
   const hostRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [T, setT] = useState(0);
@@ -513,23 +562,23 @@ export default function VideoMapExplainer() {
   return (
     <div
       ref={hostRef}
-      className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated bg-black"
-      style={{ aspectRatio: '16 / 9' }}
+      className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated"
+      style={{ aspectRatio: '16 / 9', background: P.GROUND }}
     >
       <div style={{ position: 'absolute', left: 0, top: 0, width: W, height: H, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
         <Stage T={T} />
       </div>
 
-      <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-primary/30 bg-black/55 px-2 py-1.5 backdrop-blur-md">
+      <div className={`absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full border border-primary/30 px-2 py-1.5 backdrop-blur-md ${isLight ? 'bg-white/70' : 'bg-black/55'}`}>
         <button
           onClick={() => setPlaying((p) => !p)}
-          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
+          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors ${isLight ? 'text-foreground hover:bg-black/5' : 'text-white hover:bg-white/10'}`}
         >
           {playing ? <><Pause className="h-3.5 w-3.5" /> Pause</> : <><Play className="h-3.5 w-3.5" /> Play</>}
         </button>
         <button
           onClick={restart}
-          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
+          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors ${isLight ? 'text-foreground hover:bg-black/5' : 'text-white hover:bg-white/10'}`}
         >
           <RotateCcw className="h-3.5 w-3.5" /> Restart
         </button>
