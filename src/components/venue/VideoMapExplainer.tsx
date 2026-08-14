@@ -26,7 +26,7 @@ const DARK_PALETTE = {
   LABEL_BG: 'rgba(14,11,7,0.82)',
   MAP_BG: 'rgba(33,26,19,0.55)',
   HUB_TINT: 'rgba(190,168,132,0.08)',
-  BLEND: 'screen' as const,
+  BLEND: 'screen' as 'screen' | 'multiply',
   LOGO_FILTER: 'brightness(0) invert(1) drop-shadow(0 0 8px rgba(15,12,9,0.9))',
   CLOSE_LOGO_FILTER: 'brightness(0) invert(1)',
   FLOW_LINES:
@@ -35,7 +35,7 @@ const DARK_PALETTE = {
     + ' rgba(0,0,0,0) 3.35% 6.4%, rgba(247,243,232,0.55) 6.4% 6.62%, rgba(0,0,0,0) 6.62% 12.8%)',
   TRAIL_COLORS: ['#f7e3bd', '#f2c98d', '#e8b26a', '#d4790f', '#c2542a', '#b8324a', '#e0d08a', '#fff6e2'],
   TRAIL_HEAD: '#fff8ea',
-  BLOOM: ['#c2542a', '#8a3418'] as const,
+  BLOOM: ['#c2542a', '#8a3418'],
 };
 
 const LIGHT_PALETTE = {
@@ -47,7 +47,7 @@ const LIGHT_PALETTE = {
   LABEL_BG: 'rgba(255,252,245,0.88)',
   MAP_BG: 'rgba(255,252,245,0.6)',
   HUB_TINT: 'rgba(180,111,12,0.07)',
-  BLEND: 'multiply' as const,
+  BLEND: 'multiply' as 'screen' | 'multiply',
   LOGO_FILTER: 'brightness(0) drop-shadow(0 0 6px rgba(255,255,255,0.75))',
   CLOSE_LOGO_FILTER: 'brightness(0)',
   FLOW_LINES:
@@ -56,7 +56,7 @@ const LIGHT_PALETTE = {
     + ' rgba(255,255,255,0) 3.35% 6.4%, rgba(27,22,16,0.45) 6.4% 6.62%, rgba(255,255,255,0) 6.62% 12.8%)',
   TRAIL_COLORS: ['#8a6a1f', '#a5722a', '#b46f0c', '#9c4a1c', '#7d2f2f', '#6b5a2a', '#c08a2e', '#5c4a22'],
   TRAIL_HEAD: '#6b4a12',
-  BLOOM: ['#d08a4a', '#b46f0c'] as const,
+  BLOOM: ['#d08a4a', '#b46f0c'],
 };
 
 type Palette = typeof DARK_PALETTE;
