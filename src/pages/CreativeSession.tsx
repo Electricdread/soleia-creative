@@ -187,24 +187,6 @@ export default function CreativeSession() {
     setScenes((data as SceneData[]) || []);
   };
 
-  const fetchPrevizClips = async () => {
-    if (!session?.id) return;
-    const { data } = await supabase
-      .from('session_previz_clips')
-      .select('id, title, url, sort_order, is_default')
-      .eq('session_id', session.id)
-      .order('is_default', { ascending: false })
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: true });
-    setPrevizClips(
-      ((data as Array<{ id: string; title: string; url: string }>) || []).map((r) => ({
-        id: r.id,
-        title: r.title,
-        url: r.url,
-      })),
-    );
-  };
-
   const setupRealtime = () => {
     const channel = supabase
       .channel(`creative-session-${session?.id}`)
