@@ -52,6 +52,23 @@ interface CreativeSessionCardProps {
 export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOpen, onSessionUpdate }: CreativeSessionCardProps) {
   const [isPublic, setIsPublic] = useState(session.is_public ?? false);
   const [isActive, setIsActive] = useState(session.is_active ?? true);
+  const [showPreviz, setShowPreviz] = useState(session.show_previz ?? false);
+
+  const handlePrevizToggle = async (checked: boolean) => {
+    setShowPreviz(checked);
+    const { error } = await supabase
+      .from('creative_sessions')
+      .update({ show_previz: checked })
+      .eq('id', session.id);
+
+    if (error) {
+      toast.error('Failed to update previz visibility');
+      setShowPreviz(!checked);
+    } else {
+      toast.success(checked ? 'Venue Previz included in session' : 'Venue Previz hidden from session');
+      onSessionUpdate?.();
+    }
+  };
 
   const handleActiveToggle = async (checked: boolean) => {
     setIsActive(checked);
