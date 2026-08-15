@@ -95,7 +95,6 @@ export default function CreativeSession() {
       fetchReactions();
       fetchComments();
       fetchScenes();
-      fetchPrevizClips();
       const cleanup = setupRealtime();
       return cleanup;
     }
