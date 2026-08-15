@@ -324,6 +324,21 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                 <TooltipContent><p className="text-xs">Public links don't require authentication</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    <Switch
+                      checked={showPreviz}
+                      onCheckedChange={handlePrevizToggle}
+                      className="scale-75"
+                    />
+                    <span className="text-[10px] text-muted-foreground">Previz</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">Include the Venue Previz section in this creative session</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div className="flex-1" />
             <TooltipProvider>
               <Tooltip>
