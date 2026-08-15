@@ -31,6 +31,7 @@ interface CreativeSessionData {
   cover_images?: CoverImage[] | null;
   creative_notes?: string | null;
   proposal_id?: string | null;
+  show_previz?: boolean | null;
 }
 
 interface MoodBoardItemData {
