@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, User, ArrowRight, FileText } from 'lucide-react';
+import { Loader2, User, ArrowRight, FileText, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
@@ -13,7 +13,9 @@ import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { HomeButton } from '@/components/HomeButton';
+import PrevizMovie from '@/components/venue/PrevizMovie';
 
+type PrevizClipOption = { id: string; title: string; url: string };
 
 interface CoverImage {
   url: string;
@@ -75,6 +77,7 @@ export default function CreativeSession() {
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [scenes, setScenes] = useState<SceneData[]>([]);
+  const [previzClips, setPrevizClips] = useState<PrevizClipOption[]>([]);
   const [proposalToken, setProposalToken] = useState<string | null>(null);
   const [userName, setUserName] = useState(() =>
     localStorage.getItem('creative_session_name') || ''
@@ -95,6 +98,7 @@ export default function CreativeSession() {
       fetchReactions();
       fetchComments();
       fetchScenes();
+      fetchPrevizClips();
       const cleanup = setupRealtime();
       return cleanup;
     }
@@ -185,6 +189,24 @@ export default function CreativeSession() {
       .eq('session_id', session.id)
       .order('sort_order', { ascending: true });
     setScenes((data as SceneData[]) || []);
+  };
+
+  const fetchPrevizClips = async () => {
+    if (!session?.id) return;
+    const { data } = await supabase
+      .from('session_previz_clips')
+      .select('id, title, url, sort_order, is_default')
+      .eq('session_id', session.id)
+      .order('is_default', { ascending: false })
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+    setPrevizClips(
+      ((data as Array<{ id: string; title: string; url: string }>) || []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        url: r.url,
+      })),
+    );
   };
 
   const setupRealtime = () => {
@@ -300,9 +322,15 @@ export default function CreativeSession() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <CreativeSessionCover session={session} />
 
-
-
-        {/* Content Gallery — Read Only */}
+        <section className="space-y-2">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-xl text-foreground">Venue Previz</h2>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Run-of-show cues sync to the playback
+            </span>
+          </div>
+          <PrevizSection clips={previzClips} />
+        </section>
 
 
 
@@ -453,3 +481,119 @@ export default function CreativeSession() {
   );
 }
 
+function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
+  const [activeId, setActiveId] = useState<string | null>(clips[0]?.id ?? null);
+  const [hasError, setHasError] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (clips.length > 0 && !clips.find((c) => c.id === activeId)) {
+      setActiveId(clips[0].id);
+      setHasError(false);
+    }
+  }, [clips, activeId]);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === containerRef.current);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (containerRef.current) {
+        await containerRef.current.requestFullscreen();
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
+  if (clips.length === 0) {
+    return <PrevizMovie />;
+  }
+
+  const active = clips.find((c) => c.id === activeId) ?? clips[0];
+
+  return (
+    <div className="space-y-3">
+      <div
+        ref={containerRef}
+        className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated bg-black"
+        style={isFullscreen ? undefined : { aspectRatio: '16 / 9' }}
+      >
+        {!hasError && (
+          <video
+            key={active.url}
+            src={active.url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            controls={false}
+            disablePictureInPicture
+            onError={() => setHasError(true)}
+            className={`absolute inset-0 h-full w-full ${isFullscreen ? 'object-contain' : 'object-cover'}`}
+          />
+        )}
+
+        {hasError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/90">
+            <AlertCircle className="h-8 w-8 text-primary/70" />
+            <div className="text-center">
+              <p className="text-sm font-medium text-primary/90">Preview unavailable</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Unable to load previz video. Please refresh or try again later.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="pointer-events-none absolute right-3 top-3 z-10 rounded-full border border-primary/30 bg-black/55 px-3 py-1.5 backdrop-blur-md">
+          <span className="text-[10px] uppercase tracking-[0.18em] text-primary/90">
+            {active.title || 'Unreal Previz'}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          className="absolute right-3 bottom-3 z-10 rounded-full border border-primary/30 bg-black/55 p-2 text-primary/90 backdrop-blur-md transition-colors hover:bg-black/75 hover:text-primary"
+        >
+          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
+      </div>
+
+      <div className="space-y-1.5">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Scenes</div>
+        <div className="flex flex-wrap gap-2">
+          {clips.map((c) => {
+            const isActive = c.id === active.id;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  setActiveId(c.id);
+                  setHasError(false);
+                }}
+                className={`rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                  isActive
+                    ? 'border-primary/60 bg-primary/15 text-primary'
+                    : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground hover:border-border'
+                }`}
+              >
+                {c.title}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
