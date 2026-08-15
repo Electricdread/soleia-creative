@@ -37,6 +37,7 @@ interface CreativeSession {
   creative_notes?: string | null;
   technical_notes?: string | null;
   event_date?: string | null;
+  show_previz?: boolean | null;
 }
 
 interface CreativeSessionCardProps {
