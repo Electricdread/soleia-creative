@@ -445,6 +445,7 @@ export type Database = {
           is_public: boolean
           project_name: string
           proposal_id: string | null
+          show_previz: boolean
           technical_notes: string | null
           token: string
           updated_at: string
@@ -467,6 +468,7 @@ export type Database = {
           is_public?: boolean
           project_name: string
           proposal_id?: string | null
+          show_previz?: boolean
           technical_notes?: string | null
           token: string
           updated_at?: string
@@ -489,6 +491,7 @@ export type Database = {
           is_public?: boolean
           project_name?: string
           proposal_id?: string | null
+          show_previz?: boolean
           technical_notes?: string | null
           token?: string
           updated_at?: string

@@ -37,6 +37,7 @@ interface CreativeSession {
   creative_notes?: string | null;
   technical_notes?: string | null;
   event_date?: string | null;
+  show_previz?: boolean | null;
 }
 
 interface CreativeSessionCardProps {
@@ -51,6 +52,23 @@ interface CreativeSessionCardProps {
 export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOpen, onSessionUpdate }: CreativeSessionCardProps) {
   const [isPublic, setIsPublic] = useState(session.is_public ?? false);
   const [isActive, setIsActive] = useState(session.is_active ?? true);
+  const [showPreviz, setShowPreviz] = useState(session.show_previz ?? false);
+
+  const handlePrevizToggle = async (checked: boolean) => {
+    setShowPreviz(checked);
+    const { error } = await supabase
+      .from('creative_sessions')
+      .update({ show_previz: checked })
+      .eq('id', session.id);
+
+    if (error) {
+      toast.error('Failed to update previz visibility');
+      setShowPreviz(!checked);
+    } else {
+      toast.success(checked ? 'Venue Previz included in session' : 'Venue Previz hidden from session');
+      onSessionUpdate?.();
+    }
+  };
 
   const handleActiveToggle = async (checked: boolean) => {
     setIsActive(checked);
@@ -304,6 +322,21 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                   </div>
                 </TooltipTrigger>
                 <TooltipContent><p className="text-xs">Public links don't require authentication</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    <Switch
+                      checked={showPreviz}
+                      onCheckedChange={handlePrevizToggle}
+                      className="scale-75"
+                    />
+                    <span className="text-[10px] text-muted-foreground">Previz</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">Include the Venue Previz section in this creative session</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <div className="flex-1" />
