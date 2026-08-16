@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, File, Image, FileText, X, Loader2, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSignedSessionUploads } from '@/lib/sessionUploadUrl';
 
 interface SessionUpload {
   id: string;
