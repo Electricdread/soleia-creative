@@ -14,6 +14,7 @@ import {
   File
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { signSessionUploadUrl, useSignedSessionUploads } from '@/lib/sessionUploadUrl';
 
 interface SessionUpload {
   id: string;
