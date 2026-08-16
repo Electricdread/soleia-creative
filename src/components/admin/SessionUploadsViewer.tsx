@@ -184,7 +184,7 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
                         {type === 'logo' || (type === 'media' && upload.file_name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) ? (
                           <div className="w-12 h-12 rounded-lg overflow-hidden bg-background flex-shrink-0">
                             <img
-                              src={upload.file_url}
+                              src={signedUrls[upload.file_url] || ''}
                               alt={upload.file_name}
                               className="w-full h-full object-cover"
                             />
