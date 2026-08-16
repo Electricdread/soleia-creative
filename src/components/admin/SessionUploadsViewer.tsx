@@ -211,7 +211,7 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8"
-                            onClick={() => window.open(upload.file_url, '_blank')}
+                            onClick={() => openFile(upload.file_url)}
                             title="Open in new tab"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
