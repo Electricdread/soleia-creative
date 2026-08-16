@@ -40,6 +40,8 @@ const FILE_TYPE_CONFIG: Record<string, { icon: typeof Image; label: string; colo
 export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUploadsViewerProps) {
   const [uploads, setUploads] = useState<SessionUpload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const signedUrls = useSignedSessionUploads(uploads.map((u) => u.file_url));
+
 
   useEffect(() => {
     fetchUploads();
