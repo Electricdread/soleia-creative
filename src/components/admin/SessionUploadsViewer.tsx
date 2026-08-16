@@ -77,9 +77,15 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
     return config ? config.icon : File;
   };
 
+  const openFile = async (url: string) => {
+    const signed = await signSessionUploadUrl(url);
+    if (signed) window.open(signed, '_blank');
+  };
+
   const downloadFile = async (url: string, fileName: string) => {
+    const signed = (await signSessionUploadUrl(url)) || url;
     try {
-      const response = await fetch(url);
+      const response = await fetch(signed);
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -92,7 +98,7 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
     } catch (error) {
       console.error('Download failed:', error);
       // Fallback: open in new tab
-      window.open(url, '_blank');
+      window.open(signed, '_blank');
     }
   };
 
