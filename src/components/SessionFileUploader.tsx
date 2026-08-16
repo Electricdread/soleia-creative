@@ -220,7 +220,7 @@ export default function SessionFileUploader({ linkId, token, uploads, onUploadCo
                   >
                     {isImage ? (
                       <img
-                        src={upload.file_url}
+                        src={signedUrls[upload.file_url] || ''}
                         alt={upload.file_name}
                         className="h-10 w-10 rounded object-cover flex-shrink-0"
                       />
