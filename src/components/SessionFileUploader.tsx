@@ -34,6 +34,8 @@ export default function SessionFileUploader({ linkId, token, uploads, onUploadCo
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const signedUrls = useSignedSessionUploads(uploads.map((u) => u.file_url));
+
 
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith('image/')) return Image;
