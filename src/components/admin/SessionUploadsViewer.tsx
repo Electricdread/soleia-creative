@@ -14,6 +14,7 @@ import {
   File
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { signSessionUploadUrl, useSignedSessionUploads } from '@/lib/sessionUploadUrl';
 
 interface SessionUpload {
   id: string;
@@ -39,6 +40,8 @@ const FILE_TYPE_CONFIG: Record<string, { icon: typeof Image; label: string; colo
 export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUploadsViewerProps) {
   const [uploads, setUploads] = useState<SessionUpload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const signedUrls = useSignedSessionUploads(uploads.map((u) => u.file_url));
+
 
   useEffect(() => {
     fetchUploads();
@@ -74,9 +77,15 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
     return config ? config.icon : File;
   };
 
+  const openFile = async (url: string) => {
+    const signed = await signSessionUploadUrl(url);
+    if (signed) window.open(signed, '_blank');
+  };
+
   const downloadFile = async (url: string, fileName: string) => {
+    const signed = (await signSessionUploadUrl(url)) || url;
     try {
-      const response = await fetch(url);
+      const response = await fetch(signed);
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -89,7 +98,7 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
     } catch (error) {
       console.error('Download failed:', error);
       // Fallback: open in new tab
-      window.open(url, '_blank');
+      window.open(signed, '_blank');
     }
   };
 
@@ -175,7 +184,7 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
                         {type === 'logo' || (type === 'media' && upload.file_name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) ? (
                           <div className="w-12 h-12 rounded-lg overflow-hidden bg-background flex-shrink-0">
                             <img
-                              src={upload.file_url}
+                              src={signedUrls[upload.file_url] || ''}
                               alt={upload.file_name}
                               className="w-full h-full object-cover"
                             />
@@ -202,7 +211,7 @@ export function SessionUploadsViewer({ linkId, clientName, onClose }: SessionUpl
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8"
-                            onClick={() => window.open(upload.file_url, '_blank')}
+                            onClick={() => openFile(upload.file_url)}
                             title="Open in new tab"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />

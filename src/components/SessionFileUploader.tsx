@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, File, Image, FileText, X, Loader2, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSignedSessionUploads } from '@/lib/sessionUploadUrl';
 
 interface SessionUpload {
   id: string;
@@ -33,6 +34,8 @@ export default function SessionFileUploader({ linkId, token, uploads, onUploadCo
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const signedUrls = useSignedSessionUploads(uploads.map((u) => u.file_url));
+
 
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith('image/')) return Image;
@@ -217,7 +220,7 @@ export default function SessionFileUploader({ linkId, token, uploads, onUploadCo
                   >
                     {isImage ? (
                       <img
-                        src={upload.file_url}
+                        src={signedUrls[upload.file_url] || ''}
                         alt={upload.file_name}
                         className="h-10 w-10 rounded object-cover flex-shrink-0"
                       />
