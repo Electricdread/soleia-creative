@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
+injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;</script>
+
+    <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Soleia</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="description" content="Soleia Creative Management System">
+    <meta name="author" content="Soleia" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32" type="image/x-icon" />
+    <link rel="icon" href="/soleia-icon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/soleia-icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/soleia-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Soleia" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#D4AF37" />
+
+    
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/soleia-icon.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@Soleia" />
+    <meta name="twitter:image" content="/soleia-icon.png" />
+    
+  
+  
+  
+  <meta property="og:title" content="Soleia">
+  <meta name="twitter:title" content="Soleia">
+  <meta property="og:description" content="Soleia Creative Management System">
+  <meta name="twitter:description" content="Soleia Creative Management System">
+</head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
