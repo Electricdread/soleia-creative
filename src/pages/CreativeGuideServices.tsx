@@ -15,20 +15,20 @@ const PRESENTATION_GUIDE_PDF_URL = `/Soleia-Presentation-Guide.pdf?v=${DOCUMENT_
 
 // Imagery lives in public/ so the printable guide and PDFs can reference the
 // same files. Crops in services/ are pre-cut to their display aspect.
-const HERO_IMG = '/creative-guide/custom-content.jpg';
+const HERO_IMG = '/creative-guide/services/hero-main-room.jpg';
 const IMG = {
   packageMain: '/creative-guide/services/package-full-look.jpg',
   packageEvent: '/creative-guide/services/static-logo-event.jpg',
   packageTakeover: '/creative-guide/services/presentation-takeover.jpg',
   previz: '/creative-guide/services/previz-render.jpg',
   mapping: '/creative-guide/services/mapping-client-content.jpg',
-  artist: '/creative-guide/intro-hero.jpg',
-  zones: '/creative-guide/outdoor-screens.png',
+  artist: '/creative-guide/services/artist-show.jpg',
+  zones: '/creative-guide/services/zones-outdoor.jpg',
   staticLogo: '/creative-guide/services/static-logo-event.jpg',
   tvNetwork: '/creative-guide/services/tv-network-still.jpg',
   presentation: '/creative-guide/services/presentation-takeover.jpg',
-  marquee: '/creative-guide/ticker-display.jpg',
-  elevatorInterior: '/creative-guide/elevator-interior.png',
+  marquee: '/creative-guide/services/marquee-exterior.jpg',
+  elevatorInterior: '/creative-guide/services/elevator-interior.jpg',
   elevatorDisplay: '/creative-guide/services/elevator-display-600x800.jpg',
 } as const;
 const ELEVATOR_LOOP_URL = '/creative-guide/Elevator_Still_Soleia.mp4';
@@ -123,10 +123,10 @@ const ELEVATOR_TITLES = [
 // Per-service media: image header + the mono spec chip that ties it to the
 // venue's real pixel language.
 const MEDIA: Record<string, { src: string; alt: string; chip: string }> = {
-  'LED Screens Specific Zone Mapping': {
-    src: IMG.zones,
-    alt: 'Outdoor arch and side panels over the beachclub pool at sunset',
-    chip: 'Arch 1512 × 504 · Sides 588 × 840',
+  'Performing Artist — Mapped by Soleia Creative Team': {
+    src: IMG.artist,
+    alt: 'Show visuals across the sunburst and IMAG walls during a performance',
+    chip: 'Show-cued · IMAG + booth + curves',
   },
   '3D Previz': {
     src: IMG.previz,
@@ -218,11 +218,11 @@ export default function CreativeGuideServices() {
   const additional = byCategory('Additional Options');
 
   const findByTitle = (title: string) => additional.find((i) => i.title === title);
-  const artistItem = findByTitle('Performing Artist — Mapped by Soleia Creative Team');
+  const zonesItem = findByTitle('LED Screens Specific Zone Mapping');
   const transparentItem = findByTitle('Transparent Logo Animation');
   const elevatorItems = ELEVATOR_TITLES.map(findByTitle).filter(Boolean) as Item[];
   const handledTitles = new Set([
-    'Performing Artist — Mapped by Soleia Creative Team',
+    'LED Screens Specific Zone Mapping',
     'Transparent Logo Animation',
     'LED Marquee',
     ...ELEVATOR_TITLES,
@@ -388,15 +388,15 @@ export default function CreativeGuideServices() {
             <section className="pt-24">
               <SectionHead eyebrow="03 — Additional Options" title="Built for the surface it lives on." />
 
-              {/* Performing Artist — signature wide card */}
-              {artistItem && (
+              {/* LED Zone Mapping — signature wide card */}
+              {zonesItem && (
                 <Reveal>
                   <article className={`${cardShell} grid lg:grid-cols-[1.35fr_1fr]`}>
-                    <MediaHeader src={IMG.artist} alt="Show visuals across the sunburst and IMAG walls during a performance" chip="Show-cued · IMAG + booth + curves" aspect="min-h-[280px] lg:min-h-[320px]" />
+                    <MediaHeader src={IMG.zones} alt="Outdoor arch and side panels over the beachclub pool at sunset" chip="Arch 1512 × 504 · Sides 588 × 840" aspect="min-h-[280px] lg:min-h-[320px]" />
                     <div className="self-center p-8 sm:p-9">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Performance</span>
-                      <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground">{artistItem.title}</h3>
-                      <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(artistItem)}</p>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Zone Mapping</span>
+                      <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground">{zonesItem.title}</h3>
+                      <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(zonesItem)}</p>
                     </div>
                   </article>
                 </Reveal>
