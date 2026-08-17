@@ -174,12 +174,11 @@ function MediaHeader({
   chip2?: string;
   aspect?: string;
 }) {
+  // Overlays (spec chips, scrims) removed for now — clean imagery only.
+  void chip; void chip2;
   return (
     <div className={`relative overflow-hidden bg-black ${aspect}`}>
       <img src={src} alt={alt} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
-      {chip && <Chip className="absolute bottom-4 left-4">{chip}</Chip>}
-      {chip2 && <Chip className="absolute bottom-4 right-4">{chip2}</Chip>}
     </div>
   );
 }
@@ -393,8 +392,6 @@ export default function CreativeGuideServices() {
                     <div className="grid grid-rows-[1fr_auto] border-t border-primary/15 lg:border-l lg:border-t-0">
                       <div className="relative min-h-[260px] overflow-hidden">
                         <img src={IMG.packageMain} alt="Full-venue custom look — sunburst, curves and booth running one design" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50" />
-                        <Chip className="absolute bottom-4 left-4">One look · every surface</Chip>
                       </div>
                       <div className="grid grid-cols-3 border-t border-primary/15">
                         {[
@@ -404,9 +401,6 @@ export default function CreativeGuideServices() {
                         ].map((f, i) => (
                           <figure key={f.cap} className={`relative m-0 ${i < 2 ? 'border-r border-primary/15' : ''}`}>
                             <img src={f.src} alt={f.alt} loading="lazy" className="aspect-[16/10] w-full object-cover" />
-                            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pb-2 pt-4 text-center font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
-                              {f.cap}
-                            </figcaption>
                           </figure>
                         ))}
                       </div>
@@ -454,14 +448,12 @@ export default function CreativeGuideServices() {
                           playsInline
                           preload="metadata"
                         />
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity group-hover:opacity-100">
                           <div className="flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-xs uppercase tracking-[0.18em]">
                             <Maximize2 className="h-3.5 w-3.5" />
                             Tap for fullscreen
                           </div>
                         </div>
-                        <Chip className="absolute bottom-4 left-4">DXV Alpha · true transparency</Chip>
                       </div>
                       <div className="p-7 sm:p-8">
                         <h3 className="mb-3 font-display text-2xl leading-tight text-foreground">{transparentItem.title}</h3>
@@ -481,7 +473,6 @@ export default function CreativeGuideServices() {
                   <article className={`${cardShell} grid lg:grid-cols-[400px_1fr]`}>
                     <div className="relative min-h-[420px] overflow-hidden border-b border-primary/15 lg:min-h-[520px] lg:border-b-0 lg:border-r">
                       <img src={IMG.elevatorInterior} alt="Soleia elevator interior — gold trim with the branded display beside the doors" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
                       {/* Close-up of the elevator video display — true 600×800 (3:4) */}
                       <div className="absolute bottom-6 left-6 z-[2] aspect-[3/4] w-[168px] overflow-hidden rounded-[10px] border border-primary/50 bg-black shadow-[0_0_34px_-6px_hsl(var(--primary)/0.5),0_14px_30px_-10px_rgba(0,0,0,0.8)]">
                         <video
@@ -494,11 +485,7 @@ export default function CreativeGuideServices() {
                           playsInline
                           preload="metadata"
                         />
-                        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-1 pb-2 pt-4 text-center font-mono text-[8.5px] uppercase tracking-[0.16em] text-primary">
-                          Display · 600 × 800
-                        </span>
                       </div>
-                      <Chip className="absolute bottom-6 right-5 z-[2]">Mapped 1:1 · Portrait</Chip>
                     </div>
                     <div className="flex flex-col justify-center">
                       <div className="border-b border-primary/15 px-7 pb-5 pt-7 sm:px-9">
