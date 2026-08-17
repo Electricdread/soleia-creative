@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Reveal } from '@/components/motion/Reveal';
 import solIcon from '@/assets/sol-icon.png';
-import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
 // Same-origin document links: works in preview and on the published domain
@@ -14,7 +13,25 @@ const DOCUMENT_VERSION = '2026-08-14c';
 const SERVICES_PDF_URL = `/Soleia-Creative-Services-No-Pricing.pdf?v=${DOCUMENT_VERSION}`;
 const PRESENTATION_GUIDE_PDF_URL = `/Soleia-Presentation-Guide.pdf?v=${DOCUMENT_VERSION}`;
 
-
+// Imagery lives in public/ so the printable guide and PDFs can reference the
+// same files. Crops in services/ are pre-cut to their display aspect.
+const HERO_IMG = '/creative-guide/custom-content.jpg';
+const IMG = {
+  packageMain: '/creative-guide/services/package-full-look.jpg',
+  packageEvent: '/creative-guide/services/static-logo-event.jpg',
+  packageTakeover: '/creative-guide/services/presentation-takeover.jpg',
+  previz: '/creative-guide/services/previz-render.jpg',
+  mapping: '/creative-guide/services/mapping-client-content.jpg',
+  artist: '/creative-guide/intro-hero.jpg',
+  zones: '/creative-guide/outdoor-screens.png',
+  staticLogo: '/creative-guide/services/static-logo-event.jpg',
+  tvNetwork: '/creative-guide/services/tv-network-still.jpg',
+  presentation: '/creative-guide/services/presentation-takeover.jpg',
+  marquee: '/creative-guide/ticker-display.jpg',
+  elevatorInterior: '/creative-guide/elevator-interior.png',
+  elevatorDisplay: '/creative-guide/services/elevator-display-600x800.jpg',
+} as const;
+const ELEVATOR_LOOP_URL = '/creative-guide/Elevator_Still_Soleia.mp4';
 
 type Item = {
   id: string;
@@ -40,7 +57,7 @@ const BLURBS: Record<string, string> = {
   'Static Logo':
     "Your contract includes up to ten static logos across the LED screens. This line item covers each additional static logo beyond that allotment.",
   'Transparent Logo Animation':
-    "A refined logo animation delivered with a true alpha channel, allowing it to sit cleanly over live content and environmental footage without blocking the screen. Your mark remains visible while the room continues to move underneath — ideal for branding moments that need to feel integrated, not interruptive. See the explainer above for a live preview of how the transparency layer behaves on the wall.",
+    "A refined logo animation delivered with a true alpha channel, allowing it to sit cleanly over live content and environmental footage without blocking the screen. Your mark remains visible while the room continues to move underneath — ideal for branding moments that need to feel integrated, not interruptive. Tap the preview above to see how the transparency layer behaves on the wall.",
   'Mapped by Soleia Creative Team':
     "Mapping of client animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.",
   'Mapped to Spec by Client':
@@ -48,7 +65,7 @@ const BLURBS: Record<string, string> = {
   'Elevator Dynamic Animation':
     "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day.",
   'LED Screens Specific Zone Mapping':
-    "Custom mapping to specific LED zones outside the main sunburst architecture — designed for moments that need to live on one focused surface instead of the whole room. Typically applied to the SR IMAG wall, SL IMAG wall, and the outdoor arch (see below). Includes creative treatment, exact-resolution build-out, and onsite playback for the zones you select.",
+    "Custom mapping to specific LED zones outside the main sunburst architecture — designed for moments that need to live on one focused surface instead of the whole room. Typically applied to the SR IMAG wall, SL IMAG wall, and the outdoor arch. Includes creative treatment, exact-resolution build-out, and onsite playback for the zones you select.",
   'Performing Artist — Mapped by Soleia Creative Team':
     "Show-facing visuals designed around a headlining performer or DJ — set graphics, transitions, drops, artist branding, and stage-cued moments — mapped across the IMAG walls, center panel, DJ booth strip, and stage curves. Built in coordination with the artist's team so the visuals belong to the performance, not just play behind it.",
   'Elevator Created by Client':
@@ -56,7 +73,7 @@ const BLURBS: Record<string, string> = {
   'Elevator Static Logo':
     "A single static portrait logo built for the elevator LED's idle state — always-on brand presence between rides. Color-graded and sized for the exact panel, tested onsite before doors.",
   'Individual Cabana / Bungalow Logo':
-    "Branded content assigned to a specific cabana or bungalow TV ( supported still image PNG, or video .MOV).",
+    "Branded content assigned to a specific cabana or bungalow TV — each selected screen runs its own dedicated player feed instead of the shared network. Supported formats: still image PNG or video .MOV.",
   '3D Previz':
     "A full 3D preview of your content running on Soleia's real screens, rendered from our venue model. You review the actual visuals in the actual room before load-in — pacing, brightness, brand placement, coverage — and approve or request revisions. Included with the Creative Package; also available standalone.",
   'Presentation':
@@ -67,13 +84,13 @@ const BLURBS: Record<string, string> = {
 
 const CREATIVE_PACKAGE_SECTIONS: PackageSection[] = [
   {
-    body: "Soleia is a fully immersive LED environment — not a standard screen setup. Every surface in the venue has a different shape, size, and purpose. Content that isn’t built for it feels disconnected. Content that is built for it transforms the entire space.\n\nThat’s what we deliver.",
+    body: "Soleia is a fully immersive LED environment — not a standard screen setup. Every surface in the venue has a different shape, size, and purpose. Content that isn't built for it feels disconnected. Content that is built for it transforms the entire space.\n\nThat's what we deliver.",
   },
   {
-    body: "Our team designs and produces custom visuals specifically for Soleia’s full LED layout — from the main room and ceiling panels to outdoor screens and interior displays — all working together as one cohesive experience.",
+    body: "Our team designs and produces custom visuals specifically for Soleia's full LED layout — from the main room and ceiling panels to outdoor screens and interior displays — all working together as one cohesive experience.",
   },
   {
-    heading: 'What’s included',
+    heading: "What's included",
     body: '',
     bullets: [
       'Creative direction based on your event and brand',
@@ -88,205 +105,369 @@ const CREATIVE_PACKAGE_SECTIONS: PackageSection[] = [
   },
 ];
 
-
 const CATEGORY_ORDER = [
   'Soleia Creative Package',
   'Video Mapping & Load Fees',
   'Additional Options',
 ];
 
+const ELEVATOR_TITLES = [
+  'Elevator Dynamic Animation',
+  'Elevator Static Logo',
+  'Elevator Created by Client',
+];
+
+// Per-service media: image header + the mono spec chip that ties it to the
+// venue's real pixel language.
+const MEDIA: Record<string, { src: string; alt: string; chip: string }> = {
+  'LED Screens Specific Zone Mapping': {
+    src: IMG.zones,
+    alt: 'Outdoor arch and side panels over the beachclub pool at sunset',
+    chip: 'Arch 1512 × 504 · Sides 588 × 840',
+  },
+  '3D Previz': {
+    src: IMG.previz,
+    alt: '3D preview of content rendered from the Soleia venue model',
+    chip: 'Rendered from the venue model',
+  },
+  'Static Logo': {
+    src: IMG.staticLogo,
+    alt: 'Event logo running on the main-room LED screens',
+    chip: '10 included with your buyout',
+  },
+  'Individual Cabana / Bungalow Logo': {
+    src: IMG.tvNetwork,
+    alt: 'Soleia branded feed on the TV / narrowcasting network',
+    chip: '15 cabanas · 9 bungalows',
+  },
+  'Presentation': {
+    src: IMG.presentation,
+    alt: 'Client content routed across the sunburst rays and room screens',
+    chip: 'Onsite support · screen routing',
+  },
+};
+
+function Chip({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/75 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-primary backdrop-blur-sm whitespace-nowrap ${className}`}
+    >
+      <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
+      {children}
+    </span>
+  );
+}
+
+function MediaHeader({
+  src,
+  alt,
+  chip,
+  chip2,
+  aspect = 'aspect-[16/9.4]',
+}: {
+  src: string;
+  alt: string;
+  chip?: string;
+  chip2?: string;
+  aspect?: string;
+}) {
+  return (
+    <div className={`relative overflow-hidden bg-black ${aspect}`}>
+      <img src={src} alt={alt} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
+      {chip && <Chip className="absolute bottom-4 left-4">{chip}</Chip>}
+      {chip2 && <Chip className="absolute bottom-4 right-4">{chip2}</Chip>}
+    </div>
+  );
+}
+
+function SectionHead({ eyebrow, title, lede }: { eyebrow: string; title: string; lede?: string }) {
+  return (
+    <Reveal className="mb-11">
+      <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">{eyebrow}</span>
+      <h2 className="mt-3.5 font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-[2.6rem]">{title}</h2>
+      <div className="mt-4 h-px w-16 bg-gradient-to-r from-primary to-transparent" />
+      {lede && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{lede}</p>}
+    </Reveal>
+  );
+}
+
 export default function CreativeGuideServices() {
   const navigate = useNavigate();
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullscreenVideo, setFullscreenVideo] = useState<string | null>(null);
-  
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.rpc('get_rate_card_addons');
-      const pkg: Item = {
-        id: 'pkg-immersive',
-        title: 'The Full Soleia Creative Package',
-        price: 3000,
-        category: 'Soleia Creative Package',
-        ideal_for: null,
-        long_description: null,
-        deliverables: null,
-        sort_order: 0,
-      };
-      const marquee: Item = {
-        id: 'led-marquee',
-        title: 'LED Marquee',
-        price: 0,
-        category: 'Additional Options',
-        ideal_for: null,
-        long_description: null,
-        deliverables: null,
-        sort_order: 999,
-      };
-      setItems([pkg, ...((data as Item[]) || []), marquee]);
+      setItems((data as Item[]) || []);
       setLoading(false);
     })();
   }, []);
 
-  const grouped = CATEGORY_ORDER.map((cat) => ({
-    category: cat,
-    items: items
+  const byCategory = (cat: string) =>
+    items
       .filter((i) => (i.category || 'Additional Options') === cat)
-      .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999)),
-  })).filter((g) => g.items.length > 0);
+      .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+
+  const mappingItems = byCategory('Video Mapping & Load Fees');
+  const additional = byCategory('Additional Options');
+
+  const findByTitle = (title: string) => additional.find((i) => i.title === title);
+  const artistItem = findByTitle('Performing Artist — Mapped by Soleia Creative Team');
+  const transparentItem = findByTitle('Transparent Logo Animation');
+  const elevatorItems = ELEVATOR_TITLES.map(findByTitle).filter(Boolean) as Item[];
+  const handledTitles = new Set([
+    'Performing Artist — Mapped by Soleia Creative Team',
+    'Transparent Logo Animation',
+    'LED Marquee',
+    ...ELEVATOR_TITLES,
+  ]);
+  const gridItems = additional.filter((i) => !handledTitles.has(i.title));
+
+  const blurbFor = (item: Item) => BLURBS[item.title] || item.long_description || 'Details available on request.';
+
+  const cardShell =
+    'group card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-card/40 surface-elevated transition-colors hover:border-primary/30';
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* NAV */}
-      <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 sm:px-8 py-4 glass border-b border-primary/15">
-        <button onClick={() => navigate('/creative-guide')} className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-          <ArrowLeft className="w-4 h-4" />
+      <header className="glass fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-primary/15 px-5 py-4 sm:px-8">
+        <button onClick={() => navigate('/creative-guide')} className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary">
+          <ArrowLeft className="h-4 w-4" />
           <span className="text-[11px] uppercase tracking-[0.2em]">Creative Guide</span>
         </button>
         <img src={solIcon} alt="Soleia" className="h-9 w-auto object-contain" />
         <div className="w-24" />
       </header>
 
-      {/* HERO */}
-      <section className="pt-36 pb-16 px-6 text-center max-w-4xl mx-auto">
-        <Reveal>
-          <span className="text-[11px] uppercase tracking-[0.34em] text-primary">Services</span>
-        </Reveal>
-        <Reveal delay={0.05} className="mt-5">
-          <img src={soleiaWideLogo} alt="Soleia Las Vegas" className="h-10 sm:h-12 mx-auto object-contain" />
-        </Reveal>
-        <Reveal delay={0.1}>
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl mt-8 leading-[1.05]">
-            Soleia Creative Team Services
-          </h1>
-        </Reveal>
-        <Reveal delay={0.15}>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={() => navigate('/creative-guide/doc/services')}
-              className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              View Services
-            </button>
-            <a
-              href={SERVICES_PDF_URL}
-              download="Soleia-Creative-Services.pdf"
-              className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download
-            </a>
-          </div>
-        </Reveal>
+      {/* HERO — full-bleed venue photograph */}
+      <section className="relative flex min-h-[82vh] items-end overflow-hidden">
+        <img src={HERO_IMG} alt="Soleia main room — sunburst LED ceiling over the dance floor" className="absolute inset-0 h-full w-full object-cover" />
+        {/* Scrim resolves to the page background so the headline always sits on
+            near-solid theme color — legible in light and dark alike. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-background" />
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        <div className="relative mx-auto w-full max-w-5xl px-6 pb-20 pt-40">
+          <Reveal>
+            <span className="font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Services</span>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] text-foreground sm:text-6xl lg:text-7xl">
+              Soleia Creative <span className="text-gradient-gold">Team Services</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+              Custom content, pixel-perfect mapping and show-night playback for Soleia's LED environment — designed and run by the Soleia creative team.
+            </p>
+          </Reveal>
+          <Reveal delay={0.15}>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => navigate('/creative-guide/doc/services')}
+                className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary backdrop-blur-sm transition-colors hover:bg-primary/10"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                View Services
+              </button>
+              <a
+                href={SERVICES_PDF_URL}
+                download="Soleia-Creative-Services.pdf"
+                className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-sm transition-colors hover:border-primary/40 hover:text-foreground"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Download
+              </a>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
-
-      {/* SERVICES */}
-      <section className="px-5 sm:px-8 pb-32 max-w-5xl mx-auto">
+      <main className="mx-auto max-w-5xl px-5 pb-32 sm:px-8">
         {loading ? (
-          <div className="text-center py-20 text-muted-foreground text-sm">Loading services…</div>
+          <div className="py-20 text-center text-sm text-muted-foreground">Loading services…</div>
         ) : (
-          grouped.map((group) => (
-            <div key={group.category} className="mb-20">
-              <Reveal className="mb-10">
-                <span className="block text-[11px] uppercase tracking-[0.34em] text-primary mb-3">Category</span>
-                <h2 className="font-display text-2xl sm:text-3xl text-foreground">{group.category}</h2>
-                <div className="mt-4 h-px w-16 bg-primary/40" />
+          <>
+            {/* ══ 01 · THE FULL CREATIVE PACKAGE ══ */}
+            <section className="pt-24">
+              <SectionHead eyebrow="01 — Soleia Creative Package" title="The room, designed as one canvas." />
+              <Reveal>
+                <div className="edge-gold relative rounded-3xl surface-elevated">
+                  <div className="grid overflow-hidden rounded-3xl bg-card/60 lg:grid-cols-2">
+                    <div className="flex flex-col p-8 sm:p-11">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">Full Package</span>
+                      <h3 className="mb-4 mt-3 font-display text-2xl leading-tight text-foreground sm:text-3xl">
+                        The Full Soleia Creative Package
+                      </h3>
+                      <div className="space-y-4">
+                        {CREATIVE_PACKAGE_SECTIONS.map((section, idx) => (
+                          <div key={idx}>
+                            {section.heading && (
+                              <h4 className="mb-2 font-display text-base text-foreground">{section.heading}</h4>
+                            )}
+                            {section.body && (
+                              <p className="whitespace-pre-wrap text-[14.5px] leading-relaxed text-muted-foreground">{section.body}</p>
+                            )}
+                            {section.bullets && section.bullets.length > 0 && (
+                              <ul className="mt-2 space-y-2">
+                                {section.bullets.map((bullet, bIdx) => (
+                                  <li key={bIdx} className="flex gap-3 text-[14px] text-foreground">
+                                    <span className="flex-shrink-0 text-primary">—</span>
+                                    <span>{bullet}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-rows-[1fr_auto] border-t border-primary/15 lg:border-l lg:border-t-0">
+                      <div className="relative min-h-[260px] overflow-hidden">
+                        <img src={IMG.packageMain} alt="Full-venue custom look — sunburst, curves and booth running one design" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50" />
+                        <Chip className="absolute bottom-4 left-4">One look · every surface</Chip>
+                      </div>
+                      <div className="grid grid-cols-3 border-t border-primary/15">
+                        {[
+                          { src: IMG.packageEvent, cap: 'Event branding', alt: 'Corporate event with branded stage visuals' },
+                          { src: IMG.packageTakeover, cap: 'Brand takeover', alt: 'Sponsor takeover across the sunburst rays' },
+                          { src: IMG.previz, cap: '3D previz', alt: '3D previsualization of content in the venue model' },
+                        ].map((f, i) => (
+                          <figure key={f.cap} className={`relative m-0 ${i < 2 ? 'border-r border-primary/15' : ''}`}>
+                            <img src={f.src} alt={f.alt} loading="lazy" className="aspect-[16/10] w-full object-cover" />
+                            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pb-2 pt-4 text-center font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
+                              {f.cap}
+                            </figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </Reveal>
+            </section>
 
-              <div className="space-y-8">
-                {group.items.map((item) => {
-                  const isTransparent = item.title === 'Transparent Logo Animation';
+            {/* ══ 02 · VIDEO MAPPING & LOAD FEES ══ */}
+            {mappingItems.length > 0 && (
+              <section className="pt-24">
+                <SectionHead
+                  eyebrow="02 — Video Mapping & Load Fees"
+                  title="Bringing your own content."
+                  lede="Client-supplied animations, mapped and loaded into Soleia's playback system. Two paths, depending on who builds to spec."
+                />
+                <Reveal>
+                  <article className={cardShell}>
+                    <MediaHeader
+                      src={IMG.mapping}
+                      alt="Client brand content mapped wall-to-wall across the main-room curve LED"
+                      chip="Client content · mapped wall-to-wall"
+                      aspect="aspect-[21/8]"
+                    />
+                    <div>
+                      {mappingItems.map((item, i) => (
+                        <div key={item.id} className={`grid gap-3 p-7 sm:grid-cols-[minmax(200px,0.9fr)_2fr_auto] sm:items-center sm:gap-7 sm:px-8 ${i > 0 ? 'border-t border-primary/15' : ''}`}>
+                          <h4 className="font-display text-xl leading-snug text-foreground">{item.title}</h4>
+                          <p className="text-[14px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
+                          <Chip>Max 50 GB</Chip>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                </Reveal>
+              </section>
+            )}
+
+            {/* ══ 03 · ADDITIONAL OPTIONS ══ */}
+            <section className="pt-24">
+              <SectionHead eyebrow="03 — Additional Options" title="Built for the surface it lives on." />
+
+              {/* Performing Artist — signature wide card */}
+              {artistItem && (
+                <Reveal>
+                  <article className={`${cardShell} grid lg:grid-cols-[1.35fr_1fr]`}>
+                    <MediaHeader src={IMG.artist} alt="Show visuals across the sunburst and IMAG walls during a performance" chip="Show-cued · IMAG + booth + curves" aspect="min-h-[280px] lg:min-h-[320px]" />
+                    <div className="self-center p-8 sm:p-9">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Performance</span>
+                      <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground">{artistItem.title}</h3>
+                      <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(artistItem)}</p>
+                    </div>
+                  </article>
+                </Reveal>
+              )}
+
+              {/* Transparent Logo + remaining services, two-up */}
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
+                {transparentItem && (
+                  <Reveal>
+                    <article className={cardShell}>
+                      <div
+                        className="relative aspect-[16/9.4] cursor-pointer overflow-hidden bg-black"
+                        onClick={() => setFullscreenVideo(transparentLogoVideo.url)}
+                      >
+                        <video
+                          src={transparentLogoVideo.url}
+                          className="h-full w-full object-cover"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity group-hover:opacity-100">
+                          <div className="flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-xs uppercase tracking-[0.18em]">
+                            <Maximize2 className="h-3.5 w-3.5" />
+                            Tap for fullscreen
+                          </div>
+                        </div>
+                        <Chip className="absolute bottom-4 left-4">DXV Alpha · true transparency</Chip>
+                      </div>
+                      <div className="p-7 sm:p-8">
+                        <h3 className="mb-3 font-display text-2xl leading-tight text-foreground">{transparentItem.title}</h3>
+                        <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(transparentItem)}</p>
+                      </div>
+                    </article>
+                  </Reveal>
+                )}
+
+                {gridItems.map((item) => {
+                  const media = MEDIA[item.title];
                   return (
                     <Reveal key={item.id}>
-                      <article className="rounded-2xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden">
-                        {isTransparent && (
-                          <div
-                            className="relative w-full aspect-video bg-black cursor-pointer group"
-                            onClick={() => setFullscreenVideo(transparentLogoVideo.url)}
-                          >
-                            <video
-                              src={transparentLogoVideo.url}
-                              className="w-full h-full object-cover"
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
-                              preload="metadata"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/90 text-xs uppercase tracking-[0.18em]">
-                                <Maximize2 className="w-3.5 h-3.5" />
-                                Tap for fullscreen
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="p-6 sm:p-8">
-                          <h3 className="font-display text-xl sm:text-2xl text-foreground mb-3">
-                            {item.title}
-                          </h3>
-                          {item.title === 'The Full Soleia Creative Package' ? (
-                            <div className="space-y-5">
-                              {CREATIVE_PACKAGE_SECTIONS.map((section, idx) => (
-                                <div key={idx}>
-                                  {section.heading && (
-                                    <h4 className="font-display text-base text-foreground mb-2">
-                                      {section.heading}
-                                    </h4>
-                                  )}
-                                  <p className="text-muted-foreground text-[15px] leading-relaxed">
-                                    {section.body}
-                                  </p>
-                                  {section.bullets && section.bullets.length > 0 && (
-                                    <ul className="mt-4 space-y-2">
-                                      {section.bullets.map((bullet, bIdx) => (
-                                        <li key={bIdx} className="text-[15px] text-muted-foreground flex gap-3">
-                                          <span className="text-primary flex-shrink-0">—</span>
-                                          <span>{bullet}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-muted-foreground text-[15px] leading-relaxed whitespace-pre-wrap">
-                              {BLURBS[item.title] || item.long_description || 'Details available on request.'}
-                            </p>
-                          )}
+                      <article className={`${cardShell} flex h-full flex-col`}>
+                        {media && <MediaHeader src={media.src} alt={media.alt} chip={media.chip} />}
+                        <div className="flex-1 p-7 sm:p-8">
+                          <h3 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h3>
+                          <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
 
                           {item.title === 'Presentation' && (
                             <div className="mt-6 flex flex-wrap items-center gap-3">
                               <button
                                 onClick={() => navigate('/creative-guide/doc/presentation')}
-                                className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10 transition-colors"
+                                className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
                               >
-                                <Eye className="w-3.5 h-3.5" />
+                                <Eye className="h-3.5 w-3.5" />
                                 View Presentation Guide
                               </button>
                               <a
                                 href={PRESENTATION_GUIDE_PDF_URL}
                                 download="Soleia-Presentation-Guide.pdf"
-                                className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                                className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
                               >
-                                <Download className="w-3.5 h-3.5" />
+                                <Download className="h-3.5 w-3.5" />
                                 Download
                               </a>
                             </div>
                           )}
 
-
-
                           {item.deliverables && item.deliverables.length > 0 && (
                             <ul className="mt-5 space-y-1.5">
                               {item.deliverables.map((d, i) => (
-                                <li key={i} className="text-xs text-muted-foreground flex gap-2">
+                                <li key={i} className="flex gap-2 text-xs text-muted-foreground">
                                   <span className="text-primary">—</span>
                                   <span>{d}</span>
                                 </li>
@@ -299,24 +480,78 @@ export default function CreativeGuideServices() {
                   );
                 })}
               </div>
-            </div>
-          ))
+
+              {/* Elevator Displays — grouped panel with the interior render and
+                  the display close-up at its native 600×800 mapping */}
+              {elevatorItems.length > 0 && (
+                <Reveal className="mt-6">
+                  <article className={`${cardShell} grid lg:grid-cols-[400px_1fr]`}>
+                    <div className="relative min-h-[420px] overflow-hidden border-b border-primary/15 lg:min-h-[520px] lg:border-b-0 lg:border-r">
+                      <img src={IMG.elevatorInterior} alt="Soleia elevator interior — gold trim with the branded display beside the doors" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
+                      {/* Close-up of the elevator video display — true 600×800 (3:4) */}
+                      <div className="absolute bottom-6 left-6 z-[2] aspect-[3/4] w-[168px] overflow-hidden rounded-[10px] border border-primary/50 bg-black shadow-[0_0_34px_-6px_hsl(var(--primary)/0.5),0_14px_30px_-10px_rgba(0,0,0,0.8)]">
+                        <video
+                          src={ELEVATOR_LOOP_URL}
+                          poster={IMG.elevatorDisplay}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-1 pb-2 pt-4 text-center font-mono text-[8.5px] uppercase tracking-[0.16em] text-primary">
+                          Display · 600 × 800
+                        </span>
+                      </div>
+                      <Chip className="absolute bottom-6 right-5 z-[2]">Mapped 1:1 · Portrait</Chip>
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <div className="border-b border-primary/15 px-7 pb-5 pt-7 sm:px-9">
+                        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Arrival</span>
+                        <h3 className="mt-2.5 font-display text-2xl leading-tight text-foreground sm:text-[1.7rem]">Elevator Displays</h3>
+                      </div>
+                      {elevatorItems.map((item, i) => (
+                        <div key={item.id} className={`px-7 py-6 sm:px-9 ${i > 0 ? 'border-t border-primary/15' : ''}`}>
+                          <h4 className="mb-2 font-display text-xl text-foreground">{item.title}</h4>
+                          <p className="text-[13.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                </Reveal>
+              )}
+
+              {/* LED Marquee — exterior closer. Not a rate-card line item;
+                  coordinated per event, so it isn't loaded from the DB. */}
+              <Reveal className="mt-6">
+                <article className={cardShell}>
+                  <MediaHeader src={IMG.marquee} alt="Exterior LED marquee carrying event branding at street level" chip="Exterior · street-facing" chip2="On request" aspect="aspect-[21/9]" />
+                  <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
+                    <h3 className="font-display text-2xl leading-tight text-foreground">LED Marquee</h3>
+                    <p className="text-[14.5px] leading-relaxed text-muted-foreground">{BLURBS['LED Marquee']}</p>
+                  </div>
+                </article>
+              </Reveal>
+            </section>
+          </>
         )}
-      </section>
+      </main>
 
       {/* Fullscreen video modal */}
       {fullscreenVideo && (
         <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4"
           onClick={() => setFullscreenVideo(null)}
         >
           <div
-            className="relative w-full h-full max-w-5xl max-h-[80vh] flex items-center justify-center"
+            className="relative flex h-full max-h-[80vh] w-full max-w-5xl items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <video
               src={fullscreenVideo}
-              className="max-w-full max-h-full"
+              className="max-h-full max-w-full"
               autoPlay
               loop
               muted
@@ -327,14 +562,13 @@ export default function CreativeGuideServices() {
           <Button
             variant="ghost"
             size="sm"
-            className="absolute top-5 right-5 text-white"
+            className="absolute right-5 top-5 text-white"
             onClick={() => setFullscreenVideo(null)}
           >
             Close
           </Button>
         </div>
       )}
-
     </div>
   );
 }
