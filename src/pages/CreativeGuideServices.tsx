@@ -221,16 +221,17 @@ export default function CreativeGuideServices() {
   const zonesItem = findByTitle('LED Screens Specific Zone Mapping');
   const transparentItem = findByTitle('Transparent Logo Animation');
   const elevatorItems = ELEVATOR_TITLES.map(findByTitle).filter(Boolean) as Item[];
+  const staticItem = findByTitle('Static Logo');
   const handledTitles = new Set([
     'LED Screens Specific Zone Mapping',
     'Transparent Logo Animation',
+    'Static Logo',
     'LED Marquee',
     ...ELEVATOR_TITLES,
   ]);
   // Explicit grid order: Static Logo beside the transparent-logo video,
   // then Performing Artist paired with 3D Previz, then the private-display row.
   const GRID_ORDER = [
-    'Static Logo',
     'Performing Artist — Mapped by Soleia Creative Team',
     '3D Previz',
     'Individual Cabana / Bungalow Logo',
@@ -248,6 +249,52 @@ export default function CreativeGuideServices() {
 
   const cardShell =
     'group card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-card/40 surface-elevated transition-colors hover:border-primary/30';
+
+  const renderServiceCard = (item: Item) => {
+                const media = MEDIA[item.title];
+                return (
+                  <Reveal key={item.id}>
+                    <article className={`${cardShell} flex h-full flex-col`}>
+                      {media && <MediaHeader src={media.src} alt={media.alt} chip={media.chip} />}
+                      <div className="flex-1 p-7 sm:p-8">
+                        <h3 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h3>
+                        <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
+
+                        {item.title === 'Presentation' && (
+                          <div className="mt-6 flex flex-wrap items-center gap-3">
+                            <button
+                              onClick={() => navigate('/creative-guide/doc/presentation')}
+                              className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              View Presentation Guide
+                            </button>
+                            <a
+                              href={PRESENTATION_GUIDE_PDF_URL}
+                              download="Soleia-Presentation-Guide.pdf"
+                              className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              Download
+                            </a>
+                          </div>
+                        )}
+
+                        {item.deliverables && item.deliverables.length > 0 && (
+                          <ul className="mt-5 space-y-1.5">
+                            {item.deliverables.map((d, i) => (
+                              <li key={i} className="flex gap-2 text-xs text-muted-foreground">
+                                <span className="text-primary">—</span>
+                                <span>{d}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </article>
+                  </Reveal>
+                );
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -389,6 +436,8 @@ export default function CreativeGuideServices() {
 
               {/* Transparent Logo + remaining services, two-up */}
               <div className="mt-6 grid gap-6 md:grid-cols-2">
+                {staticItem && renderServiceCard(staticItem)}
+
                 {transparentItem && (
                   <Reveal>
                     <article className={cardShell}>
@@ -422,51 +471,7 @@ export default function CreativeGuideServices() {
                   </Reveal>
                 )}
 
-                {gridItems.map((item) => {
-                  const media = MEDIA[item.title];
-                  return (
-                    <Reveal key={item.id}>
-                      <article className={`${cardShell} flex h-full flex-col`}>
-                        {media && <MediaHeader src={media.src} alt={media.alt} chip={media.chip} />}
-                        <div className="flex-1 p-7 sm:p-8">
-                          <h3 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h3>
-                          <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-
-                          {item.title === 'Presentation' && (
-                            <div className="mt-6 flex flex-wrap items-center gap-3">
-                              <button
-                                onClick={() => navigate('/creative-guide/doc/presentation')}
-                                className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
-                              >
-                                <Eye className="h-3.5 w-3.5" />
-                                View Presentation Guide
-                              </button>
-                              <a
-                                href={PRESENTATION_GUIDE_PDF_URL}
-                                download="Soleia-Presentation-Guide.pdf"
-                                className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                              >
-                                <Download className="h-3.5 w-3.5" />
-                                Download
-                              </a>
-                            </div>
-                          )}
-
-                          {item.deliverables && item.deliverables.length > 0 && (
-                            <ul className="mt-5 space-y-1.5">
-                              {item.deliverables.map((d, i) => (
-                                <li key={i} className="flex gap-2 text-xs text-muted-foreground">
-                                  <span className="text-primary">—</span>
-                                  <span>{d}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      </article>
-                    </Reveal>
-                  );
-                })}
+                {gridItems.map(renderServiceCard)}
               </div>
 
               {/* Elevator Displays — grouped panel with the interior render and
