@@ -32,6 +32,9 @@ const IMG = {
   elevatorDisplay: '/creative-guide/services/elevator-display-600x800.jpg',
 } as const;
 const ELEVATOR_LOOP_URL = '/creative-guide/Elevator_Still_Soleia.mp4';
+// The logo animation itself (background-examples segment of the explainer),
+// trimmed for a clean loop. Tapping the card opens the full explainer.
+const TRANSPARENT_LOOP_URL = '/creative-guide/services/transparent-logo-loop.mp4';
 
 type Item = {
   id: string;
@@ -136,8 +139,8 @@ const MEDIA: Record<string, { src: string; alt: string; chip: string }> = {
     chip: '10 included with your buyout',
   },
   'Individual Cabana / Bungalow Logo': {
-    src: IMG.tvNetwork,
-    alt: 'Soleia branded feed on the TV / narrowcasting network',
+    src: '/creative-guide/venue-photos/soleia-bungalow-spa.jpg',
+    alt: 'Bungalow spa with private TV displays either side of the plunge pool',
     chip: '15 cabanas · 9 bungalows',
   },
   'Presentation': {
@@ -409,7 +412,7 @@ export default function CreativeGuideServices() {
                         onClick={() => setFullscreenVideo(transparentLogoVideo.url)}
                       >
                         <video
-                          src={transparentLogoVideo.url}
+                          src={TRANSPARENT_LOOP_URL}
                           className="h-full w-full object-cover"
                           autoPlay
                           loop
