@@ -490,7 +490,16 @@ export default function CreativeGuideServices() {
                     <div className="flex flex-col justify-center">
                       <div className="border-b border-primary/15 px-7 pb-5 pt-7 sm:px-9">
                         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Arrival</span>
-                        <h3 className="mt-2.5 font-display text-2xl leading-tight text-foreground sm:text-[1.7rem]">Elevator Displays</h3>
+                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-4">
+                          <h3 className="font-display text-2xl leading-tight text-foreground sm:text-[1.7rem]">Elevator Displays</h3>
+                          <button
+                            onClick={() => navigate('/creative-guide/elevator')}
+                            className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            Specs & Mapping
+                          </button>
+                        </div>
                       </div>
                       {elevatorItems.map((item, i) => (
                         <div key={item.id} className={`px-7 py-6 sm:px-9 ${i > 0 ? 'border-t border-primary/15' : ''}`}>

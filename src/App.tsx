@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
 import CreativeGuideServices from "./pages/CreativeGuideServices";
+import ElevatorDisplayGuide from "./pages/ElevatorDisplayGuide";
 import DocumentViewer from "./pages/DocumentViewer";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import ContentDelivery from "./pages/ContentDelivery";
@@ -74,6 +75,7 @@ const App = () => (
               {/* Protected Routes - Require Authentication */}
               <Route path="/creative-guide" element={<CreativeGuide />} />
               <Route path="/creative-guide/services" element={<CreativeGuideServices />} />
+              <Route path="/creative-guide/elevator" element={<ElevatorDisplayGuide />} />
               <Route path="/creative-guide/doc/:slug" element={<DocumentViewer />} />
               <Route path="/creative-director" element={<ProtectedRoute requireAdmin><CreativeDirector /></ProtectedRoute>} />
               <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
