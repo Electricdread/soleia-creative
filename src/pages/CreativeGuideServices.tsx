@@ -227,7 +227,22 @@ export default function CreativeGuideServices() {
     'LED Marquee',
     ...ELEVATOR_TITLES,
   ]);
-  const gridItems = additional.filter((i) => !handledTitles.has(i.title));
+  // Explicit grid order: Static Logo beside the transparent-logo video,
+  // then Performing Artist paired with 3D Previz, then the private-display row.
+  const GRID_ORDER = [
+    'Static Logo',
+    'Performing Artist — Mapped by Soleia Creative Team',
+    '3D Previz',
+    'Individual Cabana / Bungalow Logo',
+    'Presentation',
+  ];
+  const gridItems = additional
+    .filter((i) => !handledTitles.has(i.title))
+    .sort((a, b) => {
+      const ia = GRID_ORDER.indexOf(a.title);
+      const ib = GRID_ORDER.indexOf(b.title);
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    });
 
   const blurbFor = (item: Item) => BLURBS[item.title] || item.long_description || 'Details available on request.';
 
@@ -354,39 +369,9 @@ export default function CreativeGuideServices() {
               </Reveal>
             </section>
 
-            {/* ══ 02 · VIDEO MAPPING & LOAD FEES ══ */}
-            {mappingItems.length > 0 && (
-              <section className="pt-24">
-                <SectionHead
-                  eyebrow="02 — Video Mapping & Load Fees"
-                  title="Bringing your own content."
-                  lede="Client-supplied animations, mapped and loaded into Soleia's playback system. Two paths, depending on who builds to spec."
-                />
-                <Reveal>
-                  <article className={cardShell}>
-                    <MediaHeader
-                      src={IMG.mapping}
-                      alt="Client brand content mapped wall-to-wall across the main-room curve LED"
-                      chip="Client content · mapped wall-to-wall"
-                      aspect="aspect-[21/8]"
-                    />
-                    <div>
-                      {mappingItems.map((item, i) => (
-                        <div key={item.id} className={`grid gap-3 p-7 sm:grid-cols-[minmax(200px,0.9fr)_2fr_auto] sm:items-center sm:gap-7 sm:px-8 ${i > 0 ? 'border-t border-primary/15' : ''}`}>
-                          <h4 className="font-display text-xl leading-snug text-foreground">{item.title}</h4>
-                          <p className="text-[14px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-                          <Chip>Max 50 GB</Chip>
-                        </div>
-                      ))}
-                    </div>
-                  </article>
-                </Reveal>
-              </section>
-            )}
-
-            {/* ══ 03 · ADDITIONAL OPTIONS ══ */}
+            {/* ══ 02 · ADDITIONAL OPTIONS ══ */}
             <section className="pt-24">
-              <SectionHead eyebrow="03 — Additional Options" title="Built for the surface it lives on." />
+              <SectionHead eyebrow="02 — Additional Options" title="Built for the surface it lives on." />
 
               {/* LED Zone Mapping — signature wide card */}
               {zonesItem && (
@@ -538,6 +523,36 @@ export default function CreativeGuideServices() {
                 </article>
               </Reveal>
             </section>
+
+            {/* ══ 03 · VIDEO MAPPING & LOAD FEES ══ */}
+            {mappingItems.length > 0 && (
+              <section className="pt-24">
+                <SectionHead
+                  eyebrow="03 — Video Mapping & Load Fees"
+                  title="Bringing your own content."
+                  lede="Client-supplied animations, mapped and loaded into Soleia's playback system. Two paths, depending on who builds to spec."
+                />
+                <Reveal>
+                  <article className={cardShell}>
+                    <MediaHeader
+                      src={IMG.mapping}
+                      alt="Client brand content mapped wall-to-wall across the main-room curve LED"
+                      chip="Client content · mapped wall-to-wall"
+                      aspect="aspect-[21/8]"
+                    />
+                    <div>
+                      {mappingItems.map((item, i) => (
+                        <div key={item.id} className={`grid gap-3 p-7 sm:grid-cols-[minmax(200px,0.9fr)_2fr_auto] sm:items-center sm:gap-7 sm:px-8 ${i > 0 ? 'border-t border-primary/15' : ''}`}>
+                          <h4 className="font-display text-xl leading-snug text-foreground">{item.title}</h4>
+                          <p className="text-[14px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
+                          <Chip>Max 50 GB</Chip>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                </Reveal>
+              </section>
+            )}
           </>
         )}
       </main>
