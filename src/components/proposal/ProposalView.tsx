@@ -453,7 +453,27 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
 
   const visibleItems = signed ? items.filter(isSignedItem) : items;
-  const tableItems = visibleItems;
+  // Match the rate card ordering: category groups in rate-card order, items by sort_order within group
+  const tableItems = useMemo(() => {
+    const catRank = (c: string) => {
+      const idx = rateCardCategoryOrder.indexOf(c);
+      if (c === RC_ADDITIONAL) return -2;
+      if (c === RC_VIDEO_MAPPING) return -1;
+      return idx === -1 ? 999 : idx;
+    };
+    return [...visibleItems].sort((a, b) => {
+      const ca = a.category || '';
+      const cb = b.category || '';
+      if (ca !== cb) {
+        const ra = catRank(ca);
+        const rb = catRank(cb);
+        if (ra !== rb) return ra - rb;
+        return ca.localeCompare(cb);
+      }
+      return (a.sort_order ?? 999) - (b.sort_order ?? 999);
+    });
+  }, [visibleItems, rateCardCategoryOrder]);
+
   const additionalServicesLabel = 'Services';
 
   return (
