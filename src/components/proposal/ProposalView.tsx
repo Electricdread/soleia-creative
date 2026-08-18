@@ -44,8 +44,23 @@ interface ProposalViewProps {
   onRefresh?: () => void;
 }
 
+const RC_ADDITIONAL = 'Additional Options';
+const RC_VIDEO_MAPPING = 'Video Mapping & Load Fees';
+
 export default function ProposalView({ proposal, items, gallery, timeline, isAdmin, onRefresh }: ProposalViewProps) {
   const { toast } = useToast();
+  const [rateCardCategoryOrder, setRateCardCategoryOrder] = useState<string[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.rpc('get_rate_card_categories');
+      const names = ((data as any[]) || [])
+        .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999))
+        .map((c) => c.name as string);
+      setRateCardCategoryOrder(names);
+    })();
+  }, []);
+
   const isProposalSigned = !!proposal.signed_at;
   const isPersistedSelected = (item: any) => item.client_selected === true;
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
