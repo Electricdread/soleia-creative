@@ -518,7 +518,16 @@ export default function CreativeGuideServices() {
                 <article className={cardShell}>
                   <MediaHeader src={IMG.marquee} alt="Exterior LED marquee carrying event branding at street level" chip="Exterior · street-facing" chip2="On request" aspect="aspect-[21/9]" />
                   <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
-                    <h3 className="font-display text-2xl leading-tight text-foreground">LED Marquee</h3>
+                    <div>
+                      <h3 className="font-display text-2xl leading-tight text-foreground">LED Marquee</h3>
+                      <button
+                        onClick={() => navigate('/creative-guide/ticker')}
+                        className="tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        Specs & Mapping
+                      </button>
+                    </div>
                     <p className="text-[14.5px] leading-relaxed text-muted-foreground">{BLURBS['LED Marquee']}</p>
                   </div>
                 </article>
