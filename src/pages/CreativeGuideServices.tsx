@@ -109,6 +109,35 @@ const CREATIVE_PACKAGE_SECTIONS: PackageSection[] = [
   },
 ];
 
+/**
+ * What a buyout already includes. Shown before the package so a client reads
+ * what they have first, and sees the package as the upgrade on top of it.
+ */
+const BUYOUT_INCLUSIONS = [
+  {
+    sub: 'Included',
+    title: 'LED Screens',
+    intro: 'Every activation includes 10 static logos displayed across the 5 main LED screens:',
+    items: [
+      '2 Large Horizontal — Nightclub',
+      '2 Large Vertical — Beachclub / Outside',
+      '1 Beachclub Arch — Beachclub / Stage',
+    ],
+    fine: 'All other LED screens are activated and display in-house visual animations and motion graphics from the club library, mixed in real time by the visual operator.',
+  },
+  {
+    sub: 'Included',
+    title: 'TV Screens / Narrowcasting',
+    intro: '1 static logo displayed across the TV / narrowcasting network:',
+    items: [
+      '4 Front Door Entry — Casino Level',
+      '9 Bungalows — Beachclub / Outside',
+      '15 Cabanas — Beachclub / Outside',
+    ],
+    fine: 'All TVs are connected and display the same content feed. A dedicated logo per cabana or bungalow is available as a line item below.',
+  },
+];
+
 const CATEGORY_ORDER = [
   'Soleia Creative Package',
   'Video Mapping & Load Fees',
@@ -351,16 +380,45 @@ export default function CreativeGuideServices() {
           <div className="py-20 text-center text-sm text-muted-foreground">Loading services…</div>
         ) : (
           <>
-            {/* ══ 01 · THE FULL CREATIVE PACKAGE ══ */}
+            {/* ══ 01 · WHAT THE BUYOUT ALREADY INCLUDES ══ */}
             <section className="pt-24">
-              <SectionHead eyebrow="01 — Soleia Creative Package" title="The room, designed as one canvas." />
+              <SectionHead
+                eyebrow="01 — Included With Your Buyout"
+                title="What you already have."
+                lede="Every activation carries branding across the venue before any creative work is added. This is the baseline your event starts from."
+              />
+              <div className="grid gap-6 md:grid-cols-2">
+                {BUYOUT_INCLUSIONS.map((inc, i) => (
+                  <Reveal key={inc.title} delay={i * 0.05}>
+                    <article className={`${cardShell} h-full p-8`}>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{inc.sub}</span>
+                      <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground">{inc.title}</h3>
+                      <p className="text-[14.5px] leading-relaxed text-muted-foreground">{inc.intro}</p>
+                      <ul className="mt-4 space-y-2.5">
+                        {inc.items.map((item) => (
+                          <li key={item} className="relative pl-5 text-[14px] text-foreground">
+                            <span className="absolute left-0 top-2 h-1.5 w-1.5 bg-primary" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-4 text-[12.5px] italic leading-relaxed text-muted-foreground/80">{inc.fine}</p>
+                    </article>
+                  </Reveal>
+                ))}
+              </div>
+            </section>
+
+            {/* ══ 02 · THE FULL CREATIVE PACKAGE (UPGRADE) ══ */}
+            <section className="pt-24">
+              <SectionHead eyebrow="02 — Soleia Creative Package Upgrade" title="The room, designed as one canvas." />
               <Reveal>
                 <div className="edge-gold relative rounded-3xl surface-elevated">
                   <div className="grid overflow-hidden rounded-3xl bg-card/60 lg:grid-cols-2">
                     <div className="flex flex-col p-8 sm:p-11">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">Full Package</span>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">Full Package Upgrade</span>
                       <h3 className="mb-4 mt-3 font-display text-2xl leading-tight text-foreground sm:text-3xl">
-                        The Full Soleia Creative Package
+                        The Soleia Creative Package Upgrade
                       </h3>
                       <div className="space-y-4">
                         {CREATIVE_PACKAGE_SECTIONS.map((section, idx) => (
@@ -406,9 +464,9 @@ export default function CreativeGuideServices() {
               </Reveal>
             </section>
 
-            {/* ══ 02 · ADDITIONAL OPTIONS ══ */}
+            {/* ══ 03 · ADDITIONAL OPTIONS ══ */}
             <section className="pt-24">
-              <SectionHead eyebrow="02 — Additional Options" title="Built for the surface it lives on." />
+              <SectionHead eyebrow="03 — Additional Options" title="Built for the surface it lives on." />
 
               {/* LED Zone Mapping — signature wide card */}
               {zonesItem && (
@@ -530,11 +588,11 @@ export default function CreativeGuideServices() {
               </Reveal>
             </section>
 
-            {/* ══ 03 · VIDEO MAPPING & LOAD FEES ══ */}
+            {/* ══ 04 · VIDEO MAPPING & LOAD FEES ══ */}
             {mappingItems.length > 0 && (
               <section className="pt-24">
                 <SectionHead
-                  eyebrow="03 — Video Mapping & Load Fees"
+                  eyebrow="04 — Video Mapping & Load Fees"
                   title="Bringing your own content."
                   lede="Client-supplied animations, mapped and loaded into Soleia's playback system. Two paths, depending on who builds to spec."
                 />
