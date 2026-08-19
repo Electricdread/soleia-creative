@@ -351,6 +351,7 @@ export type Database = {
       }
       client_links: {
         Row: {
+          brief_enabled: boolean
           client_name: string
           created_at: string
           event_date: string | null
@@ -362,6 +363,7 @@ export type Database = {
           token: string
         }
         Insert: {
+          brief_enabled?: boolean
           client_name: string
           created_at?: string
           event_date?: string | null
@@ -373,6 +375,7 @@ export type Database = {
           token: string
         }
         Update: {
+          brief_enabled?: boolean
           client_name?: string
           created_at?: string
           event_date?: string | null
@@ -421,6 +424,68 @@ export type Database = {
             foreignKeyName: "content_previews_link_id_fkey"
             columns: ["link_id"]
             isOneToOne: false
+            referencedRelation: "client_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creative_briefs: {
+        Row: {
+          avoid: string | null
+          client_link_id: string
+          color_scheme: string | null
+          created_at: string
+          elevator_down: string | null
+          elevator_mode: string | null
+          elevator_up: string | null
+          id: string
+          looks_count: number | null
+          mood: string | null
+          notes: string | null
+          submitted_at: string | null
+          transforms_to_party: string | null
+          updated_at: string
+          vibe: string | null
+        }
+        Insert: {
+          avoid?: string | null
+          client_link_id: string
+          color_scheme?: string | null
+          created_at?: string
+          elevator_down?: string | null
+          elevator_mode?: string | null
+          elevator_up?: string | null
+          id?: string
+          looks_count?: number | null
+          mood?: string | null
+          notes?: string | null
+          submitted_at?: string | null
+          transforms_to_party?: string | null
+          updated_at?: string
+          vibe?: string | null
+        }
+        Update: {
+          avoid?: string | null
+          client_link_id?: string
+          color_scheme?: string | null
+          created_at?: string
+          elevator_down?: string | null
+          elevator_mode?: string | null
+          elevator_up?: string | null
+          id?: string
+          looks_count?: number | null
+          mood?: string | null
+          notes?: string | null
+          submitted_at?: string | null
+          transforms_to_party?: string | null
+          updated_at?: string
+          vibe?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creative_briefs_client_link_id_fkey"
+            columns: ["client_link_id"]
+            isOneToOne: true
             referencedRelation: "client_links"
             referencedColumns: ["id"]
           },
@@ -1602,6 +1667,7 @@ export type Database = {
       get_client_link_by_token: {
         Args: { p_token: string }
         Returns: {
+          brief_enabled: boolean
           client_name: string
           created_at: string
           event_date: string | null
@@ -1615,6 +1681,32 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "client_links"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_creative_brief_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          avoid: string | null
+          client_link_id: string
+          color_scheme: string | null
+          created_at: string
+          elevator_down: string | null
+          elevator_mode: string | null
+          elevator_up: string | null
+          id: string
+          looks_count: number | null
+          mood: string | null
+          notes: string | null
+          submitted_at: string | null
+          transforms_to_party: string | null
+          updated_at: string
+          vibe: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "creative_briefs"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -1830,6 +1922,45 @@ export type Database = {
       reset_proposal_signature: {
         Args: { p_proposal_id: string }
         Returns: string
+      }
+      save_creative_brief_by_token: {
+        Args: {
+          p_avoid?: string
+          p_color_scheme?: string
+          p_elevator_down?: string
+          p_elevator_mode?: string
+          p_elevator_up?: string
+          p_looks_count?: number
+          p_mood?: string
+          p_notes?: string
+          p_submit?: boolean
+          p_token: string
+          p_transforms_to_party?: string
+          p_vibe?: string
+        }
+        Returns: {
+          avoid: string | null
+          client_link_id: string
+          color_scheme: string | null
+          created_at: string
+          elevator_down: string | null
+          elevator_mode: string | null
+          elevator_up: string | null
+          id: string
+          looks_count: number | null
+          mood: string | null
+          notes: string | null
+          submitted_at: string | null
+          transforms_to_party: string | null
+          updated_at: string
+          vibe: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "creative_briefs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       sign_proposal_by_token:
         | {
