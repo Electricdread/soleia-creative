@@ -28,8 +28,7 @@ interface ClientLink {
   event_date: string | null;
   is_active: boolean;
   is_public: boolean;
-  /** Optional only because the checked-in generated types predate the column. */
-  brief_enabled?: boolean;
+  brief_enabled: boolean;
   created_at: string;
   clip_count?: number;
   upload_count?: number;
@@ -224,7 +223,7 @@ export function ClientLinkManager() {
     const next = !current;
     const { error } = await supabase
       .from('client_links')
-      .update({ brief_enabled: next } as never)
+      .update({ brief_enabled: next })
       .eq('id', id);
 
     if (error) {
@@ -515,8 +514,8 @@ export function ClientLinkManager() {
                   <div className="flex items-center justify-between gap-3 mb-3 px-3 py-2 rounded-lg bg-secondary/40 border border-border/50">
                     <label className="flex items-center gap-2.5 cursor-pointer min-w-0">
                       <Switch
-                        checked={Boolean(link.brief_enabled)}
-                        onCheckedChange={() => toggleBrief(link.id, Boolean(link.brief_enabled))}
+                        checked={link.brief_enabled}
+                        onCheckedChange={() => toggleBrief(link.id, link.brief_enabled)}
                       />
                       <span className="min-w-0">
                         <span className="block text-xs font-medium text-foreground">Creative brief</span>

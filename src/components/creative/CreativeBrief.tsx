@@ -17,30 +17,6 @@ import { Button } from '@/components/ui/button';
 
 const AUTOSAVE_DELAY_MS = 900;
 
-/**
- * The generated Supabase types are checked in and do not yet include the brief
- * RPCs. Casting the client once here keeps the rest of the file typed; the cast
- * can be dropped when src/integrations/supabase/types.ts is next regenerated.
- */
-const briefRpc = supabase.rpc.bind(supabase) as (
-  fn: string,
-  args: Record<string, unknown>,
-) => Promise<{ data: unknown; error: { message: string } | null }>;
-
-interface BriefRow {
-  mood: string | null;
-  vibe: string | null;
-  color_scheme: string | null;
-  avoid: string | null;
-  elevator_mode: string | null;
-  elevator_up: string | null;
-  elevator_down: string | null;
-  transforms_to_party: string | null;
-  looks_count: number | null;
-  notes: string | null;
-  submitted_at: string | null;
-  updated_at: string | null;
-}
 
 type ElevatorMode = 'messages' | 'branding_loop' | 'undecided';
 type PartyAnswer = 'yes' | 'no' | 'unsure';
@@ -146,8 +122,8 @@ export function CreativeBrief({ token, eventName }: CreativeBriefProps) {
 
   useEffect(() => {
     (async () => {
-      const { data } = await briefRpc('get_creative_brief_by_token', { p_token: token });
-      const row = (Array.isArray(data) ? data[0] : data) as BriefRow | undefined;
+      const { data } = await supabase.rpc('get_creative_brief_by_token', { p_token: token });
+      const row = data?.[0];
       if (row) {
         setState({
           mood: row.mood ?? '',
@@ -171,18 +147,18 @@ export function CreativeBrief({ token, eventName }: CreativeBriefProps) {
   const persist = useCallback(
     async (next: BriefState, submit = false) => {
       setSaving(true);
-      const { error } = await briefRpc('save_creative_brief_by_token', {
+      const { error } = await supabase.rpc('save_creative_brief_by_token', {
         p_token: token,
-        p_mood: next.mood || null,
-        p_vibe: next.vibe || null,
-        p_color_scheme: next.color_scheme || null,
-        p_avoid: next.avoid || null,
-        p_elevator_mode: next.elevator_mode || null,
-        p_elevator_up: next.elevator_up || null,
-        p_elevator_down: next.elevator_down || null,
-        p_transforms_to_party: next.transforms_to_party || null,
-        p_looks_count: next.looks_count,
-        p_notes: next.notes || null,
+        p_mood: next.mood || undefined,
+        p_vibe: next.vibe || undefined,
+        p_color_scheme: next.color_scheme || undefined,
+        p_avoid: next.avoid || undefined,
+        p_elevator_mode: next.elevator_mode || undefined,
+        p_elevator_up: next.elevator_up || undefined,
+        p_elevator_down: next.elevator_down || undefined,
+        p_transforms_to_party: next.transforms_to_party || undefined,
+        p_looks_count: next.looks_count ?? undefined,
+        p_notes: next.notes || undefined,
         p_submit: submit,
       });
       setSaving(false);

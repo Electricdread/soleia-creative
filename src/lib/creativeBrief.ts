@@ -1,42 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 
 /**
  * Admin-side access to the creative briefs clients fill in inside their session.
  *
  * Clients write through token RPCs; admins read the table directly under the
- * admin-only RLS policy. The generated Supabase types are checked in and do not
- * yet include this table, so the single cast lives here rather than in every
- * component that needs a brief.
+ * admin-only RLS policy.
  */
 
-export interface CreativeBriefRow {
-  id: string;
-  client_link_id: string;
-  mood: string | null;
-  vibe: string | null;
-  color_scheme: string | null;
-  avoid: string | null;
-  elevator_mode: string | null;
-  elevator_up: string | null;
-  elevator_down: string | null;
-  transforms_to_party: string | null;
-  looks_count: number | null;
-  notes: string | null;
-  submitted_at: string | null;
-  updated_at: string | null;
-}
-
-const briefTable = () =>
-  (supabase as unknown as {
-    from: (t: string) => {
-      select: (cols: string) => {
-        in: (col: string, vals: string[]) => Promise<{ data: CreativeBriefRow[] | null }>;
-        eq: (col: string, val: string) => {
-          maybeSingle: () => Promise<{ data: CreativeBriefRow | null }>;
-        };
-      };
-    };
-  }).from('creative_briefs');
+export type CreativeBriefRow = Tables<'creative_briefs'>;
 
 export const ELEVATOR_LABEL: Record<string, string> = {
   messages: 'Greet guests — ride up / ride down messages',
@@ -65,14 +37,14 @@ export function answeredCount(b: CreativeBriefRow): number {
 
 export async function fetchBriefsForLinks(linkIds: string[]): Promise<Record<string, CreativeBriefRow>> {
   if (linkIds.length === 0) return {};
-  const { data } = await briefTable().select('*').in('client_link_id', linkIds);
+  const { data } = await supabase.from('creative_briefs').select('*').in('client_link_id', linkIds);
   const map: Record<string, CreativeBriefRow> = {};
   for (const row of data || []) map[row.client_link_id] = row;
   return map;
 }
 
 export async function fetchBriefForLink(linkId: string): Promise<CreativeBriefRow | null> {
-  const { data } = await briefTable().select('*').eq('client_link_id', linkId).maybeSingle();
+  const { data } = await supabase.from('creative_briefs').select('*').eq('client_link_id', linkId).maybeSingle();
   return data ?? null;
 }
 
