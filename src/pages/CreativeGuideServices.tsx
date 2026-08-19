@@ -260,6 +260,18 @@ export default function CreativeGuideServices() {
                         <h3 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h3>
                         <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
 
+                        {item.title === 'Individual Cabana / Bungalow Logo' && (
+                          <div className="mt-6 flex flex-wrap items-center gap-3">
+                            <button
+                              onClick={() => navigate('/creative-guide/tv')}
+                              className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              Specs & Mapping
+                            </button>
+                          </div>
+                        )}
+
                         {item.title === 'Presentation' && (
                           <div className="mt-6 flex flex-wrap items-center gap-3">
                             <button
