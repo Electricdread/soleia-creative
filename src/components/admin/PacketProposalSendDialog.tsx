@@ -128,6 +128,10 @@ export function PacketProposalSendDialog({ open, onOpenChange, proposal }: Packe
             {selected && proposal && (
               <div className="border-t border-border pt-4">
                 <PacketEmailCard
+                  // The card seeds its editable fields from props on mount, so
+                  // switching packets must remount it or it keeps showing the
+                  // previously selected packet's links.
+                  key={selected.id}
                   kind={(selected.kind as PacketEmailKind) || 'pre_call'}
                   clientName={proposal.client_name || selected.client_name || ''}
                   eventDate={proposal.event_date || selected.event_date}

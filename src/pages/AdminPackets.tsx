@@ -8,6 +8,7 @@ import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Loc
 import { toast } from 'sonner';
 import { PacketEditor, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
 import { PacketEmailCard } from '@/components/admin/PacketEmailCard';
+import IncludePriceSheetToggle, { priceSheetUrl } from '@/components/admin/IncludePriceSheetToggle';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, parseISO } from 'date-fns';
 import {
@@ -40,6 +41,7 @@ export default function AdminPackets() {
   const [newKind, setNewKind] = useState<PacketKind>('pre_call');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [emailPacket, setEmailPacket] = useState<PacketRow | null>(null);
+  const [includePriceSheet, setIncludePriceSheet] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -225,19 +227,27 @@ export default function AdminPackets() {
 
       <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} kind={newKind} onSaved={load} />
 
-      <Dialog open={!!emailPacket} onOpenChange={(o) => !o && setEmailPacket(null)}>
+      <Dialog open={!!emailPacket} onOpenChange={(o) => { if (!o) { setEmailPacket(null); setIncludePriceSheet(false); } }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Send Packet Email</DialogTitle>
           </DialogHeader>
           {emailPacket && (
-            <PacketEmailCard
-              kind={(emailPacket.kind as PacketKind) || 'pre_call'}
-              clientName={emailPacket.client_name || ''}
-              eventDate={emailPacket.event_date}
-              packetUrl={`${window.location.origin}/packet/${emailPacket.token}`}
-              driveUrl={emailPacket.drive_folder_url}
-            />
+            <div className="space-y-4">
+              <IncludePriceSheetToggle
+                checked={includePriceSheet}
+                onCheckedChange={setIncludePriceSheet}
+              />
+              <PacketEmailCard
+                key={String(includePriceSheet)}
+                kind={(emailPacket.kind as PacketKind) || 'pre_call'}
+                clientName={emailPacket.client_name || ''}
+                eventDate={emailPacket.event_date}
+                packetUrl={`${window.location.origin}/packet/${emailPacket.token}`}
+                driveUrl={emailPacket.drive_folder_url}
+                priceSheetUrl={includePriceSheet ? priceSheetUrl() : undefined}
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>

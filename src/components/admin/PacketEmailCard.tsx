@@ -10,8 +10,13 @@ export type PacketEmailKind = 'pre_call' | 'post_call' | 'custom' | 'creative_pr
 
 interface PacketEmailFields {
   kind: PacketEmailKind;
-  /** Set when the packet is sent together with a proposal / price sheet. */
+  /** Set when the packet is sent together with a client's proposal. */
   proposalUrl?: string;
+  /**
+   * Set to include the services & pricing reference. This goes out before a
+   * client proposal exists, so they can see what we offer and what it costs.
+   */
+  priceSheetUrl?: string;
   clientName: string;
   eventDate?: string | null;
   packetUrl: string;
@@ -38,6 +43,7 @@ function formatDate(d?: string | null) {
  */
 function packetCopy(f: PacketEmailFields) {
   const withProposal = Boolean(f.proposalUrl);
+  const withPriceSheet = Boolean(f.priceSheetUrl);
 
   if (withProposal) {
     return {
@@ -51,6 +57,22 @@ function packetCopy(f: PacketEmailFields) {
       driveLabel: 'Open Your Project Folder',
       eyebrow: 'Creative Packet & Proposal',
       closing: 'Any questions on the services or the proposal, just reply to this email.',
+      banner: 'Everything below is ready for your review.',
+    };
+  }
+
+  if (withPriceSheet) {
+    return {
+      title: 'Your Creative Packet & Price Sheet',
+      intro:
+        'Great meeting you today. Your Soleia creative guide packet is here, along with our ' +
+        'price sheet so you have a reference for the services we offer and what they cost. ' +
+        'Review the services in the guide, and let us know which direction you want to take — ' +
+        'we will put your proposal together from there.',
+      primaryLabel: 'Open Your Packet',
+      driveLabel: 'Open Your Project Folder',
+      eyebrow: 'Creative Packet & Price Sheet',
+      closing: 'Any questions on the services or pricing, just reply to this email.',
       banner: 'Everything below is ready for your review.',
     };
   }
@@ -177,6 +199,21 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
               </tr>
             </table>` : ''}
 
+            ${f.priceSheetUrl ? `
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td align="center" style="padding:0 0 12px;">
+                  <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    <tr>
+                      <td style="background-color:#111111;border:2px solid #B8860B;border-radius:8px;padding:13px 34px;text-align:center;">
+                        <a href="${f.priceSheetUrl}" target="_blank" style="display:inline-block;color:#DAA520;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">View Services &amp; Pricing</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>` : ''}
+
             ${driveBlock}
 
             <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:24px 0 0;">
@@ -217,11 +254,12 @@ function buildPacketEmailText(f: PacketEmailFields) {
   const dateLine = f.eventDate ? `Event Date: ${formatDate(f.eventDate)}\n\n` : '';
   const drive = f.driveUrl ? `\n\n${driveLabel}: ${f.driveUrl}` : '';
   const proposal = f.proposalUrl ? `\n\nReview & Sign Your Proposal: ${f.proposalUrl}` : '';
+  const priceSheet = f.priceSheetUrl ? `\n\nView Services & Pricing: ${f.priceSheetUrl}` : '';
   return `Hi${f.clientName ? ` ${f.clientName}` : ''},
 
 ${dateLine}${intro}
 
-${primaryLabel}: ${f.packetUrl}${drive}${proposal}
+${primaryLabel}: ${f.packetUrl}${drive}${proposal}${priceSheet}
 
 ${closing}
 
@@ -234,11 +272,13 @@ interface Props {
   eventDate?: string | null;
   packetUrl: string;
   driveUrl?: string | null;
-  /** Pass a proposal link to send the packet and price sheet as one email. */
+  /** Pass a proposal link to send the packet and a client's proposal together. */
   proposalUrl?: string | null;
+  /** Pass the services & pricing reference to include it in the email. */
+  priceSheetUrl?: string | null;
 }
 
-export function PacketEmailCard({ kind, clientName: initialName, eventDate, packetUrl, driveUrl, proposalUrl }: Props) {
+export function PacketEmailCard({ kind, clientName: initialName, eventDate, packetUrl, driveUrl, proposalUrl, priceSheetUrl }: Props) {
   const [clientName, setClientName] = useState(initialName ?? '');
   const [url, setUrl] = useState(packetUrl);
   const [drive, setDrive] = useState(driveUrl ?? '');
@@ -254,6 +294,7 @@ export function PacketEmailCard({ kind, clientName: initialName, eventDate, pack
     packetUrl: url.trim(),
     driveUrl: drive.trim() || null,
     proposalUrl: proposal.trim() || undefined,
+    priceSheetUrl: priceSheetUrl?.trim() || undefined,
   };
 
   const handleCopy = async () => {
