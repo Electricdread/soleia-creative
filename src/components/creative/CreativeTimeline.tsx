@@ -3,9 +3,13 @@
  *
  * The dates here are the ones in the proposal terms — kickoff is a signed
  * proposal plus brand assets in hand, then 14 days to the first review cut,
- * a 3-day review window, one included revision round, and a cut-off 4 days
- * out. See src/components/proposal/ProposalTerms.tsx; if those terms change,
- * this changes with them.
+ * a 3-day review window and one included revision round. See
+ * src/components/proposal/ProposalTerms.tsx; if those terms change, this
+ * changes with them.
+ *
+ * The one deliberate divergence is the final cut-off: the terms set the
+ * contractual floor at 4 days before the event, and this asks for 7 business
+ * days. It is the earlier of the two on purpose — do not "correct" it back.
  *
  * What it adds is the part a client cannot see from a contract: the work
  * inside those 14 days. Saying that we spend the front of that window
@@ -66,7 +70,7 @@ export const CREATIVE_TIMELINE: TimelineStep[] = [
     who: 'Soleia',
   },
   {
-    when: '4 days before the show',
+    when: '7 business days before the show',
     title: 'Final cut-off',
     what:
       'The last point final revision requests can reach us and still be applied, rendered and ' +
