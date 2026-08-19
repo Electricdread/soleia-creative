@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
+import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
 import solIcon from '@/assets/sol-icon.png';
 
 // Asset paths shared with the services page.
@@ -46,15 +47,7 @@ export default function ElevatorDisplayGuide() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* NAV */}
-      <header className="glass fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-primary/15 px-5 py-4 sm:px-8">
-        <button onClick={() => navigate('/creative-guide/services')} className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary">
-          <ArrowLeft className="h-4 w-4" />
-          <span className="text-[11px] uppercase tracking-[0.2em]">Services</span>
-        </button>
-        <img src={solIcon} alt="Soleia" className="h-9 w-auto object-contain" />
-        <div className="w-24" />
-      </header>
+      <CreativeGuideHeader />
 
       <main className="mx-auto max-w-5xl px-5 pb-32 pt-32 sm:px-8">
         {/* HEAD */}

@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "next-themes";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { FloatingThemeToggle } from "@/components/FloatingThemeToggle";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
@@ -62,6 +63,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <FloatingThemeToggle />
             <Routes>
               {/* Public Routes */}

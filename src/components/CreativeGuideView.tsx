@@ -1,24 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Printer, FileVideo, Boxes, Compass, Maximize2 } from 'lucide-react';
+import { Printer, FileVideo, Boxes, Compass, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
 import { Reveal } from '@/components/motion/Reveal';
+import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
-import solIcon from '@/assets/sol-icon.png';
 
 const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
-
-const NAV_LINKS: { label: string; href?: string; to?: string }[] = [
-  { href: '#venue', label: 'Venue' },
-  { href: '#layout', label: 'Layout' },
-  { to: '/creative-guide/services', label: 'Services' },
-  { href: '#tour', label: '360° Tour' },
-  { to: '/creative-guide/video-mapping', label: 'Video Mapping' },
-  { href: '#branding', label: 'Branding' },
-  { href: '#specs', label: 'Specs' },
-];
 
 const ZONE_GROUPS = [
   {
@@ -112,82 +102,9 @@ function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
 
 const CreativeGuideView = () => {
   const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* NAV */}
-      <header
-        className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 sm:px-8 transition-all duration-400 ${
-          scrolled ? 'py-3 glass border-b border-primary/15' : 'py-5 border-b border-transparent'
-        }`}
-      >
-        <a href="#top" className="flex items-center" aria-label="Soleia">
-          <img src={solIcon} alt="Soleia" className="h-9 sm:h-10 w-auto object-contain" />
-        </a>
-        <nav className="hidden lg:flex items-center gap-7">
-          {NAV_LINKS.map((link) =>
-            link.to ? (
-              <button
-                key={link.label}
-                onClick={() => navigate(link.to!)}
-                className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary transition-colors"
-              >
-                {link.label}
-              </button>
-            ) : (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground hover:text-primary transition-colors"
-              >
-                {link.label}
-              </a>
-            )
-          )}
-        </nav>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMenuOpen(true)} aria-label="Open menu">
-            <Menu className="w-5 h-5" />
-          </Button>
-        </div>
-      </header>
-
-      {/* MOBILE DRAWER */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-[60] bg-background/97 backdrop-blur-sm flex flex-col items-center justify-center gap-6 lg:hidden">
-          <Button variant="ghost" size="icon" className="absolute top-5 right-5" onClick={() => setMenuOpen(false)} aria-label="Close menu">
-            <X className="w-7 h-7 text-primary" />
-          </Button>
-          {NAV_LINKS.map((link) =>
-            link.to ? (
-              <button
-                key={link.label}
-                onClick={() => { setMenuOpen(false); navigate(link.to!); }}
-                className="font-display text-2xl text-foreground"
-              >
-                {link.label}
-              </button>
-            ) : (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="font-display text-2xl text-foreground"
-              >
-                {link.label}
-              </a>
-            )
-          )}
-        </div>
-      )}
+      <CreativeGuideHeader transparentAtTop />
 
       {/* HERO */}
       <section id="top" className="min-h-[92vh] flex flex-col items-center justify-center text-center px-6 pt-32 pb-20">

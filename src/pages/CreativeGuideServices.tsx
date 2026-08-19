@@ -4,6 +4,7 @@ import { ArrowLeft, Maximize2, Eye, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Reveal } from '@/components/motion/Reveal';
+import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
 import solIcon from '@/assets/sol-icon.png';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
@@ -296,16 +297,11 @@ export default function CreativeGuideServices() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* NAV */}
-      <header className="glass fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-primary/15 px-5 py-4 sm:px-8">
-        <button onClick={() => navigate('/creative-guide')} className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary">
-          <ArrowLeft className="h-4 w-4" />
-          <span className="text-[11px] uppercase tracking-[0.2em]">Creative Guide</span>
-        </button>
-        <img src={solIcon} alt="Soleia" className="h-9 w-auto object-contain" />
-        <div className="w-24" />
-      </header>
+    // Services is always presented dark. Scoping the `dark` class to this page
+    // rather than flipping the global theme means the palette tokens resolve
+    // dark here without changing the visitor's preference for other pages.
+    <div className="dark min-h-screen bg-background text-foreground">
+      <CreativeGuideHeader />
 
       {/* HERO — full-bleed venue photograph */}
       <section className="relative flex min-h-[82vh] items-end overflow-hidden">
