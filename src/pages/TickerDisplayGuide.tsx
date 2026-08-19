@@ -5,9 +5,8 @@ import { Reveal } from '@/components/motion/Reveal';
 import solIcon from '@/assets/sol-icon.png';
 
 // Ticker assets (public/ so documents and downloads share the same files).
-const HERO_IMG = '/creative-guide/ticker/cromwell-night.jpg';
-const MAP_DARK = '/creative-guide/ticker/ticker-work-map-dark.png';
-const MAP_BRIGHT = '/creative-guide/ticker/ticker-work-map-bright.png';
+const HERO_IMG = '/creative-guide/ticker/soleia-welcomes.jpg';
+const WORK_MAP = '/creative-guide/ticker/ticker-work-map-dark.png';
 const LOOP_URL = '/creative-guide/ticker/ticker-preview-loop.mp4';
 const LOOP_POSTER = '/creative-guide/services/marquee-exterior.jpg';
 
@@ -79,7 +78,7 @@ export default function TickerDisplayGuide() {
         <Reveal>
           <article className={`${panelShell} grid lg:grid-cols-[1.2fr_1fr]`}>
             <div className="relative min-h-[320px] overflow-hidden border-b border-primary/15 lg:min-h-[520px] lg:border-b-0 lg:border-r">
-              <img src={HERO_IMG} alt="The venue at night — the ticker band wraps the corner above Las Vegas Blvd and Flamingo Rd" className="absolute inset-0 h-full w-full object-cover" />
+              <img src={HERO_IMG} alt="The ticker running Soleia branding across both sides of the building at dusk" className="absolute inset-0 h-full w-full object-cover" />
             </div>
             <div className="p-7 sm:p-9">
               <h2 className="font-display text-2xl text-foreground">Display mapping</h2>
@@ -108,34 +107,23 @@ export default function TickerDisplayGuide() {
         {/* WORK MAP — theme-aware: dark map in dark mode, bright map in light mode */}
         <Reveal className="mt-6">
           <article className={panelShell}>
-            <div className="bg-black/40 p-6 sm:p-8">
-              <img src={MAP_BRIGHT} alt="Ticker work map — West Side 1608 × 192, South Side 2184 × 192, total 3792 × 192" className="block w-full rounded-lg border border-primary/25 dark:hidden" />
-              <img src={MAP_DARK} alt="Ticker work map — West Side 1608 × 192, South Side 2184 × 192, total 3792 × 192" className="hidden w-full rounded-lg border border-primary/25 shadow-[0_0_34px_-6px_hsl(var(--primary)/0.3)] dark:block" />
+            <div className="bg-[#0B0805] p-6 sm:p-8">
+              <img src={WORK_MAP} alt="Ticker work map — West Side 1608 × 192, South Side 2184 × 192, total 3792 × 192" className="block w-full rounded-lg border border-primary/25 shadow-[0_0_34px_-6px_hsl(var(--primary)/0.3)]" />
             </div>
             <div className="border-t border-primary/15 p-6 sm:px-8">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h2 className="font-display text-xl text-foreground">Work map</h2>
-                  <p className="mt-1 text-[13px] text-muted-foreground">The exact canvas your ticker content is built on — dark and bright versions.</p>
+                  <p className="mt-1 text-[13px] text-muted-foreground">The exact canvas your ticker content is built on.</p>
                 </div>
-                <div className="flex flex-wrap gap-3">
-                  <a
-                    href={MAP_DARK}
-                    download="Soleia-Ticker-Work-Map-Dark.png"
-                    className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    Dark
-                  </a>
-                  <a
-                    href={MAP_BRIGHT}
-                    download="Soleia-Ticker-Work-Map-Bright.png"
-                    className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    Bright
-                  </a>
-                </div>
+                <a
+                  href={WORK_MAP}
+                  download="Soleia-Ticker-Work-Map.png"
+                  className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download
+                </a>
               </div>
             </div>
           </article>
