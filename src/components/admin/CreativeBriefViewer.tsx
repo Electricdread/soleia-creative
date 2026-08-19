@@ -8,7 +8,7 @@ import {
   PARTY_LABEL,
   answeredCount,
   briefToPlainText,
-  fetchBriefForLink,
+  fetchBriefForSession,
   type CreativeBriefRow,
 } from '@/lib/creativeBrief';
 
@@ -35,14 +35,14 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export interface CreativeBriefViewerProps {
-  linkId: string;
+  sessionId: string;
   clientName: string;
-  eventName: string;
+  projectName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreativeBriefViewer({ linkId, clientName, eventName, open, onOpenChange }: CreativeBriefViewerProps) {
+export function CreativeBriefViewer({ sessionId, clientName, projectName, open, onOpenChange }: CreativeBriefViewerProps) {
   const { toast } = useToast();
   const [brief, setBrief] = useState<CreativeBriefRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,14 +51,14 @@ export function CreativeBriefViewer({ linkId, clientName, eventName, open, onOpe
     if (!open) return;
     setLoading(true);
     (async () => {
-      setBrief(await fetchBriefForLink(linkId));
+      setBrief(await fetchBriefForSession(sessionId));
       setLoading(false);
     })();
-  }, [open, linkId]);
+  }, [open, sessionId]);
 
   const copy = async () => {
     if (!brief) return;
-    await navigator.clipboard.writeText(briefToPlainText(brief, `${clientName} — ${eventName}`));
+    await navigator.clipboard.writeText(briefToPlainText(brief, `${clientName} — ${projectName}`));
     toast({ title: 'Brief copied', description: 'Paste it into your call agenda or hand-off note.' });
   };
 
@@ -68,7 +68,7 @@ export function CreativeBriefViewer({ linkId, clientName, eventName, open, onOpe
         <DialogHeader>
           <DialogTitle>Creative Brief</DialogTitle>
           <DialogDescription>
-            {clientName} — {eventName}
+            {clientName} — {projectName}
             {brief?.submitted_at
               ? ` · sent ${new Date(brief.submitted_at).toLocaleDateString()}`
               : brief
@@ -83,7 +83,7 @@ export function CreativeBriefViewer({ linkId, clientName, eventName, open, onOpe
           </div>
         ) : !brief ? (
           <div className="py-12 text-center text-sm text-muted-foreground">
-            The client has not started their brief yet. It appears in their session while the questionnaire is on.
+            The client has not started their brief yet. It appears in their creative session while the questionnaire is on.
           </div>
         ) : (
           <div className="space-y-1">

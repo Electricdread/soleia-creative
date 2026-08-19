@@ -14,6 +14,7 @@ import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { HomeButton } from '@/components/HomeButton';
 import PrevizMovie from '@/components/venue/PrevizMovie';
+import CreativeBrief from '@/components/creative/CreativeBrief';
 
 type PrevizClipOption = { id: string; title: string; url: string };
 
@@ -25,6 +26,7 @@ interface CoverImage {
 
 interface CreativeSessionData {
   id: string;
+  token: string;
   project_name: string;
   client_name: string;
   created_at: string;
@@ -32,6 +34,7 @@ interface CreativeSessionData {
   creative_notes?: string | null;
   proposal_id?: string | null;
   show_previz?: boolean | null;
+  brief_enabled?: boolean | null;
 }
 
 interface MoodBoardItemData {
@@ -125,12 +128,17 @@ export default function CreativeSession() {
 
     setSession({
       id: data.id,
+      token: data.token,
       project_name: data.project_name,
       client_name: data.client_name,
       created_at: data.created_at,
       cover_images: data.cover_images as unknown as CoverImage[] | null,
       creative_notes: data.creative_notes,
       proposal_id: (data as any).proposal_id,
+      // show_previz was declared on the session but never carried across, so
+      // the admin Previz toggle had no effect on this page.
+      show_previz: data.show_previz,
+      brief_enabled: data.brief_enabled,
     });
 
     // Fetch linked proposal token
@@ -332,6 +340,15 @@ export default function CreativeSession() {
               </span>
             </div>
             <PrevizSection clips={previzClips} />
+          </section>
+        )}
+
+        {/* Creative brief — the client's own words on direction. Sits above the
+            content so it is never something they have to hunt for, folded shut
+            once they have sent it so it stops competing with the work. */}
+        {session.brief_enabled && (
+          <section className="rounded-2xl border border-primary/15 bg-card/40">
+            <CreativeBrief token={session.token} eventName={session.project_name} collapsible />
           </section>
         )}
 

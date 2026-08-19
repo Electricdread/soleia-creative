@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Link2, Mail, MonitorPlay } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Link2, Mail, MonitorPlay, ClipboardList } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SessionContentManager } from './SessionContentManager';
 import { SessionPrevizClipsManager } from './SessionPrevizClipsManager';
@@ -18,6 +18,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { Json } from '@/integrations/supabase/types';
 import { CountdownBadge } from '@/components/CountdownBadge';
+import { CreativeBriefViewer } from './CreativeBriefViewer';
+import { answeredCount, fetchBriefForSession, type CreativeBriefRow } from '@/lib/creativeBrief';
 
 interface CoverImage {
   url: string;
@@ -38,6 +40,7 @@ interface CreativeSession {
   technical_notes?: string | null;
   event_date?: string | null;
   show_previz?: boolean | null;
+  brief_enabled?: boolean | null;
 }
 
 interface CreativeSessionCardProps {
@@ -53,6 +56,37 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [isPublic, setIsPublic] = useState(session.is_public ?? false);
   const [isActive, setIsActive] = useState(session.is_active ?? true);
   const [showPreviz, setShowPreviz] = useState(session.show_previz ?? false);
+  const [briefEnabled, setBriefEnabled] = useState(session.brief_enabled ?? false);
+  const [brief, setBrief] = useState<CreativeBriefRow | null>(null);
+  const [briefOpen, setBriefOpen] = useState(false);
+
+  // Whether the client has written anything is what makes the brief worth
+  // opening, so load it with the card rather than on click.
+  useEffect(() => {
+    let live = true;
+    fetchBriefForSession(session.id).then((row) => { if (live) setBrief(row); });
+    return () => { live = false; };
+  }, [session.id, briefOpen]);
+
+  const handleBriefToggle = async (checked: boolean) => {
+    setBriefEnabled(checked);
+    const { error } = await supabase
+      .from('creative_sessions')
+      .update({ brief_enabled: checked })
+      .eq('id', session.id);
+
+    if (error) {
+      toast.error('Failed to update the creative brief');
+      setBriefEnabled(!checked);
+    } else {
+      toast.success(
+        checked
+          ? 'Creative brief added to this session'
+          : 'Creative brief hidden — the answers are kept',
+      );
+      onSessionUpdate?.();
+    }
+  };
 
   const handlePrevizToggle = async (checked: boolean) => {
     setShowPreviz(checked);
@@ -339,6 +373,36 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                 <TooltipContent><p className="text-xs">Include the Venue Previz section in this creative session</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    <Switch
+                      checked={briefEnabled}
+                      onCheckedChange={handleBriefToggle}
+                      className="scale-75"
+                    />
+                    <span className="text-[10px] text-muted-foreground">Brief</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">Include the creative questionnaire in this session</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            {brief && (
+              <button
+                type="button"
+                onClick={() => setBriefOpen(true)}
+                className={cn(
+                  "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full transition-colors",
+                  brief.submitted_at
+                    ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                )}
+              >
+                <ClipboardList className="w-2.5 h-2.5" />
+                {brief.submitted_at ? 'Brief sent' : `Brief ${answeredCount(brief)}/7`}
+              </button>
+            )}
             <div className="flex-1" />
             <TooltipProvider>
               <Tooltip>
@@ -504,6 +568,14 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
           </Tabs>
         </DialogContent>
       </Dialog>
+
+      <CreativeBriefViewer
+        sessionId={session.id}
+        clientName={session.client_name}
+        projectName={session.project_name}
+        open={briefOpen}
+        onOpenChange={setBriefOpen}
+      />
     </>
   );
 }

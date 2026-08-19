@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, Loader2, ArrowUp, ArrowDown, Repeat } from 'lucide-react';
+import { Check, ChevronDown, Loader2, ArrowUp, ArrowDown, Repeat } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -109,14 +109,21 @@ function ChoiceCard({
 export interface CreativeBriefProps {
   token: string;
   eventName?: string | null;
+  /**
+   * Fold the questions behind a summary row. A client who has already sent
+   * their brief gets it closed; anyone who has not gets it open, so the
+   * questions are never something they have to go looking for.
+   */
+  collapsible?: boolean;
 }
 
-export function CreativeBrief({ token, eventName }: CreativeBriefProps) {
+export function CreativeBrief({ token, eventName, collapsible = false }: CreativeBriefProps) {
   const [state, setState] = useState<BriefState>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [submittedAt, setSubmittedAt] = useState<Date | null>(null);
+  const [open, setOpen] = useState(false);
   const timer = useRef<number | null>(null);
   const dirty = useRef(false);
 
@@ -140,6 +147,7 @@ export function CreativeBrief({ token, eventName }: CreativeBriefProps) {
         if (row.updated_at) setSavedAt(new Date(row.updated_at));
         if (row.submitted_at) setSubmittedAt(new Date(row.submitted_at));
       }
+      setOpen(!row?.submitted_at);
       setLoading(false);
     })();
   }, [token]);
@@ -216,6 +224,29 @@ export function CreativeBrief({ token, eventName }: CreativeBriefProps) {
       <div className="flex items-center justify-center py-16 text-muted-foreground">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading your creative brief…
       </div>
+    );
+  }
+
+  if (collapsible && !open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex w-full items-center gap-4 rounded-2xl border border-primary/15 bg-card/40 px-6 py-5 text-left transition-colors hover:border-primary/40"
+      >
+        <span className="min-w-0 flex-1">
+          <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Creative Brief</span>
+          <span className="mt-1.5 block font-display text-lg text-foreground">
+            Tell us how the night should feel.
+          </span>
+          <span className="mt-1 block text-[13px] text-muted-foreground">
+            {submittedAt
+              ? 'Sent to our team — open it to change anything.'
+              : `A few short questions · ${answered} of 7 answered`}
+          </span>
+        </span>
+        <ChevronDown className="h-5 w-5 shrink-0 text-primary" />
+      </button>
     );
   }
 
