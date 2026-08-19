@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { adminRecipients, notifyFrom } from "../_shared/notify.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -40,8 +41,8 @@ const handler = async (req: Request): Promise<Response> => {
     const managementUrl = `https://soleiacreative.app/admin/users?userId=${userId}&action=approve`;
 
     const emailResponse = await resend.emails.send({
-      from: "DSX Soleia <onboarding@resend.dev>",
-      to: ["ninemilelion@gmail.com"],
+      from: notifyFrom(),
+      to: adminRecipients(),
       subject: "🔐 Admin Access Request - DSX SOLEIA Creative Team",
       html: `
         <!DOCTYPE html>

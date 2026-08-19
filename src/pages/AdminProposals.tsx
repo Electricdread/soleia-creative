@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, RotateCcw, PackageOpen } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, RotateCcw, PackageOpen, MailCheck } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -18,6 +18,7 @@ import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import ProposalSessionLinker from '@/components/admin/ProposalSessionLinker';
 import PacketProposalSendDialog from '@/components/admin/PacketProposalSendDialog';
+import ProposalReceivedDialog from '@/components/admin/ProposalReceivedDialog';
 import { format } from 'date-fns';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
@@ -78,6 +79,7 @@ export default function AdminProposals() {
   const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
   const [emailCopying, setEmailCopying] = useState<string | null>(null);
   const [packetSendProposal, setPacketSendProposal] = useState<ProposalRow | null>(null);
+  const [receivedReplyProposal, setReceivedReplyProposal] = useState<ProposalRow | null>(null);
   const [folderGenerating, setFolderGenerating] = useState<string | null>(null);
 
   useEffect(() => {
@@ -664,6 +666,18 @@ luisdreamslv@gmail.com`;
                   {p.signed_at && (
                     <Button
                       variant="ghost"
+                      size="sm"
+                      onClick={() => setReceivedReplyProposal(p)}
+                      title="Compose the received-with-thanks reply"
+                      className="gap-1.5 text-emerald-400 hover:text-emerald-300 text-xs"
+                    >
+                      <MailCheck className="w-4 h-4" />
+                      Reply
+                    </Button>
+                  )}
+                  {p.signed_at && (
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => resetSignature(p.id, p.event_name)}
                       title="Reset signature & reopen for signing"
@@ -740,6 +754,12 @@ luisdreamslv@gmail.com`;
         open={!!packetSendProposal}
         onOpenChange={(o) => { if (!o) setPacketSendProposal(null); }}
         proposal={packetSendProposal}
+      />
+
+      <ProposalReceivedDialog
+        open={!!receivedReplyProposal}
+        onOpenChange={(o) => { if (!o) setReceivedReplyProposal(null); }}
+        proposal={receivedReplyProposal}
       />
 
       {linkerProposal && (

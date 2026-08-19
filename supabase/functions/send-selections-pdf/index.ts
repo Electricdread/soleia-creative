@@ -1,4 +1,5 @@
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { adminRecipients, notifyFrom } from "../_shared/notify.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -7,8 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Hardcoded recipient for testing (Resend requires domain verification for other recipients)
-const RECIPIENT_EMAIL = "ninemilelion@gmail.com";
+
 
 interface Selection {
   external_id: string;
@@ -50,11 +50,11 @@ const handler = async (req: Request): Promise<Response> => {
       </tr>
     `).join('');
 
-    console.log(`Sending selections email to: ${RECIPIENT_EMAIL}`);
+    console.log(`Sending selections email to: ${adminRecipients().join(", ")}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Looks Collection <onboarding@resend.dev>",
-      to: [RECIPIENT_EMAIL],
+      from: notifyFrom(),
+      to: adminRecipients(),
       subject: `Your Looks Collection Selections (${selections.length} clips)`,
       html: `
         <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto;">

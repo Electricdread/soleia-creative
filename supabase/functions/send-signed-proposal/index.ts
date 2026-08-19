@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { adminRecipients, sendEach } from "../_shared/notify.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,13 +25,11 @@ serve(async (req) => {
 
   try {
     const p: Payload = await req.json();
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY not configured');
 
     const recipients = new Set<string>();
     if (p.client_email) recipients.add(p.client_email);
     if (p.assigned_pm_email) recipients.add(p.assigned_pm_email);
-    recipients.add('luisdreamslv@gmail.com');
+    for (const admin of adminRecipients()) recipients.add(admin);
 
     if (recipients.size === 0) {
       return new Response(JSON.stringify({ skipped: true, reason: 'no recipients' }), {
@@ -64,29 +63,18 @@ serve(async (req) => {
       </div>
     `;
 
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Soleia Creative <onboarding@resend.dev>',
-        to: Array.from(recipients),
-        subject: `Signed Proposal — ${p.event_name}`,
-        html,
-        attachments: [
-          { filename: p.pdf_filename, content: p.pdf_base64 },
-        ],
-      }),
+    // One send per recipient. A client or PM address Resend will not accept
+    // must not take the internal copy down with it, which is exactly what a
+    // single multi-recipient request did.
+    const report = await sendEach({
+      to: Array.from(recipients),
+      subject: `Signed Proposal — ${p.event_name}`,
+      html,
+      attachments: [{ filename: p.pdf_filename, content: p.pdf_base64 }],
     });
 
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Resend error: ${err}`);
-    }
-
-    return new Response(JSON.stringify({ success: true, recipients: Array.from(recipients) }), {
+    return new Response(JSON.stringify({ success: report.delivered.length > 0, ...report }), {
+      status: report.delivered.length > 0 ? 200 : 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e: any) {

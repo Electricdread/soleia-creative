@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { adminRecipients, notifyFrom } from "../_shared/notify.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 
 const corsHeaders = {
@@ -6,8 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const RECIPIENT = 'luisdreamslv@gmail.com';
-const FALLBACK_RECIPIENT = 'ninemilelion@gmail.com';
+
 const APP_ORIGIN = 'https://soleiacreative.app';
 const GOLD = '#c49a3c';
 
@@ -155,9 +155,7 @@ serve(async (req) => {
 
     const subject = `Soleia · ${overdue.length} overdue · ${dueWeek.length} this week`;
 
-    // Resend free/test mode only delivers to the account owner address.
-    // Send to both the desired and the verified fallback so at least one lands.
-    const recipients = Array.from(new Set([RECIPIENT, FALLBACK_RECIPIENT]));
+    const recipients = adminRecipients();
     let lastErr = '';
     let delivered = '';
     for (const to of recipients) {
@@ -168,7 +166,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Soleia Deadlines <onboarding@resend.dev>',
+          from: notifyFrom(),
           to: [to],
           subject,
           html,

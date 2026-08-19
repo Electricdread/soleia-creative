@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { adminRecipients, sendEach } from "../_shared/notify.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,11 +13,6 @@ serve(async (req) => {
 
   try {
     const { event_name, client_name, client_signature, venue_name, event_date, proposal_url } = await req.json();
-
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY not configured');
-    }
 
     const dateStr = event_date ? new Date(event_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'TBD';
 
@@ -37,26 +33,16 @@ serve(async (req) => {
       </div>
     `;
 
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'onboarding@resend.dev',
-        to: ['luisdreamslv@gmail.com'],
-        subject: `Proposal Signed: ${event_name} — ${client_name}`,
-        html,
-      }),
+    const report = await sendEach({
+      to: adminRecipients(),
+      subject: `Proposal Signed: ${event_name} — ${client_name}`,
+      html,
     });
 
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Resend error: ${err}`);
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
+    // A rejected recipient is reported rather than thrown: the caller signs
+    // regardless, and a swallowed 500 tells nobody which address failed.
+    return new Response(JSON.stringify({ success: report.delivered.length > 0, ...report }), {
+      status: report.delivered.length > 0 ? 200 : 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e: any) {

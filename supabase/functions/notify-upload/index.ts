@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "resend";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { adminRecipients, notifyFrom } from "../_shared/notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,11 +70,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     const sessionUrl = `${req.headers.get("origin") || "https://soleiacreative.app"}/session/${linkData.token}`;
 
-    // Send notification email
-    // Using hardcoded email for Resend trial domain verification
     const emailResponse = await resend.emails.send({
-      from: "Soleia <onboarding@resend.dev>",
-      to: ["ninemilelion@gmail.com"],
+      from: notifyFrom(),
+      to: adminRecipients(),
       subject: `New File Upload: ${linkData.client_name} - ${linkData.event_name}`,
       html: `
         <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
