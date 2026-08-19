@@ -64,12 +64,18 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const isProposalSigned = !!proposal.signed_at;
   const isPersistedSelected = (item: any) => item.client_selected === true;
+  const persistedSelection = () => new Set(items.filter(isPersistedSelected).map(i => i.id));
   // An unsigned proposal resumes from the client's saved draft, so closing the
   // tab mid-decision no longer discards their selections.
+  //
+  // With no draft we fall back to what is stored on the items. That is empty
+  // for a proposal never signed, and is the client's own selection for one
+  // reopened after signing — so a client asked to change a single line does not
+  // have to re-choose every other one, on this device or any other.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
-    if (isProposalSigned) return new Set(items.filter(isPersistedSelected).map(i => i.id));
+    if (isProposalSigned) return persistedSelection();
     const draft = loadDraft(proposal.token);
-    if (!draft) return new Set<string>();
+    if (!draft) return persistedSelection();
     const { selectedIds: ids } = reconcileDraft(draft, new Set(items.map(i => i.id)));
     return new Set(ids);
   });
@@ -92,7 +98,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     const base = Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1]));
     if (isProposalSigned) {
       setClientQty(base);
-      setSelectedIds(new Set(items.filter(isPersistedSelected).map(i => i.id)));
+      setSelectedIds(persistedSelection());
       return;
     }
     // Re-reconcile against the revised item list rather than clearing: an admin

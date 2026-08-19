@@ -14,6 +14,10 @@ interface DeleteConfirmDialogProps {
   trigger: React.ReactNode;
   title?: string;
   description?: string;
+  /** Text on the confirming button. */
+  confirmLabel?: string;
+  /** Reserve the destructive styling for actions that actually destroy something. */
+  destructive?: boolean;
   onConfirm: () => void;
 }
 
@@ -21,6 +25,8 @@ export function DeleteConfirmDialog({
   trigger,
   title = 'Are you sure?',
   description = 'This action cannot be undone. This will permanently delete this item.',
+  confirmLabel = 'Delete',
+  destructive = true,
   onConfirm,
 }: DeleteConfirmDialogProps) {
   return (
@@ -35,9 +41,11 @@ export function DeleteConfirmDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className={
+              destructive ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : undefined
+            }
           >
-            Delete
+            {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

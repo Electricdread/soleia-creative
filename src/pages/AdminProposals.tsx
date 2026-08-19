@@ -247,14 +247,18 @@ export default function AdminProposals() {
     toast({ title: 'Proposal marked as sent' });
   };
 
-  const resetSignature = async (id: string, eventName: string) => {
-    if (!window.confirm(`Reset signature for "${eventName}"?\n\nThis clears the client signature and reopens the proposal for signing.`)) return;
+  // Reopening keeps the client's line-item selection and re-activates the link,
+  // so they land on what they signed and change only what they came to change.
+  const resetSignature = async (id: string) => {
     const { error } = await supabase.rpc('reset_proposal_signature', { p_proposal_id: id });
     if (error) {
-      toast({ title: 'Reset failed', description: error.message, variant: 'destructive' });
+      toast({ title: 'Could not reopen', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Signature reset', description: 'Proposal reopened for signing.' });
+    toast({
+      title: 'Reopened for changes',
+      description: 'The signature is cleared, the link is live, and their selections are intact.',
+    });
     fetchProposals();
   };
 
@@ -676,15 +680,28 @@ luisdreamslv@gmail.com`;
                     </Button>
                   )}
                   {p.signed_at && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => resetSignature(p.id, p.event_name)}
-                      title="Reset signature & reopen for signing"
-                      className="text-amber-400 hover:text-amber-300"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                    </Button>
+                    <DeleteConfirmDialog
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Clear the signature and reopen this proposal for changes"
+                          className="gap-1.5 text-amber-400 hover:text-amber-300 text-xs"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          Reopen
+                        </Button>
+                      }
+                      title={`Reopen "${p.event_name}" for changes?`}
+                      description={
+                        'This clears the client signature so they can sign again, and makes the link live if it ' +
+                        'was switched off. The line items they selected and any quantities they set are kept, ' +
+                        'so they resume from what they signed. Send them their proposal link when you are ready.'
+                      }
+                      confirmLabel="Reopen for changes"
+                      destructive={false}
+                      onConfirm={() => resetSignature(p.id)}
+                    />
                   )}
                   {p.drive_folder_url ? (
                     <Button
