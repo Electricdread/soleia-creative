@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { CreativeTimeline } from './CreativeTimeline';
 
 /**
  * The creative brief a client fills in inside their session.
@@ -46,13 +47,6 @@ const EMPTY: BriefState = {
   looks_count: null,
   notes: '',
 };
-
-const TIMELINE: { when: string; what: string }[] = [
-  { when: '21 business days before', what: 'Brand assets and any client-supplied content due' },
-  { when: '14 business days before', what: 'First looks presented for your review' },
-  { when: '7 business days before', what: 'Revisions locked and final content approved' },
-  { when: 'Show day', what: 'Content mapped, tested and run live by our operator' },
-];
 
 function Section({
   step,
@@ -453,16 +447,7 @@ export function CreativeBrief({ token, eventName, collapsible = false }: Creativ
       {/* Creative timeline — what happens next, so the brief ends with clarity
           rather than a dead end. */}
       <footer className="mt-4 rounded-2xl border border-primary/15 bg-card/40 p-7">
-        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Creative Timeline</span>
-        <h3 className="mt-2 font-display text-xl text-foreground">What happens from here.</h3>
-        <ol className="mt-5 space-y-4">
-          {TIMELINE.map((row) => (
-            <li key={row.when} className="grid gap-1 sm:grid-cols-[190px_1fr] sm:gap-5">
-              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary">{row.when}</span>
-              <span className="text-[14px] leading-relaxed text-muted-foreground">{row.what}</span>
-            </li>
-          ))}
-        </ol>
+        <CreativeTimeline />
         <p className="mt-6 border-t border-primary/15 pt-4 text-[13px] leading-relaxed text-muted-foreground">
           Your answers reach the Soleia creative team as you write them. We will bring a direction to your
           creative call — you do not need to have it all figured out here.
