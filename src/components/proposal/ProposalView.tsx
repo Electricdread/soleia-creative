@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { loadDraft, saveDraft, clearDraft, reconcileDraft } from '@/lib/proposalDraft';
 import { supabase } from '@/integrations/supabase/client';
 import { Pencil, Check, X, Plus, Trash2, Library, Printer, FileDown, Minus, ListChecks, BookOpen, FolderOpen, Calendar, Loader2 } from 'lucide-react';
 import { generateProposalPdf } from '@/lib/proposalPdfGenerator';
@@ -63,23 +64,55 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const isProposalSigned = !!proposal.signed_at;
   const isPersistedSelected = (item: any) => item.client_selected === true;
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    () => new Set(isProposalSigned ? items.filter(isPersistedSelected).map(i => i.id) : [])
-  );
+  // An unsigned proposal resumes from the client's saved draft, so closing the
+  // tab mid-decision no longer discards their selections.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
+    if (isProposalSigned) return new Set(items.filter(isPersistedSelected).map(i => i.id));
+    const draft = loadDraft(proposal.token);
+    if (!draft) return new Set<string>();
+    const { selectedIds: ids } = reconcileDraft(draft, new Set(items.map(i => i.id)));
+    return new Set(ids);
+  });
   const [clientName, setClientName] = useState('');
   const [signing, setSigning] = useState(false);
   const [signed, setSigned] = useState(!!proposal.signed_at);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
-  const [clientQty, setClientQty] = useState<Record<string, number>>(
-    Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1]))
-  );
+  const [clientQty, setClientQty] = useState<Record<string, number>>(() => {
+    const base = Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1]));
+    if (isProposalSigned) return base;
+    const draft = loadDraft(proposal.token);
+    if (!draft) return base;
+    const { quantities } = reconcileDraft(draft, new Set(items.map(i => i.id)));
+    return { ...base, ...quantities };
+  });
   const isSignedItem = (item: any) => isProposalSigned ? isPersistedSelected(item) : selectedIds.has(item.id);
 
   // Re-sync when items prop changes (e.g. after admin edit / refresh)
   useEffect(() => {
-    setClientQty(Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1])));
-    setSelectedIds(new Set(isProposalSigned ? items.filter(isPersistedSelected).map(i => i.id) : []));
-  }, [items, isProposalSigned]);
+    const base = Object.fromEntries(items.map(i => [i.id, Number(i.quantity) || 1]));
+    if (isProposalSigned) {
+      setClientQty(base);
+      setSelectedIds(new Set(items.filter(isPersistedSelected).map(i => i.id)));
+      return;
+    }
+    // Re-reconcile against the revised item list rather than clearing: an admin
+    // edit should drop removed lines, not the client's whole working set.
+    const validIds = new Set(items.map(i => i.id));
+    const draft = loadDraft(proposal.token);
+    const reconciled = draft ? reconcileDraft(draft, validIds) : null;
+    setClientQty(reconciled ? { ...base, ...reconciled.quantities } : base);
+    setSelectedIds(prev => {
+      const kept = Array.from(prev).filter(id => validIds.has(id));
+      if (kept.length > 0 || !reconciled) return new Set(kept);
+      return new Set(reconciled.selectedIds);
+    });
+  }, [items, isProposalSigned, proposal.token]);
+
+  // Persist the working set as it changes (unsigned, client-facing view only).
+  useEffect(() => {
+    if (isAdmin || signed || isProposalSigned) return;
+    saveDraft(proposal.token, selectedIds, clientQty);
+  }, [selectedIds, clientQty, isAdmin, signed, isProposalSigned, proposal.token]);
 
 
   const isClientEditable = !isAdmin && !signed;
@@ -213,6 +246,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
       });
       if (error) throw error;
       setSigned(true);
+      clearDraft(proposal.token);
       toast({ title: 'Proposal accepted!', description: 'Thank you for signing.' });
 
       // Notify admin via email
