@@ -28,10 +28,10 @@ const IMG = {
   tvNetwork: '/creative-guide/services/tv-network-still.jpg',
   presentation: '/creative-guide/services/presentation-takeover.jpg',
   marquee: '/creative-guide/services/marquee-exterior.jpg',
-  elevatorInterior: '/creative-guide/services/elevator-interior.jpg',
-  elevatorDisplay: '/creative-guide/services/elevator-display-600x800.jpg',
+  elevatorInterior: '/creative-guide/elevator/interior.jpg',
+  elevatorDisplay: '/creative-guide/elevator/display-600x800.jpg',
 } as const;
-const ELEVATOR_LOOP_URL = '/creative-guide/Elevator_Still_Soleia.mp4';
+const ELEVATOR_LOOP_URL = '/creative-guide/elevator/loop.mp4';
 // The logo animation itself (background-examples segment of the explainer),
 // trimmed for a clean loop. Tapping the card opens the full explainer.
 const TRANSPARENT_LOOP_URL = '/creative-guide/services/transparent-logo-loop.mp4';

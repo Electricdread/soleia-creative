@@ -15,7 +15,7 @@ import solIcon from '@/assets/sol-icon.png';
 
 const LED_PIXELMAP_IMAGE = '/creative-guide/led-main-interior-pixelmap.png';
 const LED_AE_TEMPLATE_ZIP = 'https://rszawchsbpsmtrtvljta.supabase.co/storage/v1/object/public/creative-guide-template/CREATIVE_GUIDE_June2026_Soleia.zip';
-const ELEVATOR_PIXELMAP_IMAGE = '/creative-guide/elevator-pixelmap.png';
+const ELEVATOR_PIXELMAP_IMAGE = '/creative-guide/elevator/mapping-card-600x800.png';
 const TV_PIXELMAP_IMAGE = '/creative-guide/tv-pixelmap.png';
 const RESOLUME_URL = 'https://www.resolume.com';
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';

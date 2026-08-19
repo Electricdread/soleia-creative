@@ -5,9 +5,9 @@ import { Reveal } from '@/components/motion/Reveal';
 import solIcon from '@/assets/sol-icon.png';
 
 // Asset paths shared with the services page.
-const INTERIOR_IMG = '/creative-guide/services/elevator-interior.jpg';
-const MAPPING_CARD_IMG = '/creative-guide/elevator-pixelmap.png';
-const ELEVATOR_LOOP_URL = '/creative-guide/Elevator_Still_Soleia.mp4';
+const INTERIOR_IMG = '/creative-guide/elevator/interior.jpg';
+const MAPPING_CARD_IMG = '/creative-guide/elevator/mapping-card-600x800.png';
+const ELEVATOR_LOOP_URL = '/creative-guide/elevator/loop.mp4';
 
 // Official delivery spec (source: Creative Guide — Elevator Displays).
 const VIDEO_SPECS: [string, string][] = [
@@ -142,7 +142,7 @@ export default function ElevatorDisplayGuide() {
               <div className="flex flex-1 items-center justify-center bg-black/40 p-8">
                 <video
                   src={ELEVATOR_LOOP_URL}
-                  poster="/creative-guide/services/elevator-display-600x800.jpg"
+                  poster="/creative-guide/elevator/loop-poster.jpg"
                   className="aspect-[3/4] max-h-[520px] w-auto rounded-lg border border-primary/30 object-cover shadow-[0_0_34px_-6px_hsl(var(--primary)/0.35)]"
                   autoPlay
                   loop
