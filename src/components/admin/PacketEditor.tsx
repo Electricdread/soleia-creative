@@ -40,7 +40,7 @@ interface Props {
   onSaved: () => void;
 }
 
-const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide';
+const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide/services';
 
 const fullDefault = (): PacketRecord => ({
   title: 'Soleia Pre-Call Packet',

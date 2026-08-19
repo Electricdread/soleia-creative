@@ -12,10 +12,12 @@ import solIcon from '@/assets/sol-icon.png';
  * already on that page or on a sub-page, with ScrollToTop handling the scroll.
  */
 const NAV_LINKS: { label: string; to: string }[] = [
-  { to: '/creative-guide#venue', label: 'Venue' },
-  { to: '/creative-guide#layout', label: 'Layout' },
+  // Services leads: it is what a client is deciding on. The 360° tour sells
+  // the room next, and the technical detail follows for whoever needs it.
   { to: '/creative-guide/services', label: 'Services' },
   { to: '/creative-guide#tour', label: '360° Tour' },
+  { to: '/creative-guide#venue', label: 'Venue' },
+  { to: '/creative-guide#layout', label: 'Layout' },
   { to: '/creative-guide/video-mapping', label: 'Video Mapping' },
   { to: '/creative-guide#branding', label: 'Branding' },
   { to: '/creative-guide#specs', label: 'Specs' },
