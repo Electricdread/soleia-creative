@@ -35,17 +35,24 @@ export function answeredCount(b: CreativeBriefRow): number {
   ].filter((v) => String(v ?? '').trim().length > 0).length;
 }
 
-export async function fetchBriefsForLinks(linkIds: string[]): Promise<Record<string, CreativeBriefRow>> {
-  if (linkIds.length === 0) return {};
-  const { data } = await supabase.from('creative_briefs').select('*').in('client_link_id', linkIds);
+export async function fetchBriefsForLinks(sessionIds: string[]): Promise<Record<string, CreativeBriefRow>> {
+  if (sessionIds.length === 0) return {};
+  const { data } = await supabase
+    .from('creative_briefs')
+    .select('*')
+    .in('creative_session_id', sessionIds);
   const map: Record<string, CreativeBriefRow> = {};
-  for (const row of data || []) map[row.client_link_id] = row;
+  for (const row of (data ?? []) as CreativeBriefRow[]) map[row.creative_session_id] = row;
   return map;
 }
 
-export async function fetchBriefForLink(linkId: string): Promise<CreativeBriefRow | null> {
-  const { data } = await supabase.from('creative_briefs').select('*').eq('client_link_id', linkId).maybeSingle();
-  return data ?? null;
+export async function fetchBriefForLink(sessionId: string): Promise<CreativeBriefRow | null> {
+  const { data } = await supabase
+    .from('creative_briefs')
+    .select('*')
+    .eq('creative_session_id', sessionId)
+    .maybeSingle();
+  return (data as CreativeBriefRow | null) ?? null;
 }
 
 /**
