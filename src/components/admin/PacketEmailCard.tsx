@@ -50,6 +50,8 @@ function packetCopy(f: PacketEmailFields) {
       primaryLabel: 'Open Your Packet',
       driveLabel: 'Open Your Project Folder',
       eyebrow: 'Creative Packet & Proposal',
+      closing: 'Any questions on the services or the proposal, just reply to this email.',
+      banner: 'Everything below is ready for your review.',
     };
   }
 
@@ -63,6 +65,8 @@ function packetCopy(f: PacketEmailFields) {
         primaryLabel: 'Open Your Packet',
         driveLabel: 'Upload Your Assets',
         eyebrow: 'Post-Call Packet',
+        closing: 'Any questions as you pull your assets together, just reply to this email.',
+        banner: 'Asset deadlines and delivery dates are in your packet.',
       };
     case 'custom':
     case 'creative_pre_call':
@@ -74,6 +78,8 @@ function packetCopy(f: PacketEmailFields) {
         primaryLabel: 'Open Your Packet',
         driveLabel: 'Upload Your Assets',
         eyebrow: 'Creative Packet',
+        closing: 'Any questions, just reply to this email.',
+        banner: 'Please review the materials below.',
       };
     default:
       return {
@@ -84,6 +90,8 @@ function packetCopy(f: PacketEmailFields) {
         primaryLabel: 'Open Your Packet',
         driveLabel: 'Open Your Project Folder',
         eyebrow: 'Pre-Call Packet',
+        closing: "If you have any questions ahead of our call, just reply to this email — we're here to help.",
+        banner: 'Please review the materials below ahead of our call.',
       };
   }
 }
@@ -96,7 +104,7 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
         <tr>
           <td style="background-color:#fdf6e3;border:2px solid #DAA520;padding:18px 20px;text-align:center;">
             <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#1a1a1a;">&#128197; Event Date: ${formatDate(f.eventDate)}</p>
-            <p style="margin:0;font-size:14px;color:#555555;">Please review the materials below ahead of our call.</p>
+            <p style="margin:0;font-size:14px;color:#555555;">${c.banner}</p>
           </td>
         </tr>
       </table>`
@@ -184,7 +192,7 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
             </table>
 
             <p style="font-size:15px;line-height:1.7;color:#333333;margin:28px 0 0;">
-              If you have any questions ahead of our call, just reply to this email — we're here to help.
+              ${c.closing}
             </p>
           </td>
         </tr>
@@ -205,7 +213,7 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
 }
 
 function buildPacketEmailText(f: PacketEmailFields) {
-  const { intro, primaryLabel, driveLabel } = packetCopy(f);
+  const { intro, primaryLabel, driveLabel, closing } = packetCopy(f);
   const dateLine = f.eventDate ? `Event Date: ${formatDate(f.eventDate)}\n\n` : '';
   const drive = f.driveUrl ? `\n\n${driveLabel}: ${f.driveUrl}` : '';
   const proposal = f.proposalUrl ? `\n\nReview & Sign Your Proposal: ${f.proposalUrl}` : '';
@@ -215,7 +223,7 @@ ${dateLine}${intro}
 
 ${primaryLabel}: ${f.packetUrl}${drive}${proposal}
 
-If you have any questions ahead of our call, just reply to this email — we're here to help.
+${closing}
 
 — Soleia Creative Team`;
 }

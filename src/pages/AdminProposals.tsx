@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, RotateCcw } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, RotateCcw, PackageOpen } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -17,6 +17,7 @@ import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import ProposalSessionLinker from '@/components/admin/ProposalSessionLinker';
+import PacketProposalSendDialog from '@/components/admin/PacketProposalSendDialog';
 import { format } from 'date-fns';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
@@ -76,6 +77,7 @@ export default function AdminProposals() {
   const [saving, setSaving] = useState(false);
   const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
   const [emailCopying, setEmailCopying] = useState<string | null>(null);
+  const [packetSendProposal, setPacketSendProposal] = useState<ProposalRow | null>(null);
   const [folderGenerating, setFolderGenerating] = useState<string | null>(null);
 
   useEffect(() => {
@@ -704,6 +706,9 @@ luisdreamslv@gmail.com`;
                   <Button variant="ghost" size="icon" onClick={() => openInMailApp(p)} title="Open in Mail app (recommended on mobile)" className="text-muted-foreground hover:text-foreground">
                     <ExternalLink className="w-4 h-4 rotate-45" />
                   </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setPacketSendProposal(p)} title="Send with a creative packet (one email)" className="text-muted-foreground hover:text-foreground">
+                    <PackageOpen className="w-4 h-4" />
+                  </Button>
                   <Button variant="ghost" size="sm" title="Copy link" onClick={() => copyLink(p.token)} className="text-muted-foreground hover:text-foreground gap-1 h-9 px-2 text-xs">
                     <Link2 className="w-4 h-4" /> Copy Link
                   </Button>
@@ -730,6 +735,12 @@ luisdreamslv@gmail.com`;
         </>
         )}
       </main>
+
+      <PacketProposalSendDialog
+        open={!!packetSendProposal}
+        onOpenChange={(o) => { if (!o) setPacketSendProposal(null); }}
+        proposal={packetSendProposal}
+      />
 
       {linkerProposal && (
         <ProposalSessionLinker
