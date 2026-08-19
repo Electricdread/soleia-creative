@@ -45,77 +45,89 @@ function packetCopy(f: PacketEmailFields) {
   const withProposal = Boolean(f.proposalUrl);
   const withPriceSheet = Boolean(f.priceSheetUrl);
 
-  if (withProposal) {
-    return {
-      title: 'Your Creative Packet & Proposal',
-      intro:
-        'Great meeting you today. Everything we covered is here: your Soleia creative guide ' +
-        'packet, and your proposal with the additional services we discussed. Review the ' +
-        'services in the guide, then open the proposal to select the line items you want and ' +
-        'sign off when you are ready.',
-      primaryLabel: 'Open Your Packet',
-      driveLabel: 'Open Your Project Folder',
-      eyebrow: 'Creative Packet & Proposal',
-      closing: 'Any questions on the services or the proposal, just reply to this email.',
-      banner: 'Everything below is ready for your review.',
-    };
-  }
+  // The packet kind owns the timeline — whether the creative call has happened
+  // yet. Attachments only add content; they must never imply a meeting that has
+  // not taken place, which is why they are layered on rather than replacing it.
+  const base = (() => {
+    switch (f.kind) {
+      case 'post_call':
+        return {
+          title: 'Your Post-Call Packet',
+          lead:
+            'Following our creative call — the direction we agreed on is collected here, along ' +
+            'with your delivery schedule and a secure folder for your final assets.',
+          eyebrow: 'Post-Call Packet',
+          driveLabel: 'Upload Your Assets',
+          banner: 'Asset deadlines and delivery dates are in your packet.',
+          tail: 'as you pull your assets together',
+        };
+      case 'custom':
+      case 'creative_pre_call':
+        return {
+          title: 'Your Soleia Creative Packet',
+          lead:
+            'Your creative packet is ready. Review the Soleia Creative Guide for what we build ' +
+            'and how it maps to the venue, and upload your brand assets to your secure project folder.',
+          eyebrow: 'Creative Packet',
+          driveLabel: 'Upload Your Assets',
+          banner: 'Please review the materials below.',
+          tail: '',
+        };
+      default:
+        return {
+          title: 'Your Pre-Call Packet',
+          lead:
+            "Ahead of our creative call, we've prepared a private packet with everything you need — " +
+            'the Creative Guide, your Pixel Map reference, and a secure folder to upload your brand assets.',
+          eyebrow: 'Pre-Call Packet',
+          driveLabel: 'Open Your Project Folder',
+          banner: 'Please review the materials below ahead of our call.',
+          tail: 'ahead of our call',
+        };
+    }
+  })();
 
-  if (withPriceSheet) {
-    return {
-      title: 'Your Creative Packet & Price Sheet',
-      intro:
-        'Great meeting you today. Your Soleia creative guide packet is here, along with our ' +
-        'price sheet so you have a reference for the services we offer and what they cost. ' +
-        'Review the services in the guide, and let us know which direction you want to take — ' +
-        'we will put your proposal together from there.',
-      primaryLabel: 'Open Your Packet',
-      driveLabel: 'Open Your Project Folder',
-      eyebrow: 'Creative Packet & Price Sheet',
-      closing: 'Any questions on the services or pricing, just reply to this email.',
-      banner: 'Everything below is ready for your review.',
-    };
-  }
+  // Sentences appended for what rides along, phrased so they read correctly
+  // whether the call is still to come or already happened.
+  const priceSentence = withPriceSheet
+    ? ' Our price sheet is included as well, so you have a reference for the services we offer ' +
+      'and what they cost.'
+    : '';
+  const hasMet = f.kind === 'post_call';
+  const proposalSentence = withProposal
+    ? ` Your proposal is included with the additional services ${hasMet ? 'we discussed' : 'available'} — ` +
+      'open it to select the line items you want and sign off when you are ready.'
+    : '';
 
-  switch (f.kind) {
-    case 'post_call':
-      return {
-        title: 'Your Post-Call Packet',
-        intro:
-          'Following our creative call — the direction we agreed on is collected here, along ' +
-          'with your delivery schedule and a secure folder for your final assets.',
-        primaryLabel: 'Open Your Packet',
-        driveLabel: 'Upload Your Assets',
-        eyebrow: 'Post-Call Packet',
-        closing: 'Any questions as you pull your assets together, just reply to this email.',
-        banner: 'Asset deadlines and delivery dates are in your packet.',
-      };
-    case 'custom':
-    case 'creative_pre_call':
-      return {
-        title: 'Your Soleia Creative Packet',
-        intro:
-          'Your creative packet is ready. Review the Soleia Creative Guide for what we build ' +
-          'and how it maps to the venue, and upload your brand assets to your secure project folder.',
-        primaryLabel: 'Open Your Packet',
-        driveLabel: 'Upload Your Assets',
-        eyebrow: 'Creative Packet',
-        closing: 'Any questions, just reply to this email.',
-        banner: 'Please review the materials below.',
-      };
-    default:
-      return {
-        title: 'Your Pre-Call Packet',
-        intro:
-          "Ahead of our pre-call, we've prepared a private packet with everything you need — the " +
-          'Creative Guide, your Pixel Map reference, and a secure folder to upload your brand assets.',
-        primaryLabel: 'Open Your Packet',
-        driveLabel: 'Open Your Project Folder',
-        eyebrow: 'Pre-Call Packet',
-        closing: "If you have any questions ahead of our call, just reply to this email — we're here to help.",
-        banner: 'Please review the materials below ahead of our call.',
-      };
-  }
+  // Read as a list: "Packet & Price Sheet", or "Packet, Price Sheet & Proposal".
+  const extras = [withPriceSheet ? 'Price Sheet' : null, withProposal ? 'Proposal' : null].filter(
+    Boolean,
+  ) as string[];
+  const withExtras = (stem: string) =>
+    extras.length === 0
+      ? stem
+      : extras.length === 1
+        ? `${stem} & ${extras[0]}`
+        : `${stem}, ${extras.slice(0, -1).join(', ')} & ${extras[extras.length - 1]}`;
+
+  const closingSubject = withProposal
+    ? 'the services or the proposal'
+    : withPriceSheet
+      ? 'the services or pricing'
+      : 'anything';
+  const closing = base.tail
+    ? `Any questions on ${closingSubject} ${base.tail}, just reply to this email.`
+    : `Any questions on ${closingSubject}, just reply to this email.`;
+
+  return {
+    title: withExtras(base.title),
+    intro: base.lead + priceSentence + proposalSentence,
+    primaryLabel: 'Open Your Packet',
+    driveLabel: base.driveLabel,
+    eyebrow: withExtras(base.eyebrow),
+    closing,
+    banner: base.banner,
+  };
 }
 
 function buildPacketEmailHtml(f: PacketEmailFields) {
