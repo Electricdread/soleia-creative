@@ -10,6 +10,8 @@ interface ClientLink {
   event_name: string;
   event_date: string | null;
   is_active: boolean;
+  /** Whether the creative questionnaire is shown in this session. */
+  brief_enabled?: boolean;
 }
 
 interface SharedSelection {
