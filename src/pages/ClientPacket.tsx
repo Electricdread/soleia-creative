@@ -23,7 +23,25 @@ interface Packet {
   kind: 'pre_call' | 'creative_pre_call' | null;
 }
 
-const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide';
+const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide/services';
+
+/**
+ * Send the packet's guide button to Services.
+ *
+ * Packets created before Services became the entry point stored the guide root,
+ * which lands a client on the venue introduction and leaves them to find what
+ * they are actually deciding on. Existing rows are upgraded here at render, so
+ * live packet links behave correctly without rewriting stored data. A deliberate
+ * deep link — a specific section or sub-page — is left exactly as authored.
+ */
+function resolveGuideUrl(stored?: string | null): string {
+  const url = stored?.trim();
+  if (!url) return DEFAULT_GUIDE_URL;
+  // A hash or query means someone aimed at something specific — leave it be.
+  if (url.includes('#') || url.includes('?')) return url;
+  // Only the bare guide root (optionally with a trailing slash) is upgraded.
+  return /\/creative-guide\/?$/.test(url) ? DEFAULT_GUIDE_URL : url;
+}
 
 export default function ClientPacket() {
   const { token } = useParams<{ token: string }>();
@@ -73,7 +91,7 @@ export default function ClientPacket() {
     );
   }
 
-  const guideUrl = packet.creative_guide_url?.trim() || DEFAULT_GUIDE_URL;
+  const guideUrl = resolveGuideUrl(packet.creative_guide_url);
 
   return (
     <div className="panel-base min-h-screen bg-background">
