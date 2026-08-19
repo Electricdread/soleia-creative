@@ -8,7 +8,7 @@ import solIcon from '@/assets/sol-icon.png';
 const HERO_IMG = '/creative-guide/ticker/soleia-welcomes.jpg';
 const WORK_MAP = '/creative-guide/ticker/ticker-work-map-dark.png';
 const LOOP_URL = '/creative-guide/ticker/ticker-preview-loop.mp4';
-const LOOP_POSTER = '/creative-guide/services/marquee-exterior.jpg';
+const LOOP_POSTER = '/creative-guide/ticker/ticker-preview-poster.jpg';
 
 // Official mapping (source: Ticker work comp / DLV marquee pixelmap).
 const SIDES: [string, string][] = [
@@ -147,7 +147,7 @@ export default function TickerDisplayGuide() {
             <div className="border-t border-primary/15 p-6 sm:px-8">
               <h2 className="font-display text-xl text-foreground">Animation preview</h2>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                A branded ticker animation running the full wrap — designed as one continuous 3792 × 192 loop.
+                A client ticker animation running the full wrap — designed as one continuous 3792 × 192 loop across both sides.
               </p>
             </div>
           </article>
