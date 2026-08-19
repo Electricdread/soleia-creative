@@ -1,4 +1,4 @@
-import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
+import { sendEmail } from '../_shared/email-provider.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const MAX_RETRIES = 5
@@ -251,7 +251,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        await sendLovableEmail(
+        await sendEmail(
           {
             run_id: payload.run_id,
             to: payload.to,
@@ -266,9 +266,9 @@ Deno.serve(async (req) => {
             unsubscribe_token: payload.unsubscribe_token,
             message_id: payload.message_id,
           },
-          // sendUrl is optional — when LOVABLE_SEND_URL is not set, the library
-          // falls back to the default Lovable API endpoint (https://api.lovable.dev).
-          // Set LOVABLE_SEND_URL as a Supabase secret to override (e.g. for local dev).
+          // Provider is chosen by EMAIL_PROVIDER (default "lovable"). These
+          // options are only consulted on the Lovable path; sendUrl overrides
+          // its default endpoint (https://api.lovable.dev).
           { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
         )
 
