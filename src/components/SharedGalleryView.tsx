@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CreativeBrief from '@/components/creative/CreativeBrief';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { type ArtlistClip } from '@/lib/api/artlist';
 import { useToast } from '@/hooks/use-toast';
@@ -50,8 +49,6 @@ interface ClientLink {
   event_name: string;
   event_date: string | null;
   is_active: boolean;
-  /** Whether the creative questionnaire is shown in this session. */
-  brief_enabled?: boolean;
 }
 
 interface SharedSelection {
@@ -360,14 +357,6 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
               </motion.div>
             </div>
           </div>
-
-          {/* Creative brief — the client's own words on direction, before they
-              start picking clips. Only present when enabled for this session. */}
-          {clientLink.brief_enabled && (
-            <div className="mb-10 rounded-3xl border border-primary/15 bg-card/40 surface-elevated">
-              <CreativeBrief token={clientLink.token} eventName={clientLink.event_name} />
-            </div>
-          )}
 
           {/* Search Bar */}
           <div className="relative max-w-lg mx-auto">

@@ -11,14 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard, ClipboardList } from 'lucide-react';
+import { CalendarIcon, Copy, Link2, Trash2, ExternalLink, Users, Loader2, Video, ChevronDown, ChevronUp, FolderOpen, Globe, Lock, Clapperboard } from 'lucide-react';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { ClipSelector } from './ClipSelector';
 import { SessionUploadsViewer } from './SessionUploadsViewer';
 import { ContentPrevizManager } from './ContentPrevizManager';
 import { CountdownBadge } from '@/components/CountdownBadge';
-import { CreativeBriefViewer } from './CreativeBriefViewer';
-import { answeredCount, fetchBriefsForLinks, type CreativeBriefRow } from '@/lib/creativeBrief';
 
 interface ClientLink {
   id: string;
@@ -28,7 +26,6 @@ interface ClientLink {
   event_date: string | null;
   is_active: boolean;
   is_public: boolean;
-  brief_enabled: boolean;
   created_at: string;
   clip_count?: number;
   upload_count?: number;
@@ -47,8 +44,6 @@ export function ClientLinkManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [viewingUploadsFor, setViewingUploadsFor] = useState<{ id: string; name: string } | null>(null);
   const [viewingPrevizFor, setViewingPrevizFor] = useState<{ id: string; token: string; name: string } | null>(null);
-  const [viewingBriefFor, setViewingBriefFor] = useState<{ id: string; client: string; event: string } | null>(null);
-  const [briefs, setBriefs] = useState<Record<string, CreativeBriefRow>>({});
 
   // Generate a cryptographically secure unique token
   const generateToken = () => {
@@ -90,10 +85,6 @@ export function ClientLinkManager() {
       );
       
       setLinks(linksWithCounts);
-
-      // Whether a client has started their brief is the reason to open it, so
-      // load the answers alongside the links rather than on each card click.
-      setBriefs(await fetchBriefsForLinks(linksWithCounts.map((l) => l.id)));
     } catch (error: any) {
       console.error('Error fetching links:', error);
       toast({
@@ -215,31 +206,6 @@ export function ClientLinkManager() {
     toast({
       title: next ? 'Session activated' : 'Session deactivated',
       description: next ? 'Link is live for clients' : 'Link is no longer accessible',
-    });
-  };
-
-  // Show or hide the creative questionnaire inside a client's session.
-  const toggleBrief = async (id: string, current: boolean) => {
-    const next = !current;
-    const { error } = await supabase
-      .from('client_links')
-      .update({ brief_enabled: next })
-      .eq('id', id);
-
-    if (error) {
-      toast({
-        title: 'Failed to update questionnaire',
-        description: error.message,
-        variant: 'destructive',
-      });
-      return;
-    }
-    setLinks(prev => prev.map(l => l.id === id ? { ...l, brief_enabled: next } : l));
-    toast({
-      title: next ? 'Creative brief added to session' : 'Creative brief hidden',
-      description: next
-        ? 'The client now sees the questionnaire in their session.'
-        : 'Their answers are kept, just no longer shown.',
     });
   };
 
@@ -494,49 +460,6 @@ export function ClientLinkManager() {
                         {link.upload_count} uploads
                       </span>
                     )}
-                    {briefs[link.id] && (
-                      <span className={cn(
-                        "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full",
-                        briefs[link.id].submitted_at
-                          ? "bg-emerald-500/10 text-emerald-500"
-                          : "bg-primary/10 text-primary"
-                      )}>
-                        <ClipboardList className="w-3 h-3" />
-                        {briefs[link.id].submitted_at
-                          ? 'Brief sent'
-                          : `Brief ${answeredCount(briefs[link.id])}/7`}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Creative questionnaire — an opt-in per session, since not
-                      every client gets one. */}
-                  <div className="flex items-center justify-between gap-3 mb-3 px-3 py-2 rounded-lg bg-secondary/40 border border-border/50">
-                    <label className="flex items-center gap-2.5 cursor-pointer min-w-0">
-                      <Switch
-                        checked={link.brief_enabled}
-                        onCheckedChange={() => toggleBrief(link.id, link.brief_enabled)}
-                      />
-                      <span className="min-w-0">
-                        <span className="block text-xs font-medium text-foreground">Creative brief</span>
-                        <span className="block text-[11px] text-muted-foreground truncate">
-                          {link.brief_enabled
-                            ? 'Questionnaire shown in their session'
-                            : 'Add the questionnaire to this session'}
-                        </span>
-                      </span>
-                    </label>
-                    {briefs[link.id] && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setViewingBriefFor({ id: link.id, client: link.client_name, event: link.event_name })}
-                        className="gap-1.5 shrink-0"
-                      >
-                        <ClipboardList className="w-3.5 h-3.5" />
-                        View answers
-                      </Button>
-                    )}
                   </div>
 
                   {/* Action row */}
@@ -615,17 +538,6 @@ export function ClientLinkManager() {
             />
           </div>
         </div>
-      )}
-
-      {/* Creative Brief Viewer */}
-      {viewingBriefFor && (
-        <CreativeBriefViewer
-          linkId={viewingBriefFor.id}
-          clientName={viewingBriefFor.client}
-          eventName={viewingBriefFor.event}
-          open
-          onOpenChange={(next) => { if (!next) setViewingBriefFor(null); }}
-        />
       )}
 
       {/* Previz Manager Modal */}
