@@ -9,7 +9,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
-export type PacketKind = 'pre_call' | 'creative_pre_call';
+export type PacketKind = 'pre_call' | 'post_call' | 'custom' | 'creative_pre_call';
+
+/** The three versions offered for new packets. */
+export const PACKET_KINDS = ['pre_call', 'post_call', 'custom'] as const;
+
+export const PACKET_KIND_LABEL: Record<PacketKind, string> = {
+  pre_call: 'Pre-Call Packet',
+  post_call: 'Post-Call Packet',
+  custom: 'Custom Packet',
+  // Retained so existing rows render; not offered for new packets.
+  creative_pre_call: 'Custom Packet (legacy)',
+};
+
+/**
+ * Drive layout per version. Pre-call ships the full guide build so a client can
+ * prepare; post-call assumes that groundwork is done and collects the assets
+ * plus the agreed direction; custom starts from the full build and is edited.
+ */
+export const PACKET_FOLDER_MODE: Record<PacketKind, 'full' | 'asset_only'> = {
+  pre_call: 'full',
+  post_call: 'asset_only',
+  custom: 'full',
+  creative_pre_call: 'asset_only',
+};
 
 export interface PacketInclusion {
   heading: string;
@@ -81,7 +104,53 @@ const creativeDefault = (): PacketRecord => ({
   kind: 'creative_pre_call',
 });
 
-const defaultFor = (k: PacketKind) => (k === 'creative_pre_call' ? creativeDefault() : fullDefault());
+const postCallDefault = (): PacketRecord => ({
+  title: 'Soleia Post-Call Packet',
+  client_name: '',
+  event_date: '',
+  intro:
+    'Following our creative call — everything discussed is collected here. The shared Google ' +
+    'Drive folder (created on save) is where your final assets go: logos, brand files, fonts ' +
+    'and any footage we agreed you would supply. Final creative is delivered no later than ' +
+    '21 business days before your event.',
+  inclusions: [
+    { heading: 'Agreed Creative Direction', body: 'The direction confirmed on our call, so the whole team is building against the same brief.' },
+    { heading: 'Client Asset Collect', body: 'Upload logos (vector preferred), brand colors, fonts, photography and any reference films to the shared Drive folder.' },
+    { heading: 'Delivery Schedule', body: 'Asset deadlines and the delivery dates that keep your content on the wall for show day.' },
+  ],
+  scope:
+    'Production of the creative direction agreed on our call. Asset preparation, pixel-perfect mapping, encoding and onsite playback are included. Final assets due 21 business days before show date.',
+  notes: '',
+  creative_guide_url: DEFAULT_GUIDE_URL,
+  kind: 'post_call',
+});
+
+const customDefault = (): PacketRecord => ({
+  title: 'Soleia Creative Packet',
+  client_name: '',
+  event_date: '',
+  intro:
+    'This packet collects everything your event needs from the Soleia creative team. Review the ' +
+    'Creative Guide using the button below, and use the shared Google Drive folder (created on ' +
+    'save) for your brand assets. Final creative is delivered no later than 21 business days ' +
+    'before your event.',
+  inclusions: [
+    { heading: 'Soleia Creative Guide', body: 'Our living technical & creative reference covering the venue, LED canvas, motion graphics standards and delivery specs.' },
+    { heading: 'Client Asset Collect', body: 'Upload logos (vector preferred), brand colors, fonts, photography and any reference films to the shared Drive folder.' },
+  ],
+  scope:
+    'Scope as agreed for this event. Creative direction, asset preparation, pixel-perfect mapping, encoding and onsite playback as specified.',
+  notes: '',
+  creative_guide_url: DEFAULT_GUIDE_URL,
+  kind: 'custom',
+});
+
+const defaultFor = (k: PacketKind): PacketRecord => {
+  if (k === 'post_call') return postCallDefault();
+  if (k === 'custom') return customDefault();
+  if (k === 'creative_pre_call') return creativeDefault();
+  return fullDefault();
+};
 
 export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', onSaved }: Props) {
   const { user } = useAuth();
@@ -149,7 +218,7 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
 
     if (saved?.id && saved?.client_name && !saved?.drive_folder_url) {
       try {
-        const folderMode = saved.kind === 'creative_pre_call' ? 'asset_only' : 'full';
+        const folderMode = PACKET_FOLDER_MODE[(saved.kind as PacketKind) ?? 'pre_call'] ?? 'full';
         const { data: fnData, error: fnErr } = await supabase.functions.invoke('create-client-drive-folder', {
           body: { packet_id: saved.id, folder_mode: folderMode },
         });
@@ -166,7 +235,7 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
     onOpenChange(false);
   };
 
-  const titleLabel = effectiveKind === 'creative_pre_call' ? 'Pre-Call Creative Packet' : 'Pre-Call Packet';
+  const titleLabel = PACKET_KIND_LABEL[effectiveKind] ?? 'Creative Packet';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -6,10 +6,12 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 
-export type PacketEmailKind = 'pre_call' | 'creative_pre_call';
+export type PacketEmailKind = 'pre_call' | 'post_call' | 'custom' | 'creative_pre_call';
 
 interface PacketEmailFields {
   kind: PacketEmailKind;
+  /** Set when the packet is sent together with a proposal / price sheet. */
+  proposalUrl?: string;
   clientName: string;
   eventDate?: string | null;
   packetUrl: string;
@@ -27,14 +29,68 @@ function formatDate(d?: string | null) {
   }
 }
 
+/**
+ * Wording per packet version. Written in the Soleia voice: state what the
+ * packet is and what the client needs to do, without scene-setting.
+ *
+ * When a proposal accompanies the packet the opening changes to follow the
+ * meeting it came out of, and the proposal becomes the second call to action.
+ */
+function packetCopy(f: PacketEmailFields) {
+  const withProposal = Boolean(f.proposalUrl);
+
+  if (withProposal) {
+    return {
+      title: 'Your Creative Packet & Proposal',
+      intro:
+        'Great meeting you today. Everything we covered is here: your Soleia creative guide ' +
+        'packet, and your proposal with the additional services we discussed. Review the ' +
+        'services in the guide, then open the proposal to select the line items you want and ' +
+        'sign off when you are ready.',
+      primaryLabel: 'Open Your Packet',
+      driveLabel: 'Open Your Project Folder',
+      eyebrow: 'Creative Packet & Proposal',
+    };
+  }
+
+  switch (f.kind) {
+    case 'post_call':
+      return {
+        title: 'Your Post-Call Packet',
+        intro:
+          'Following our creative call — the direction we agreed on is collected here, along ' +
+          'with your delivery schedule and a secure folder for your final assets.',
+        primaryLabel: 'Open Your Packet',
+        driveLabel: 'Upload Your Assets',
+        eyebrow: 'Post-Call Packet',
+      };
+    case 'custom':
+    case 'creative_pre_call':
+      return {
+        title: 'Your Soleia Creative Packet',
+        intro:
+          'Your creative packet is ready. Review the Soleia Creative Guide for what we build ' +
+          'and how it maps to the venue, and upload your brand assets to your secure project folder.',
+        primaryLabel: 'Open Your Packet',
+        driveLabel: 'Upload Your Assets',
+        eyebrow: 'Creative Packet',
+      };
+    default:
+      return {
+        title: 'Your Pre-Call Packet',
+        intro:
+          "Ahead of our pre-call, we've prepared a private packet with everything you need — the " +
+          'Creative Guide, your Pixel Map reference, and a secure folder to upload your brand assets.',
+        primaryLabel: 'Open Your Packet',
+        driveLabel: 'Open Your Project Folder',
+        eyebrow: 'Pre-Call Packet',
+      };
+  }
+}
+
 function buildPacketEmailHtml(f: PacketEmailFields) {
-  const isCreative = f.kind === 'creative_pre_call';
-  const title = isCreative ? 'Your Creative Pre-Call Packet' : 'Your Pre-Call Packet';
-  const intro = isCreative
-    ? `Ahead of our creative call, please review the Soleia Creative Guide and upload your brand assets to your secure project folder.`
-    : `Ahead of our pre-call, we've prepared a private packet with everything you need — the Creative Guide, your Pixel Map reference, and a secure folder to upload your brand assets.`;
-  const primaryLabel = isCreative ? 'Open the Soleia Creative Guide' : 'Open Your Packet';
-  const driveLabel = isCreative ? 'Upload Your Assets' : 'Open Your Project Folder';
+  const c = packetCopy(f);
+  const { title, intro, primaryLabel, driveLabel } = c;
   const eventBanner = f.eventDate
     ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
         <tr>
@@ -69,7 +125,7 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
         <tr>
           <td style="background-color:#111111;padding:40px 24px;text-align:center;">
             <img src="${LOGO_URL}" alt="Soleia Las Vegas" width="180" style="display:block;height:60px;width:auto;margin:0 auto;border:0;outline:none;text-decoration:none;" />
-            <p style="margin:18px 0 0;font-size:12px;color:#DAA520;letter-spacing:3px;text-transform:uppercase;">${isCreative ? 'Creative Pre-Call' : 'Pre-Call Packet'}</p>
+            <p style="margin:18px 0 0;font-size:12px;color:#DAA520;letter-spacing:3px;text-transform:uppercase;">${c.eyebrow}</p>
           </td>
         </tr>
 
@@ -97,6 +153,21 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
                 </td>
               </tr>
             </table>
+
+            ${f.proposalUrl ? `
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td align="center" style="padding:0 0 12px;">
+                  <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                    <tr>
+                      <td style="background-color:#111111;border:2px solid #B8860B;border-radius:8px;padding:13px 34px;text-align:center;">
+                        <a href="${f.proposalUrl}" target="_blank" style="display:inline-block;color:#DAA520;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.5px;">Review &amp; Sign Your Proposal</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>` : ''}
 
             ${driveBlock}
 
@@ -134,17 +205,15 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
 }
 
 function buildPacketEmailText(f: PacketEmailFields) {
-  const isCreative = f.kind === 'creative_pre_call';
-  const intro = isCreative
-    ? `Ahead of our creative call, please review the Soleia Creative Guide and upload your brand assets to your secure project folder.`
-    : `Ahead of our pre-call, we've prepared a private packet with everything you need — the Creative Guide, your Pixel Map reference, and a secure folder to upload your brand assets.`;
+  const { intro, primaryLabel, driveLabel } = packetCopy(f);
   const dateLine = f.eventDate ? `Event Date: ${formatDate(f.eventDate)}\n\n` : '';
-  const drive = f.driveUrl ? `\n\n${isCreative ? 'Upload Your Assets' : 'Open Your Project Folder'}: ${f.driveUrl}` : '';
+  const drive = f.driveUrl ? `\n\n${driveLabel}: ${f.driveUrl}` : '';
+  const proposal = f.proposalUrl ? `\n\nReview & Sign Your Proposal: ${f.proposalUrl}` : '';
   return `Hi${f.clientName ? ` ${f.clientName}` : ''},
 
 ${dateLine}${intro}
 
-${isCreative ? 'Open the Soleia Creative Guide' : 'Open Your Packet'}: ${f.packetUrl}${drive}
+${primaryLabel}: ${f.packetUrl}${drive}${proposal}
 
 If you have any questions ahead of our call, just reply to this email — we're here to help.
 
@@ -157,15 +226,18 @@ interface Props {
   eventDate?: string | null;
   packetUrl: string;
   driveUrl?: string | null;
+  /** Pass a proposal link to send the packet and price sheet as one email. */
+  proposalUrl?: string | null;
 }
 
-export function PacketEmailCard({ kind, clientName: initialName, eventDate, packetUrl, driveUrl }: Props) {
+export function PacketEmailCard({ kind, clientName: initialName, eventDate, packetUrl, driveUrl, proposalUrl }: Props) {
   const [clientName, setClientName] = useState(initialName ?? '');
   const [url, setUrl] = useState(packetUrl);
   const [drive, setDrive] = useState(driveUrl ?? '');
   const [date, setDate] = useState(eventDate ?? '');
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(true);
+  const [proposal, setProposal] = useState(proposalUrl ?? '');
 
   const fields: PacketEmailFields = {
     kind,
@@ -173,6 +245,7 @@ export function PacketEmailCard({ kind, clientName: initialName, eventDate, pack
     eventDate: date || null,
     packetUrl: url.trim(),
     driveUrl: drive.trim() || null,
+    proposalUrl: proposal.trim() || undefined,
   };
 
   const handleCopy = async () => {

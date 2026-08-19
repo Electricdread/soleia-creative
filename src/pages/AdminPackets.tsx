@@ -122,14 +122,17 @@ export default function AdminPackets() {
             <Button variant="ghost" size="sm" onClick={() => navigate('/admin')}>
               <ArrowLeft className="w-4 h-4 mr-2" /> Dashboard
             </Button>
-            <h1 className="font-display text-2xl text-foreground">Pre-Call Packets</h1>
+            <h1 className="font-display text-2xl text-foreground">Creative Packets</h1>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
             <Button variant="outline" onClick={() => openNewPacket('pre_call')}>
               <Plus className="w-4 h-4 mr-2" /> Pre-Call
             </Button>
-            <Button onClick={() => openNewPacket('creative_pre_call')}>
-              <Plus className="w-4 h-4 mr-2" /> Creative Packet
+            <Button variant="outline" onClick={() => openNewPacket('post_call')}>
+              <Plus className="w-4 h-4 mr-2" /> Post-Call
+            </Button>
+            <Button onClick={() => openNewPacket('custom')}>
+              <Plus className="w-4 h-4 mr-2" /> Custom
             </Button>
           </div>
         </div>
@@ -143,7 +146,7 @@ export default function AdminPackets() {
         ) : packets.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <p className="mb-4">No packets yet.</p>
-            <Button onClick={() => openNewPacket('creative_pre_call')}>
+            <Button onClick={() => openNewPacket('pre_call')}>
               <Plus className="w-4 h-4 mr-2" /> Create the first packet
             </Button>
           </div>
