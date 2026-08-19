@@ -351,7 +351,6 @@ export type Database = {
       }
       client_links: {
         Row: {
-          brief_enabled: boolean
           client_name: string
           created_at: string
           event_date: string | null
@@ -363,7 +362,6 @@ export type Database = {
           token: string
         }
         Insert: {
-          brief_enabled?: boolean
           client_name: string
           created_at?: string
           event_date?: string | null
@@ -375,7 +373,6 @@ export type Database = {
           token: string
         }
         Update: {
-          brief_enabled?: boolean
           client_name?: string
           created_at?: string
           event_date?: string | null
@@ -432,9 +429,9 @@ export type Database = {
       creative_briefs: {
         Row: {
           avoid: string | null
-          client_link_id: string
           color_scheme: string | null
           created_at: string
+          creative_session_id: string
           elevator_down: string | null
           elevator_mode: string | null
           elevator_up: string | null
@@ -449,9 +446,9 @@ export type Database = {
         }
         Insert: {
           avoid?: string | null
-          client_link_id: string
           color_scheme?: string | null
           created_at?: string
+          creative_session_id: string
           elevator_down?: string | null
           elevator_mode?: string | null
           elevator_up?: string | null
@@ -466,9 +463,9 @@ export type Database = {
         }
         Update: {
           avoid?: string | null
-          client_link_id?: string
           color_scheme?: string | null
           created_at?: string
+          creative_session_id?: string
           elevator_down?: string | null
           elevator_mode?: string | null
           elevator_up?: string | null
@@ -483,16 +480,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "creative_briefs_client_link_id_fkey"
-            columns: ["client_link_id"]
+            foreignKeyName: "creative_briefs_creative_session_id_fkey"
+            columns: ["creative_session_id"]
             isOneToOne: true
-            referencedRelation: "client_links"
+            referencedRelation: "creative_sessions"
             referencedColumns: ["id"]
           },
         ]
       }
       creative_sessions: {
         Row: {
+          brief_enabled: boolean
           circleback_summary: string | null
           circleback_url: string | null
           client_name: string
@@ -516,6 +514,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          brief_enabled?: boolean
           circleback_summary?: string | null
           circleback_url?: string | null
           client_name: string
@@ -539,6 +538,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          brief_enabled?: boolean
           circleback_summary?: string | null
           circleback_url?: string | null
           client_name?: string
@@ -1667,7 +1667,6 @@ export type Database = {
       get_client_link_by_token: {
         Args: { p_token: string }
         Returns: {
-          brief_enabled: boolean
           client_name: string
           created_at: string
           event_date: string | null
@@ -1689,9 +1688,9 @@ export type Database = {
         Args: { p_token: string }
         Returns: {
           avoid: string | null
-          client_link_id: string
           color_scheme: string | null
           created_at: string
+          creative_session_id: string
           elevator_down: string | null
           elevator_mode: string | null
           elevator_up: string | null
@@ -1940,9 +1939,9 @@ export type Database = {
         }
         Returns: {
           avoid: string | null
-          client_link_id: string
           color_scheme: string | null
           created_at: string
+          creative_session_id: string
           elevator_down: string | null
           elevator_mode: string | null
           elevator_up: string | null
