@@ -152,9 +152,9 @@ export default function ElevatorDisplayGuide() {
                 />
               </div>
               <div className="border-t border-primary/15 p-6 sm:px-8">
-                <h2 className="font-display text-xl text-foreground">Idle loop on the panel</h2>
+                <h2 className="font-display text-xl text-foreground">Mapping card in motion</h2>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  The house loop running at the display's native 600 × 800 mapping — what your content replaces.
+                  The same 600 × 800 canvas animated, so you can see how motion reads on the panel's portrait format.
                 </p>
               </div>
             </article>
