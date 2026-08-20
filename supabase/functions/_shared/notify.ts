@@ -48,8 +48,15 @@ export interface NotificationMessage {
 export interface DeliveryReport {
   delivered: string[];
   failed: { to: string; error: string }[];
-  /** True when the sandbox sender is in use, which caps delivery at the account owner. */
+  /**
+   * True when anything in this batch actually left over Resend's sandbox
+   * sender — whether because EMAIL_FROM is unset or because the configured
+   * domain was refused and the fallback caught it. Reported from what happened,
+   * not from configuration, so it can be trusted on its own.
+   */
   sandbox: boolean;
+  /** Recipients reached only because the sandbox fallback fired. */
+  sandboxFallback: string[];
 }
 
 /** Resend's wording when EMAIL_FROM points at a domain it has not verified yet. */
@@ -64,7 +71,12 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
 
   const configuredFrom = notifyFrom();
   const recipients = Array.from(new Set(msg.to.map((t) => t.trim()).filter(Boolean)));
-  const report: DeliveryReport = { delivered: [], failed: [], sandbox: usingSandboxSender() };
+  const report: DeliveryReport = {
+    delivered: [],
+    failed: [],
+    sandbox: usingSandboxSender(),
+    sandboxFallback: [],
+  };
 
   const post = (from: string, to: string) =>
     fetch('https://api.resend.com/emails', {
@@ -83,6 +95,7 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
     });
 
   for (const to of recipients) {
+    let viaFallback = false;
     try {
       let res = await post(configuredFrom, to);
 
@@ -94,6 +107,7 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
         const firstError = await res.text();
         if (isUnverifiedDomain(firstError)) {
           console.warn('Sending domain not verified — falling back to the sandbox sender', { to });
+          viaFallback = true;
           res = await post(SANDBOX_FROM, to);
           if (!res.ok) {
             const error = await res.text();
@@ -114,6 +128,10 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
       }
 
       report.delivered.push(to);
+      if (viaFallback) {
+        report.sandboxFallback.push(to);
+        report.sandbox = true;
+      }
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);
       console.error('Resend request failed', { to, from: configuredFrom, error });

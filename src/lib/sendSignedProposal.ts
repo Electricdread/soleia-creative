@@ -37,8 +37,10 @@ export interface SignedProposalTarget {
 export interface SignedProposalDelivery {
   delivered: string[];
   failed: { to: string; error: string }[];
-  /** True while Resend is on its sandbox sender, which only reaches the account owner. */
+  /** True when anything in this batch actually left over Resend's sandbox sender. */
   sandbox: boolean;
+  /** Recipients reached only because the sandbox fallback fired. */
+  sandboxFallback: string[];
 }
 
 export async function sendSignedProposalEmail(
@@ -94,5 +96,6 @@ export async function sendSignedProposalEmail(
     delivered: report.delivered || [],
     failed: report.failed || [],
     sandbox: Boolean(report.sandbox),
+    sandboxFallback: report.sandboxFallback || [],
   };
 }
