@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, RotateCcw, PackageOpen, MailCheck } from 'lucide-react';
+import { Settings, Plus, Trash2, Copy, ExternalLink, Loader2, ArrowLeft, Pencil, Library, Mail, Link2, Download, Printer, FolderPlus, Folder, RotateCcw, PackageOpen, MailCheck, Send } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -19,6 +19,7 @@ import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import ProposalSessionLinker from '@/components/admin/ProposalSessionLinker';
 import PacketProposalSendDialog from '@/components/admin/PacketProposalSendDialog';
 import ProposalReceivedDialog from '@/components/admin/ProposalReceivedDialog';
+import { sendSignedProposalEmail } from '@/lib/sendSignedProposal';
 import { format } from 'date-fns';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
@@ -80,6 +81,7 @@ export default function AdminProposals() {
   const [emailCopying, setEmailCopying] = useState<string | null>(null);
   const [packetSendProposal, setPacketSendProposal] = useState<ProposalRow | null>(null);
   const [receivedReplyProposal, setReceivedReplyProposal] = useState<ProposalRow | null>(null);
+  const [sendingPdf, setSendingPdf] = useState<string | null>(null);
   const [folderGenerating, setFolderGenerating] = useState<string | null>(null);
 
   useEffect(() => {
@@ -245,6 +247,36 @@ export default function AdminProposals() {
     await supabase.from('proposals').update({ status: 'sent' }).eq('id', id);
     fetchProposals();
     toast({ title: 'Proposal marked as sent' });
+  };
+
+  // Re-send the signed PDF. The signing flow mails it once; a PM assigned after
+  // the fact, or a copy that never arrived, has no other way to get it.
+  const sendSignedPdf = async (p: ProposalRow) => {
+    setSendingPdf(p.id);
+    try {
+      const report = await sendSignedProposalEmail(p);
+      if (report.delivered.length === 0) {
+        toast({
+          title: 'Nothing was delivered',
+          description: report.failed[0]?.error?.slice(0, 200) || 'Resend rejected every recipient.',
+          variant: 'destructive',
+        });
+      } else if (report.failed.length > 0) {
+        // Naming who missed out matters more than a tidy success message.
+        toast({
+          title: `Sent to ${report.delivered.join(', ')}`,
+          description: `Could not reach ${report.failed.map((f) => f.to).join(', ')}${
+            report.sandbox ? ' — verify your domain in Resend to send outside your own inbox.' : '.'
+          }`,
+        });
+      } else {
+        toast({ title: 'Signed proposal sent', description: `Delivered to ${report.delivered.join(', ')}.` });
+      }
+    } catch (e: any) {
+      toast({ title: 'Could not send', description: String(e?.message || e), variant: 'destructive' });
+    } finally {
+      setSendingPdf(null);
+    }
   };
 
   // Reopening keeps the client's line-item selection and re-activates the link,
@@ -677,6 +709,19 @@ luisdreamslv@gmail.com`;
                     >
                       <MailCheck className="w-4 h-4" />
                       Reply
+                    </Button>
+                  )}
+                  {p.signed_at && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={sendingPdf === p.id}
+                      onClick={() => sendSignedPdf(p)}
+                      title="Email the signed PDF to the client, the assigned PM and the studio"
+                      className="gap-1.5 text-muted-foreground hover:text-foreground text-xs"
+                    >
+                      {sendingPdf === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      Send PDF
                     </Button>
                   )}
                   {p.signed_at && (
