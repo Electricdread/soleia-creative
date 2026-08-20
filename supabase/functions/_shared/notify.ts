@@ -56,42 +56,71 @@ export interface DeliveryReport {
   sandbox: boolean;
 }
 
+/** Resend's wording when EMAIL_FROM points at a domain it has not verified yet. */
+function isUnverifiedDomain(error: string): boolean {
+  return /domain is not verified/i.test(error);
+}
+
 /** Send one message per recipient so a rejected address cannot take the others with it. */
 export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport> {
   const apiKey = Deno.env.get('RESEND_API_KEY');
   if (!apiKey) throw new Error('RESEND_API_KEY not configured');
 
-  const from = notifyFrom();
+  const configuredFrom = notifyFrom();
   const recipients = Array.from(new Set(msg.to.map((t) => t.trim()).filter(Boolean)));
   const report: DeliveryReport = { delivered: [], failed: [], sandbox: usingSandboxSender() };
 
+  const post = (from: string, to: string) =>
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        subject: msg.subject,
+        html: msg.html,
+        ...(msg.attachments ? { attachments: msg.attachments } : {}),
+      }),
+    });
+
   for (const to of recipients) {
     try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from,
-          to: [to],
-          subject: msg.subject,
-          html: msg.html,
-          ...(msg.attachments ? { attachments: msg.attachments } : {}),
-        }),
-      });
+      let res = await post(configuredFrom, to);
 
-      if (res.ok) {
-        report.delivered.push(to);
-      } else {
+      // Pointing EMAIL_FROM at a domain before Resend has verified it would
+      // otherwise stop every notification, including the ones that were
+      // arriving before it was set. Fall back to the sandbox sender so the
+      // account owner still hears about it; other addresses fail either way.
+      if (!res.ok && configuredFrom !== SANDBOX_FROM) {
+        const firstError = await res.text();
+        if (isUnverifiedDomain(firstError)) {
+          console.warn('Sending domain not verified — falling back to the sandbox sender', { to });
+          res = await post(SANDBOX_FROM, to);
+          if (!res.ok) {
+            const error = await res.text();
+            console.error('Resend rejected a recipient', { to, from: SANDBOX_FROM, error });
+            report.failed.push({ to, error });
+            continue;
+          }
+        } else {
+          console.error('Resend rejected a recipient', { to, from: configuredFrom, error: firstError });
+          report.failed.push({ to, error: firstError });
+          continue;
+        }
+      } else if (!res.ok) {
         const error = await res.text();
-        console.error('Resend rejected a recipient', { to, from, error });
+        console.error('Resend rejected a recipient', { to, from: configuredFrom, error });
         report.failed.push({ to, error });
+        continue;
       }
+
+      report.delivered.push(to);
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);
-      console.error('Resend request failed', { to, from, error });
+      console.error('Resend request failed', { to, from: configuredFrom, error });
       report.failed.push({ to, error });
     }
   }
