@@ -303,7 +303,6 @@ const MotionGraphicsLookbook = () => {
             category: selectedCategory
           })),
           pdfBase64,
-          recipientEmail: 'ninemilelion@gmail.com'
         }
       });
       
@@ -311,7 +310,7 @@ const MotionGraphicsLookbook = () => {
       
       toast({
         title: "Email sent!",
-        description: `Your ${selectedClips.length} selections have been sent to ninemilelion@gmail.com`,
+        description: `Your ${selectedClips.length} selections have been sent to the Soleia creative team.`,
       });
       
       // Clear selections after successful send

@@ -122,7 +122,8 @@ const SharedSelectionsSummary: React.FC<SharedSelectionsSummaryProps> = ({
   const sendSelections = async () => {
     if (selections.length === 0) return;
     
-    const emailToSend = approverEmail.trim() || 'ninemilelion@gmail.com';
+    // send-selections-pdf routes to the studio itself; this is only echoed back.
+    const emailToSend = approverEmail.trim();
     
     setIsSendingEmail(true);
     

@@ -97,7 +97,8 @@ const SelectionsSummary: React.FC<SelectionsSummaryProps> = ({
   const sendSelections = async () => {
     if (selectedClips.length === 0) return;
     
-    const emailToSend = clientEmail.trim() || 'ninemilelion@gmail.com';
+    // send-selections-pdf routes to the studio itself; this is only echoed back.
+    const emailToSend = clientEmail.trim();
     
     setIsSendingEmail(true);
     
@@ -126,7 +127,9 @@ const SelectionsSummary: React.FC<SelectionsSummaryProps> = ({
       setEmailSent(true);
       toast({
         title: "Email sent!",
-        description: `Your ${selectedClips.length} selections have been sent to ${emailToSend}`,
+        description: emailToSend
+          ? `Your ${selectedClips.length} selections have been sent to ${emailToSend}`
+          : `Your ${selectedClips.length} selections have been sent to the Soleia creative team.`,
       });
     } catch (error: any) {
       console.error('Send error:', error);

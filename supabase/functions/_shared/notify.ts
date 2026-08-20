@@ -18,12 +18,8 @@
 
 const SANDBOX_FROM = 'Soleia Creative <onboarding@resend.dev>';
 
-// Both, deliberately. luisdreamslv@gmail.com is where notifications are meant
-// to land; ninemilelion@gmail.com owns the Resend account and is therefore the
-// only address the sandbox sender can reach. Keeping both means notifications
-// arrive whether or not the sending domain is verified yet, and sendEach posts
-// them separately so the reachable one is never held up by the other.
-const DEFAULT_ADMIN = 'luisdreamslv@gmail.com,ninemilelion@gmail.com';
+/** Where notifications land unless ADMIN_NOTIFY_EMAILS says otherwise. */
+const DEFAULT_ADMIN = 'luisdreamslv@gmail.com';
 
 export function notifyFrom(): string {
   return Deno.env.get('EMAIL_FROM')?.trim() || SANDBOX_FROM;
@@ -91,9 +87,9 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
       let res = await post(configuredFrom, to);
 
       // Pointing EMAIL_FROM at a domain before Resend has verified it would
-      // otherwise stop every notification, including the ones that were
-      // arriving before it was set. Fall back to the sandbox sender so the
-      // account owner still hears about it; other addresses fail either way.
+      // otherwise stop every notification. Fall back to the sandbox sender,
+      // which reaches the Resend account owner if that address is among the
+      // recipients; anything else fails either way and is reported.
       if (!res.ok && configuredFrom !== SANDBOX_FROM) {
         const firstError = await res.text();
         if (isUnverifiedDomain(firstError)) {
