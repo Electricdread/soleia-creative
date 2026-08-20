@@ -1,7 +1,5 @@
 import jsPDF from 'jspdf';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
-import { supabase } from '@/integrations/supabase/client';
-import { renderEditorialPages, type CategoryIntro, type EditorialTemplate } from './editorialServicesPages';
 
 
 const LOGO_ASPECT = 1006 / 345; // width / height
@@ -273,7 +271,8 @@ export async function generateProposalPdf(
   let y = 0;
 
   // === COVER PAGE (optional) ===
-  if (coverImageUrl) {
+  // Signed proposals are the agreement on its own — no cover, no appendices.
+  if (coverImageUrl && !signed) {
     await generateCoverPage(doc, proposal, coverImageUrl, grandTotal);
     doc.addPage();
   }
@@ -578,42 +577,8 @@ export async function generateProposalPdf(
     doc.text(`Signed on ${formatDate(proposal.signed_at.split('T')[0])}`, MARGIN + 10, y + 24);
   }
 
-  // === EDITORIAL SERVICES EXPLAINER PAGES ===
-  // Only attached to signed proposals (the countersigned packet clients keep).
-  // Draft/sent proposals stay a clean single-page quote.
-  try {
-    if (!signed) throw new Error('skip appendix for unsigned proposal');
-    // Use SECURITY DEFINER RPCs so this works for anon/token-based client
-    // sessions when generating the signed-proposal PDF, not just admins.
-    const [tplRes, catRes] = await Promise.all([
-      supabase.rpc('get_rate_card_addons'),
-      supabase.rpc('get_rate_card_categories'),
-    ]);
-    let tpls = (tplRes.data || []) as EditorialTemplate[];
-    let cats = (catRes.data || []) as CategoryIntro[];
-    // Admin fallback: direct table read (RPC filters some items)
-    if (!tpls.length) {
-      const [tplFallback, catFallback] = await Promise.all([
-        supabase.from('line_item_templates').select('*'),
-        supabase.from('line_item_categories').select('*'),
-      ]);
-      tpls = (tplFallback.data || []) as EditorialTemplate[];
-      cats = (catFallback.data || []) as CategoryIntro[];
-    }
-    if (tpls.length) {
-      renderEditorialPages(doc, tpls, cats, {
-        sectionTitle: 'About Our Services',
-        sectionKicker: 'The Editorial Guide',
-        sectionStandfirst:
-          'A closer look at every service in our catalog. Consider this a companion to the scope on the previous pages \u2014 context, not additional charges.',
-      });
-    }
-  } catch {
-    // Non-fatal: skip editorial section if fetch fails
-  }
-
   // === REFERENCE IMAGES GRID PAGE ===
-  const images = galleryImages?.filter(g => g.image_url) || [];
+  const images = signed ? [] : (galleryImages?.filter(g => g.image_url) || []);
   if (images.length > 0) {
     doc.addPage();
 
