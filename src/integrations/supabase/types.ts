@@ -1246,6 +1246,47 @@ export type Database = {
           },
         ]
       }
+      proposal_signature_history: {
+        Row: {
+          client_signature: string
+          created_at: string
+          id: string
+          item_quantities: Json
+          proposal_id: string
+          selected_item_ids: string[]
+          signed_at: string
+          total: number | null
+        }
+        Insert: {
+          client_signature: string
+          created_at?: string
+          id?: string
+          item_quantities?: Json
+          proposal_id: string
+          selected_item_ids?: string[]
+          signed_at: string
+          total?: number | null
+        }
+        Update: {
+          client_signature?: string
+          created_at?: string
+          id?: string
+          item_quantities?: Json
+          proposal_id?: string
+          selected_item_ids?: string[]
+          signed_at?: string
+          total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_signature_history_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proposal_timeline: {
         Row: {
           created_at: string
@@ -1650,6 +1691,10 @@ export type Database = {
         Args: { p_items: Json }
         Returns: undefined
       }
+      capture_proposal_signature: {
+        Args: { p_proposal_id: string }
+        Returns: undefined
+      }
       claim_admin_role: { Args: { target_user_id: string }; Returns: boolean }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -1920,6 +1965,10 @@ export type Database = {
       }
       reset_proposal_signature: {
         Args: { p_proposal_id: string }
+        Returns: string
+      }
+      restore_proposal_signature: {
+        Args: { p_history_id: string }
         Returns: string
       }
       save_creative_brief_by_token: {
