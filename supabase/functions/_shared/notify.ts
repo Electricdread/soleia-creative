@@ -18,8 +18,12 @@
 
 const SANDBOX_FROM = 'Soleia Creative <onboarding@resend.dev>';
 
-/** The address that owns the Resend account, and so the one the sandbox sender can always reach. */
-const DEFAULT_ADMIN = 'ninemilelion@gmail.com';
+// Both, deliberately. luisdreamslv@gmail.com is where notifications are meant
+// to land; ninemilelion@gmail.com owns the Resend account and is therefore the
+// only address the sandbox sender can reach. Keeping both means notifications
+// arrive whether or not the sending domain is verified yet, and sendEach posts
+// them separately so the reachable one is never held up by the other.
+const DEFAULT_ADMIN = 'luisdreamslv@gmail.com,ninemilelion@gmail.com';
 
 export function notifyFrom(): string {
   return Deno.env.get('EMAIL_FROM')?.trim() || SANDBOX_FROM;
