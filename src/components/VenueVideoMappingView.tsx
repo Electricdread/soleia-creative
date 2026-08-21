@@ -5,6 +5,7 @@ import { Reveal } from '@/components/motion/Reveal';
 import RoomScene from '@/components/venue/RoomScene';
 import VideoMapExplainer from '@/components/venue/VideoMapExplainer';
 import { supabase } from '@/integrations/supabase/client';
+import { ZONE_GROUPS } from '@/lib/venueSurfaces';
 import solIcon from '@/assets/sol-icon.png';
 // Note: intentionally NOT using Radix Popover here — it portals to document.body,
 // which becomes invisible when the room container enters fullscreen. We render a
@@ -15,35 +16,6 @@ import solIcon from '@/assets/sol-icon.png';
  * model of the venue with live previz (a mapped show played onto every screen).
  */
 
-const ZONE_GROUPS = [
-  {
-    group: 'Main Room — Interior LED',
-    note: 'The primary nightclub LED wall, left to right.',
-    zones: [
-      { name: 'SR Curves', res: '2304 × 272', role: 'Stage-right curved LED — wraparound ambient visuals and brand washes.' },
-      { name: 'IMAG SR', res: '1216 × 592', role: 'Stage-right vertical screen — directional branding and portrait content.' },
-      { name: 'Center', res: '640 × 272', role: 'Center focal screen — logo reveals and hero moments.' },
-      { name: 'IMAG SL', res: '1216 × 592', role: 'Stage-left vertical screen — directional branding and portrait content.' },
-      { name: 'SL Curves', res: '2304 × 272', role: 'Stage-left curved LED — wraparound ambient visuals and brand washes.' },
-    ],
-  },
-  {
-    group: 'Beach Club — Exterior LED',
-    note: 'Open-air screens facing the Las Vegas Strip.',
-    zones: [
-      { name: 'Outdoor SR', res: '588 × 840', role: 'Stage-right exterior tower — high-brightness arrival branding.' },
-      { name: 'Outdoor SL', res: '588 × 840', role: 'Stage-left exterior tower — high-brightness arrival branding.' },
-      { name: 'Outdoor Arch', res: '1512 × 504', role: 'Beachclub arch — immersive entry moment overlooking the Strip.' },
-    ],
-  },
-  {
-    group: 'TV Displays',
-    note: 'Narrowcasting network across the venue.',
-    zones: [
-      { name: 'TV / Narrowcasting', res: '1920×1080 or 3840×2160', role: 'Logos and sponsor messaging across front-door entry, cabanas and bungalows.' },
-    ],
-  },
-];
 
 export interface PrevizClipOption {
   id: string;

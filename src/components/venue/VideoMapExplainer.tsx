@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, RotateCcw } from 'lucide-react';
 
 /**
  * Soleia — LED Video Map Explainer.
@@ -13,6 +13,10 @@ const W = 1920, H = 1080;
 
 const HEAD = '"Archivo", Inter, system-ui, sans-serif';
 const LOGO = '/soleia-logo-black.png';
+// The real pixel-map artwork. Each panel shows its own crop of it, so the
+// colour blocks a client already recognises are the things that travel into
+// the room rather than a stand-in redrawn for the animation.
+const PIXELMAP_IMG = '/creative-guide/soleia-pixelmap.png';
 
 /* ---------- palettes ---------- */
 const DARK_PALETTE = {
@@ -119,7 +123,7 @@ const SCREENS: Screen[] = [
   })),
   { zone: 2, id: 'OUT_SR', map: [2322, 793, 588, 840], room: [1558, 448, 78, 126], ry: 12, label: 'Outdoor SR', logo: true },
   { zone: 2, id: 'OUT_SL', map: [2916, 793, 588, 840], room: [1774, 448, 78, 126], ry: -12, label: 'Outdoor SL', logo: true },
-  { zone: 2, id: 'ARCH', map: [2322, 1639, 1512, 504], room: [1636, 482, 158, 62], ry: 0, label: 'Outdoor Arch', logo: true },
+  { zone: 2, id: 'ARCH', map: [2322, 1639, 1512, 504], room: [1644, 486, 124, 58], ry: 0, label: 'Outdoor Arch', logo: true },
 ];
 
 const flowHead = () => 'linear-gradient(102deg,'
@@ -148,7 +152,7 @@ function Kicker({ children, color = P.INK, size = 24, style }: any) {
 const hash = (i: number, k: number) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
 const TRAIL_N = 260, TRAIL_SEG = 6;
 
-function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) {
+function FlowTrails({ M, fold, amp }: { M: number; fold: number; amp: number }) {
   const a = amp * (1 - clamp(fold * 1.6, 0, 1));
   if (a <= 0.01) return null;
   const FX = MX - 520, FY = MY + 1180;
@@ -158,9 +162,9 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
     const r = 700 + Math.pow(rr, 0.7) * 2100;
     const spd = (0.03 + hash(i, 2) * 0.052) * (1 - rr * 0.35);
     const len = (0.3 + hash(i, 3) * 0.42) * (1 - rr * 0.32);
-    const a0 = -0.75 + hash(i, 4) * 2.25 + T * spd;
+    const a0 = -0.75 + hash(i, 4) * 2.25 + M * spd;
     const col = P.TRAIL_COLORS[Math.floor(hash(i, 7) * P.TRAIL_COLORS.length)];
-    const wob = 1 + 0.05 * Math.sin(T * 0.42 + i * 1.7);
+    const wob = 1 + 0.05 * Math.sin(M * 0.42 + i * 1.7);
     const ry = r * 0.78 * wob, rx = r * wob;
     const wMax = 0.55 + hash(i, 5) * 0.95;
     const bright = 0.3 + hash(i, 6) * 0.7;
@@ -202,7 +206,7 @@ function FlowTrails({ T, fold, amp }: { T: number; fold: number; amp: number }) 
   );
 }
 
-function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
+function ScreenPanel({ s, T, M, fold, on, logoIn, sweepX, flow, headOn, mapTint, faceOn = 0, slowSpin = 0 }: any) {
   const [mx, my, mw, mh] = s.map;
   const [rx, ry, rw, rh] = s.room;
   const x = mx * S + MX + (rx - (mx * S + MX)) * fold;
@@ -221,19 +225,22 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
   const fw = FW * k, fh = FH * k;
   const lerp = (a: number, b: number) => a + (b - a) * sizeF;
   const by = lerp(-my * kM, -30 - py);
-  const flowT = T * 300;
+  const flowT = M * 300;
   const bxFlow = lerp(-mx * kM - flowT * kM, -40 - px - flowT * kR * 0.5);
   const byFlow = lerp(-my * kM - flowT * 0.22 * kM, -30 - py - flowT * kR * 0.1);
-  const headX = ((T * 0.13) % 1) * (FW + 900) - 450;
+  const headX = ((M * 0.13) % 1) * (FW + 900) - 450;
   const bxHead = lerp(-(mx - headX) * kM, -40 - px + (headX - FW / 2) * kR * 0.5);
   const logoOn = s.logo ? logoIn : 0;
-  const flipped = spk && ((spoke * spinF) % 360 + 360) % 360 > 95 && ((spoke * spinF) % 360 + 360) % 360 < 265;
+  // Zone 2 turns the ceiling array to face the camera and keeps it drifting.
+  const spokeAngle = spoke * spinF + slowSpin;
+  const tiltX = 68 * (1 - 0.92 * faceOn) * spinF;
+  const flipped = spk && ((spokeAngle % 360) + 360) % 360 > 95 && ((spokeAngle % 360) + 360) % 360 < 265;
 
   return (
     <div style={{
       position: 'absolute', left: x, top: y, width: w, height: h,
       transform: spk
-        ? `perspective(1600px) rotateX(${68 * spinF}deg) rotate(${spoke * spinF}deg) translateX(${(s.hubGap || 0) * spinF}px)`
+        ? `perspective(1600px) rotateX(${tiltX}deg) rotate(${spokeAngle}deg) translateX(${(s.hubGap || 0) * spinF}px)`
         : `perspective(1600px) rotateY(${rot}deg)`,
       transformOrigin: spk ? '0% 50%' : '50% 50%',
       transformStyle: 'preserve-3d',
@@ -241,6 +248,20 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
       border: `2px solid ${fold > 0.5 ? P.BORDER : P.EDGE}`,
       background: P.PANEL, overflow: 'hidden', boxSizing: 'border-box',
     }}>
+      {mapTint > 0.004 && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url(${PIXELMAP_IMG})`,
+          // The panel is a window onto the whole 3840 x 2160 artwork: scale the
+          // image so this screen's rectangle fills the panel exactly, then offset
+          // to that rectangle. Holds at every stage of the fold, because w and h
+          // are the panel's live size.
+          backgroundSize: `${(w * MAPW) / mw}px ${(h * MAPH) / mh}px`,
+          backgroundPosition: `${(-mx * w) / mw}px ${(-my * h) / mh}px`,
+          backgroundRepeat: 'no-repeat',
+          opacity: mapTint,
+        }} />
+      )}
       <div style={{
         position: 'absolute', inset: 0, backgroundImage: P.FLOW_LINES,
         backgroundSize: `${fw}px ${fh}px`, backgroundPosition: `${bxFlow}px ${byFlow}px`,
@@ -255,7 +276,10 @@ function ScreenPanel({ s, T, fold, on, logoIn, sweepX, flow, headOn }: any) {
       {s.logo && (
         <div style={{
           position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          opacity: logoOn, transform: flipped ? 'rotate(180deg)' : 'none',
+          opacity: logoOn,
+          transform: `${flipped ? 'rotate(180deg) ' : ''}${
+            s.logoHub ? `translateX(${(1 - logoOn) * 30}px) scale(${0.88 + 0.12 * logoOn})` : ''
+          }`.trim() || 'none',
         }}>
           <img src={LOGO} alt="" style={{
             width: s.logoHub ? 'auto' : '56%', height: s.logoHub ? '88%' : 'auto',
@@ -294,18 +318,38 @@ function ScreenLabel({ s, fold, on, labelOut, cs }: any) {
   );
 }
 
-function CaptionBlock({ index, title, body, spec, a }: any) {
+function CaptionBlock({ index, title, body, spec, a, lift = 0 }: any) {
   if (a <= 0.002) return null;
+  // Presenter mode gives the caption a band at the foot of the frame rather than
+  // the whole stage floor, so it is set smaller there — at film size it reached
+  // back up over the bottom rows of the map it is describing.
+  const compact = lift > 0;
+  const titleSize = compact ? 34 : 50;
+  const bodySize = compact ? 18 : 26;
+  const kickSize = compact ? 17 : 24;
+  const gap = compact ? 9 : 14;
   return (
     <div style={{
-      position: 'absolute', left: 120, bottom: 70, width: 1020,
+      position: 'absolute', left: 120, bottom: 70 + lift, width: compact ? 880 : 1020,
       opacity: a, transform: `translateY(${(1 - a) * 24}px)`,
     }}>
-      <Kicker color={P.ACCENT}>{index}</Kicker>
-      <div style={{ font: `700 50px/1.06 ${HEAD}`, letterSpacing: '-0.02em', color: P.INK, marginTop: 14 }}>{title}</div>
-      <div style={{ font: `400 26px/1.42 ${HEAD}`, color: P.N700, marginTop: 16 }}>{body}</div>
-      <div style={{ height: 2, background: P.DIV, marginTop: 20 }} />
-      <Kicker size={24} color={P.N600} style={{ marginTop: 14 }}>{spec}</Kicker>
+      {/* Sitting over the artwork rather than empty ground, it carries its own
+          scrim. Painted first, so the text sits on top of it. */}
+      {compact && (
+        <div style={{
+          position: 'absolute', left: -44, right: -150, top: -20, bottom: -22,
+          background:
+            'linear-gradient(to right, rgba(9,7,5,0.93) 0%, rgba(9,7,5,0.86) 58%, rgba(9,7,5,0) 100%)',
+          pointerEvents: 'none',
+        }} />
+      )}
+      <div style={{ position: 'relative' }}>
+        <Kicker size={kickSize} color={P.ACCENT}>{index}</Kicker>
+        <div style={{ font: `700 ${titleSize}px/1.06 ${HEAD}`, letterSpacing: '-0.02em', color: P.INK, marginTop: gap }}>{title}</div>
+        <div style={{ font: `400 ${bodySize}px/1.4 ${HEAD}`, color: P.N700, marginTop: compact ? 10 : 16 }}>{body}</div>
+        <div style={{ height: 2, background: P.DIV, marginTop: compact ? 13 : 20 }} />
+        <Kicker size={kickSize} color={P.N600} style={{ marginTop: compact ? 10 : 14 }}>{spec}</Kicker>
+      </div>
     </div>
   );
 }
@@ -342,11 +386,12 @@ function CloseCard({ T }: { T: number }) {
 }
 
 /* ---------- the composition ---------- */
-function Stage({ T }: { T: number }) {
+function Stage({ T, M, showProgress = true, captionLift = 0, shiftY = 0 }:
+  { T: number; M: number; showProgress?: boolean; captionLift?: number; shiftY?: number }) {
   const fold = interpolate(
     [CUES.Fold + 0.3, CUES.Fold + 2.3, CUES.Remap + 0.2, CUES.Remap + 1.7],
     [0, 1, 1, 0], easeInOutCubic)(T);
-  const sweepX = (T * 168) % FW;
+  const sweepX = (M * 168) % FW;
   const flowOn = interpolate(
     [0.6, CUES.Flow - 0.2, CUES.Flow + 1.0, CUES.Fold + 0.5, CUES.Zones + 0.8, CUES.Remap + 0.4, CUES.Close - 0.3],
     [0, 0.35, 1, 0.9, 0.55, 0.7, 0.35])(T);
@@ -371,7 +416,7 @@ function Stage({ T }: { T: number }) {
     [400, zcs[0][1] + 10, zcs[0][1] - 9, zcs[1][1] - 10, zcs[1][1] + 9, zcs[2][1] + 9, zcs[2][1] - 8, cA[1], 400], easeInOutCubic)(T);
 
   const stot = zoom * camS;
-  const camT = `translate(${-(camX - 960) * stot}px, ${-(camY - 400) * stot}px) scale(${stot})`;
+  const camT = `translate(${-(camX - 960) * stot}px, ${-(camY - 400) * stot - shiftY}px) scale(${stot})`;
   const zoneAct = T < Z + 0.2 || T > R0 - 0.2 ? -1 : T < Z + 7.1 ? 0 : T < Z + 14.0 ? 1 : 2;
   const zonesLogo = anim(Z + 1.8, 1.2)(T);
   const frameOut = interpolate(
@@ -384,6 +429,34 @@ function Stage({ T }: { T: number }) {
   const capZ = [win(Z + 1.2, Z + 6.9), win(Z + 7.8, Z + 13.8), win(Z + 14.7, Z + 20.4), win(Z + 21.1, R0 - 0.25)];
   const capRemap = win(R0 + 0.9, CUES.Logos - 0.3);
   const capLogos = win(CUES.Logos + 0.5, CUES.Close - 0.3);
+
+  // Every zone arrives carrying the pixel map's own colour, then fades to the
+  // motion running underneath it. The client sees the block they recognise land
+  // on the surface, and only then watches the surface move.
+  const mapTint = interpolate(
+    [0, 0.7,
+     Z + 0.6, Z + 2.4, Z + 4.4,               // zone 01 · walls
+     Z + 5.6, Z + 6.4, Z + 9.0, Z + 10.8,     // zone 02 · ceiling
+     Z + 12.8, Z + 13.6, Z + 15.6, Z + 17.6,  // zone 03 · pool side
+     Z + 19.4, Z + 20.4,                      // all fifteen, in colour
+     R0 + 1.6,
+     CUES.Logos + 0.2, CUES.Logos + 1.5],
+    [0, 1,
+     1, 1, 0,
+     0, 1, 1, 0,
+     0, 1, 1, 0,
+     0, 1,
+     1,
+     1, 0.16])(T);
+
+  // Zone 02 turns the ceiling array flat to the camera and leaves it drifting,
+  // so a parked step is still alive. The spin reads from the free clock, not the
+  // timeline, which is what keeps it turning while the chapter waits.
+  const z2Face = interpolate([Z + 7.2, Z + 9.2, Z + 13.6, Z + 14.3], [0, 1, 1, 0], easeInOutCubic)(T);
+  const slowSpin = M * 2.4 * z2Face;
+
+  // Ray logos hold back until the colour has gone, then settle inward.
+  const hubLogoIn = Math.max(logoAll, anim(Z + 10.8, 1.4)(T) * (T < R0 - 0.3 ? 1 : 0));
 
   const beforeClose = T < CUES.Close;
   const progress = clamp(T / TOTAL, 0, 1);
@@ -405,12 +478,14 @@ function Stage({ T }: { T: number }) {
           </div>
 
           {SCREENS.map((s, i) => (
-            <ScreenPanel key={s.id} s={s} T={T} fold={fold}
-              on={anim(0.35 + i * 0.05, 0.45)(T)} logoIn={Math.max(logoAll, zonesLogo)}
-              sweepX={sweepX} flow={flowOn} headOn={headOn} />
+            <ScreenPanel key={s.id} s={s} T={T} M={M} fold={fold}
+              on={anim(0.35 + i * 0.05, 0.45)(T)}
+              logoIn={s.logoHub ? hubLogoIn : Math.max(logoAll, zonesLogo)}
+              sweepX={sweepX} flow={flowOn} headOn={headOn} mapTint={mapTint}
+              faceOn={s.logoHub ? z2Face : 0} slowSpin={s.logoHub ? slowSpin : 0} />
           ))}
 
-          <FlowTrails T={T} fold={fold} amp={flowOn} />
+          <FlowTrails M={M} fold={fold} amp={flowOn} />
 
           <div style={{ position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none' }}>
             {SCREENS.map((s, i) => (
@@ -429,7 +504,8 @@ function Stage({ T }: { T: number }) {
                 position: 'absolute',
                 left: z.align === 'left' ? 0 : undefined,
                 right: z.align === 'right' ? 0 : undefined,
-                top: -36 / camS, whiteSpace: 'nowrap',
+                top: -52 / camS, whiteSpace: 'nowrap',
+                background: P.LABEL_BG, padding: '5px 10px',
                 transform: `scale(${1 / camS})`, transformOrigin: z.align === 'left' ? '0% 100%' : '100% 100%',
               }}>
                 <Kicker size={19} color={P.ACCENT}>{z.label}</Kicker>
@@ -446,56 +522,113 @@ function Stage({ T }: { T: number }) {
         </div>
       )}
 
-      <CaptionBlock a={capMap} index="01 — the video map"
+      <CaptionBlock lift={captionLift} a={capMap} index="01 — the video map"
         title="Every surface lives on one file." spec="3840 × 2160 · DXV3 · 30–60 fps"
         body="Interior walls, the ceiling Sol Rays and the exterior pool-side screens each own a fixed rectangle of the same 3840 × 2160 frame." />
-      <CaptionBlock a={capFlow} index="02 — how motion flows"
+      <CaptionBlock lift={captionLift} a={capFlow} index="02 — how motion flows"
         title="One path crosses all of them." spec="Continuous across the map — no per-screen loops"
         body="Because the screens share the frame, a sweep travelling across the map reaches every surface in the same second. That is what makes the room read as one move instead of fifteen separate screens." />
-      <CaptionBlock a={capFold} index="03 — in the room"
+      <CaptionBlock lift={captionLift} a={capFold} index="03 — in the room"
         title="The same rectangles, in place." spec="Mapped 1:1 to the venue geometry"
         body="Three zones: the main interior walls (curves, IMAG SR and SL, centre, DJ booth), the ceiling sky where the Sol Rays sit as one round array, and the exterior pool side — Outdoor SR, the Arch in the middle, Outdoor SL." />
-      <CaptionBlock a={capZ[0]} index="04 — zone 01 · main interior walls"
+      <CaptionBlock lift={captionLift} a={capZ[0]} index="04 — zone 01 · main interior walls"
         title="Nine surfaces, one pass." spec="Curves · IMAG SR / SL · centre · DJ booth"
         body="The IMAG walls, the two curves, the centre panel and the DJ booth all read from the same frame, so a single move travels the room without a seam." />
-      <CaptionBlock a={capZ[1]} index="04 — zone 02 · ceiling sky"
+      <CaptionBlock lift={captionLift} a={capZ[1]} index="04 — zone 02 · ceiling sky"
         title="The Sol Rays, one array." spec="Twelve blades · sampled from the same file"
         body="The pass carries overhead. Twelve blades in a round array each show their own slice of the map, so the sweep crosses the ceiling as one move rather than twelve looping panels." />
-      <CaptionBlock a={capZ[2]} index="04 — zone 03 · exterior pool side"
+      <CaptionBlock lift={captionLift} a={capZ[2]} index="04 — zone 03 · exterior pool side"
         title="Outside, on the same map." spec="Outdoor SR · Arch · Outdoor SL"
         body="The pool-side portrait panels and the wide outdoor arch sit in the same 3840 × 2160 frame — arrival content stays in step with the room inside." />
-      <CaptionBlock a={capZ[3]} index="04 — three zones, one map"
+      <CaptionBlock lift={captionLift} a={capZ[3]} index="04 — three zones, one map"
         title="Fifteen surfaces, one file." spec="Interior · ceiling · exterior"
         body="Changing the look of the room is changing one file — never re-mapping fifteen screens." />
-      <CaptionBlock a={capRemap} index="05 — back to the file"
+      <CaptionBlock lift={captionLift} a={capRemap} index="05 — back to the file"
         title="Back to one pixelmap." spec="3840 × 2160 · DXV3 · 30–60 fps"
         body="Every zone folds back into its rectangle. What you hand over is this one file — the room does the rest." />
-      <CaptionBlock a={capLogos} index="06 — logo placement"
+      <CaptionBlock lift={captionLift} a={capLogos} index="06 — logo placement"
         title="Any background. Same mark." spec="DXV3 Alpha · 30–60 fps"
         body="The logo animation is one alpha file, so it sits centred over whichever pass is running — on every screen except the curves, which carry motion only." />
 
       {T >= CUES.Close && <CloseCard T={T} />}
 
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: T >= CUES.Close + 0.1 ? 0 : 1 }}>
-        <div style={{ position: 'absolute', left: 60, top: 44, display: 'flex', gap: 22, alignItems: 'center' }}>
-          <div style={{ width: 16, height: 16, background: P.ACCENT }} />
-          <Kicker>Soleia Creative — video map</Kicker>
-        </div>
-        <div style={{ position: 'absolute', left: 60, right: 60, bottom: 44, height: 2, background: P.DIV }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, height: 2, width: `${progress * 100}%`, background: P.ACCENT }} />
-        </div>
+        {showProgress && (
+          <div style={{ position: 'absolute', left: 60, top: 44, display: 'flex', gap: 22, alignItems: 'center' }}>
+            <div style={{ width: 16, height: 16, background: P.ACCENT }} />
+            <Kicker>Soleia Creative — video map</Kicker>
+          </div>
+        )}
+        {showProgress && (
+          <div style={{ position: 'absolute', left: 60, right: 60, bottom: 44, height: 2, background: P.DIV }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, height: 2, width: `${progress * 100}%`, background: P.ACCENT }} />
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-export default function VideoMapExplainer() {
+/**
+ * The chapters, as a presenter walks them.
+ *
+ * `park` is the point on the film's own timeline where a chapter is fully
+ * stated — caption up, camera settled — so parking there leaves the frame
+ * reading as a finished slide. Each one sits mid-caption on purpose.
+ */
+export interface ExplainerStep {
+  key: string;
+  /** What this chapter is, for the presenter's own rail. */
+  label: string;
+  /** Seconds on the film's timeline where the chapter is fully stated. */
+  park: number;
+}
+
+export const EXPLAINER_STEPS: ExplainerStep[] = [
+  { key: 'file', label: 'One file', park: 3.6 },
+  { key: 'flow', label: 'How motion flows', park: 8.8 },
+  { key: 'room', label: 'Into the room', park: 14.6 },
+  { key: 'zone1', label: 'Zone 1 · Main walls', park: 21.7 },
+  { key: 'zone2', label: 'Zone 2 · Ceiling rays', park: 29.0 },
+  { key: 'zone3', label: 'Zone 3 · Pool side', park: 34.7 },
+  { key: 'all', label: 'All fifteen surfaces', park: 38.1 },
+  { key: 'back', label: 'Back to one file', park: 43.0 },
+  { key: 'logos', label: 'Logo placement', park: 47.8 },
+  { key: 'close', label: 'One map. Every surface.', park: 53.5 },
+];
+
+export interface VideoMapExplainerProps {
+  /**
+   * `auto` plays the whole film on a loop — the right thing on a page someone
+   * is reading alone. `steps` parks on each chapter and waits, so it can be
+   * talked over one beat at a time on a creative call.
+   */
+  mode?: 'auto' | 'steps';
+  /** Fires as the chapter changes, so a host page can caption alongside it. */
+  onStepChange?: (index: number, step: ExplainerStep) => void;
+}
+
+export default function VideoMapExplainer({ mode = 'auto', onStepChange }: VideoMapExplainerProps = {}) {
+  const stepped = mode === 'steps';
   const hostRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [offsetXY, setOffsetXY] = useState({ x: 0, y: 0 });
   const [T, setT] = useState(0);
+  /**
+   * The free-running clock. Everything continuous — the flow lines, the sweep
+   * head, the orbiting trails — reads from this rather than `T`, which is what
+   * lets a parked chapter keep moving instead of freezing into a screenshot.
+   */
+  const [M, setM] = useState(0);
   const [visible, setVisible] = useState(false);
   const [isFull, setIsFull] = useState(false);
+  const [stepIdx, setStepIdx] = useState(0);
+  const [settled, setSettled] = useState(true);
+
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const [controlsH, setControlsH] = useState(0);
+  const tRef = useRef(0);
+  const targetRef = useRef(EXPLAINER_STEPS[0].park);
 
   // Lazy-mount: only build and animate the composition once it scrolls into view.
   useEffect(() => {
@@ -539,18 +672,89 @@ export default function VideoMapExplainer() {
   };
 
   useEffect(() => {
-    if (!visible) return;
+    if (!stepped) return;
+    targetRef.current = EXPLAINER_STEPS[stepIdx].park;
+    setSettled(false);
+    onStepChange?.(stepIdx, EXPLAINER_STEPS[stepIdx]);
+  }, [stepIdx, stepped, onStepChange]);
+
+  // Auto mode: the original loop, unchanged.
+  useEffect(() => {
+    if (!visible || stepped) return;
     let raf = 0;
     let start: number | null = null;
+    let last: number | null = null;
     const tick = (now: number) => {
       if (start == null) start = now;
-      const t = ((now - start) / 1000) % TOTAL;
-      setT(t);
+      const dt = last == null ? 0 : Math.min(0.05, (now - last) / 1000);
+      last = now;
+      setM((m) => m + dt);
+      setT(((now - start) / 1000) % TOTAL);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [visible]);
+  }, [visible, stepped]);
+
+  // Stepped mode: travel to the chapter, then hold there while M keeps running.
+  useEffect(() => {
+    if (!visible || !stepped) return;
+    let raf = 0;
+    let last: number | null = null;
+    const tick = (now: number) => {
+      const dt = last == null ? 0 : Math.min(0.05, (now - last) / 1000);
+      last = now;
+      setM((m) => m + dt);
+
+      const cur = tRef.current;
+      const tgt = targetRef.current;
+      const gap = tgt - cur;
+      if (Math.abs(gap) > 0.002) {
+        // Forward runs at the film's own pace, because that travel is itself
+        // the explanation. Going back is navigation rather than narration, so
+        // it rewinds faster.
+        const speed = gap > 0 ? 1 : 2.8;
+        const stepBy = Math.sign(gap) * speed * dt;
+        const next = Math.abs(stepBy) >= Math.abs(gap) ? tgt : cur + stepBy;
+        tRef.current = next;
+        setT(next);
+        if (next === tgt) setSettled(true);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [visible, stepped]);
+
+  // Measure the control bar rather than guessing a clearance: it is a fixed
+  // size in CSS pixels while the stage scales to fit, so any constant is wrong
+  // at some width.
+  useEffect(() => {
+    const el = controlsRef.current;
+    if (!el) { setControlsH(0); return; }
+    const measure = () => setControlsH(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [stepped, isFull]);
+
+  const captionLift = stepped
+    ? Math.min(420, Math.round((controlsH + 20) / Math.max(scale, 0.08)))
+    : 0;
+
+  const atStart = stepIdx === 0;
+  const atEnd = stepIdx === EXPLAINER_STEPS.length - 1;
+  const step = EXPLAINER_STEPS[stepIdx];
+
+  const btn: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: 7,
+    borderRadius: 999, padding: '9px 15px', minHeight: 40,
+    font: `600 10.5px ${HEAD}`, letterSpacing: '0.16em', textTransform: 'uppercase',
+    border: `1px solid ${P.BORDER}`, background: P.LABEL_BG, color: P.INK,
+    cursor: 'pointer', whiteSpace: 'nowrap',
+  };
+  const btnPrimary: React.CSSProperties = { ...btn, borderColor: P.ACCENT, color: P.ACCENT };
 
   return (
     <div
@@ -567,7 +771,7 @@ export default function VideoMapExplainer() {
             transform: `scale(${scale})`, transformOrigin: '0 0',
           }}
         >
-          <Stage T={T} />
+          <Stage T={T} M={M} showProgress={!stepped} captionLift={captionLift} shiftY={stepped ? 50 : 0} />
         </div>
       )}
 
@@ -580,7 +784,77 @@ export default function VideoMapExplainer() {
       >
         {isFull ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
       </button>
+
+      {/* Presenter controls. They sit outside the scaled stage so they stay the
+          same legible size inline and in fullscreen alike. */}
+      {stepped && (
+        <div
+          className="absolute inset-x-0 bottom-0 z-20 px-3 pb-3 pt-8 sm:px-4 sm:pb-4"
+          style={{ background: 'linear-gradient(to top, rgba(9,7,5,0.92) 34%, rgba(9,7,5,0))' }}
+        >
+          <div ref={controlsRef} className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5" role="tablist" aria-label="Explainer chapters">
+            {EXPLAINER_STEPS.map((st, i) => (
+              <button
+                key={st.key}
+                role="tab"
+                aria-selected={i === stepIdx}
+                aria-label={st.label}
+                onClick={() => setStepIdx(i)}
+                className="h-4 min-w-0 flex-1"
+                style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer' }}
+              >
+                <span
+                  style={{
+                    display: 'block', height: 3, borderRadius: 2,
+                    background: i === stepIdx ? P.ACCENT : i < stepIdx ? P.N600 : P.DIV,
+                    opacity: i === stepIdx ? 1 : i < stepIdx ? 0.55 : 0.9,
+                    transition: 'background 200ms, opacity 200ms',
+                  }}
+                />
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
+            <span style={{ font: `600 10.5px ${HEAD}`, letterSpacing: '0.2em', textTransform: 'uppercase', color: P.ACCENT }}>
+              {String(stepIdx + 1).padStart(2, '0')} / {EXPLAINER_STEPS.length}
+            </span>
+            {/* On a phone this only ever truncates to two letters, and the
+                caption inside the frame already names the chapter — so give the
+                room back to the buttons instead. */}
+            <span className="hidden min-w-0 flex-1 truncate sm:inline" style={{ font: `400 13px ${HEAD}`, color: P.INK }}>
+              {step.label}
+              {!settled && <span style={{ color: P.N600, marginLeft: 8, fontSize: 11 }}>moving…</span>}
+            </span>
+
+            <span className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setStepIdx((i) => Math.max(0, i - 1))}
+                disabled={atStart}
+                style={{ ...btn, opacity: atStart ? 0.35 : 1, cursor: atStart ? 'default' : 'pointer' }}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" /> Back
+              </button>
+              {atEnd ? (
+                <button type="button" onClick={() => setStepIdx(0)} style={btnPrimary}>
+                  <RotateCcw className="h-3.5 w-3.5" /> Restart
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setStepIdx((i) => Math.min(EXPLAINER_STEPS.length - 1, i + 1))}
+                  style={btnPrimary}
+                >
+                  Next step <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </span>
+          </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

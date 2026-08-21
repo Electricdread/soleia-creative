@@ -1,44 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Printer, FileVideo, Boxes, Compass, Maximize2 } from 'lucide-react';
+import { FileVideo, Boxes, Compass, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
 import { Reveal } from '@/components/motion/Reveal';
 import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
+import { CreativeGuideFooter } from '@/components/creative-guide/CreativeGuideFooter';
+import { GuideSectionHead } from '@/components/creative-guide/GuideSectionHead';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
 
 const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
 
-const ZONE_GROUPS = [
-  {
-    group: 'Main Room — Interior LED',
-    note: 'The primary nightclub LED wall, left to right.',
-    zones: [
-      { name: 'SR Curves', res: '2304 × 272', role: 'Stage-right curved LED — wraparound ambient visuals and brand washes.' },
-      { name: 'IMAG SR', res: '1216 × 592', role: 'Stage-right vertical screen — directional branding and portrait content.' },
-      { name: 'Center', res: '640 × 272', role: 'Center focal screen — logo reveals and hero moments.' },
-      { name: 'IMAG SL', res: '1216 × 592', role: 'Stage-left vertical screen — directional branding and portrait content.' },
-      { name: 'SL Curves', res: '2304 × 272', role: 'Stage-left curved LED — wraparound ambient visuals and brand washes.' },
-    ],
-  },
-  {
-    group: 'Beach Club — Exterior LED',
-    note: 'Open-air screens facing the Las Vegas Strip.',
-    zones: [
-      { name: 'Outdoor SR', res: '588 × 840', role: 'Stage-right exterior tower — high-brightness arrival branding.' },
-      { name: 'Outdoor SL', res: '588 × 840', role: 'Stage-left exterior tower — high-brightness arrival branding.' },
-      { name: 'Outdoor Arch', res: '1512 × 504', role: 'Beachclub arch — immersive entry moment overlooking the Strip.' },
-    ],
-  },
-  {
-    group: 'TV Displays',
-    note: 'Narrowcasting network across the venue.',
-    zones: [
-      { name: 'TV / Narrowcasting', res: '1920×1080 or 3840×2160', role: 'Logos and sponsor messaging across front-door entry, cabanas and bungalows.' },
-    ],
-  },
-];
 
 
 const LAYOUT_STATS: [string, string][] = [
@@ -91,14 +63,6 @@ const STEPS = [
   { n: '03', t: 'Pixel-Perfect Mapping', d: 'We map every asset to the exact dimensions of each screen so your visuals land flawlessly, venue-wide.' },
 ];
 
-function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
-  return (
-    <Reveal className="mb-11">
-      <span className="block text-[11px] uppercase tracking-[0.34em] text-primary mb-3.5">{eyebrow}</span>
-      <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-foreground leading-tight">{title}</h2>
-    </Reveal>
-  );
-}
 
 const CreativeGuideView = () => {
   const navigate = useNavigate();
@@ -126,7 +90,7 @@ const CreativeGuideView = () => {
       {/* 01 — DIGITAL REALM */}
       <section id="venue" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="01 — The Digital Realm" title="Your brand, in its best light." />
+          <GuideSectionHead eyebrow="01 — The Digital Realm" title="Your brand, in its best light." />
           <Reveal className="space-y-4">
             <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed">
               Dive into Soleia's digital realm, which sprawls over 5,000 square feet, boasting high-definition LED displays and an array of over 20 television screens.
@@ -147,7 +111,7 @@ const CreativeGuideView = () => {
       {/* VENUE LAYOUT */}
       <section id="layout" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="02 — Venue Layout" title="One venue, two worlds." />
+          <GuideSectionHead eyebrow="02 — Venue Layout" title="One venue, two worlds." />
 
           <Reveal className="mb-6">
             <InteractiveVenueMap />
@@ -181,7 +145,7 @@ const CreativeGuideView = () => {
       {/* 03 — 360 TOUR */}
       <section id="tour" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="03 — Soleia 360° Tour" title="Step inside." />
+          <GuideSectionHead eyebrow="03 — Soleia 360° Tour" title="Step inside." />
           <Reveal>
             <div className="relative rounded-3xl surface-elevated border border-primary/15 bg-black overflow-hidden">
               <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-10 pointer-events-none" />
@@ -222,7 +186,7 @@ const CreativeGuideView = () => {
       {/* 05 — BUYOUT INCLUSIONS */}
       <section id="branding" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="04 — What's Included" title="Branding, built in." />
+          <GuideSectionHead eyebrow="04 — What's Included" title="Branding, built in." />
           <div className="grid gap-4 md:grid-cols-2">
             {INCLUSIONS.map((inc, i) => (
               <Reveal key={inc.title} delay={i * 0.05}>
@@ -255,7 +219,7 @@ const CreativeGuideView = () => {
       {/* 06 — CUSTOM CONTENT + VIDEO SPECS */}
       <section id="specs" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <SectionHead eyebrow="05 — Creative Content Design" title="We design every pixel." />
+          <GuideSectionHead eyebrow="05 — Creative Content Design" title="We design every pixel." />
           <Reveal>
             <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed mb-9">
               Our creative team designs branded content mapped to every pixel of the venue — from logo placement to fully bespoke motion built around your brand.
@@ -322,40 +286,7 @@ const CreativeGuideView = () => {
       </section>
 
 
-      {/* FOOTER */}
-      <footer className="border-t border-primary/15 pt-14 pb-9">
-        <div className="container mx-auto max-w-5xl px-6">
-          <div className="flex flex-wrap justify-between gap-9">
-            <div className="max-w-sm">
-              <img src={soleiaWideLogo} alt="Soleia Las Vegas" className="h-12 w-auto" />
-              <p className="font-sans text-[13.5px] font-light leading-relaxed text-muted-foreground mt-4 max-w-xs">
-                Sophistication, innovation, and authenticity — at the fifty yard line of the Las Vegas Strip.
-              </p>
-            </div>
-            <div className="flex gap-12 flex-wrap">
-              <div>
-                <h4 className="text-[10.5px] uppercase tracking-[0.2em] text-primary mb-3.5">Venue</h4>
-                <a href="#layout" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Layout</a>
-                <button onClick={() => navigate('/creative-guide/video-mapping')} className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors text-left">Video Mapping</button>
-              </div>
-              <div>
-                <h4 className="text-[10.5px] uppercase tracking-[0.2em] text-primary mb-3.5">Plan</h4>
-                <a href="#branding" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Buyout Inclusions</a>
-                <a href="#specs" className="block text-[13px] text-muted-foreground mb-2 hover:text-primary transition-colors">Specs</a>
-              </div>
-            </div>
-          </div>
-          <div className="mt-11 pt-5 border-t border-primary/15 flex flex-wrap justify-between gap-3 items-center">
-            <span className="text-[11px] text-muted-foreground/60">© 2026 SOLEIA Las Vegas. All rights reserved.</span>
-            <div className="flex items-center gap-4">
-              <button onClick={() => navigate('/creative-guide/print')} className="text-[11px] text-muted-foreground/60 hover:text-primary transition-colors inline-flex items-center gap-1.5">
-                <Printer className="w-3.5 h-3.5" /> Print Guide
-              </button>
-              <PoweredByShowBlox variant="header" />
-            </div>
-          </div>
-        </div>
-      </footer>
+      <CreativeGuideFooter />
     </div>
   );
 };
