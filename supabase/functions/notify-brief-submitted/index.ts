@@ -88,6 +88,30 @@ Deno.serve(async (req) => {
       return json(200, { skipped: 'already notified', notified_at: brief.notified_at });
     }
 
+    // The PM assigned to this job gets it too. The assignment lives on the
+    // proposal, and the session reaches it through the job — which is the whole
+    // reason jobs exist.
+    const pmEmails: string[] = [];
+    let pmName: string | null = null;
+    if (session.job_id) {
+      const { data: pmRows } = await supabase
+        .from('proposals')
+        .select('assigned_pm_email, assigned_pm_name, signed_at')
+        .eq('job_id', session.job_id)
+        .not('assigned_pm_email', 'is', null);
+      // Prefer the signed proposal's PM if more than one is on the job.
+      const ordered = (pmRows ?? []).sort((a, b) => (b.signed_at ? 1 : 0) - (a.signed_at ? 1 : 0));
+      for (const r of ordered) {
+        const email = (r.assigned_pm_email ?? '').trim();
+        if (email && !pmEmails.includes(email)) {
+          pmEmails.push(email);
+          pmName = pmName ?? r.assigned_pm_name ?? null;
+        }
+      }
+    }
+
+    const recipients = Array.from(new Set([...adminRecipients(), ...pmEmails]));
+
     const answered = [
       brief.mood, brief.vibe, brief.color_scheme, brief.avoid,
       brief.elevator_mode, brief.transforms_to_party,
@@ -109,6 +133,9 @@ Deno.serve(async (req) => {
           ${esc(session.client_name)}${session.event_date ? ` &middot; ${esc(session.event_date)}` : ''}
           &middot; ${answered} of 7 answered
         </p>
+        ${pmEmails.length > 0
+          ? `<p style="color:#8a8f98;margin:-12px 0 20px;font-size:13px;">Also sent to ${esc(pmName ?? 'the assigned PM')} &lt;${esc(pmEmails[0])}&gt;</p>`
+          : ''}
 
         <table style="border-collapse:collapse;font-size:14px;line-height:1.5;width:100%;">
           ${row('Mood', brief.mood)}
@@ -134,7 +161,7 @@ Deno.serve(async (req) => {
       </div>`;
 
     const report = await sendEach({
-      to: adminRecipients(),
+      to: recipients,
       subject: `Creative brief in: ${session.project_name} — ${session.client_name}`,
       html,
     });
@@ -152,6 +179,8 @@ Deno.serve(async (req) => {
     return json(200, {
       success: report.delivered.length > 0,
       answered,
+      recipients,
+      pm_emails: pmEmails,
       ...report,
       sandbox_sender: usingSandboxSender(),
     });
