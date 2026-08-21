@@ -57,6 +57,25 @@ export function CreativeSessionManager() {
         ...session,
         cover_images: session.cover_images as unknown as CoverImage[] | null,
       })) as CreativeSession[];
+
+      // A brief nobody has read outranks recency. Position is the strongest
+      // signal on the page — a marked card still has to be found if it is
+      // eleventh. One query for the whole list rather than one per card.
+      const { data: unreadRows } = await supabase
+        .from('creative_briefs')
+        .select('creative_session_id')
+        .not('submitted_at', 'is', null)
+        .is('reviewed_at', null);
+      const unread = new Set((unreadRows ?? []).map((r) => r.creative_session_id));
+
+      typedSessions.sort((a, b) => {
+        const au = unread.has(a.id) ? 1 : 0;
+        const bu = unread.has(b.id) ? 1 : 0;
+        if (au !== bu) return bu - au;
+        // Otherwise keep what the query already ordered: live first, newest first.
+        return 0;
+      });
+
       setSessions(typedSessions);
     }
     setLoading(false);

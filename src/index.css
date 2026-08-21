@@ -29,6 +29,25 @@ button, a, [role="button"] {
   touch-action: manipulation;
 }
 
+/* A submitted brief nobody has read yet.
+ *
+ * The ring is the signal and it is static: it holds until the brief is opened,
+ * so it survives being scrolled past, and three unread briefs read as three
+ * marked cards rather than three things competing for attention. The glow runs
+ * twice and stops — motion announces an arrival, it does not describe a state.
+ * A card that pulses forever is wallpaper by the afternoon. */
+@keyframes brief-arrive {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+  50%      { box-shadow: 0 0 0 6px hsl(var(--primary) / 0.18); }
+}
+.brief-unread {
+  border-color: hsl(var(--primary) / 0.55);
+  animation: brief-arrive 1.6s ease-out 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .brief-unread { animation: none; }
+}
+
 /* Ring painted on a row arrived at from a dashboard link or ⌘K result. */
 .focus-flash {
   outline: 2px solid hsl(var(--primary));

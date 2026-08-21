@@ -60,6 +60,10 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [brief, setBrief] = useState<CreativeBriefRow | null>(null);
   const [briefOpen, setBriefOpen] = useState(false);
 
+  // Submitted, and nobody has opened it. The one state on this card that means
+  // somebody is waiting on us rather than the other way round.
+  const briefUnread = !!brief?.submitted_at && !brief.reviewed_at;
+
   // Whether the client has written anything is what makes the brief worth
   // opening, so load it with the card rather than on click.
   useEffect(() => {
@@ -246,7 +250,8 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     <>
       <div className={cn(
         "rounded-xl bg-secondary/30 border border-border/50 overflow-hidden transition-opacity",
-        !isActive && "opacity-60"
+        !isActive && "opacity-60",
+        briefUnread && "brief-unread",
       )}>
         {/* Cover thumbnail row */}
         {coverImage && (
@@ -393,14 +398,20 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                 type="button"
                 onClick={() => setBriefOpen(true)}
                 className={cn(
-                  "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full transition-colors",
-                  brief.submitted_at
-                    ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                  "inline-flex items-center gap-1 rounded-full transition-colors",
+                  briefUnread
+                    // Unread is the thing worth crossing the room for, so it is
+                    // not the same size as the rest of the row's furniture.
+                    ? "bg-primary text-primary-foreground font-semibold text-[11px] px-2 py-1"
+                    : brief.submitted_at
+                      ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 text-[10px] px-1.5 py-0.5"
+                      : "bg-primary/10 text-primary hover:bg-primary/20 text-[10px] px-1.5 py-0.5"
                 )}
               >
-                <ClipboardList className="w-2.5 h-2.5" />
-                {brief.submitted_at ? 'Brief sent' : `Brief ${answeredCount(brief)}/7`}
+                <ClipboardList className={briefUnread ? "w-3 h-3" : "w-2.5 h-2.5"} />
+                {briefUnread
+                  ? `Brief in · ${answeredCount(brief)}/7`
+                  : brief.submitted_at ? 'Brief read' : `Brief ${answeredCount(brief)}/7`}
               </button>
             )}
             <div className="flex-1" />
