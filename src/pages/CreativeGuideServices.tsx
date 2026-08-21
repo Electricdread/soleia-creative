@@ -42,6 +42,12 @@ const ELEVATOR_LOOP_URL = '/creative-guide/elevator/loop.mp4';
 // trimmed for a clean loop. Tapping the card opens the full explainer.
 const TRANSPARENT_LOOP_URL = '/creative-guide/services/transparent-logo-loop.mp4';
 
+// A real previz render: a minute through the venue model with a client's show
+// on every screen. It stays behind a poster and `preload="none"` — 12 MB has
+// no business downloading itself on the page a packet link opens.
+const PREVIZ_MOVIE_URL = '/creative-guide/services/previz-soleia.mp4';
+const PREVIZ_POSTER = '/creative-guide/services/previz-soleia-poster.jpg';
+
 // Carried by the link, never printed: the guide is public and indexable, so
 // the address should not be sitting there as text for a scraper to lift.
 const CONTACT_HREF =
@@ -210,9 +216,10 @@ const PACKAGE_INCLUDES: {
   },
   {
     title: '3D preview before the night',
+    poster: '/creative-guide/services/previz-soleia-poster.jpg',
     body: "Your content rendered on Soleia's real screens from our venue model, so you approve what the room will actually show — pacing, brightness, coverage — before load-in.",
-    src: IMG.previz,
-    alt: '3D preview of content rendered from the Soleia venue model',
+    src: '/creative-guide/services/previz-soleia-poster.jpg',
+    alt: 'A frame from a 3D previz — a client show running on the venue model',
   },
   {
     title: 'Onsite playback',
@@ -442,6 +449,33 @@ export default function CreativeGuideServices() {
   /** A card that fills its grid cell. `wide` spans both columns, image beside text. */
   const renderServiceCard = (item: Item, wide = false) => {
     const media = MEDIA[item.title];
+
+    if (item.title === '3D Previz') {
+      return (
+        <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
+          <article className={`${cardShell} flex h-full flex-col`}>
+            <div className="relative aspect-[16/9] overflow-hidden bg-black">
+              <video
+                src={PREVIZ_MOVIE_URL}
+                poster={PREVIZ_POSTER}
+                className="h-full w-full object-cover"
+                controls
+                playsInline
+                preload="none"
+                aria-label="3D previz — a run through the Soleia venue model with a client's show on every screen"
+              />
+            </div>
+            <div className="flex-1 p-7 sm:p-8">
+              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
+              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
+              <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                A real previz · one minute through the room
+              </p>
+            </div>
+          </article>
+        </Reveal>
+      );
+    }
 
     if (item.title === 'Transparent Logo Animation') {
       return (
