@@ -49,12 +49,6 @@ export function CreativeGuideFooter() {
                 Services
               </button>
               <button
-                onClick={() => navigate('/creative-guide/content-delivery')}
-                className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
-              >
-                Content Delivery
-              </button>
-              <button
                 onClick={() => navigate('/creative-guide#specs')}
                 className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
               >

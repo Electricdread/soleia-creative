@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Maximize2, Eye, Download } from 'lucide-react';
+import { ArrowRight, Maximize2, Eye, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Reveal } from '@/components/motion/Reveal';
@@ -824,34 +824,25 @@ export default function CreativeGuideServices() {
                           <Chip>Max 50 GB</Chip>
                         </div>
                       ))}
+                      <button
+                        onClick={() => navigate('/creative-guide/content-delivery')}
+                        className="group/cd flex w-full flex-wrap items-center gap-x-5 gap-y-2 border-t border-primary/15 px-7 py-6 text-left transition-colors hover:bg-primary/5 sm:px-8"
+                      >
+                        <span className="font-display text-xl leading-snug text-foreground transition-colors group-hover/cd:text-primary">
+                          Content Delivery Guide
+                        </span>
+                        <span className="min-w-[220px] flex-1 text-[14px] leading-relaxed text-muted-foreground">
+                          Every screen's pixel resolution, the DXV3 workflow, the Pixelmap and the
+                          After Effects project — everything your team needs to build to spec.
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10.5px] uppercase tracking-[0.18em] text-primary">
+                          Open <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      </button>
                     </div>
                   </article>
                 </Reveal>
 
-                <Reveal delay={0.05} className="mt-6">
-                  <div
-                    onClick={() => navigate('/creative-guide/content-delivery')}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && navigate('/creative-guide/content-delivery')}
-                    className="group cursor-pointer rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/5 p-7 transition-colors surface-elevated hover:border-primary/50 sm:p-8"
-                  >
-                    <div className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-primary">
-                      Building it yourself?
-                    </div>
-                    <h3 className="mb-2 font-display text-2xl text-foreground transition-colors group-hover:text-gradient-gold">
-                      Content Delivery Guide
-                    </h3>
-                    <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                      Every screen's pixel resolution, the DXV3 workflow, the Pixelmap and the After
-                      Effects project — everything your team needs to deliver content that lands
-                      correctly on the first pass.
-                    </p>
-                    <span className="mt-4 inline-flex items-center gap-1 text-[10.5px] uppercase tracking-[0.18em] text-primary">
-                      Open the Content Delivery Guide →
-                    </span>
-                  </div>
-                </Reveal>
               </section>
             )}
 
@@ -873,17 +864,10 @@ export default function CreativeGuideServices() {
                       rather than the wait.
                     </p>
                     <div className="mt-6 flex flex-wrap items-center gap-3">
-                      <button
-                        onClick={() => navigate('/creative-guide/content-delivery')}
-                        className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        Content Delivery Guide
-                      </button>
                       <a
                         href={SERVICES_PDF_URL}
                         download="Soleia-Creative-Services.pdf"
-                        className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                        className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
                       >
                         <Download className="h-3.5 w-3.5" />
                         Download Services PDF
