@@ -86,7 +86,7 @@ export function PacketProposalSendDialog({ open, onOpenChange, proposal }: Packe
           </div>
         ) : ordered.length === 0 ? (
           <div className="py-10 text-center text-sm text-muted-foreground">
-            No packets yet. Create one on the Creative Packets screen, then send it with this proposal.
+            No packets yet. Create one on the Packets screen, then send it with this proposal.
           </div>
         ) : (
           <div className="space-y-4">

@@ -72,7 +72,7 @@ export function SessionIndicators() {
       pulse: stats.creativeSessionsActive > 0,
     },
     {
-      label: 'Looks Collection',
+      label: 'Previz links',
       active: stats.looksSessionsActive,
       total: stats.looksSessionsTotal,
       icon: Image,

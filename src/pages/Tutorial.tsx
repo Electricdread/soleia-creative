@@ -812,12 +812,11 @@ export default function Tutorial() {
 
           <div className="space-y-3">
             {[
-              { path: '/admin', label: 'Admin Portal', description: 'Central dashboard for all administrative functions' },
-              { path: '/admin/creative', label: 'Creative Sessions', description: 'Manage and create collaborative sessions' },
-              { path: '/admin/looks', label: 'Looks Collection', description: 'Curate client-facing visual gallery' },
+              { path: '/admin', label: 'Dashboard', description: 'Central dashboard for all administrative functions' },
+              { path: '/admin/creative', label: 'Creative sessions', description: 'Manage and create collaborative sessions' },
               { path: '/creative-guide', label: 'Creative Guide', description: 'LED zone education and specs' },
               { path: '/creative-guide/print', label: 'Print Guide', description: 'Printable full documentation' },
-              { path: '/admin/users', label: 'User Management', description: 'Admin access control and approvals' },
+              { path: '/admin/users', label: 'People', description: 'Admin access control and approvals' },
             ].map((route, idx) => (
               <motion.div
                 key={route.path}

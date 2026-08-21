@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from 'next-themes';
 import {
-  Calendar, FileText, BookOpen, Palette, Video, MonitorPlay, Map, Send,
+  Calendar, FileText, BookOpen, Palette, Map, Send,
   HardDrive, Users, Mail, LayoutDashboard, Command, LogOut, Menu, X,
   Sun, Moon, PanelLeftClose, PanelLeft, ExternalLink,
 } from 'lucide-react';
@@ -57,10 +57,11 @@ const NAV: NavGroup[] = [
     ],
   },
   {
-    label: 'Library',
+    // The Look Book and the previz movie uploader sit with the parked previz
+    // work, so they are out of the navigation. Their routes still resolve for
+    // anyone holding a link.
+    label: 'Reference',
     items: [
-      { label: 'Look Book', href: '/admin/looks', icon: Video },
-      { label: 'Previz movie', href: '/admin/video-mapping', icon: MonitorPlay },
       { label: 'Creative Guide', href: '/creative-guide', icon: Map, external: true },
       { label: 'Delivery guide', href: '/creative-guide/content-delivery', icon: Send, external: true },
     ],
