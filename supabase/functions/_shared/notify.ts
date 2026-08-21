@@ -77,7 +77,9 @@ function isUnverifiedDomain(error: string): boolean {
 async function logAttempt(entry: {
   template: string;
   to: string;
-  status: 'delivered' | 'failed';
+  // The table's own vocabulary, enforced by a CHECK constraint:
+  // pending | sent | suppressed | failed | bounced | complained | dlq.
+  status: 'sent' | 'failed';
   error?: string;
   meta?: Record<string, unknown>;
 }): Promise<void> {
@@ -85,7 +87,7 @@ async function logAttempt(entry: {
     const url = Deno.env.get('SUPABASE_URL');
     const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!url || !key) return;
-    await fetch(`${url}/rest/v1/email_send_log`, {
+    const res = await fetch(`${url}/rest/v1/email_send_log`, {
       method: 'POST',
       headers: {
         apikey: key,
@@ -101,6 +103,14 @@ async function logAttempt(entry: {
         metadata: entry.meta ?? {},
       }),
     });
+    // fetch does not throw on a 4xx, so without this a rejected insert is
+    // silent — which is how the first version of this logged nothing at all
+    // while reporting success.
+    if (!res.ok) {
+      console.error('email_send_log rejected a row', {
+        status: res.status, body: (await res.text()).slice(0, 300), entry,
+      });
+    }
   } catch (e) {
     console.error('Could not write to email_send_log', e);
   }
@@ -179,7 +189,7 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
         report.sandbox = true;
       }
       await logAttempt({
-        template, to, status: 'delivered',
+        template, to, status: 'sent',
         meta: { from: viaFallback ? SANDBOX_FROM : configuredFrom, sandbox_fallback: viaFallback },
       });
     } catch (e) {
