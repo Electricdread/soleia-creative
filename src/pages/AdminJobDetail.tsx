@@ -139,14 +139,31 @@ export default function AdminJobDetail() {
       </div>
 
       {flags.length > 0 && (
-        <ul className="mb-6 space-y-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
-          {flags.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-sm text-amber-800 dark:text-amber-300">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-              <span>{f}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="mb-6 overflow-hidden rounded-xl border border-border bg-card">
+          <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            <h3 className="text-sm font-semibold text-foreground">Blocking</h3>
+            <span className="ml-auto font-mono text-xs text-muted-foreground">{flags.length}</span>
+          </div>
+          <ul className="divide-y divide-border">
+            {flags.map((f) => (
+              <li key={f.label} className="flex items-center gap-3 px-4 py-2.5">
+                <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                <span className="min-w-0 flex-1 text-sm text-foreground">{f.label}</span>
+                {f.verb && f.href && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 flex-shrink-0 font-mono text-[10px] uppercase tracking-wider"
+                    onClick={() => navigate(f.href!)}
+                  >
+                    {f.verb}
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">

@@ -128,25 +128,45 @@ export function stageFor(j: JobWithMembers): StageResult {
   return { stage: 'booked', reason: 'Nothing raised against this booking yet', done: [] };
 }
 
-/** Things a person should decide about, rather than the app deciding for them. */
-export function flagsFor(j: JobWithMembers): string[] {
-  const { job, proposals, packets, sessions, hasCreativePackage } = j;
-  const out: string[] = [];
+export interface Blocker {
+  label: string;
+  /** Present when there is somewhere to go and fix it. */
+  verb?: string;
+  href?: string;
+}
 
-  if (!job.event_date) out.push('No event date — invisible to every deadline view');
+/**
+ * What is standing in this job's way, with the verb that clears it where one
+ * exists. A flag that only states a problem makes you go and find the screen
+ * yourself; the point of naming it is to shorten that.
+ */
+export function flagsFor(j: JobWithMembers): Blocker[] {
+  const { job, proposals, packets, sessions, hasCreativePackage } = j;
+  const out: Blocker[] = [];
+
   if (hasCreativePackage && sessions.length === 0) {
-    out.push('Creative Package selected but no creative session exists');
+    out.push({
+      label: 'Creative Package selected — no session created',
+      verb: 'Create', href: '/admin/creative',
+    });
+  }
+  if (!job.event_date) {
+    out.push({ label: 'No event date — job has no deadline', verb: 'Set', href: `/admin/jobs/${job.id}` });
+  }
+  if (job.track === 'creative' && !job.call_held_on && packets.length > 0 && proposals.length === 0) {
+    out.push({ label: 'Packet out — no creative call recorded', verb: 'Log', href: `/admin/jobs/${job.id}` });
   }
 
   const folders = new Set(
     [...proposals, ...packets].map((r) => r.drive_folder_id).filter(Boolean) as string[],
   );
-  if (folders.size > 1) out.push(`${folders.size} separate Drive folders for one job`);
+  // Nothing to click: consolidating these means moving files in Drive.
+  if (folders.size > 1) out.push({ label: `${folders.size} separate Drive folders for one job` });
 
   if (job.track === 'creative' && packets.length === 0 && proposals.length === 0) {
-    out.push('No packet and no proposal — is this in-house?');
+    out.push({ label: 'No packet and no proposal — is this in-house?', verb: 'Set track', href: `/admin/jobs/${job.id}` });
   }
-  if (proposals.length > 1) out.push(`${proposals.length} proposals on one job`);
+  if (proposals.length > 1) out.push({ label: `${proposals.length} proposals on one job` });
 
   return out;
 }
@@ -158,4 +178,59 @@ export function daysUntil(eventDate: string | null): number | null {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
   return Math.round((then.getTime() - now.getTime()) / 86_400_000);
+}
+
+export interface NextAction {
+  /** What is waiting, in the owner's words. */
+  label: string;
+  /** The verb on the button. */
+  verb: string;
+  /** Where the verb takes you. */
+  href: string;
+  /** Sorts the triage list: 0 is most urgent. */
+  weight: number;
+}
+
+/**
+ * The one thing this job is waiting on, and where to go and do it.
+ *
+ * The old dashboard could only say "unsigned, 11 days" because age was all it
+ * knew. A stage knows what comes next.
+ */
+export function nextAction(j: JobWithMembers): NextAction | null {
+  const { job, proposals, sessions, assetCount, hasCreativePackage } = j;
+  const days = daysUntil(job.event_date);
+  const soon = days !== null && days <= 21;
+  const imminent = days !== null && days <= 7;
+
+  // An in-house booking owes nobody a proposal. Never chase it.
+  if (job.track === 'in_house') {
+    if (sessions.length === 0) {
+      return { label: 'In-house, no creative session yet', verb: 'Create', href: '/admin/creative', weight: 60 };
+    }
+    return null;
+  }
+
+  const signed = proposals.find((p) => !!p.signed_at);
+  const sent = proposals.find((p) => !p.signed_at && p.status === 'sent');
+
+  if (signed && hasCreativePackage && sessions.length === 0) {
+    return { label: 'Creative Package selected — no session created', verb: 'Create', href: '/admin/creative', weight: 0 };
+  }
+  if (signed && assetCount === 0) {
+    return { label: 'Signed — no brand assets in the Drive folder', verb: 'Nudge', href: `/admin/jobs/${job.id}`, weight: imminent ? 1 : 10 };
+  }
+  if (sent) {
+    return { label: 'Proposal sent, not signed', verb: 'Chase', href: '/admin/proposals', weight: imminent ? 2 : soon ? 11 : 30 };
+  }
+  if (proposals.length === 0 && job.call_held_on) {
+    return { label: 'Call held — no proposal raised', verb: 'Quote', href: '/admin/proposals', weight: imminent ? 3 : soon ? 12 : 31 };
+  }
+  if (proposals.length === 0 && j.packets.length > 0) {
+    return { label: 'Packet out — no creative call recorded', verb: 'Log call', href: `/admin/jobs/${job.id}`, weight: imminent ? 4 : soon ? 13 : 40 };
+  }
+  if (!job.event_date) {
+    return { label: 'No event date — no deadline anywhere', verb: 'Set', href: `/admin/jobs/${job.id}`, weight: 50 };
+  }
+  return null;
 }

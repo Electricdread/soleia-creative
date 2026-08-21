@@ -11,9 +11,8 @@ import {
 
 import { AdminShell } from '@/components/admin/AdminShell';
 import { PendingApproval } from '@/components/auth/PendingApproval';
-import { UpcomingDeadlines } from '@/components/admin/UpcomingDeadlines';
-import { DashboardStatusGrid } from '@/components/admin/DashboardStatusGrid';
-import { PendingActionsPanel } from '@/components/admin/PendingActionsPanel';
+import { TodayStrip } from '@/components/admin/TodayStrip';
+import { NeedsYou } from '@/components/admin/NeedsYou';
 import { RecentActivityFeed } from '@/components/admin/RecentActivityFeed';
 import { useDeadlineCount } from '@/hooks/useDeadlineCount';
 import { type EventStatus } from '@/components/calendar/EventStatusBadge';
@@ -154,7 +153,9 @@ export default function AdminPortal() {
         </Button>
       }
     >
-      <div className="grid grid-cols-7 gap-1.5">
+      <TodayStrip />
+
+      <div className="mt-6 grid grid-cols-7 gap-1.5">
         {eachDayOfInterval({ start: weekStart, end: weekEnd }).map((day) => {
           const dayEvents = weekEvents.filter((e) => isSameDay(parseISO(e.dtstart), day));
           const today = isToday(day);
@@ -197,14 +198,8 @@ export default function AdminPortal() {
         </div>
       )}
 
-      <div className="mt-8">
-        <UpcomingDeadlines />
-      </div>
-
-      <DashboardStatusGrid />
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <PendingActionsPanel />
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1.5fr_1fr]">
+        <NeedsYou />
         <RecentActivityFeed />
       </div>
     </AdminShell>
