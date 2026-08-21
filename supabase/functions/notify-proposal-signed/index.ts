@@ -12,7 +12,55 @@ serve(async (req) => {
   }
 
   try {
-    const { event_name, client_name, client_signature, venue_name, event_date, proposal_url } = await req.json();
+    const { event_name, client_name, client_signature, venue_name, event_date, proposal_url, token } =
+      await req.json();
+
+    // Everyone on the job, not just the studio inbox.
+    //
+    // This has always sent to ADMIN_NOTIFY_EMAILS alone, so the PM named on a
+    // proposal was never told their own proposal had been signed — which is
+    // exactly what arodriguez@soleialv.com experienced. send-signed-proposal
+    // did include them, but that is the manual "Send PDF" action, not this.
+    const team: { email: string; name: string | null }[] = [];
+    if (token) {
+      try {
+        const url = Deno.env.get('SUPABASE_URL');
+        const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        if (url && key) {
+          const headers = { apikey: key, Authorization: `Bearer ${key}` };
+          const pRes = await fetch(
+            `${url}/rest/v1/proposals?token=eq.${encodeURIComponent(token)}&select=job_id,assigned_pm_email,assigned_pm_name`,
+            { headers },
+          );
+          const [proposal] = (await pRes.json()) as {
+            job_id: string | null; assigned_pm_email: string | null; assigned_pm_name: string | null;
+          }[];
+
+          if (proposal?.assigned_pm_email) {
+            team.push({ email: proposal.assigned_pm_email, name: proposal.assigned_pm_name });
+          }
+          if (proposal?.job_id) {
+            const aRes = await fetch(
+              `${url}/rest/v1/job_assignees?job_id=eq.${proposal.job_id}&select=email,display_name&order=created_at`,
+              { headers },
+            );
+            for (const a of (await aRes.json()) as { email: string; display_name: string | null }[]) {
+              if (a.email && !team.some((t) => t.email === a.email)) {
+                team.push({ email: a.email, name: a.display_name });
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // A lookup failure must not stop the studio being told.
+        console.error('Could not resolve the job team; sending to admins only', e);
+      }
+    }
+
+    const recipients = Array.from(new Set([
+      ...adminRecipients(),
+      ...team.map((t) => t.email.trim()).filter(Boolean),
+    ]));
 
     const dateStr = event_date ? new Date(event_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'TBD';
 
@@ -34,7 +82,8 @@ serve(async (req) => {
     `;
 
     const report = await sendEach({
-      to: adminRecipients(),
+      to: recipients,
+      template: 'proposal-signed',
       subject: `Proposal Signed: ${event_name} — ${client_name}`,
       html,
     });

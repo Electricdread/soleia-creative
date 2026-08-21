@@ -264,6 +264,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           venue_name: proposal.venue_name,
           event_date: proposal.event_date,
           proposal_url: window.location.href,
+          // Lets the function resolve who is on the job server-side; a public
+          // page does not get to choose who receives studio mail.
+          token: proposal.token,
         },
       }).catch(console.error);
 

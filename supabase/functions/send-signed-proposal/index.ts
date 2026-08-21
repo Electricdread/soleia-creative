@@ -67,6 +67,7 @@ serve(async (req) => {
     // must not take the internal copy down with it, which is exactly what a
     // single multi-recipient request did.
     const report = await sendEach({
+      template: 'signed-proposal-pdf',
       to: Array.from(recipients),
       subject: `Signed Proposal — ${p.event_name}`,
       html,

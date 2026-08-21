@@ -159,6 +159,7 @@ Deno.serve(async (req) => {
       </div>`;
 
     const report = await sendEach({
+      template: 'brief-submitted',
       to: recipients,
       subject: `Creative brief in: ${session.project_name} — ${session.client_name}`,
       html,

@@ -43,6 +43,8 @@ export interface NotificationMessage {
   subject: string;
   html: string;
   attachments?: { filename: string; content: string }[];
+  /** What this is, for the send log. Defaults to the subject if omitted. */
+  template?: string;
 }
 
 export interface DeliveryReport {
@@ -64,12 +66,53 @@ function isUnverifiedDomain(error: string): boolean {
   return /domain is not verified/i.test(error);
 }
 
+/**
+ * Record every attempt, delivered or not.
+ *
+ * email_send_log existed and this path never wrote to it, so there was no way
+ * to answer "did that address get it?" except by asking the person. A PM went
+ * months without proposal mail and nothing anywhere said so. Logging is
+ * best-effort by design: a failure to record must never fail a send.
+ */
+async function logAttempt(entry: {
+  template: string;
+  to: string;
+  status: 'delivered' | 'failed';
+  error?: string;
+  meta?: Record<string, unknown>;
+}): Promise<void> {
+  try {
+    const url = Deno.env.get('SUPABASE_URL');
+    const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!url || !key) return;
+    await fetch(`${url}/rest/v1/email_send_log`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({
+        template_name: entry.template,
+        recipient_email: entry.to,
+        status: entry.status,
+        error_message: entry.error ?? null,
+        metadata: entry.meta ?? {},
+      }),
+    });
+  } catch (e) {
+    console.error('Could not write to email_send_log', e);
+  }
+}
+
 /** Send one message per recipient so a rejected address cannot take the others with it. */
 export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport> {
   const apiKey = Deno.env.get('RESEND_API_KEY');
   if (!apiKey) throw new Error('RESEND_API_KEY not configured');
 
   const configuredFrom = notifyFrom();
+  const template = msg.template ?? msg.subject;
   const recipients = Array.from(new Set(msg.to.map((t) => t.trim()).filter(Boolean)));
   const report: DeliveryReport = {
     delivered: [],
@@ -113,17 +156,20 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
             const error = await res.text();
             console.error('Resend rejected a recipient', { to, from: SANDBOX_FROM, error });
             report.failed.push({ to, error });
+            await logAttempt({ template, to, status: 'failed', error, meta: { from: SANDBOX_FROM } });
             continue;
           }
         } else {
           console.error('Resend rejected a recipient', { to, from: configuredFrom, error: firstError });
           report.failed.push({ to, error: firstError });
+          await logAttempt({ template, to, status: 'failed', error: firstError, meta: { from: configuredFrom } });
           continue;
         }
       } else if (!res.ok) {
         const error = await res.text();
         console.error('Resend rejected a recipient', { to, from: configuredFrom, error });
         report.failed.push({ to, error });
+        await logAttempt({ template, to, status: 'failed', error, meta: { from: configuredFrom } });
         continue;
       }
 
@@ -132,10 +178,15 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
         report.sandboxFallback.push(to);
         report.sandbox = true;
       }
+      await logAttempt({
+        template, to, status: 'delivered',
+        meta: { from: viaFallback ? SANDBOX_FROM : configuredFrom, sandbox_fallback: viaFallback },
+      });
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);
       console.error('Resend request failed', { to, from: configuredFrom, error });
       report.failed.push({ to, error });
+      await logAttempt({ template, to, status: 'failed', error, meta: { from: configuredFrom } });
     }
   }
 
