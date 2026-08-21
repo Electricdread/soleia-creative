@@ -506,6 +506,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_public: boolean
+          job_id: string | null
           project_name: string
           proposal_id: string | null
           show_previz: boolean
@@ -530,6 +531,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_public?: boolean
+          job_id?: string | null
           project_name: string
           proposal_id?: string | null
           show_previz?: boolean
@@ -554,6 +556,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_public?: boolean
+          job_id?: string | null
           project_name?: string
           proposal_id?: string | null
           show_previz?: boolean
@@ -562,6 +565,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "creative_sessions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "creative_sessions_proposal_id_fkey"
             columns: ["proposal_id"]
@@ -705,6 +715,54 @@ export type Database = {
           id?: string
           token?: string
           used_at?: string | null
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          call_held_on: string | null
+          client_name: string
+          created_at: string
+          created_by: string | null
+          drive_folder_id: string | null
+          drive_folder_url: string | null
+          event_date: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          title: string
+          track: Database["public"]["Enums"]["job_track"]
+          updated_at: string
+        }
+        Insert: {
+          call_held_on?: string | null
+          client_name: string
+          created_at?: string
+          created_by?: string | null
+          drive_folder_id?: string | null
+          drive_folder_url?: string | null
+          event_date?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          title: string
+          track?: Database["public"]["Enums"]["job_track"]
+          updated_at?: string
+        }
+        Update: {
+          call_held_on?: string | null
+          client_name?: string
+          created_at?: string
+          created_by?: string | null
+          drive_folder_id?: string | null
+          drive_folder_url?: string | null
+          event_date?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          title?: string
+          track?: Database["public"]["Enums"]["job_track"]
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1084,6 +1142,7 @@ export type Database = {
           inclusions: Json
           intro: string | null
           is_active: boolean
+          job_id: string | null
           kind: string
           notes: string | null
           scope: string | null
@@ -1103,6 +1162,7 @@ export type Database = {
           inclusions?: Json
           intro?: string | null
           is_active?: boolean
+          job_id?: string | null
           kind?: string
           notes?: string | null
           scope?: string | null
@@ -1122,6 +1182,7 @@ export type Database = {
           inclusions?: Json
           intro?: string | null
           is_active?: boolean
+          job_id?: string | null
           kind?: string
           notes?: string | null
           scope?: string | null
@@ -1129,7 +1190,15 @@ export type Database = {
           token?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pre_call_packets_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1344,10 +1413,12 @@ export type Database = {
           id: string
           is_active: boolean
           is_pre_call_packet: boolean
+          job_id: string | null
           notes: string | null
           proposal_scenario: string
           quote_date: string
           signed_at: string | null
+          signoff_due_on: string | null
           status: string
           token: string
           updated_at: string
@@ -1372,10 +1443,12 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_pre_call_packet?: boolean
+          job_id?: string | null
           notes?: string | null
           proposal_scenario?: string
           quote_date?: string
           signed_at?: string | null
+          signoff_due_on?: string | null
           status?: string
           token: string
           updated_at?: string
@@ -1400,17 +1473,27 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_pre_call_packet?: boolean
+          job_id?: string | null
           notes?: string | null
           proposal_scenario?: string
           quote_date?: string
           signed_at?: string | null
+          signoff_due_on?: string | null
           status?: string
           token?: string
           updated_at?: string
           validity_days?: number
           venue_name?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "proposals_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       session_previz_clips: {
         Row: {
@@ -1792,6 +1875,7 @@ export type Database = {
           inclusions: Json
           intro: string | null
           is_active: boolean
+          job_id: string | null
           kind: string
           notes: string | null
           scope: string | null
@@ -1826,10 +1910,12 @@ export type Database = {
           id: string
           is_active: boolean
           is_pre_call_packet: boolean
+          job_id: string | null
           notes: string | null
           proposal_scenario: string
           quote_date: string
           signed_at: string | null
+          signoff_due_on: string | null
           status: string
           token: string
           updated_at: string
@@ -2031,6 +2117,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      job_track: "creative" | "in_house"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2159,6 +2246,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      job_track: ["creative", "in_house"],
     },
   },
 } as const
