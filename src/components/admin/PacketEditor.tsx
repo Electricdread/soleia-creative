@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
+import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -157,6 +159,20 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
   const { user } = useAuth();
   const [form, setForm] = useState<PacketRecord>(defaultFor(kind));
   const [saving, setSaving] = useState(false);
+  const [assignees, setAssignees] = useState<Colleague[]>([]);
+
+  // An existing packet already belongs to a job, so show who is on it.
+  useEffect(() => {
+    if (!open || !initial?.id) { setAssignees([]); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('pre_call_packets').select('job_id').eq('id', initial.id).maybeSingle();
+      if (cancelled || !data?.job_id) return;
+      setAssignees(await fetchJobAssignees(data.job_id));
+    })();
+    return () => { cancelled = true; };
+  }, [open, initial?.id]);
   const effectiveKind: PacketKind = initial?.kind ?? kind;
 
   useEffect(() => {
@@ -229,6 +245,12 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
       return;
     }
 
+    // The job is created on first save, so this has to come after it.
+    const packetJobId = jobId ?? (initial?.id
+      ? (await supabase.from('pre_call_packets').select('job_id').eq('id', initial.id).maybeSingle()).data?.job_id
+      : null);
+    if (packetJobId) await saveJobAssignees(packetJobId, assignees, user?.id);
+
     if (saved?.id && saved?.client_name && !saved?.drive_folder_url) {
       try {
         const folderMode = PACKET_FOLDER_MODE[(saved.kind as PacketKind) ?? 'pre_call'] ?? 'full';
@@ -272,6 +294,17 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
           <div>
             <Label htmlFor="event_date">Event date</Label>
             <Input id="event_date" type="date" value={form.event_date ?? ''} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
+          </div>
+
+          <div>
+            <Label>Assigned to</Label>
+            <div className="mt-1.5">
+              <AssigneePicker value={assignees} onChange={setAssignees} />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Assigned to the job, so the proposal and creative session share them. Everyone here is
+              emailed when the proposal is signed and when the client submits their brief.
+            </p>
           </div>
 
           <div>

@@ -18,6 +18,8 @@ interface Payload {
   assigned_pm_email?: string | null;
   pdf_base64: string;
   pdf_filename: string;
+  /** Resolves the job team server-side. */
+  token?: string | null;
 }
 
 serve(async (req) => {
@@ -30,6 +32,35 @@ serve(async (req) => {
     if (p.client_email) recipients.add(p.client_email);
     if (p.assigned_pm_email) recipients.add(p.assigned_pm_email);
     for (const admin of adminRecipients()) recipients.add(admin);
+
+    // Everyone on the job, not only the one PM named on the proposal. Sent by
+    // token so the caller cannot choose who receives the signed PDF.
+    if (p.token) {
+      try {
+        const url = Deno.env.get('SUPABASE_URL');
+        const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        if (url && key) {
+          const headers = { apikey: key, Authorization: `Bearer ${key}` };
+          const pRes = await fetch(
+            `${url}/rest/v1/proposals?token=eq.${encodeURIComponent(p.token)}&select=job_id`,
+            { headers },
+          );
+          const [row] = (await pRes.json()) as { job_id: string | null }[];
+          if (row?.job_id) {
+            const aRes = await fetch(
+              `${url}/rest/v1/job_assignees?job_id=eq.${row.job_id}&select=email`,
+              { headers },
+            );
+            for (const a of (await aRes.json()) as { email: string }[]) {
+              if (a.email) recipients.add(a.email.trim());
+            }
+          }
+        }
+      } catch (e) {
+        // Never withhold the PDF because the team lookup failed.
+        console.error('Could not resolve the job team for the signed PDF', e);
+      }
+    }
 
     if (recipients.size === 0) {
       return new Response(JSON.stringify({ skipped: true, reason: 'no recipients' }), {

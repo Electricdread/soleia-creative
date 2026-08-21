@@ -84,6 +84,7 @@ export async function sendSignedProposalEmail(
       proposal_url: `${getPublicOrigin()}/proposal/${proposal.token}`,
       assigned_pm_name: proposal.assigned_pm_name || null,
       assigned_pm_email: proposal.assigned_pm_email || null,
+      token: proposal.token,
       pdf_base64: (pdf as { base64: string }).base64,
       pdf_filename: (pdf as { filename: string }).filename,
     },

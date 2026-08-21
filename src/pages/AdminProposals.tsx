@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
+import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
 import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
@@ -82,7 +84,7 @@ export default function AdminProposals() {
   const [validityDays, setValidityDays] = useState('7');
   const [contactEmail, setContactEmail] = useState('luisdreamslv@gmail.com');
   const [clientEmail, setClientEmail] = useState('');
-  const [assignedPmId, setAssignedPmId] = useState('');
+  const [assignees, setAssignees] = useState<Colleague[]>([]);
   const [adminUsers, setAdminUsers] = useState<{ user_id: string; email: string; display_name: string }[]>([]);
   const [creativeCallUrl, setCreativeCallUrl] = useState('');
   const [itemsList, setItemsList] = useState([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
@@ -164,9 +166,12 @@ export default function AdminProposals() {
           validity_days: parseInt(validityDays) || 7,
           contact_email: contactEmail,
           client_email: clientEmail.trim() || null,
-          assigned_pm_id: assignedPmId || null,
-          assigned_pm_email: adminUsers.find(u => u.user_id === assignedPmId)?.email || null,
-          assigned_pm_name: adminUsers.find(u => u.user_id === assignedPmId)?.display_name || adminUsers.find(u => u.user_id === assignedPmId)?.email || null,
+          // The first person named stays the proposal's PM of record — the
+          // signed-PDF mail prints one "Project Manager" line. Everyone named
+          // lands on the job below, and all of them are emailed.
+          assigned_pm_id: assignees[0]?.user_id ?? null,
+          assigned_pm_email: assignees[0]?.email ?? null,
+          assigned_pm_name: assignees[0]?.display_name ?? assignees[0]?.email ?? null,
           creative_call_url: creativeCallUrl.trim() || null,
           status: 'draft',
           created_by: user?.id,
@@ -176,6 +181,10 @@ export default function AdminProposals() {
         .select()
         .single();
       if (error) throw error;
+
+      if (jobId && assignees.length > 0) {
+        await saveJobAssignees(jobId, assignees, user?.id);
+      }
 
       // Insert items
       const validItems = itemsList.filter(i => i.title.trim());
@@ -246,7 +255,7 @@ export default function AdminProposals() {
     setValidityDays('7');
     setContactEmail('luisdreamslv@gmail.com');
     setClientEmail('');
-    setAssignedPmId('');
+    setAssignees([]);
     setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
     setCreativeCallUrl('');
   };
@@ -477,18 +486,15 @@ luisdreamslv@gmail.com`;
                   className="bg-muted border-border text-foreground mt-1"
                 />
               </div>
-              <div>
-                <Label className="text-muted-foreground text-xs">Assigned Project Manager</Label>
-                <select
-                  value={assignedPmId}
-                  onChange={e => setAssignedPmId(e.target.value)}
-                  className="w-full mt-1 rounded-md border border-border bg-muted text-foreground px-3 py-2 text-sm h-10"
-                >
-                  <option value="">— Unassigned —</option>
-                  {adminUsers.map(u => (
-                    <option key={u.user_id} value={u.user_id}>{u.display_name || u.email}</option>
-                  ))}
-                </select>
+              <div className="sm:col-span-2">
+                <Label className="text-muted-foreground text-xs">Assigned to</Label>
+                <div className="mt-1.5">
+                  <AssigneePicker value={assignees} onChange={setAssignees} />
+                </div>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  Assigned to the job, so the packet and creative session share them. Everyone here
+                  is emailed when the proposal is signed and when the client submits their brief.
+                </p>
               </div>
               <div className="sm:col-span-2">
                 <Label className="text-muted-foreground text-xs">Creative Call Scheduling Link (optional)</Label>
