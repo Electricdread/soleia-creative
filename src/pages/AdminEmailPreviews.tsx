@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Loader2, ArrowLeft, ExternalLink, Copy, Download, Mail, Smartphone, Monitor, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 type EmailType = 'signup' | 'magiclink' | 'recovery' | 'invite' | 'email_change' | 'reauthentication';
 
@@ -145,31 +145,8 @@ export default function AdminEmailPreviews() {
   const iframeWidth = viewport === 'mobile' ? 375 : 600;
 
   return (
-    <div className="relative min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/admin')}
-              className="text-muted-foreground hover:text-foreground gap-1.5"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Admin
-            </Button>
-            <div className="w-px h-6 bg-border" />
-            <img src={soleiaLogo} alt="Soleia" className="h-7 object-contain" />
-            <div className="hidden sm:flex items-center gap-2 ml-2">
-              <Mail className="w-4 h-4 text-primary" />
-              <h1 className="text-sm font-semibold text-foreground">Auth Email Previews</h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+    <AdminShell title="Email previews" subtitle="The six branded auth emails">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
         {/* Sidebar */}
         <aside>
           <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-3 px-1">
@@ -333,7 +310,7 @@ export default function AdminEmailPreviews() {
             </div>
           </Card>
         </section>
-      </main>
-    </div>
+      </div>
+    </AdminShell>
   );
 }

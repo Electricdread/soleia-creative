@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Settings2, Save, Search, Clock, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, startOfWeek, endOfWeek, differenceInCalendarDays } from 'date-fns';
-import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import { EventDetailPanel } from '@/components/calendar/EventDetailPanel';
 import { EventStatusBadge, getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
 
@@ -205,26 +205,21 @@ export default function AdminCalendar() {
   if (!user || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-background font-sans touch-manipulation safe-area-top">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
-                <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Back</span>
-              </Button>
-              <div className="h-5 w-px bg-border hidden sm:block" />
-              <img src={soleiaLogo} alt="Soleia" className="h-7 w-auto object-contain hidden sm:block" />
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)} className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] min-w-[44px] active:scale-95 transition-transform">
-              <Settings2 className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Settings</span>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 safe-area-bottom">
+    <AdminShell
+      title="Calendar"
+      subtitle="Events synced from Triple Seat"
+      actions={
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowSettings(!showSettings)}
+          className="min-h-[44px] text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-transform"
+        >
+          <Settings2 className="mr-1 h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Feed settings</span>
+        </Button>
+      }
+    >
+      <div className="safe-area-bottom">
         {showSettings && (
           <Card className="mb-6 bg-card border-border">
             <CardHeader>
@@ -387,7 +382,7 @@ export default function AdminCalendar() {
             )}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </AdminShell>
   );
 }

@@ -7,6 +7,10 @@ import { useLocation } from 'react-router-dom';
 // toggle there would appear broken, since nothing on screen would change.
 const FIXED_THEME_ROUTES = ['/creative-guide/services'];
 
+// The admin shell carries its own toggle in the rail footer. Floating a second
+// one over it put three theme switches on the dashboard at once.
+const SHELL_ROUTES = ['/admin', '/office'];
+
 export function FloatingThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -15,6 +19,7 @@ export function FloatingThemeToggle() {
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
   if (FIXED_THEME_ROUTES.includes(pathname)) return null;
+  if (pathname === '/' || SHELL_ROUTES.some((r) => pathname.startsWith(r))) return null;
 
   const current = theme === 'system' ? resolvedTheme : theme;
   const isDark = current === 'dark';

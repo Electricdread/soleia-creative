@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +15,6 @@ import { Switch } from '@/components/ui/switch';
 import { getPublicOrigin } from '@/lib/ogShare';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import LineItemLibrary from '@/components/admin/LineItemLibrary';
 import ProposalSessionLinker from '@/components/admin/ProposalSessionLinker';
 import PacketProposalSendDialog from '@/components/admin/PacketProposalSendDialog';
@@ -363,40 +363,31 @@ luisdreamslv@gmail.com`;
   if (isLoading || !isAdmin) return null;
 
   return (
-    <div className="relative min-h-screen bg-background overflow-hidden">
-      <div className="fixed inset-0 bg-gradient-to-br from-background via-muted/30 to-background z-0" />
-
-      <header className="relative z-10 border-b border-border">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3 min-w-0">
-            <img src={soleiaLogo} alt="Soleia" className="h-8 object-contain flex-shrink-0" />
-            <h1 className="font-display text-foreground text-base sm:text-lg truncate hidden sm:block">Client Proposals</h1>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveTab('proposals')}
-              className={`text-sm ${activeTab === 'proposals' ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Proposals
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveTab('library')}
-              className={`text-sm gap-1.5 ${activeTab === 'library' ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <Library className="w-3.5 h-3.5" /> Item Library
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-muted-foreground hover:text-foreground hover:bg-muted">
-              <Settings className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <AdminShell
+      title="Proposals"
+      subtitle="Interactive service agreements and quotes"
+      actions={
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab('proposals')}
+            className={`text-sm ${activeTab === 'proposals' ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            Proposals
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab('library')}
+            className={`text-sm gap-1.5 ${activeTab === 'library' ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Library className="w-3.5 h-3.5" /> Item library
+          </Button>
+        </>
+      }
+    >
+      <div className="mx-auto max-w-5xl">
         {activeTab === 'library' ? (
           <div className="bg-muted border border-border rounded-xl p-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
@@ -809,7 +800,7 @@ luisdreamslv@gmail.com`;
         )}
         </>
         )}
-      </main>
+      </div>
 
       <PacketProposalSendDialog
         open={!!packetSendProposal}
@@ -831,6 +822,6 @@ luisdreamslv@gmail.com`;
           onLinked={fetchProposals}
         />
       )}
-    </div>
+    </AdminShell>
   );
 }

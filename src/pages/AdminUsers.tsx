@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -152,40 +153,17 @@ export default function AdminUsers() {
   const approvedCount = pendingUsers.filter(u => u.has_admin_role).length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/admin')}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="font-display text-2xl text-foreground tracking-tight flex items-center gap-3">
-                <Users className="w-6 h-6 text-muted-foreground" />
-                User Management
-              </h1>
-              <p className="text-muted-foreground text-sm mt-1">Approve or deny access requests</p>
-            </div>
-          </div>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchPendingUsers}
-            disabled={isLoading}
-            className="border-border text-muted-foreground hover:bg-muted"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-
+    <AdminShell
+      title="People"
+      subtitle="Approve or deny access requests"
+      actions={
+        <Button variant="outline" size="sm" onClick={fetchPendingUsers} disabled={isLoading}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      }
+    >
+      <div className="mx-auto max-w-4xl">
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <Card className="bg-muted/50 border-border">
@@ -310,6 +288,6 @@ export default function AdminUsers() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminShell>
   );
 }

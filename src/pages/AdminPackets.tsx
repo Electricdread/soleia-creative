@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -117,30 +118,24 @@ export default function AdminPackets() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/admin')}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Dashboard
-            </Button>
-            <h1 className="font-display text-2xl text-foreground">Creative Packets</h1>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            <Button variant="outline" onClick={() => openNewPacket('pre_call')}>
-              <Plus className="w-4 h-4 mr-2" /> Pre-Call
-            </Button>
-            <Button variant="outline" onClick={() => openNewPacket('post_call')}>
-              <Plus className="w-4 h-4 mr-2" /> Post-Call
-            </Button>
-            <Button onClick={() => openNewPacket('custom')}>
-              <Plus className="w-4 h-4 mr-2" /> Custom
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <AdminShell
+      title="Packets"
+      subtitle="Inclusions and scope of work for client review"
+      actions={
+        <>
+          <Button variant="outline" size="sm" onClick={() => openNewPacket('pre_call')}>
+            <Plus className="w-4 h-4 mr-2" /> Pre-call
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => openNewPacket('post_call')}>
+            <Plus className="w-4 h-4 mr-2" /> Post-call
+          </Button>
+          <Button size="sm" onClick={() => openNewPacket('custom')}>
+            <Plus className="w-4 h-4 mr-2" /> Custom
+          </Button>
+        </>
+      }
+    >
+      <div>
         {loading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -223,7 +218,7 @@ export default function AdminPackets() {
             ))}
           </div>
         )}
-      </main>
+      </div>
 
       <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} kind={newKind} onSaved={load} />
 
@@ -268,6 +263,6 @@ export default function AdminPackets() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AdminShell>
   );
 }
