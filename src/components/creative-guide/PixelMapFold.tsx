@@ -45,6 +45,9 @@ import {
 const VideoMapExplainer = lazy(() => import('@/components/venue/VideoMapExplainer'));
 
 const PIXEL_MAP = '/creative-guide/soleia-pixelmap.png';
+// The mark itself, so highlighting a screen shows what actually lands on it.
+// Same asset the explainer uses, inverted to read white over the colour blocks.
+const LOGO = '/soleia-logo-black.png';
 
 const BAND_CLASS: Record<PixelMapRegion['band'], string> = {
   walls: 'border-primary bg-primary/25',
@@ -148,10 +151,22 @@ export function PixelMapFold() {
                       onBlur={() => setHot(null)}
                       onClick={() => setHot((v) => (v === r.label ? null : r.label))}
                       aria-label={`${r.label} — ${r.rect[2]} by ${r.rect[3]} pixels at ${r.rect[0]}, ${r.rect[1]}`}
-                      className={`absolute border transition-all duration-200 ${
+                      className={`absolute flex items-center justify-center border transition-all duration-200 ${
                         on ? `${BAND_CLASS[r.band]} opacity-100` : 'border-transparent bg-transparent opacity-0'
                       }`}
-                    />
+                    >
+                      {on && r.logo && (
+                        <img
+                          src={LOGO}
+                          alt=""
+                          className="max-h-[76%] w-[56%] object-contain"
+                          style={{
+                            filter:
+                              'brightness(0) invert(1) drop-shadow(0 2px 10px rgba(0,0,0,0.85))',
+                          }}
+                        />
+                      )}
+                    </button>
                   );
                 })}
               </div>
@@ -250,6 +265,11 @@ export function PixelMapFold() {
                     <span className="inline-flex items-center gap-2.5 text-[13.5px] text-foreground">
                       <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${BAND_DOT[r.band]}`} />
                       {r.label}
+                      {r.logo && (
+                        <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-primary/70">
+                          logo
+                        </span>
+                      )}
                     </span>
                     <span className="whitespace-nowrap font-mono text-[11.5px] tabular-nums text-primary">
                       {r.rect[2]} × {r.rect[3]}
@@ -260,9 +280,10 @@ export function PixelMapFold() {
             </div>
 
             <p className="mt-5 text-[12.5px] leading-relaxed text-muted-foreground/80">
-              Hover any screen to see the slice of the frame it occupies — these are the exact
-              coordinates the playback system reads, and the same ones in the After Effects template
-              in the Content Delivery Guide.
+              Hover any screen to see the slice of the frame it occupies, and where your mark
+              lands on the ones tagged <span className="text-primary">logo</span> — the ten static
+              logos every buyout includes. These are the exact coordinates the playback system
+              reads, and the same ones in the After Effects template in the Content Delivery Guide.
             </p>
           </div>
         </article>

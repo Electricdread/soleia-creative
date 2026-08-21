@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Maximize2, X } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
-import { VENUE_AREAS, surfacesIn, type AreaId } from '@/lib/venueSurfaces';
+import { VENUE_AREAS, type AreaId } from '@/lib/venueSurfaces';
 
 /**
  * Where a client's brand actually lands, area by area.
@@ -13,9 +13,10 @@ import { VENUE_AREAS, surfacesIn, type AreaId } from '@/lib/venueSurfaces';
  * so until now no client could reach the one set of pictures that answers
  * "where would my logo be?".
  *
- * The image leads and is deliberately large: this section gets talked over on a
- * screenshared creative call, so the render has to read at meeting size before
- * any of the numbers beside it matter.
+ * The image is the whole point and is deliberately large: this section gets
+ * talked over on a screenshared creative call, so the render has to read at
+ * meeting size. Resolutions and logo placement deliberately live further down in
+ * the pixel-map legend — repeating them here made the opening a spec sheet.
  */
 
 type Shot = { src: string; alt: string; kind: 'image' } | { src: string; poster?: string; alt: string; kind: 'video' };
@@ -25,7 +26,6 @@ export function VenueSurfaceExplorer() {
   const [lightbox, setLightbox] = useState<Shot | null>(null);
 
   const area = useMemo(() => VENUE_AREAS.find((a) => a.id === areaId) ?? VENUE_AREAS[0], [areaId]);
-  const surfaces = useMemo(() => surfacesIn(area.id), [area.id]);
 
   const shots = useMemo<Shot[]>(() => {
     const list: Shot[] = [{ src: area.image, alt: area.imageAlt, kind: 'image' }];
@@ -138,44 +138,8 @@ export function VenueSurfaceExplorer() {
           <div className="border-t border-primary/15 px-6 py-7 sm:px-8">
             <h3 className="font-display text-2xl leading-tight text-foreground">{area.title}</h3>
             <p className="mt-2.5 max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground">{area.blurb}</p>
-            {surfaces.some((s) => s.logoIncluded) && (
-              <p className="mt-3 text-[12.5px] leading-relaxed text-muted-foreground/80">
-                Surfaces marked <span className="text-primary">Logo included</span> carry one of the
-                ten static logos every buyout comes with — before any creative work is added.
-              </p>
-            )}
           </div>
 
-          {/* Every surface in it, at its real resolution */}
-          <div className="border-t border-primary/15">
-            {surfaces.map((s, i) => (
-              <div
-                key={s.name}
-                className={`grid grid-cols-1 items-baseline gap-1 px-6 py-4 sm:grid-cols-[190px_1fr_auto] sm:items-center sm:gap-6 sm:px-8 ${
-                  i > 0 ? 'border-t border-primary/10' : ''
-                }`}
-              >
-                <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                  <span className="text-[14.5px] font-medium text-foreground">{s.name}</span>
-                  {s.countNote && (
-                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
-                      {s.countNote}
-                    </span>
-                  )}
-                  {s.logoIncluded && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
-                      <span className="h-1 w-1 rounded-full bg-primary" />
-                      Logo included
-                    </span>
-                  )}
-                </div>
-                <p className="text-[13px] leading-snug text-muted-foreground">{s.role}</p>
-                <span className="whitespace-nowrap text-left font-mono text-[12.5px] tabular-nums text-primary sm:text-right">
-                  {s.res}
-                </span>
-              </div>
-            ))}
-          </div>
         </article>
       </Reveal>
 

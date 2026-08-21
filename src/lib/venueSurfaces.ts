@@ -229,24 +229,30 @@ export interface PixelMapRegion {
   rect: [number, number, number, number];
   /** Grouping used for the map legend and its colour. */
   band: 'walls' | 'curves' | 'rays' | 'outdoor';
+  /**
+   * Carries one of the ten static logos every buyout includes. Owner-confirmed:
+   * the two IMAG walls, the Center panel, all six Sol Rays and the three
+   * beachclub exteriors. The curves and the DJ booth carry motion only.
+   */
+  logo?: boolean;
 }
 
 export const PIXEL_MAP_REGIONS: PixelMapRegion[] = [
-  { label: 'IMAG SR', rect: [0, 0, 1216, 592], band: 'walls' },
-  { label: 'Center', rect: [1216, 0, 640, 272], band: 'walls' },
-  { label: 'IMAG SL', rect: [1856, 0, 1216, 592], band: 'walls' },
+  { label: 'IMAG SR', rect: [0, 0, 1216, 592], band: 'walls', logo: true },
+  { label: 'Center', rect: [1216, 0, 640, 272], band: 'walls', logo: true },
+  { label: 'IMAG SL', rect: [1856, 0, 1216, 592], band: 'walls', logo: true },
   { label: 'DJ Booth', rect: [906, 594, 1260, 168], band: 'walls' },
   { label: 'SR Curves', rect: [0, 794, 2304, 272], band: 'curves' },
   { label: 'SL Curves', rect: [0, 1066, 2304, 272], band: 'curves' },
-  { label: 'Sunray 1', rect: [0, 1368, 1920, 128], band: 'rays' },
-  { label: 'Sunray 2', rect: [0, 1496, 1536, 128], band: 'rays' },
-  { label: 'Sunray 3', rect: [0, 1624, 1792, 128], band: 'rays' },
-  { label: 'Sunray 4', rect: [0, 1752, 1792, 128], band: 'rays' },
-  { label: 'Sunray 5', rect: [0, 1880, 1792, 128], band: 'rays' },
-  { label: 'Sunray 6', rect: [0, 2008, 1536, 128], band: 'rays' },
-  { label: 'Outdoor SR', rect: [2322, 793, 588, 840], band: 'outdoor' },
-  { label: 'Outdoor SL', rect: [2916, 793, 588, 840], band: 'outdoor' },
-  { label: 'Outdoor Arch', rect: [2322, 1639, 1512, 504], band: 'outdoor' },
+  { label: 'Sunray 1', rect: [0, 1368, 1920, 128], band: 'rays', logo: true },
+  { label: 'Sunray 2', rect: [0, 1496, 1536, 128], band: 'rays', logo: true },
+  { label: 'Sunray 3', rect: [0, 1624, 1792, 128], band: 'rays', logo: true },
+  { label: 'Sunray 4', rect: [0, 1752, 1792, 128], band: 'rays', logo: true },
+  { label: 'Sunray 5', rect: [0, 1880, 1792, 128], band: 'rays', logo: true },
+  { label: 'Sunray 6', rect: [0, 2008, 1536, 128], band: 'rays', logo: true },
+  { label: 'Outdoor SR', rect: [2322, 793, 588, 840], band: 'outdoor', logo: true },
+  { label: 'Outdoor SL', rect: [2916, 793, 588, 840], band: 'outdoor', logo: true },
+  { label: 'Outdoor Arch', rect: [2322, 1639, 1512, 504], band: 'outdoor', logo: true },
 ];
 
 export const PIXEL_MAP_BANDS: { id: PixelMapRegion['band']; label: string }[] = [
