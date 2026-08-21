@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
-import { Map as MapIcon, Maximize2, Play, X } from 'lucide-react';
+import { Map as MapIcon, Maximize2, Play, Sparkles, X } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import {
   PIXEL_MAP_BANDS,
@@ -49,6 +49,14 @@ const PIXEL_MAP = '/creative-guide/soleia-pixelmap.png';
 // Same asset the explainer uses, inverted to read white over the colour blocks.
 const LOGO = '/soleia-logo-black.png';
 
+const BAND_BORDER: Record<PixelMapRegion['band'], string> = {
+  walls: 'border-primary',
+  curves: 'border-sky-300',
+  rays: 'border-amber-400',
+  outdoor: 'border-fuchsia-300',
+};
+
+/** Slice highlight for a screen that carries motion only. */
 const BAND_CLASS: Record<PixelMapRegion['band'], string> = {
   walls: 'border-primary bg-primary/25',
   curves: 'border-sky-300 bg-sky-300/25',
@@ -69,6 +77,8 @@ export function PixelMapFold() {
   const [hot, setHot] = useState<string | null>(null);
   const [zoom, setZoom] = useState(false);
   const [face, setFace] = useState<Face>('map');
+  /** Light every screen that carries an included logo, all at once. */
+  const [showAllLogos, setShowAllLogos] = useState(false);
   /** The explainer stays unmounted until it is first wanted. */
   const [foldMounted, setFoldMounted] = useState(false);
   const mediaRef = useRef<HTMLDivElement>(null);
@@ -82,7 +92,19 @@ export function PixelMapFold() {
 
   const showFold = (on: boolean) => {
     if (on) setFoldMounted(true);
+    if (on) setShowAllLogos(false);
     setFace(on ? 'fold' : 'map');
+  };
+
+  const showEveryLogo = () => {
+    setFace('map');
+    setHot(null);
+    setShowAllLogos(true);
+  };
+
+  const backToMap = () => {
+    setFace('map');
+    setShowAllLogos(false);
   };
 
   // Arm when the map frame itself is half on screen. Observing the whole card
@@ -138,7 +160,7 @@ export function PixelMapFold() {
               />
               <div className="absolute inset-0">
                 {PIXEL_MAP_REGIONS.map((r) => {
-                  const on = hot === r.label;
+                  const on = showAllLogos ? !!r.logo : hot === r.label;
                   return (
                     <button
                       key={r.label}
@@ -152,7 +174,13 @@ export function PixelMapFold() {
                       onClick={() => setHot((v) => (v === r.label ? null : r.label))}
                       aria-label={`${r.label} — ${r.rect[2]} by ${r.rect[3]} pixels at ${r.rect[0]}, ${r.rect[1]}`}
                       className={`absolute flex items-center justify-center border transition-all duration-200 ${
-                        on ? `${BAND_CLASS[r.band]} opacity-100` : 'border-transparent bg-transparent opacity-0'
+                        !on
+                          ? 'border-transparent bg-transparent opacity-0'
+                          : r.logo
+                            // Filled solid: the screen is showing the mark, so the
+                            // map's colour underneath should not read through it.
+                            ? `${BAND_BORDER[r.band]} bg-[#08070a] opacity-100`
+                            : `${BAND_CLASS[r.band]} opacity-100`
                       }`}
                     >
                       {on && r.logo && (
@@ -199,16 +227,29 @@ export function PixelMapFold() {
           <div className="flex flex-wrap items-center gap-2 border-t border-primary/15 px-6 py-3.5 sm:px-8">
             <button
               type="button"
-              onClick={() => showFold(false)}
-              aria-pressed={onMap}
+              onClick={backToMap}
+              aria-pressed={onMap && !showAllLogos}
               className={`tap-44 inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-[10.5px] uppercase tracking-[0.18em] transition-colors ${
-                onMap
+                onMap && !showAllLogos
                   ? 'border-primary/60 bg-primary/15 text-primary'
                   : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground'
               }`}
             >
               <MapIcon className="h-3.5 w-3.5" />
               Reference map
+            </button>
+            <button
+              type="button"
+              onClick={showEveryLogo}
+              aria-pressed={showAllLogos}
+              className={`tap-44 inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-[10.5px] uppercase tracking-[0.18em] transition-colors ${
+                showAllLogos
+                  ? 'border-primary/60 bg-primary/15 text-primary'
+                  : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground'
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              All logo screens
             </button>
             <button
               type="button"
@@ -224,9 +265,11 @@ export function PixelMapFold() {
               Step through it
             </button>
             <p className="ml-auto hidden text-[12px] text-muted-foreground/80 lg:block">
-              {onMap
-                ? 'Hover a screen below to light up its slice of the frame.'
-                : 'Ten steps. Advance them as you talk — each one keeps moving while it waits.'}
+              {!onMap
+                ? 'Ten steps. Advance them as you talk — each one keeps moving while it waits.'
+                : showAllLogos
+                  ? 'Every screen your ten included logos land on, at once.'
+                  : 'Hover a screen below to light up its slice of the frame.'}
             </p>
           </div>
 
@@ -247,6 +290,7 @@ export function PixelMapFold() {
                 // Reaching for a screen name means you want to point at it, so
                 // the card comes back to the reference map to be pointed at.
                 const focusMap = () => {
+                  if (showAllLogos) return;
                   setHot(r.label);
                   showFold(false);
                 };
