@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
-import { Activity, FileSignature, Image as ImageIcon, Loader2, ChevronRight } from 'lucide-react';
+import { Activity, FileSignature, ClipboardCheck, Image as ImageIcon, Loader2, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type ActivityKind = 'signed' | 'mood';
+type ActivityKind = 'signed' | 'brief' | 'mood';
 
 interface ActivityItem {
   kind: ActivityKind;
@@ -18,6 +18,7 @@ interface ActivityItem {
 
 const KIND_META: Record<ActivityKind, { icon: typeof Activity; label: string; tone: string; bg: string }> = {
   signed: { icon: FileSignature, label: 'Proposal signed', tone: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  brief: { icon: ClipboardCheck, label: 'Creative brief submitted', tone: 'text-primary', bg: 'bg-primary/10' },
   mood: { icon: ImageIcon, label: 'Mood board update', tone: 'text-[#c49a3c]', bg: 'bg-[#c49a3c]/10' },
 };
 
@@ -35,11 +36,15 @@ export function RecentActivityFeed() {
   const load = async () => {
     try {
       const since = fortnightAgo();
-      const [signed, mood] = await Promise.all([
+      const [signed, briefs, mood] = await Promise.all([
         supabase.from('proposals')
           .select('id, event_name, client_name, client_signature, signed_at, token')
           .not('signed_at', 'is', null).gte('signed_at', since)
           .order('signed_at', { ascending: false }).limit(20),
+        supabase.from('creative_briefs')
+          .select('id, creative_session_id, submitted_at, creative_sessions!inner(project_name, client_name)')
+          .not('submitted_at', 'is', null).gte('submitted_at', since)
+          .order('submitted_at', { ascending: false }).limit(20),
         supabase.from('mood_board_items')
           .select('id, session_id, title, added_by, created_at, creative_sessions!inner(project_name, client_name, token)')
           .gte('created_at', since)
@@ -55,6 +60,15 @@ export function RecentActivityFeed() {
           subtitle: p.client_name,
           at: p.signed_at,
           href: `/admin/proposals?focus=${p.id}`,
+        });
+      });
+      (briefs.data || []).forEach((b: any) => {
+        all.push({
+          kind: 'brief', id: b.id,
+          title: `${b.creative_sessions?.project_name || 'Session'} — brief in`,
+          subtitle: b.creative_sessions?.client_name || '',
+          at: b.submitted_at,
+          href: `/admin/creative?focus=${b.creative_session_id}`,
         });
       });
       (mood.data || []).forEach((m: any) => {
@@ -81,6 +95,7 @@ export function RecentActivityFeed() {
     const channel = supabase
       .channel('recent-activity-feed')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'creative_briefs' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mood_board_items' }, load)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -106,7 +121,7 @@ export function RecentActivityFeed() {
           <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
             <Activity className="w-7 h-7 text-muted-foreground/40 mb-2" />
             <p className="text-sm font-medium text-foreground">No recent activity</p>
-            <p className="text-xs text-muted-foreground mt-1">Client signatures and mood board updates will appear here.</p>
+            <p className="text-xs text-muted-foreground mt-1">Signatures, submitted briefs and mood board updates will appear here.</p>
           </div>
         ) : (
           <div className="divide-y divide-border">

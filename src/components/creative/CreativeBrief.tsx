@@ -167,7 +167,16 @@ export function CreativeBrief({ token, eventName, collapsible = false }: Creativ
       if (!error) {
         dirty.current = false;
         setSavedAt(new Date());
-        if (submit) setSubmittedAt((prev) => prev ?? new Date());
+        if (submit) {
+          setSubmittedAt((prev) => prev ?? new Date());
+          // The studio designs from this, so its arrival is the moment the work
+          // can start. Fire-and-forget: the notification must never block, or
+          // undo, the client's submission. The function reads the answers
+          // server-side and refuses to send twice.
+          void supabase.functions
+            .invoke('notify-brief-submitted', { body: { token } })
+            .catch((e) => console.error('Brief notification failed', e));
+        }
       }
     },
     [token],
