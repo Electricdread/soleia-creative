@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Mail, Maximize2, Eye, Download } from 'lucide-react';
+import { ArrowRight, Mail, Maximize2, Eye, Download, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Reveal } from '@/components/motion/Reveal';
@@ -183,10 +183,11 @@ const BUYOUT_AT_A_GLANCE: [string, string][] = [
 const PACKAGE_INCLUDES: {
   title: string;
   body: string;
+  /** Always a still. A tile shows its thumbnail even when it has a movie. */
   src: string;
   alt: string;
-  video?: boolean;
-  poster?: string;
+  /** Present means the tile plays: click the thumbnail, it opens full screen. */
+  movie?: string;
 }[] = [
   {
     title: 'Creative direction',
@@ -209,16 +210,15 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Dynamic elevator animation',
     body: 'The first branded surface a guest meets. Its custom animation is part of the upgrade — designed with the rest of the look, mapped to the panel and running on show day.',
-    src: ELEVATOR_LOOP_URL,
-    video: true,
-    poster: '/creative-guide/elevator/loop-poster.jpg',
+    src: '/creative-guide/elevator/loop-poster.jpg',
+    movie: ELEVATOR_LOOP_URL,
     alt: 'The elevator display running branded content',
   },
   {
     title: '3D preview before the night',
-    poster: '/creative-guide/services/previz-soleia-poster.jpg',
     body: "Your content rendered on Soleia's real screens from our venue model, so you approve what the room will actually show — pacing, brightness, coverage — before load-in.",
-    src: '/creative-guide/services/previz-soleia-poster.jpg',
+    src: PREVIZ_POSTER,
+    movie: PREVIZ_MOVIE_URL,
     alt: 'A frame from a 3D previz — a client show running on the venue model',
   },
   {
@@ -787,46 +787,64 @@ export default function CreativeGuideServices() {
                 </div>
               </Reveal>
 
-              {/* What the package covers, each shown as the thing it is */}
+              {/* What the package covers — one card, one sub-card per inclusion,
+                  divided by hairlines so they read as parts of the same offer
+                  rather than six things floating beside it. */}
               <Reveal className="mt-6">
-                <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-                  What's included
-                </span>
-              </Reveal>
-              <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {PACKAGE_INCLUDES.map((inc, i) => (
-                  <Reveal key={inc.title} delay={(i % 3) * 0.05}>
-                    <article className={`${cardShell} flex h-full flex-col`}>
-                      <div className="relative aspect-[16/10] overflow-hidden bg-black">
-                        {inc.video ? (
-                          <video
-                            src={inc.src}
-                            poster={inc.poster}
-                            className="h-full w-full object-cover"
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            preload="metadata"
-                            aria-label={inc.alt}
-                          />
-                        ) : (
+                <article className={`${cardShell} overflow-hidden`}>
+                  <div className="border-b border-primary/15 px-6 py-4 sm:px-8">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+                      What's included
+                    </span>
+                  </div>
+                  <div className="grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3">
+                    {PACKAGE_INCLUDES.map((inc) => {
+                      const playable = !!inc.movie;
+                      const Media = (
+                        <div className="relative aspect-[16/10] overflow-hidden bg-black">
                           <img
                             src={inc.src}
                             alt={inc.alt}
                             loading="lazy"
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                            className="h-full w-full object-cover transition-transform duration-700 group-hover/tile:scale-[1.03]"
                           />
-                        )}
-                      </div>
-                      <div className="flex-1 p-6">
-                        <h4 className="mb-2 font-display text-xl leading-tight text-foreground">{inc.title}</h4>
-                        <p className="text-[13.5px] leading-relaxed text-muted-foreground">{inc.body}</p>
-                      </div>
-                    </article>
-                  </Reveal>
-                ))}
-              </div>
+                          {playable && (
+                            <>
+                              <span className="pointer-events-none absolute inset-0 bg-black/10 transition-colors group-hover/tile:bg-black/0" />
+                              <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-background/85 px-3 py-1.5 text-[9.5px] uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">
+                                <Play className="h-3 w-3 text-primary" />
+                                Play
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      );
+                      return (
+                        <div key={inc.title} className="group/tile flex flex-col bg-card">
+                          {playable ? (
+                            <button
+                              type="button"
+                              onClick={() => setFullscreenVideo(inc.movie!)}
+                              aria-label={`Play — ${inc.title}`}
+                              className="block w-full cursor-pointer text-left"
+                            >
+                              {Media}
+                            </button>
+                          ) : (
+                            Media
+                          )}
+                          <div className="flex-1 p-6">
+                            <h4 className="mb-2 font-display text-xl leading-tight text-foreground">
+                              {inc.title}
+                            </h4>
+                            <p className="text-[13.5px] leading-relaxed text-muted-foreground">{inc.body}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </article>
+              </Reveal>
             </section>
 
             {/* ══ 05 · ADD-ONS, GROUPED BY SURFACE ══ */}
