@@ -6,6 +6,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import {
   FileText, BookOpen, Palette, LayoutDashboard, Calendar, HardDrive, Users, Mail, Loader2,
+  Briefcase,
 } from 'lucide-react';
 import { modKey } from '@/lib/platform';
 
@@ -38,6 +39,7 @@ const KIND_META: Record<RecordKind, { icon: typeof FileText; label: string }> = 
 
 const PAGES = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { label: 'Jobs', href: '/admin/jobs', icon: Briefcase },
   { label: 'Calendar', href: '/admin/calendar', icon: Calendar },
   { label: 'Packets', href: '/admin/packets', icon: BookOpen },
   { label: 'Proposals', href: '/admin/proposals', icon: FileText },

@@ -4,7 +4,7 @@ import { useTheme } from 'next-themes';
 import {
   Calendar, FileText, BookOpen, Palette, Map, Send,
   HardDrive, Users, Mail, LayoutDashboard, Command, LogOut, Menu, X,
-  Sun, Moon, PanelLeftClose, PanelLeft, ExternalLink, Search,
+  Sun, Moon, PanelLeftClose, PanelLeft, ExternalLink, Search, Briefcase,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,6 +47,7 @@ const NAV: NavGroup[] = [
     label: 'Today',
     items: [
       { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+      { label: 'Jobs', href: '/admin/jobs', icon: Briefcase },
       { label: 'Calendar', href: '/admin/calendar', icon: Calendar },
     ],
   },

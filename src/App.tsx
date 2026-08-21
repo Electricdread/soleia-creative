@@ -26,6 +26,7 @@ import AdminPortal from "./pages/AdminPortal";
 import AdminCreative from "./pages/AdminCreative";
 import AdminUsers from "./pages/AdminUsers";
 import AdminProposals from "./pages/AdminProposals";
+import AdminJobs from "./pages/AdminJobs";
 import AdminCalendar from "./pages/AdminCalendar";
 import AdminEmailPreviews from "./pages/AdminEmailPreviews";
 import AdminStorage from "./pages/AdminStorage";
@@ -89,6 +90,7 @@ const App = () => (
               <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPortal /></ProtectedRoute>} />
               <Route path="/admin/creative" element={<ProtectedRoute requireAdmin><AdminCreative /></ProtectedRoute>} />
               <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
+              <Route path="/admin/jobs" element={<ProtectedRoute requireAdmin><AdminJobs /></ProtectedRoute>} />
               <Route path="/admin/proposals" element={<ProtectedRoute requireAdmin><AdminProposals /></ProtectedRoute>} />
               <Route path="/admin/calendar" element={<ProtectedRoute requireAdmin><AdminCalendar /></ProtectedRoute>} />
               <Route path="/admin/email-previews" element={<ProtectedRoute requireAdmin><AdminEmailPreviews /></ProtectedRoute>} />

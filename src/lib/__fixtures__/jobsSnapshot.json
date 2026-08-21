@@ -1,0 +1,31 @@
+{
+  "proposals": [
+    {"id":"P-whatnot","token":"t1","client_name":"Whatnot","event_name":"9.23.26 Whatnot","event_date":"2026-09-23","status":"accepted","signed_at":"2026-07-24T21:46:12Z","is_active":true,"drive_folder_id":"1FDZ"},
+    {"id":"P-i15","token":"t2","client_name":"Interstate15","event_name":"G2E","event_date":"2026-09-29","status":"sent","signed_at":null,"is_active":true,"drive_folder_id":"1vAE"},
+    {"id":"P-aapl","token":"t3","client_name":"AAPL","event_name":"AAPL","event_date":"2026-11-19","status":"sent","signed_at":null,"is_active":true,"drive_folder_id":"1XhV"},
+    {"id":"P-ascend","token":"t4","client_name":"Ascend","event_name":"MRI","event_date":null,"status":"accepted","signed_at":"2026-08-19T16:37:57Z","is_active":true,"drive_folder_id":"1vY2"},
+    {"id":"P-moc","token":"t5","client_name":"MOC&CO x ZAXBYS,","event_name":"MOC&CO x ZAXBYS","event_date":"2026-09-30","status":"accepted","signed_at":"2026-08-19T23:57:15Z","is_active":true,"drive_folder_id":"13I5"}
+  ],
+  "packets": [
+    {"id":"K-moc","token":"k1","client_name":"MOC&CO x ZAXBYS","title":"09.30.26 | MOC&CO x ZAXBYS","event_date":"2026-09-30","kind":"creative_pre_call","is_active":true,"drive_folder_id":"1Dp2"},
+    {"id":"K-whatnot","token":"k2","client_name":"Whatnot","title":"09.23.26 WHATNOT","event_date":"2026-09-23","kind":"creative_pre_call","is_active":true,"drive_folder_id":"1D62"},
+    {"id":"K-i15","token":"k3","client_name":"Interstate15","title":"G2E","event_date":"2026-09-29","kind":"creative_pre_call","is_active":true,"drive_folder_id":"1vAE"},
+    {"id":"K-hlth","token":"k4","client_name":"HLTH","title":"11.17.26 | HLTH | DIGITAL BRANDING","event_date":"2026-11-17","kind":"pre_call","is_active":true,"drive_folder_id":"1nlN"},
+    {"id":"K-aapl","token":"k5","client_name":"AAPL","title":"AAPL","event_date":"2026-11-19","kind":"creative_pre_call","is_active":true,"drive_folder_id":"1XhV"},
+    {"id":"K-hlth26","token":"k6","client_name":"HLTH26","title":"HLTH26","event_date":"2026-11-17","kind":"creative_pre_call","is_active":true,"drive_folder_id":"1WLp"},
+    {"id":"K-wwt","token":"k7","client_name":"WWT","title":"08.25.26 WWT Event","event_date":"2026-08-25","kind":"creative_pre_call","is_active":true,"drive_folder_id":"1f3O"},
+    {"id":"K-ascend","token":"k8","client_name":"Ascend","title":"MRI","event_date":null,"kind":"creative_pre_call","is_active":true,"drive_folder_id":"1vY2"},
+    {"id":"K-ncan","token":"k9","client_name":"NCAN","title":"NCAN Event","event_date":"2026-10-05","kind":"pre_call","is_active":true,"drive_folder_id":"14L1"},
+    {"id":"K-soleia","token":"k10","client_name":"Soleia","title":"LABOR DAY","event_date":"2026-09-05","kind":"custom","is_active":true,"drive_folder_id":"1Gv2"}
+  ],
+  "sessions": [
+    {"id":"S-beach","token":"s1","client_name":"Soleia","project_name":"Soleia Beach Club","event_date":null,"is_active":true,"proposal_id":null},
+    {"id":"S-liuna","token":"s2","client_name":"LiUNA!","project_name":"09.22.26 LiUNA!","event_date":"2026-09-22","is_active":true,"proposal_id":null},
+    {"id":"S-g2e","token":"s3","client_name":"Interstate15","project_name":"G2E","event_date":null,"is_active":true,"proposal_id":null},
+    {"id":"S-mri","token":"s4","client_name":"MRI","project_name":"MRI","event_date":null,"is_active":true,"proposal_id":null},
+    {"id":"S-sample","token":"s5","client_name":"Soleia LV","project_name":"Soleia Sample Event","event_date":null,"is_active":true,"proposal_id":null},
+    {"id":"S-zaxbys","token":"s6","client_name":"525 Productions","project_name":"ZAXBYS","event_date":null,"is_active":true,"proposal_id":null}
+  ],
+  "assetsByProposal": {"P-whatnot":4,"P-aapl":12,"P-ascend":2,"P-moc":2},
+  "creativePackageProposalIds": ["P-ascend"]
+}
