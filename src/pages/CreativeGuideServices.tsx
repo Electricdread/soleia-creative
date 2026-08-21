@@ -103,7 +103,7 @@ const BLURBS: Record<string, string> = {
   'Mapped to Spec by Client':
     "Client maps content to spec and provides to Soleia (no edits needed by Soleia Creative Team), max 50 GB. Revisions after delivery will incur additional fees.",
   'Elevator Dynamic Animation':
-    "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day.",
+    "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day. Included with the Creative Package; also available standalone.",
   'LED Screens Specific Zone Mapping':
     "Custom mapping to specific LED zones outside the main sunburst architecture — designed for moments that need to live on one focused surface instead of the whole room. Typically applied to the SR IMAG wall, SL IMAG wall, and the outdoor arch. Includes creative treatment, exact-resolution build-out, and onsite playback for the zones you select.",
   'Performing Artist — Mapped by Soleia Creative Team':
@@ -207,8 +207,8 @@ const PACKAGE_INCLUDES: {
     alt: 'Client content mapped wall-to-wall across the main-room curve LED',
   },
   {
-    title: 'The elevator, too',
-    body: "Mapping reaches the arrival surfaces as well, so the first screen a guest meets is already part of the look rather than an afterthought.",
+    title: 'Dynamic elevator animation',
+    body: 'The first branded surface a guest meets. Its custom animation is part of the upgrade — designed with the rest of the look, mapped to the panel and running on show day.',
     src: ELEVATOR_LOOP_URL,
     video: true,
     poster: '/creative-guide/elevator/loop-poster.jpg',
