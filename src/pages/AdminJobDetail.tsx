@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useJobs } from '@/hooks/useJobs';
+import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
+import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
 import {
   stageFor, flagsFor, daysUntil, CREATIVE_STAGES, IN_HOUSE_STAGES, STAGE_LABEL,
   type Stage, type JobTrack,
@@ -35,8 +37,27 @@ export default function AdminJobDetail() {
   const navigate = useNavigate();
   const { jobs, loading, error, reload } = useJobs(id);
   const [saving, setSaving] = useState(false);
+  const [assignees, setAssignees] = useState<Colleague[]>([]);
 
   const entry = jobs[0];
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    fetchJobAssignees(id).then((rows) => { if (!cancelled) setAssignees(rows); });
+    return () => { cancelled = true; };
+  }, [id]);
+
+  const updateAssignees = async (next: Colleague[]) => {
+    if (!id) return;
+    const before = assignees;
+    setAssignees(next);                       // optimistic — the picker should feel instant
+    const ok = await saveJobAssignees(id, next);
+    if (!ok) {
+      setAssignees(before);
+      toast.error('Could not save who is on this job');
+    }
+  };
 
   const save = async (patch: Record<string, unknown>) => {
     if (!entry) return;
@@ -231,6 +252,16 @@ export default function AdminJobDetail() {
                 </div>
                 <p className="mt-1.5 text-[11px] text-muted-foreground">
                   In-house buys no creative services, so it is never chased for a proposal.
+                </p>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Assigned to</Label>
+                <div className="mt-1.5">
+                  <AssigneePicker value={assignees} onChange={updateAssignees} />
+                </div>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  Emailed when the client submits their brief, alongside the studio inbox.
                 </p>
               </div>
 

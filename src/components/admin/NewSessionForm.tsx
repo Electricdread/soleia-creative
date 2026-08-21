@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react';
+import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
+import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -19,6 +21,7 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
   const [projectName, setProjectName] = useState('');
   const [clientName, setClientName] = useState('');
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [assignees, setAssignees] = useState<Colleague[]>([]);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,6 +81,10 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
       eventDate: null,
     });
 
+    if (jobId && assignees.length > 0) {
+      await saveJobAssignees(jobId, assignees);
+    }
+
     const { data: created, error } = await supabase.from('creative_sessions').insert({
       token,
       project_name: projectName.trim(),
@@ -128,6 +135,19 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
               className="h-9 text-sm"
             />
           </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs">Assigned to</Label>
+          <AssigneePicker
+            value={assignees}
+            onChange={setAssignees}
+            emptyLabel="Nobody yet — add colleagues who should hear about this job"
+          />
+          <p className="text-[11px] text-muted-foreground">
+            Assigned to the whole job, so the packet and proposal share them. They are emailed when
+            the client submits their brief.
+          </p>
         </div>
 
         {/* Cover Image */}
