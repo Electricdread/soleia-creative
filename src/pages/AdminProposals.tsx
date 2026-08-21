@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -61,8 +62,16 @@ export default function AdminProposals() {
   const { toast } = useToast();
   const [proposals, setProposals] = useState<ProposalRow[]>([]);
   const [loading, setLoading] = useState(true);
+  useFocusRow(!loading);
   const [showForm, setShowForm] = useState(false);
-  const [activeTab, setActiveTab] = useState<ViewTab>('proposals');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab: ViewTab = searchParams.get('tab') === 'library' ? 'library' : 'proposals';
+  const setActiveTab = (tab: ViewTab) => {
+    const next = new URLSearchParams(searchParams);
+    if (tab === 'proposals') next.delete('tab');
+    else next.set('tab', tab);
+    setSearchParams(next, { replace: true });
+  };
   const [showLibraryPicker, setShowLibraryPicker] = useState(false);
   // Form state
   const [eventName, setEventName] = useState('');
@@ -650,7 +659,7 @@ luisdreamslv@gmail.com`;
         ) : (
           <div className="space-y-3">
             {proposals.map(p => (
-              <div key={p.id} className={`bg-muted/80 border border-border rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
+              <div key={p.id} data-focus-id={p.id} className={`bg-muted/80 border border-border rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
                 <div className="w-full min-w-0 xl:w-48 xl:flex-[0_0_12rem] overflow-hidden">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="text-foreground font-medium truncate">{p.event_name}</h3>

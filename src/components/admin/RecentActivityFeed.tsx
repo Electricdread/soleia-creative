@@ -54,7 +54,7 @@ export function RecentActivityFeed() {
           title: `${p.event_name} signed by ${p.client_signature || p.client_name}`,
           subtitle: p.client_name,
           at: p.signed_at,
-          href: `/proposal/${p.token}`,
+          href: `/admin/proposals?focus=${p.id}`,
         });
       });
       (mood.data || []).forEach((m: any) => {
@@ -63,7 +63,7 @@ export function RecentActivityFeed() {
           title: m.title || 'Mood board item',
           subtitle: `${m.creative_sessions?.project_name || 'Session'} · added by ${m.added_by || 'someone'}`,
           at: m.created_at,
-          href: `/creative/${m.creative_sessions?.token || ''}`,
+          href: `/admin/creative?focus=${m.session_id}`,
         });
       });
 

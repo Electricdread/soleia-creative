@@ -4,11 +4,12 @@ import { useTheme } from 'next-themes';
 import {
   Calendar, FileText, BookOpen, Palette, Map, Send,
   HardDrive, Users, Mail, LayoutDashboard, Command, LogOut, Menu, X,
-  Sun, Moon, PanelLeftClose, PanelLeft, ExternalLink,
+  Sun, Moon, PanelLeftClose, PanelLeft, ExternalLink, Search,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { CommandPalette } from '@/components/admin/CommandPalette';
 import { cn } from '@/lib/utils';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
@@ -112,6 +113,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
     }
   });
   const [pendingUsers, setPendingUsers] = useState(0);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   const isOperator = user?.email?.toLowerCase() === OPERATOR_EMAIL.toLowerCase();
   const isDark = (theme === 'system' ? resolvedTheme : theme) === 'dark';
@@ -119,6 +121,17 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
   useEffect(() => {
     document.title = `${title} · Soleia`;
   }, [title]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Close the drawer on navigation, so tapping a link never leaves the overlay
   // covering the page it just opened.
@@ -282,6 +295,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
 
   return (
     <div className="min-h-screen bg-background">
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       {/* Rail — fixed on desktop, drawer on small screens */}
       <aside className={cn('fixed inset-y-0 left-0 z-40 hidden border-r border-border lg:block', railWidth)}>
         {rail}
@@ -314,6 +328,25 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
               <h1 className="truncate font-display text-lg text-foreground sm:text-xl">{title}</h1>
               {subtitle && <p className="truncate text-xs text-muted-foreground">{subtitle}</p>}
             </div>
+
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="hidden min-w-[210px] items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:border-muted-foreground/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span className="flex-1 text-left">Search jobs, clients, events</span>
+              <kbd className="rounded border border-border px-1 font-mono text-[10px]">⌘K</kbd>
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setPaletteOpen(true)}
+              className="h-10 w-10 flex-shrink-0 text-muted-foreground md:hidden"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+
             {actions && <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-2">{actions}</div>}
           </div>
         </header>

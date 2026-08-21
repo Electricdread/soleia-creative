@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useFocusRow } from '@/hooks/useFocusRow';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -33,6 +34,7 @@ interface CreativeSession {
 export function CreativeSessionManager() {
   const [sessions, setSessions] = useState<CreativeSession[]>([]);
   const [loading, setLoading] = useState(true);
+  useFocusRow(!loading);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
@@ -172,8 +174,8 @@ export function CreativeSessionManager() {
           ) : (
             <div className="space-y-3">
               {sessions.map((session, index) => (
+                <div key={session.id} data-focus-id={session.id}>
                 <CreativeSessionCard
-                  key={session.id}
                   session={session}
                   index={index}
                   onCopyLink={copyLink}
@@ -181,6 +183,7 @@ export function CreativeSessionManager() {
                   onOpen={openSession}
                   onSessionUpdate={fetchSessions}
                 />
+                </div>
               ))}
             </div>
           )}

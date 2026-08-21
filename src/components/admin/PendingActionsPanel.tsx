@@ -50,7 +50,7 @@ export function PendingActionsPanel() {
           title: p.event_name,
           subtitle: p.client_name,
           ageDays: Math.max(0, differenceInCalendarDays(today, sentDate)),
-          href: '/admin/proposals',
+          href: `/admin/proposals?focus=${p.id}`,
           eventDate: p.event_date || null,
           module: 'proposal',
         });

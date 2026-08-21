@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +38,7 @@ export default function AdminPackets() {
   const { isLoading } = useAuth();
   const [packets, setPackets] = useState<PacketRow[]>([]);
   const [loading, setLoading] = useState(true);
+  useFocusRow(!loading);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<PacketRow | null>(null);
   const [newKind, setNewKind] = useState<PacketKind>('pre_call');
@@ -152,6 +154,7 @@ export default function AdminPackets() {
             {packets.map((p) => (
               <div
                 key={p.id}
+                data-focus-id={p.id}
                 className="card-elevated bg-card border border-border rounded-lg p-5 shadow-card hover:shadow-card-hover transition-shadow"
               >
                 <div className="flex items-start justify-between gap-4 flex-wrap">

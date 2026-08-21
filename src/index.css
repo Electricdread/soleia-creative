@@ -29,6 +29,13 @@ button, a, [role="button"] {
   touch-action: manipulation;
 }
 
+/* Ring painted on a row arrived at from a dashboard link or ⌘K result. */
+.focus-flash {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
+  border-radius: 0.75rem;
+}
+
 @layer base {
   :root {
     /* Bright elegant white foundation */

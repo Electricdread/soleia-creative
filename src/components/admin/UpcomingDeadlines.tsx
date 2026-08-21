@@ -59,7 +59,7 @@ export function UpcomingDeadlines() {
         all.push({
           id: p.id, module: 'proposal',
           title: p.event_name, subtitle: p.client_name,
-          eventDate: p.event_date, href: '/admin/proposals', days,
+          eventDate: p.event_date, href: `/admin/proposals?focus=${p.id}`, days,
         });
       });
 
@@ -69,7 +69,7 @@ export function UpcomingDeadlines() {
         all.push({
           id: s.id, module: 'session',
           title: s.project_name, subtitle: s.client_name,
-          eventDate: s.event_date, href: '/admin/creative', days,
+          eventDate: s.event_date, href: `/admin/creative?focus=${s.id}`, days,
         });
       });
 
