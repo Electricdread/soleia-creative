@@ -24,13 +24,11 @@ import CreativeSession from "./pages/CreativeSession";
 import AdminLogin from "./pages/AdminLogin";
 import AdminPortal from "./pages/AdminPortal";
 import AdminCreative from "./pages/AdminCreative";
-import AdminLooks from "./pages/AdminLooks";
 import AdminUsers from "./pages/AdminUsers";
 import AdminProposals from "./pages/AdminProposals";
 import AdminCalendar from "./pages/AdminCalendar";
 import AdminEmailPreviews from "./pages/AdminEmailPreviews";
 import AdminStorage from "./pages/AdminStorage";
-import AdminVideoMapping from "./pages/AdminVideoMapping";
 import AdminPackets from "./pages/AdminPackets";
 import ClientPacket from "./pages/ClientPacket";
 import ClientProposal from "./pages/ClientProposal";
@@ -90,13 +88,11 @@ const App = () => (
               {/* Admin Routes - Require Admin Role */}
               <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPortal /></ProtectedRoute>} />
               <Route path="/admin/creative" element={<ProtectedRoute requireAdmin><AdminCreative /></ProtectedRoute>} />
-              <Route path="/admin/looks" element={<ProtectedRoute requireAdmin><AdminLooks /></ProtectedRoute>} />
               <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
               <Route path="/admin/proposals" element={<ProtectedRoute requireAdmin><AdminProposals /></ProtectedRoute>} />
               <Route path="/admin/calendar" element={<ProtectedRoute requireAdmin><AdminCalendar /></ProtectedRoute>} />
               <Route path="/admin/email-previews" element={<ProtectedRoute requireAdmin><AdminEmailPreviews /></ProtectedRoute>} />
               <Route path="/admin/storage" element={<ProtectedRoute requireAdmin><AdminStorage /></ProtectedRoute>} />
-              <Route path="/admin/video-mapping" element={<ProtectedRoute requireAdmin><AdminVideoMapping /></ProtectedRoute>} />
               <Route path="/admin/packets" element={<ProtectedRoute requireAdmin><AdminPackets /></ProtectedRoute>} />
 
               {/* Public Packet Page */}

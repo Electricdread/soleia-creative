@@ -788,7 +788,8 @@ function RoomModel({
   );
 }
 
-// Bundled fallback movie — used until an admin uploads one (see VenuePrevizManager).
+// Bundled fallback movie. site_settings.venue_previz_url can override it; the
+// uploader that used to write that key was removed with the previz work.
 const FALLBACK_PREVIZ_URL = '/venue/previz-vanderpump.mp4';
 
 export default function RoomScene({

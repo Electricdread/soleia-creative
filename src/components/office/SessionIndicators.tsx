@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Palette, Image, BookOpen, Activity } from 'lucide-react';
+import { Palette, BookOpen, Activity } from 'lucide-react';
 
 interface SessionStats {
   creativeSessionsActive: number;
   creativeSessionsTotal: number;
-  looksSessionsActive: number;
-  looksSessionsTotal: number;
   totalClips: number;
   recentSelections: number;
 }
@@ -15,8 +13,6 @@ export function SessionIndicators() {
   const [stats, setStats] = useState<SessionStats>({
     creativeSessionsActive: 0,
     creativeSessionsTotal: 0,
-    looksSessionsActive: 0,
-    looksSessionsTotal: 0,
     totalClips: 0,
     recentSelections: 0,
   });
@@ -29,7 +25,6 @@ export function SessionIndicators() {
     const channel = supabase
       .channel('office-stats')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'creative_sessions' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_links' }, fetchStats)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'link_selections' }, fetchStats)
       .subscribe();
 
@@ -40,9 +35,8 @@ export function SessionIndicators() {
 
   const fetchStats = async () => {
     try {
-      const [creativeSessions, clientLinks, clips, selections] = await Promise.all([
+      const [creativeSessions, clips, selections] = await Promise.all([
         supabase.from('creative_sessions').select('id, is_active'),
-        supabase.from('client_links').select('id, is_active'),
         supabase.from('cached_clips').select('id', { count: 'exact', head: true }),
         supabase.from('link_selections').select('id, created_at').gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
       ]);
@@ -50,8 +44,6 @@ export function SessionIndicators() {
       setStats({
         creativeSessionsActive: creativeSessions.data?.filter(s => s.is_active).length || 0,
         creativeSessionsTotal: creativeSessions.data?.length || 0,
-        looksSessionsActive: clientLinks.data?.filter(l => l.is_active).length || 0,
-        looksSessionsTotal: clientLinks.data?.length || 0,
         totalClips: clips.count || 0,
         recentSelections: selections.data?.length || 0,
       });
@@ -70,14 +62,6 @@ export function SessionIndicators() {
       icon: Palette,
       color: 'cyan',
       pulse: stats.creativeSessionsActive > 0,
-    },
-    {
-      label: 'Previz links',
-      active: stats.looksSessionsActive,
-      total: stats.looksSessionsTotal,
-      icon: Image,
-      color: 'purple',
-      pulse: stats.looksSessionsActive > 0,
     },
     {
       label: 'Clip Library',
