@@ -60,9 +60,8 @@ const NAV: NavGroup[] = [
     ],
   },
   {
-    // The Look Book and the previz movie uploader sit with the parked previz
-    // work, so they are out of the navigation. Their routes still resolve for
-    // anyone holding a link.
+    // The Look Book and the previz movie uploader were deleted with the parked
+    // previz work. The client-facing /looks/:token page is still routed.
     label: 'Reference',
     items: [
       { label: 'Creative Guide', href: '/creative-guide', icon: Map, external: true },
