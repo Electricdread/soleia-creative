@@ -124,17 +124,6 @@ const CREATIVE_PACKAGE_SECTIONS: PackageSection[] = [
     body: "Our team designs and produces custom visuals specifically for Soleia's full LED layout — from the main room and ceiling panels to outdoor screens and interior displays — all working together as one cohesive experience.",
   },
   {
-    heading: "What's included",
-    body: '',
-    bullets: [
-      'Creative direction based on your event and brand',
-      '1–3 custom visual looks built for the full venue',
-      'Pixel-perfect mapping across all LED surfaces',
-      '3D preview of your content before the event',
-      'Onsite playback and show operation',
-    ],
-  },
-  {
     body: "We handle everything from concept to show night, so the entire experience feels seamless, intentional, and fully immersive.\n\nContact the Soleia Creative Team with your event date to get started.",
   },
 ];
@@ -175,6 +164,62 @@ const BUYOUT_AT_A_GLANCE: [string, string][] = [
   ['5', 'Main LED screens'],
   ['28', 'TVs on the network'],
   ['1', 'Shared TV feed'],
+];
+
+/**
+ * What the Creative Package covers, each with the thing it actually looks like.
+ *
+ * These are the package's own inclusion bullets — they used to sit as text
+ * inside the card, where "pixel-perfect mapping across all LED surfaces" asked
+ * a client to imagine something they have never seen. Every one now carries the
+ * image or loop it refers to.
+ */
+const PACKAGE_INCLUDES: {
+  title: string;
+  body: string;
+  src: string;
+  alt: string;
+  video?: boolean;
+  poster?: string;
+}[] = [
+  {
+    title: 'Creative direction',
+    body: 'We read your brand — guidelines, palette, past events — and set how the room should feel on arrival, through the programme and late in the night.',
+    src: IMG.packageEvent,
+    alt: 'Event branding running across the main-room screens',
+  },
+  {
+    title: '1–3 custom looks',
+    body: 'Original visuals designed for the whole venue at once, so every surface belongs to the same idea rather than running its own loop.',
+    src: IMG.packageMain,
+    alt: 'A full-venue custom look across the sunburst, curves and booth',
+  },
+  {
+    title: 'Pixel-perfect mapping',
+    body: 'Every surface built at its own native resolution and placed in the 3840 × 2160 frame — the walls, the curves, the ceiling rays and the beachclub exteriors.',
+    src: IMG.mapping,
+    alt: 'Client content mapped wall-to-wall across the main-room curve LED',
+  },
+  {
+    title: 'The elevator, too',
+    body: "Mapping reaches the arrival surfaces as well, so the first screen a guest meets is already part of the look rather than an afterthought.",
+    src: ELEVATOR_LOOP_URL,
+    video: true,
+    poster: '/creative-guide/elevator/loop-poster.jpg',
+    alt: 'The elevator display running branded content',
+  },
+  {
+    title: '3D preview before the night',
+    body: "Your content rendered on Soleia's real screens from our venue model, so you approve what the room will actually show — pacing, brightness, coverage — before load-in.",
+    src: IMG.previz,
+    alt: '3D preview of content rendered from the Soleia venue model',
+  },
+  {
+    title: 'Onsite playback',
+    body: 'Loaded, checked against the run of show, and operated by our team throughout the night.',
+    src: IMG.artist,
+    alt: 'Show visuals running live across the room during a performance',
+  },
 ];
 
 const ELEVATOR_TITLES = [
@@ -707,6 +752,47 @@ export default function CreativeGuideServices() {
                   </div>
                 </div>
               </Reveal>
+
+              {/* What the package covers, each shown as the thing it is */}
+              <Reveal className="mt-6">
+                <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+                  What's included
+                </span>
+              </Reveal>
+              <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {PACKAGE_INCLUDES.map((inc, i) => (
+                  <Reveal key={inc.title} delay={(i % 3) * 0.05}>
+                    <article className={`${cardShell} flex h-full flex-col`}>
+                      <div className="relative aspect-[16/10] overflow-hidden bg-black">
+                        {inc.video ? (
+                          <video
+                            src={inc.src}
+                            poster={inc.poster}
+                            className="h-full w-full object-cover"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            preload="metadata"
+                            aria-label={inc.alt}
+                          />
+                        ) : (
+                          <img
+                            src={inc.src}
+                            alt={inc.alt}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 p-6">
+                        <h4 className="mb-2 font-display text-xl leading-tight text-foreground">{inc.title}</h4>
+                        <p className="text-[13.5px] leading-relaxed text-muted-foreground">{inc.body}</p>
+                      </div>
+                    </article>
+                  </Reveal>
+                ))}
+              </div>
             </section>
 
             {/* ══ 05 · ADD-ONS, GROUPED BY SURFACE ══ */}
