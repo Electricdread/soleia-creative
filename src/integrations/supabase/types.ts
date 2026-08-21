@@ -439,6 +439,7 @@ export type Database = {
           looks_count: number | null
           mood: string | null
           notes: string | null
+          notified_at: string | null
           submitted_at: string | null
           transforms_to_party: string | null
           updated_at: string
@@ -456,6 +457,7 @@ export type Database = {
           looks_count?: number | null
           mood?: string | null
           notes?: string | null
+          notified_at?: string | null
           submitted_at?: string | null
           transforms_to_party?: string | null
           updated_at?: string
@@ -473,6 +475,7 @@ export type Database = {
           looks_count?: number | null
           mood?: string | null
           notes?: string | null
+          notified_at?: string | null
           submitted_at?: string | null
           transforms_to_party?: string | null
           updated_at?: string
@@ -1826,6 +1829,7 @@ export type Database = {
           looks_count: number | null
           mood: string | null
           notes: string | null
+          notified_at: string | null
           submitted_at: string | null
           transforms_to_party: string | null
           updated_at: string
@@ -2084,6 +2088,7 @@ export type Database = {
           looks_count: number | null
           mood: string | null
           notes: string | null
+          notified_at: string | null
           submitted_at: string | null
           transforms_to_party: string | null
           updated_at: string
