@@ -364,8 +364,7 @@ luisdreamslv@gmail.com`;
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-zinc-900 to-black z-0" />
-      <div className="fixed inset-0 z-[1] opacity-5 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+      <div className="fixed inset-0 bg-gradient-to-br from-background via-muted/30 to-background z-0" />
 
       <header className="relative z-10 border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3 flex-wrap">

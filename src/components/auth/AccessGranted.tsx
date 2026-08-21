@@ -19,7 +19,7 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
   };
   return (
     <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-background" />
       <div 
         className="absolute inset-0 opacity-[0.03]"
         style={{

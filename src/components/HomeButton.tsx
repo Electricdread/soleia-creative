@@ -14,13 +14,14 @@ interface HomeButtonProps {
 /**
  * Site-wide "Return Home" button.
  *
- * Used on every page except the Creative Guide section
- * and the home page itself.
+ * Defaults to the public Creative Guide. Most of the pages this appears on are
+ * client-facing token pages, and "/" is the admin portal behind a login — so
+ * the default used to send clients to a sign-in screen.
  */
 export function HomeButton({
   variant = 'light',
   className,
-  to = '/',
+  to = '/creative-guide',
   label = 'Home',
 }: HomeButtonProps) {
   const navigate = useNavigate();

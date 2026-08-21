@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { differenceInCalendarDays } from 'date-fns';
-import { AlertCircle, FileText, Video, Upload, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, FileText, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { InlineDeadlineEditor } from '@/components/admin/InlineDeadlineEditor';
 
-type ActionKind = 'unsigned-proposal' | 'no-selections' | 'no-uploads';
+// Previz-link chasers ('no-selections', 'no-uploads') were removed with that
+// workflow: they filled this panel with rows nobody was going to act on.
+type ActionKind = 'unsigned-proposal';
 
 interface PendingAction {
   kind: ActionKind;
@@ -17,13 +19,11 @@ interface PendingAction {
   ageDays: number;
   href: string;
   eventDate: string | null;
-  module: 'proposal' | 'link' | null;
+  module: 'proposal' | null;
 }
 
 const KIND_META: Record<ActionKind, { icon: typeof FileText; label: string; tone: string }> = {
   'unsigned-proposal': { icon: FileText, label: 'Awaiting signature', tone: 'text-amber-600' },
-  'no-selections': { icon: Video, label: 'No client selections', tone: 'text-blue-500' },
-  'no-uploads': { icon: Upload, label: 'No assets uploaded', tone: 'text-purple-500' },
 };
 
 export function PendingActionsPanel() {
@@ -34,20 +34,13 @@ export function PendingActionsPanel() {
   const load = async () => {
     try {
       const today = new Date();
-      const [proposals, links, selections, uploads] = await Promise.all([
-        supabase.from('proposals')
-          .select('id, token, event_name, client_name, event_date, status, signed_at, is_active, updated_at, created_at')
-          .eq('is_active', true).eq('status', 'sent'),
-        supabase.from('client_links')
-          .select('id, token, event_name, client_name, event_date, created_at, is_active')
-          .eq('is_active', true),
-        supabase.from('link_selections').select('link_id'),
-        supabase.from('session_uploads').select('link_id'),
-      ]);
+      const { data: proposals } = await supabase.from('proposals')
+        .select('id, token, event_name, client_name, event_date, status, signed_at, is_active, updated_at, created_at')
+        .eq('is_active', true).eq('status', 'sent');
 
       const all: PendingAction[] = [];
 
-      (proposals.data || []).forEach((p: any) => {
+      (proposals || []).forEach((p: any) => {
         if (p.signed_at) return;
         const sentDate = new Date(p.updated_at || p.created_at);
         all.push({
@@ -61,40 +54,6 @@ export function PendingActionsPanel() {
           eventDate: p.event_date || null,
           module: 'proposal',
         });
-      });
-
-      const linksWithSelections = new Set((selections.data || []).map((s: any) => s.link_id));
-      const linksWithUploads = new Set((uploads.data || []).map((u: any) => u.link_id));
-
-      (links.data || []).forEach((l: any) => {
-        const created = new Date(l.created_at);
-        const age = Math.max(0, differenceInCalendarDays(today, created));
-        if (!linksWithSelections.has(l.id)) {
-          all.push({
-            kind: 'no-selections',
-            id: l.id,
-            rawId: l.id,
-            title: l.event_name,
-            subtitle: l.client_name,
-            ageDays: age,
-            href: '/admin/looks',
-            eventDate: l.event_date || null,
-            module: 'link',
-          });
-        }
-        if (!linksWithUploads.has(l.id)) {
-          all.push({
-            kind: 'no-uploads',
-            id: l.id + '-upload',
-            rawId: l.id,
-            title: l.event_name,
-            subtitle: l.client_name,
-            ageDays: age,
-            href: '/admin/looks',
-            eventDate: l.event_date || null,
-            module: 'link',
-          });
-        }
       });
 
       // Oldest first
@@ -112,9 +71,6 @@ export function PendingActionsPanel() {
     const channel = supabase
       .channel('pending-actions')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_links' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'link_selections' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_uploads' }, load)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);

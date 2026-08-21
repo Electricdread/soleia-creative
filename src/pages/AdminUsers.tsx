@@ -152,16 +152,7 @@ export default function AdminUsers() {
   const approvedCount = pendingUsers.filter(u => u.has_admin_role).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black">
-      {/* Grid pattern overlay */}
-      <div 
-        className="fixed inset-0 pointer-events-none opacity-20"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
-        }}
-      />
-
+    <div className="min-h-screen bg-background">
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

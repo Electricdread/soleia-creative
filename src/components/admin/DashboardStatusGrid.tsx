@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Palette, Video, CloudDownload, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
+import { FileText, Palette, CloudDownload, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -13,8 +13,6 @@ interface Stats {
   sessionsActive: number;
   sessionsPublic: number;
   moodWeek: number;
-  linksActive: number;
-  linksWithSelections: number;
   driveTotal: number;
   driveWeek: number;
   driveLastAt: string | null;
@@ -23,7 +21,6 @@ interface Stats {
 const ZERO: Stats = {
   proposalsActive: 0, proposalsSent: 0, proposalsSigned: 0, proposalsDraft: 0,
   sessionsActive: 0, sessionsPublic: 0, moodWeek: 0,
-  linksActive: 0, linksWithSelections: 0,
   driveTotal: 0, driveWeek: 0, driveLastAt: null,
 };
 
@@ -56,21 +53,16 @@ export function DashboardStatusGrid() {
   const load = async () => {
     try {
       const since = weekAgo();
-      const [proposals, sessions, mood, links, selections, driveAll, driveWk, driveLast] = await Promise.all([
+      const [proposals, sessions, mood, driveAll, driveWk, driveLast] = await Promise.all([
         supabase.from('proposals').select('id, status, is_active, signed_at'),
         supabase.from('creative_sessions').select('id, is_active, is_public'),
         supabase.from('mood_board_items').select('id, created_at').gte('created_at', since),
-        supabase.from('client_links').select('id, is_active'),
-        supabase.from('link_selections').select('link_id'),
         supabase.from('drive_seen_files').select('id', { count: 'exact', head: true }),
         supabase.from('drive_seen_files').select('id', { count: 'exact', head: true }).gte('seen_at', since),
         supabase.from('drive_seen_files').select('seen_at').order('seen_at', { ascending: false }).limit(1),
       ]);
 
       const activeProposals = (proposals.data || []).filter(p => p.is_active);
-      const linksActiveList = (links.data || []).filter(l => l.is_active);
-      const linksWithSel = new Set((selections.data || []).map((s: any) => s.link_id));
-
       setStats({
         proposalsActive: activeProposals.length,
         proposalsSent: activeProposals.filter(p => p.status === 'sent').length,
@@ -79,8 +71,6 @@ export function DashboardStatusGrid() {
         sessionsActive: (sessions.data || []).filter(s => s.is_active).length,
         sessionsPublic: (sessions.data || []).filter(s => s.is_active && s.is_public).length,
         moodWeek: mood.data?.length || 0,
-        linksActive: linksActiveList.length,
-        linksWithSelections: linksActiveList.filter(l => linksWithSel.has(l.id)).length,
         driveTotal: driveAll.count || 0,
         driveWeek: driveWk.count || 0,
         driveLastAt: (driveLast.data?.[0] as any)?.seen_at ?? null,
@@ -116,9 +106,7 @@ export function DashboardStatusGrid() {
       .channel('dashboard-status-grid')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'creative_sessions' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'client_links' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'drive_seen_files' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'link_selections' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mood_board_items' }, load)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -157,21 +145,6 @@ export function DashboardStatusGrid() {
       busy: false,
     },
     {
-      title: 'Content Previz',
-      icon: Video,
-      tone: 'text-emerald-500',
-      ring: 'hover:border-emerald-500/40',
-      primary: stats.linksActive,
-      primaryLabel: 'links live',
-      sub: [
-        { label: 'with selections', value: stats.linksWithSelections, color: 'text-emerald-500' },
-        { label: 'awaiting', value: Math.max(0, stats.linksActive - stats.linksWithSelections), color: 'text-amber-500' },
-      ],
-      href: '/admin/video-mapping' as string | undefined,
-      onClick: undefined as ((e: React.MouseEvent) => void) | undefined,
-      busy: false,
-    },
-    {
       title: 'Client Uploads',
       icon: scanning ? RefreshCw : CloudDownload,
       tone: 'text-purple-500',
@@ -189,7 +162,7 @@ export function DashboardStatusGrid() {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
       {cards.map((card) => {
         const Icon = card.icon;
         return (

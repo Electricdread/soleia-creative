@@ -10,7 +10,7 @@ export default function AdminStorage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-background" />
 
       <header className="relative z-10 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

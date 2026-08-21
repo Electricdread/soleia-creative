@@ -5,9 +5,9 @@ import { differenceInCalendarDays } from 'date-fns';
 import { CountdownBadge, getDaysUntil } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
 import { InlineDeadlineEditor } from '@/components/admin/InlineDeadlineEditor';
-import { FileText, Palette, Video, AlertTriangle, ChevronRight, Loader2 } from 'lucide-react';
+import { FileText, Palette, AlertTriangle, ChevronRight, Loader2 } from 'lucide-react';
 
-type Module = 'proposal' | 'session' | 'link';
+type Module = 'proposal' | 'session';
 
 interface DeadlineItem {
   id: string;
@@ -22,7 +22,6 @@ interface DeadlineItem {
 const moduleMeta: Record<Module, { icon: typeof FileText; label: string; tone: string }> = {
   proposal: { icon: FileText, label: 'Proposal', tone: 'text-blue-500' },
   session: { icon: Palette, label: 'Creative Session', tone: 'text-[#c49a3c]' },
-  link: { icon: Video, label: 'Content Previz', tone: 'text-emerald-500' },
 };
 
 export function UpcomingDeadlines() {
@@ -38,7 +37,7 @@ export function UpcomingDeadlines() {
       horizon.setDate(horizon.getDate() + 30);
       const horizonStr = horizon.toISOString().slice(0, 10);
 
-      const [proposals, sessions, links] = await Promise.all([
+      const [proposals, sessions] = await Promise.all([
         supabase.from('proposals')
           .select('id, token, event_name, client_name, event_date, status, signed_at')
           .eq('is_active', true)
@@ -46,11 +45,6 @@ export function UpcomingDeadlines() {
           .lte('event_date', horizonStr),
         supabase.from('creative_sessions')
           .select('id, token, project_name, client_name, event_date')
-          .eq('is_active', true)
-          .not('event_date', 'is', null)
-          .lte('event_date', horizonStr),
-        supabase.from('client_links')
-          .select('id, token, event_name, client_name, event_date')
           .eq('is_active', true)
           .not('event_date', 'is', null)
           .lte('event_date', horizonStr),
@@ -76,16 +70,6 @@ export function UpcomingDeadlines() {
           id: s.id, module: 'session',
           title: s.project_name, subtitle: s.client_name,
           eventDate: s.event_date, href: '/admin/creative', days,
-        });
-      });
-
-      (links.data || []).forEach((l: any) => {
-        const days = getDaysUntil(l.event_date);
-        if (days === null) return;
-        all.push({
-          id: l.id, module: 'link',
-          title: l.event_name, subtitle: l.client_name,
-          eventDate: l.event_date, href: '/admin/looks', days,
         });
       });
 

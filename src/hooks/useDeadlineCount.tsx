@@ -4,8 +4,11 @@ import { differenceInCalendarDays } from 'date-fns';
 import { isProposalClosed } from '@/lib/proposalStatus';
 
 /**
- * Polls proposals + creative_sessions + client_links for items where
- * event_date is overdue or due today. Prefixes document.title with (N).
+ * Polls proposals + creative_sessions for items where event_date is overdue or
+ * due today. Prefixes document.title with (N).
+ *
+ * Previz links are deliberately excluded: that workflow is parked, so counting
+ * them here put a permanent unread badge on the tab for work nobody was doing.
  */
 export function useDeadlineCount() {
   useEffect(() => {
@@ -16,10 +19,9 @@ export function useDeadlineCount() {
         const today = new Date();
         const todayStr = today.toISOString().slice(0, 10);
 
-        const [proposals, sessions, links] = await Promise.all([
+        const [proposals, sessions] = await Promise.all([
           supabase.from('proposals').select('event_date, status, signed_at').eq('is_active', true).not('event_date', 'is', null).lte('event_date', todayStr),
           supabase.from('creative_sessions').select('event_date').eq('is_active', true).not('event_date', 'is', null).lte('event_date', todayStr),
-          supabase.from('client_links').select('event_date').eq('is_active', true).not('event_date', 'is', null).lte('event_date', todayStr),
         ]);
 
         const openProposals = (proposals.data || []).filter((p: any) => !isProposalClosed(p));
@@ -27,7 +29,6 @@ export function useDeadlineCount() {
         const all = [
           ...openProposals,
           ...(sessions.data || []),
-          ...(links.data || []),
         ];
 
         const count = all.filter((row: any) => {

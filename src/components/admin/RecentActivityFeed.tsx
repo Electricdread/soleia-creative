@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
-import { Activity, FileSignature, MousePointerClick, Upload, Image as ImageIcon, Loader2, ChevronRight } from 'lucide-react';
+import { Activity, FileSignature, Image as ImageIcon, Loader2, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type ActivityKind = 'signed' | 'selection' | 'upload' | 'mood';
+type ActivityKind = 'signed' | 'mood';
 
 interface ActivityItem {
   kind: ActivityKind;
@@ -18,8 +18,6 @@ interface ActivityItem {
 
 const KIND_META: Record<ActivityKind, { icon: typeof Activity; label: string; tone: string; bg: string }> = {
   signed: { icon: FileSignature, label: 'Proposal signed', tone: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  selection: { icon: MousePointerClick, label: 'Selection added', tone: 'text-blue-500', bg: 'bg-blue-500/10' },
-  upload: { icon: Upload, label: 'Asset uploaded', tone: 'text-purple-500', bg: 'bg-purple-500/10' },
   mood: { icon: ImageIcon, label: 'Mood board update', tone: 'text-[#c49a3c]', bg: 'bg-[#c49a3c]/10' },
 };
 
@@ -37,19 +35,11 @@ export function RecentActivityFeed() {
   const load = async () => {
     try {
       const since = fortnightAgo();
-      const [signed, selections, uploads, mood] = await Promise.all([
+      const [signed, mood] = await Promise.all([
         supabase.from('proposals')
           .select('id, event_name, client_name, client_signature, signed_at, token')
           .not('signed_at', 'is', null).gte('signed_at', since)
           .order('signed_at', { ascending: false }).limit(20),
-        supabase.from('link_selections')
-          .select('id, link_id, clip_title, created_at, client_links!inner(event_name, client_name, token)')
-          .gte('created_at', since)
-          .order('created_at', { ascending: false }).limit(20),
-        supabase.from('session_uploads')
-          .select('id, link_id, file_name, created_at, client_links!inner(event_name, client_name, token)')
-          .gte('created_at', since)
-          .order('created_at', { ascending: false }).limit(20),
         supabase.from('mood_board_items')
           .select('id, session_id, title, added_by, created_at, creative_sessions!inner(project_name, client_name, token)')
           .gte('created_at', since)
@@ -65,24 +55,6 @@ export function RecentActivityFeed() {
           subtitle: p.client_name,
           at: p.signed_at,
           href: `/proposal/${p.token}`,
-        });
-      });
-      (selections.data || []).forEach((s: any) => {
-        all.push({
-          kind: 'selection', id: s.id,
-          title: s.clip_title || 'Clip selected',
-          subtitle: `${s.client_links?.event_name || 'Link'} · ${s.client_links?.client_name || ''}`,
-          at: s.created_at,
-          href: '/admin/looks',
-        });
-      });
-      (uploads.data || []).forEach((u: any) => {
-        all.push({
-          kind: 'upload', id: u.id,
-          title: u.file_name || 'Asset uploaded',
-          subtitle: `${u.client_links?.event_name || 'Link'} · ${u.client_links?.client_name || ''}`,
-          at: u.created_at,
-          href: '/admin/looks',
         });
       });
       (mood.data || []).forEach((m: any) => {
@@ -109,8 +81,6 @@ export function RecentActivityFeed() {
     const channel = supabase
       .channel('recent-activity-feed')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'link_selections' }, load)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'session_uploads' }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mood_board_items' }, load)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -136,7 +106,7 @@ export function RecentActivityFeed() {
           <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
             <Activity className="w-7 h-7 text-muted-foreground/40 mb-2" />
             <p className="text-sm font-medium text-foreground">No recent activity</p>
-            <p className="text-xs text-muted-foreground mt-1">Client signatures, uploads, and selections will appear here.</p>
+            <p className="text-xs text-muted-foreground mt-1">Client signatures and mood board updates will appear here.</p>
           </div>
         ) : (
           <div className="divide-y divide-border">

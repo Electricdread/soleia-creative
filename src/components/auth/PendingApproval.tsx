@@ -12,7 +12,7 @@ export function PendingApproval() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-background" />
       <div 
         className="absolute inset-0 opacity-5"
         style={{

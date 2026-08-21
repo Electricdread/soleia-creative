@@ -19,7 +19,6 @@ import DocumentViewer from "./pages/DocumentViewer";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import ContentDelivery from "./pages/ContentDelivery";
 import CreativeSession from "./pages/CreativeSession";
-import CreativeDirector from "./pages/CreativeDirector";
 
 
 import AdminLogin from "./pages/AdminLogin";
@@ -81,7 +80,6 @@ const App = () => (
               <Route path="/creative-guide/elevator" element={<ElevatorDisplayGuide />} />
               <Route path="/creative-guide/ticker" element={<TickerDisplayGuide />} />
               <Route path="/creative-guide/doc/:slug" element={<DocumentViewer />} />
-              <Route path="/creative-director" element={<ProtectedRoute requireAdmin><CreativeDirector /></ProtectedRoute>} />
               <Route path="/creative-guide/print" element={<PrintCreativeGuide />} />
               <Route path="/creative-guide/content-delivery" element={<ContentDelivery />} />
               <Route path="/creative-guide/video-mapping" element={<Suspense fallback={<RouteFallback />}><VenueVideoMapping /></Suspense>} />

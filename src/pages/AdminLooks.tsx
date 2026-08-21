@@ -10,7 +10,7 @@ export default function AdminLooks() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-background" />
 
       {/* Header */}
       <header className="relative z-10 border-b border-border">

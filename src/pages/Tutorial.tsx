@@ -706,7 +706,7 @@ export default function Tutorial() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <HomeButton variant="dark" />
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/creative-guide" className="flex items-center gap-3">
               <img 
                 src="/soleia-icon.png" 
                 alt="Soleia" 

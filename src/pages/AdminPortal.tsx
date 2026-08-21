@@ -52,7 +52,7 @@ const portals: PortalCard[] = [
     title: 'Delivery Guides',
     description: 'Session-based content delivery guides with asset upload links',
     icon: <Send className="w-6 h-6 text-primary" />,
-    href: '/delivery-guide',
+    href: '/creative-guide/content-delivery',
   },
   {
     title: 'Client Proposals',
