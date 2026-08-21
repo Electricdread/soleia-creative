@@ -56,7 +56,10 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    {/* Dark is the house style — the gold reads against it the way it was
+        designed to, and it is what the studio works in. Light stays fully
+        supported behind the toggle. */}
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
