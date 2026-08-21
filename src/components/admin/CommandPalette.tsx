@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { modKey } from '@/lib/platform';
 
-type RecordKind = 'proposal' | 'packet' | 'session';
+type RecordKind = 'job' | 'proposal' | 'packet' | 'session';
 
 interface SearchRecord {
   kind: RecordKind;
@@ -32,6 +32,7 @@ interface SearchRecord {
 }
 
 const KIND_META: Record<RecordKind, { icon: typeof FileText; label: string }> = {
+  job: { icon: Briefcase, label: 'Jobs' },
   proposal: { icon: FileText, label: 'Proposals' },
   packet: { icon: BookOpen, label: 'Packets' },
   session: { icon: Palette, label: 'Creative sessions' },
@@ -66,7 +67,9 @@ async function loadRecords(): Promise<SearchRecord[]> {
   if (inFlight) return inFlight;
 
   inFlight = (async () => {
-    const [proposals, packets, sessions] = await Promise.all([
+    const [jobs, proposals, packets, sessions] = await Promise.all([
+      supabase.from('jobs')
+        .select('id, title, client_name, event_date, track, is_active'),
       supabase.from('proposals')
         .select('id, token, event_name, client_name, event_date, status, signed_at, is_active'),
       supabase.from('pre_call_packets')
@@ -76,6 +79,21 @@ async function loadRecords(): Promise<SearchRecord[]> {
     ]);
 
     const all: SearchRecord[] = [];
+
+    // Jobs lead: one result standing for every record under it.
+    (jobs.data ?? []).forEach((j) => {
+      all.push({
+        kind: 'job',
+        id: j.id,
+        title: j.title,
+        detail: [j.client_name !== j.title ? j.client_name : null,
+                 j.track === 'in_house' ? 'in-house' : null,
+                 j.event_date, j.is_active ? null : 'past'].filter(Boolean).join(' · '),
+        href: `/admin/jobs/${j.id}`,
+        publicHref: null,
+        haystack: norm([j.title, j.client_name].filter(Boolean).join(' ')),
+      });
+    });
 
     (proposals.data ?? []).forEach((p) => {
       const status = p.signed_at ? 'signed' : (p.status ?? 'draft');
@@ -177,7 +195,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   }, [query, records]);
 
   const grouped = useMemo(() => {
-    const out: Record<RecordKind, SearchRecord[]> = { proposal: [], packet: [], session: [] };
+    const out: Record<RecordKind, SearchRecord[]> = { job: [], proposal: [], packet: [], session: [] };
     matches.forEach((m) => out[m.kind].push(m));
     return out;
   }, [matches]);

@@ -1,131 +1,85 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Loader2, FileText, BookOpen, Palette, AlertTriangle, ArrowRight, Info,
-} from 'lucide-react';
+import { Loader2, FileText, BookOpen, Palette, AlertTriangle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useJobs } from '@/hooks/useJobs';
 import {
-  deriveJobs, STAGE_ORDER, STAGE_LABEL,
-  type DerivedJob, type JobStage, type JobMember,
-} from '@/lib/jobs';
-import { CountdownBadge } from '@/components/CountdownBadge';
+  stageFor, flagsFor, daysUntil, CREATIVE_STAGES, STAGE_LABEL, type Stage,
+} from '@/lib/jobStage';
 
-const MEMBER_META: Record<JobMember['kind'], { icon: typeof FileText; href: string; label: string }> = {
-  proposal: { icon: FileText, href: '/admin/proposals', label: 'Proposal' },
-  packet: { icon: BookOpen, href: '/admin/packets', label: 'Packet' },
-  session: { icon: Palette, href: '/admin/creative', label: 'Session' },
-};
-
-const STAGE_TONE: Record<JobStage, string> = {
+const STAGE_TONE: Record<Stage, string> = {
   booked: 'text-muted-foreground',
   packet_sent: 'text-blue-500',
+  call_held: 'text-blue-500',
   proposal_out: 'text-amber-600 dark:text-amber-400',
   awaiting_assets: 'text-amber-600 dark:text-amber-400',
   in_production: 'text-emerald-600 dark:text-emerald-400',
 };
 
+function Countdown({ eventDate }: { eventDate: string | null }) {
+  const days = daysUntil(eventDate);
+  if (days === null) {
+    return <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">no date</span>;
+  }
+  const tone =
+    days < 0 ? 'text-muted-foreground'
+    : days <= 7 ? 'text-red-600 dark:text-red-400'
+    : days <= 21 ? 'text-amber-600 dark:text-amber-400'
+    : 'text-muted-foreground';
+  return (
+    <span className={cn('font-mono text-[11px] tabular-nums', tone)}>
+      {days < 0 ? `${Math.abs(days)}d ago` : days === 0 ? 'today' : `${days}d`}
+    </span>
+  );
+}
+
 export default function AdminJobs() {
   const navigate = useNavigate();
-  const [jobs, setJobs] = useState<DerivedJob[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showArchived, setShowArchived] = useState(false);
+  const { jobs, loading, error } = useJobs();
+  const [showPast, setShowPast] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  const rows = useMemo(
+    () => jobs.map((j) => ({ ...j, ...stageFor(j), flags: flagsFor(j) })),
+    [jobs],
+  );
 
-    (async () => {
-      try {
-        const [proposals, packets, sessions, assets, packageItems] = await Promise.all([
-          supabase.from('proposals')
-            .select('id, token, client_name, event_name, event_date, status, signed_at, is_active, drive_folder_id'),
-          supabase.from('pre_call_packets')
-            .select('id, token, client_name, title, event_date, kind, is_active, drive_folder_id'),
-          supabase.from('creative_sessions')
-            .select('id, token, client_name, project_name, event_date, is_active, proposal_id'),
-          supabase.from('drive_seen_files').select('proposal_id'),
-          supabase.from('proposal_items')
-            .select('proposal_id, category, title')
-            .eq('client_selected', true),
-        ]);
-        if (cancelled) return;
+  const [live, past] = useMemo(() => {
+    const isPast = (r: (typeof rows)[number]) => {
+      const d = daysUntil(r.job.event_date);
+      return !r.job.is_active || (d !== null && d < 0);
+    };
+    return [rows.filter((r) => !isPast(r)), rows.filter(isPast)];
+  }, [rows]);
 
-        const assetsByProposal: Record<string, number> = {};
-        (assets.data ?? []).forEach((row) => {
-          if (!row.proposal_id) return;
-          assetsByProposal[row.proposal_id] = (assetsByProposal[row.proposal_id] ?? 0) + 1;
-        });
+  const shown = showPast ? past : live;
 
-        const creativePackageProposalIds = new Set(
-          (packageItems.data ?? [])
-            .filter((i) =>
-              i.category === 'Soleia Creative Package' ||
-              (i.title ?? '').toLowerCase().includes('creative package'))
-            .map((i) => i.proposal_id),
-        );
-
-        setJobs(deriveJobs({
-          proposals: (proposals.data ?? []) as never,
-          packets: (packets.data ?? []) as never,
-          sessions: (sessions.data ?? []) as never,
-          assetsByProposal,
-          creativePackageProposalIds,
-        }));
-      } catch (e) {
-        console.error('Jobs derivation failed', e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, []);
-
-  // A job is live if anything under it still is; the rest are history.
-  const [live, archived] = useMemo(() => {
-    const isLive = (j: DerivedJob) =>
-      j.stage !== 'in_production' || !!j.eventDate;
-    const past = (j: DerivedJob) =>
-      !!j.eventDate && j.eventDate < new Date().toISOString().slice(0, 10);
-    return [jobs.filter((j) => !past(j) && isLive(j)), jobs.filter((j) => past(j) || !isLive(j))];
-  }, [jobs]);
-
-  const shown = showArchived ? archived : live;
   const byStage = useMemo(() => {
-    const map = new Map<JobStage, DerivedJob[]>();
-    STAGE_ORDER.forEach((s) => map.set(s, []));
-    shown.forEach((j) => map.get(j.stage)!.push(j));
+    const map = new Map<Stage, typeof shown>();
+    CREATIVE_STAGES.forEach((s) => map.set(s, []));
+    shown.forEach((r) => map.get(r.stage)!.push(r));
     return map;
   }, [shown]);
 
-  const flaggedCount = live.filter((j) => j.flags.length > 0).length;
+  const flagged = live.filter((r) => r.flags.length > 0).length;
 
   return (
     <AdminShell
       title="Jobs"
-      subtitle={loading ? 'Working out the groupings…' : `${live.length} live · ${archived.length} past`}
+      subtitle={loading ? 'Loading…' : `${live.length} live · ${past.length} past${flagged ? ` · ${flagged} need a decision` : ''}`}
       actions={
-        <Button variant="outline" size="sm" onClick={() => setShowArchived((v) => !v)}>
-          {showArchived ? 'Show live' : `Show past (${archived.length})`}
+        <Button variant="outline" size="sm" onClick={() => setShowPast((v) => !v)}>
+          {showPast ? 'Show live' : `Show past (${past.length})`}
         </Button>
       }
     >
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-border bg-muted/50 p-4">
-        <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-        <div className="text-sm text-muted-foreground">
-          <p className="font-medium text-foreground">These groupings are inferred, not stored.</p>
-          <p className="mt-1">
-            A job has no row of its own yet. This reads the proposals, packets and sessions that
-            already exist and groups records that share a distinguishing name and do not disagree on
-            a date. Check them before I write any of it to the database — especially anything
-            flagged.
-            {flaggedCount > 0 && <> <span className="font-medium text-foreground">{flaggedCount} live job{flaggedCount === 1 ? '' : 's'} carry a flag.</span></>}
-          </p>
-        </div>
-      </div>
+      {error && (
+        <p className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
+        </p>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
@@ -133,11 +87,11 @@ export default function AdminJobs() {
         </div>
       ) : shown.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">
-          {showArchived ? 'No past jobs.' : 'No live jobs.'}
+          {showPast ? 'No past jobs.' : 'No live jobs.'}
         </p>
       ) : (
         <div className="space-y-8">
-          {STAGE_ORDER.map((stage) => {
+          {CREATIVE_STAGES.map((stage) => {
             const items = byStage.get(stage) ?? [];
             if (items.length === 0) return null;
             return (
@@ -147,65 +101,47 @@ export default function AdminJobs() {
                   <span className="font-mono text-xs text-muted-foreground">{items.length}</span>
                 </div>
 
-                <div className="space-y-3">
-                  {items.map((job) => (
-                    <article
-                      key={job.key}
-                      className="rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md"
+                <div className="space-y-2">
+                  {items.map((r) => (
+                    <button
+                      key={r.job.id}
+                      onClick={() => navigate(`/admin/jobs/${r.job.id}`)}
+                      className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/40 hover:shadow-md"
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="truncate font-medium text-foreground">{job.title}</h3>
-                          <p className="mt-0.5 text-xs text-muted-foreground">
-                            {job.client}
-                            {job.aliases.length > 1 && (
-                              <> · also filed as {job.aliases.filter((a) => a !== job.title).join(', ')}</>
-                            )}
-                          </p>
-                        </div>
-                        <div className="flex flex-shrink-0 items-center gap-2">
-                          {job.track === 'in_house' && (
-                            <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
-                              In-house
-                            </Badge>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="truncate font-medium text-foreground">{r.job.title}</span>
+                          {r.job.track === 'in_house' && (
+                            <Badge variant="outline" className="text-[10px] uppercase tracking-wider">In-house</Badge>
                           )}
-                          {job.eventDate
-                            ? <CountdownBadge eventDate={job.eventDate} />
-                            : <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">no date</span>}
+                          {r.flags.length > 0 && (
+                            <span className="flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-400">
+                              <AlertTriangle className="h-3 w-3" />
+                              {r.flags.length}
+                            </span>
+                          )}
                         </div>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {r.job.client_name !== r.job.title && <>{r.job.client_name} · </>}
+                          {r.reason}
+                        </p>
                       </div>
 
-                      <p className="mt-2 text-xs text-muted-foreground">{job.stageReason}</p>
-
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {job.members.map((m) => {
-                          const meta = MEMBER_META[m.kind];
-                          const Icon = meta.icon;
-                          return (
-                            <button
-                              key={`${m.kind}-${m.id}`}
-                              onClick={() => navigate(`${meta.href}?focus=${m.id}`)}
-                              className="group flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                            >
-                              <Icon className="h-3 w-3" />
-                              <span className="max-w-[220px] truncate">{m.label}</span>
-                              <ArrowRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                            </button>
-                          );
-                        })}
+                      <div className="hidden flex-shrink-0 items-center gap-2.5 text-muted-foreground sm:flex">
+                        {r.proposals.length > 0 && (
+                          <span className="flex items-center gap-1 text-[11px]"><FileText className="h-3 w-3" />{r.proposals.length}</span>
+                        )}
+                        {r.packets.length > 0 && (
+                          <span className="flex items-center gap-1 text-[11px]"><BookOpen className="h-3 w-3" />{r.packets.length}</span>
+                        )}
+                        {r.sessions.length > 0 && (
+                          <span className="flex items-center gap-1 text-[11px]"><Palette className="h-3 w-3" />{r.sessions.length}</span>
+                        )}
                       </div>
 
-                      {job.flags.length > 0 && (
-                        <ul className="mt-3 space-y-1 border-t border-border pt-3">
-                          {job.flags.map((f) => (
-                            <li key={f} className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400">
-                              <AlertTriangle className="mt-0.5 h-3 w-3 flex-shrink-0" />
-                              <span>{f}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </article>
+                      <Countdown eventDate={r.job.event_date} />
+                      <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
+                    </button>
                   ))}
                 </div>
               </section>
