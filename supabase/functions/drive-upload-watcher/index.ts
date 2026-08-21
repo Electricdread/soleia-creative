@@ -114,13 +114,66 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Find every proposal that has a drive folder linked
+    // Every folder we are responsible for watching. A job's assets can land in
+    // the folder created from its proposal OR the one created from its packet —
+    // historically only the proposal side was scanned, so uploads to a packet
+    // folder were never seen and kickoff could not be detected.
+    interface WatchTarget {
+      proposal_id: string | null;
+      client_name: string;
+      event_name: string;
+      event_date: string | null;
+      drive_folder_id: string;
+      drive_folder_url: string | null;
+      source: 'proposal' | 'packet';
+    }
+
     const { data: proposals, error } = await supabase
       .from('proposals')
       .select('id, token, client_name, event_name, event_date, drive_folder_id, drive_folder_url')
       .not('drive_folder_id', 'is', null);
 
     if (error) throw error;
+
+    const { data: packets, error: packetErr } = await supabase
+      .from('pre_call_packets')
+      .select('id, client_name, title, event_date, drive_folder_id, drive_folder_url')
+      .not('drive_folder_id', 'is', null);
+
+    if (packetErr) throw packetErr;
+
+    // Proposals are added first so that when a packet and a proposal share a
+    // folder the row is attributed to the proposal, which is what the dashboard
+    // and the signed-proposal flow read.
+    const targets = new Map<string, WatchTarget>();
+
+    for (const p of proposals ?? []) {
+      const folderId = (p as any).drive_folder_id as string | null;
+      if (!folderId) continue;
+      targets.set(folderId, {
+        proposal_id: (p as any).id,
+        client_name: (p as any).client_name,
+        event_name: (p as any).event_name,
+        event_date: (p as any).event_date ?? null,
+        drive_folder_id: folderId,
+        drive_folder_url: (p as any).drive_folder_url ?? null,
+        source: 'proposal',
+      });
+    }
+
+    for (const pk of packets ?? []) {
+      const folderId = (pk as any).drive_folder_id as string | null;
+      if (!folderId || targets.has(folderId)) continue;
+      targets.set(folderId, {
+        proposal_id: null,
+        client_name: (pk as any).client_name ?? 'Client',
+        event_name: (pk as any).title ?? 'Pre-Call Packet',
+        event_date: (pk as any).event_date ?? null,
+        drive_folder_id: folderId,
+        drive_folder_url: (pk as any).drive_folder_url ?? null,
+        source: 'packet',
+      });
+    }
 
     // Best-effort: match a client_link by client + event for a session URL
     const { data: links } = await supabase
@@ -134,22 +187,25 @@ Deno.serve(async (req) => {
 
     const summary = {
       scanned_folders: 0,
+      scanned_proposal_folders: 0,
+      scanned_packet_folders: 0,
       new_files: 0,
       webhooks_sent: 0,
       webhook_failures: 0,
       seeded: 0,
     };
 
-    for (const p of proposals ?? []) {
-      const folderId = p.drive_folder_id as string;
-      if (!folderId) continue;
+    for (const p of targets.values()) {
+      const folderId = p.drive_folder_id;
       summary.scanned_folders++;
+      if (p.source === 'proposal') summary.scanned_proposal_folders++;
+      else summary.scanned_packet_folders++;
 
       let files: DriveFile[];
       try {
         files = await listAllFiles(folderId, lovableKey, driveKey);
       } catch (e) {
-        console.error(`Failed to list folder ${folderId} for proposal ${p.id}:`, e);
+        console.error(`Failed to list folder ${folderId} (${p.source} ${p.client_name}):`, e);
         continue;
       }
 
@@ -173,7 +229,7 @@ Deno.serve(async (req) => {
       for (const file of newFiles) {
         summary.new_files++;
         const row = {
-          proposal_id: p.id,
+          proposal_id: p.proposal_id,
           drive_folder_id: folderId,
           drive_file_id: file.id,
           file_name: file.name,

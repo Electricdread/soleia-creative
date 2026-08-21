@@ -34,42 +34,128 @@ async function gw(path: string, init: RequestInit, lovableKey: string, driveKey:
   return json;
 }
 
-async function findOrCreateFolder(
+/**
+ * Normalise a folder name for comparison.
+ *
+ * The proposal branch names a job folder from `client_name — event_name`, the
+ * packet branch from `client_name — title`. Drive only matches names exactly,
+ * so two hand-typed strings that differ by a leading zero, a capital letter or
+ * a trailing comma used to produce two sibling folders for one job — and only
+ * one of them was ever watched for uploads.
+ */
+function normName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\b0+(\d)/g, '$1')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+interface DriveFolder { id: string; name: string }
+
+async function listChildFolders(
+  parentId: string,
+  lovableKey: string,
+  driveKey: string,
+): Promise<DriveFolder[]> {
+  const q = encodeURIComponent(
+    `mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`,
+  );
+  const folders: DriveFolder[] = [];
+  let pageToken = '';
+  do {
+    const page = await gw(
+      `/drive/v3/files?q=${q}&fields=nextPageToken,files(id,name)&pageSize=200` +
+        (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''),
+      { method: 'GET' },
+      lovableKey,
+      driveKey,
+    );
+    folders.push(...((page?.files ?? []) as DriveFolder[]));
+    pageToken = page?.nextPageToken ?? '';
+  } while (pageToken);
+  return folders;
+}
+
+async function createFolder(
   name: string,
   parentId: string | null,
   lovableKey: string,
   driveKey: string,
 ): Promise<string> {
-  const parentClause = parentId ? ` and '${parentId}' in parents` : '';
-  const q = encodeURIComponent(
-    `mimeType='application/vnd.google-apps.folder' and name='${name.replace(/'/g, "\\'")}' and trashed=false${parentClause}`,
-  );
-  const list = await gw(
-    `/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=1`,
-    { method: 'GET' },
-    lovableKey,
-    driveKey,
-  );
-  if (list?.files?.length) return list.files[0].id;
-
-  const body: Record<string, unknown> = {
-    name,
-    mimeType: 'application/vnd.google-apps.folder',
-  };
+  const body: Record<string, unknown> = { name, mimeType: 'application/vnd.google-apps.folder' };
   if (parentId) body.parents = [parentId];
-
   const created = await gw(
     '/drive/v3/files?fields=id',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    },
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
     lovableKey,
     driveKey,
   );
   return created.id;
 }
+
+/**
+ * Find a child folder of `parentId` by normalised name, else create it.
+ * `matches` lets a caller accept more than one spelling — the asset drop exists
+ * as both "Client Asset Collect" and "03_Client Asset Collect" depending on
+ * which folder mode created it first.
+ */
+async function findOrCreateFolder(
+  name: string,
+  parentId: string,
+  lovableKey: string,
+  driveKey: string,
+  matches?: (normalised: string) => boolean,
+): Promise<string> {
+  const want = normName(name);
+  const test = matches ?? ((n: string) => n === want);
+  const children = await listChildFolders(parentId, lovableKey, driveKey);
+  const hit = children.find((f) => test(normName(f.name)));
+  if (hit) return hit.id;
+  return createFolder(name, parentId, lovableKey, driveKey);
+}
+
+/**
+ * Resolve the "Soleia Clients" root. Pinned to an explicit id when
+ * `site_settings.drive_root_folder_id` is set; otherwise searched by name and
+ * constrained to My Drive's root, so it cannot bind to a same-named folder
+ * living in a shared drive.
+ */
+async function resolveRootFolder(
+  supabase: ReturnType<typeof createClient>,
+  lovableKey: string,
+  driveKey: string,
+): Promise<string> {
+  const { data: pinned } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'drive_root_folder_id')
+    .maybeSingle();
+  const pinnedId = (pinned as { value?: string } | null)?.value?.trim();
+  if (pinnedId) return pinnedId;
+
+  const q = encodeURIComponent(
+    `mimeType='application/vnd.google-apps.folder' and name='Soleia Clients' and trashed=false and 'root' in parents`,
+  );
+  const list = await gw(
+    `/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=2`,
+    { method: 'GET' },
+    lovableKey,
+    driveKey,
+  );
+  if ((list?.files?.length ?? 0) > 1) {
+    console.warn(
+      'More than one "Soleia Clients" folder in My Drive root; using the first. ' +
+      'Set site_settings.drive_root_folder_id to remove the ambiguity.',
+    );
+  }
+  if (list?.files?.length) return list.files[0].id;
+  return createFolder('Soleia Clients', null, lovableKey, driveKey);
+}
+
+/** True when a folder is the client asset drop, under either spelling. */
+const isAssetCollect = (n: string) => n.endsWith('client asset collect');
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -100,14 +186,14 @@ Deno.serve(async (req) => {
     // Load the source row (proposal or packet) into a normalized shape
     let sourceTable: 'proposals' | 'pre_call_packets';
     let sourceId: string;
-    let proposal: { id: string; event_name: string; client_name: string; drive_folder_url: string | null; drive_folder_id: string | null };
+    let proposal: { id: string; event_name: string; client_name: string; event_date: string | null; drive_folder_url: string | null; drive_folder_id: string | null };
 
     if (proposal_id) {
       sourceTable = 'proposals';
       sourceId = proposal_id;
       const { data, error: fetchErr } = await supabase
         .from('proposals')
-        .select('id, event_name, client_name, drive_folder_url, drive_folder_id')
+        .select('id, event_name, client_name, event_date, drive_folder_url, drive_folder_id')
         .eq('id', proposal_id)
         .maybeSingle();
       if (fetchErr) throw new Error(`Fetch proposal failed: ${fetchErr.message}`);
@@ -118,7 +204,7 @@ Deno.serve(async (req) => {
       sourceId = packet_id!;
       const { data, error: fetchErr } = await supabase
         .from('pre_call_packets')
-        .select('id, title, client_name, drive_folder_url, drive_folder_id')
+        .select('id, title, client_name, event_date, drive_folder_url, drive_folder_id')
         .eq('id', packet_id!)
         .maybeSingle();
       if (fetchErr) throw new Error(`Fetch packet failed: ${fetchErr.message}`);
@@ -127,6 +213,7 @@ Deno.serve(async (req) => {
         id: data.id,
         event_name: data.title || 'Pre-Call Packet',
         client_name: data.client_name || 'Client',
+        event_date: data.event_date ?? null,
         drive_folder_url: data.drive_folder_url,
         drive_folder_id: data.drive_folder_id,
       };
@@ -144,21 +231,69 @@ Deno.serve(async (req) => {
       );
     }
 
+    // A job's folder is shared by its packet and its proposal. Before making a
+    // new one, reuse whatever the other side already created for this job — the
+    // two branches name the folder from different fields, so relying on the
+    // name alone split Whatnot and MOC&CO x ZAXBYS across two folders each.
+    //
+    // Matched on client *and* event date so a repeat client's second booking
+    // gets its own folder. When the dates do not line up we fall through and
+    // create one, which is the safe failure: a spare empty folder beats two
+    // clients sharing an asset drop.
+    const wantClient = normName(proposal.client_name);
+    const siblingTable = sourceTable === 'proposals' ? 'pre_call_packets' : 'proposals';
+    const { data: siblings } = await supabase
+      .from(siblingTable)
+      .select('client_name, event_date, drive_folder_id, drive_folder_url')
+      .not('drive_folder_id', 'is', null);
+
+    interface SiblingRow {
+      client_name: string | null;
+      event_date: string | null;
+      drive_folder_id: string;
+      drive_folder_url: string | null;
+    }
+
+    const reuse = ((siblings ?? []) as SiblingRow[]).find(
+      (row) =>
+        normName(row.client_name ?? '') === wantClient &&
+        (row.event_date ?? null) === (proposal.event_date ?? null),
+    );
+
+    if (reuse?.drive_folder_id) {
+      const { error: reuseErr } = await supabase
+        .from(sourceTable)
+        .update({ drive_folder_id: reuse.drive_folder_id, drive_folder_url: reuse.drive_folder_url })
+        .eq('id', sourceId);
+      if (reuseErr) throw new Error(`Update ${sourceTable} failed: ${reuseErr.message}`);
+      console.log(`Reused the ${siblingTable} folder for "${proposal.client_name}"`);
+      return new Response(
+        JSON.stringify({
+          folderUrl: reuse.drive_folder_url,
+          folderId: reuse.drive_folder_id,
+          existing: true,
+          reused: true,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     const safe = (s: string) => s.replace(/[\\/:*?"<>|]/g, '-').trim();
-    const rootId = await findOrCreateFolder('Soleia Clients', null, lovableKey, driveKey);
+    const rootId = await resolveRootFolder(supabase, lovableKey, driveKey);
     const clientFolderName = `${safe(proposal.client_name)} — ${safe(proposal.event_name)}`;
     const clientFolderId = await findOrCreateFolder(clientFolderName, rootId, lovableKey, driveKey);
 
-    // Subfolders depend on mode
+    // Subfolders depend on mode. The asset drop is matched under either
+    // spelling so a job touched by both modes never ends up with two of them.
     let creativeGuideFolderId = '';
     let pixelMapFolderId = '';
     if (folder_mode === 'asset_only') {
-      await findOrCreateFolder('Client Asset Collect', clientFolderId, lovableKey, driveKey);
+      await findOrCreateFolder('03_Client Asset Collect', clientFolderId, lovableKey, driveKey, isAssetCollect);
     } else {
       const [cg, pm, _ac] = await Promise.all([
         findOrCreateFolder('01_Soleia Creative Guide', clientFolderId, lovableKey, driveKey),
         findOrCreateFolder('02_Pixel Map', clientFolderId, lovableKey, driveKey),
-        findOrCreateFolder('03_Client Asset Collect', clientFolderId, lovableKey, driveKey),
+        findOrCreateFolder('03_Client Asset Collect', clientFolderId, lovableKey, driveKey, isAssetCollect),
       ]);
       creativeGuideFolderId = cg;
       pixelMapFolderId = pm;
