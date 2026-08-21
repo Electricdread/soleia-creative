@@ -9,7 +9,8 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { CommandPalette } from '@/components/admin/CommandPalette';
+import { CommandPalette, prefetchPaletteRecords } from '@/components/admin/CommandPalette';
+import { shortcut } from '@/lib/platform';
 import { cn } from '@/lib/utils';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import soleiaIcon from '@/assets/sol-icon.png';
@@ -130,7 +131,16 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
       }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+
+    // Warm the palette while the page settles, so the first press does not sit
+    // on a spinner. Cheap enough to do unconditionally — three small selects,
+    // cached for the rest of the session.
+    const idle = window.setTimeout(() => { void prefetchPaletteRecords(); }, 600);
+
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.clearTimeout(idle);
+    };
   }, []);
 
   // Close the drawer on navigation, so tapping a link never leaves the overlay
@@ -335,7 +345,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
             >
               <Search className="h-3.5 w-3.5" />
               <span className="flex-1 text-left">Search jobs, clients, events</span>
-              <kbd className="rounded border border-border px-1 font-mono text-[10px]">⌘K</kbd>
+              <kbd className="rounded border border-border px-1 font-mono text-[10px]">{shortcut('K')}</kbd>
             </button>
             <Button
               variant="ghost"

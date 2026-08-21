@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import {
   FileText, BookOpen, Palette, LayoutDashboard, Calendar, HardDrive, Users, Mail, Loader2,
 } from 'lucide-react';
+import { modKey } from '@/lib/platform';
 
 type RecordKind = 'proposal' | 'packet' | 'session';
 
@@ -19,7 +20,7 @@ interface SearchRecord {
   detail: string;
   /** Where the admin list lives. */
   href: string;
-  /** The client-facing token page, opened with ⌘↵. */
+  /** The client-facing token page, opened with the modifier + ↵. */
   publicHref: string | null;
   /**
    * Every name this job is filed under. The same job is routinely typed three
@@ -48,6 +49,95 @@ const PAGES = [
 
 const norm = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
+/**
+ * Cached for the session, not per mount.
+ *
+ * AdminShell is mounted fresh by every page, so the palette was reloading all
+ * three tables the first time it opened on each one — you paid the round trip
+ * again after every navigation, while looking at a spinner.
+ */
+let cache: SearchRecord[] | null = null;
+let inFlight: Promise<SearchRecord[]> | null = null;
+
+async function loadRecords(): Promise<SearchRecord[]> {
+  if (cache) return cache;
+  if (inFlight) return inFlight;
+
+  inFlight = (async () => {
+    const [proposals, packets, sessions] = await Promise.all([
+      supabase.from('proposals')
+        .select('id, token, event_name, client_name, event_date, status, signed_at, is_active'),
+      supabase.from('pre_call_packets')
+        .select('id, token, title, client_name, event_date, kind, is_active'),
+      supabase.from('creative_sessions')
+        .select('id, token, project_name, client_name, event_date, is_active, is_public'),
+    ]);
+
+    const all: SearchRecord[] = [];
+
+    (proposals.data ?? []).forEach((p) => {
+      const status = p.signed_at ? 'signed' : (p.status ?? 'draft');
+      all.push({
+        kind: 'proposal',
+        id: p.id,
+        title: p.event_name,
+        detail: [p.client_name, status, p.event_date, p.is_active ? null : 'archived']
+          .filter(Boolean).join(' · '),
+        href: `/admin/proposals?focus=${p.id}`,
+        publicHref: p.token ? `/proposal/${p.token}` : null,
+        haystack: norm([p.event_name, p.client_name, status].filter(Boolean).join(' ')),
+      });
+    });
+
+    (packets.data ?? []).forEach((p) => {
+      all.push({
+        kind: 'packet',
+        id: p.id,
+        title: p.title,
+        detail: [p.client_name, p.kind?.replace(/_/g, ' '), p.event_date, p.is_active ? null : 'archived']
+          .filter(Boolean).join(' · '),
+        href: `/admin/packets?focus=${p.id}`,
+        publicHref: p.token ? `/packet/${p.token}` : null,
+        haystack: norm([p.title, p.client_name].filter(Boolean).join(' ')),
+      });
+    });
+
+    (sessions.data ?? []).forEach((s) => {
+      all.push({
+        kind: 'session',
+        id: s.id,
+        title: s.project_name,
+        detail: [s.client_name, s.is_public ? 'public' : 'private', s.event_date, s.is_active ? null : 'archived']
+          .filter(Boolean).join(' · '),
+        href: `/admin/creative?focus=${s.id}`,
+        publicHref: s.token ? `/creative/${s.token}` : null,
+        haystack: norm([s.project_name, s.client_name].filter(Boolean).join(' ')),
+      });
+    });
+
+    cache = all;
+    inFlight = null;
+    return all;
+  })();
+
+  return inFlight;
+}
+
+/** Warm the cache before anyone presses the shortcut. */
+export async function prefetchPaletteRecords(): Promise<void> {
+  try {
+    await loadRecords();
+  } catch (e) {
+    console.error('CommandPalette prefetch failed', e);
+  }
+}
+
+/** Drop the cache so the next open re-reads — call after creating or deleting. */
+export function invalidatePaletteRecords(): void {
+  cache = null;
+  inFlight = null;
+}
+
 export interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -57,81 +147,23 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const navigate = useNavigate();
   const [records, setRecords] = useState<SearchRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
   const [query, setQuery] = useState('');
 
-  // Fetch once on first open rather than on mount, so the palette costs
-  // nothing to the pages that never use it.
+  // Records come from the session cache, which AdminShell warms on mount, so
+  // pressing the shortcut normally shows results with no wait at all.
   useEffect(() => {
-    if (!open || loaded || loading) return;
+    if (!open) return;
     let cancelled = false;
+    if (cache) { setRecords(cache); setLoading(false); return; }
+
     setLoading(true);
-
-    (async () => {
-      try {
-        const [proposals, packets, sessions] = await Promise.all([
-          supabase.from('proposals')
-            .select('id, token, event_name, client_name, event_date, status, signed_at, is_active'),
-          supabase.from('pre_call_packets')
-            .select('id, token, title, client_name, event_date, kind, is_active'),
-          supabase.from('creative_sessions')
-            .select('id, token, project_name, client_name, event_date, is_active, is_public'),
-        ]);
-        if (cancelled) return;
-
-        const all: SearchRecord[] = [];
-
-        (proposals.data ?? []).forEach((p) => {
-          const status = p.signed_at ? 'signed' : (p.status ?? 'draft');
-          all.push({
-            kind: 'proposal',
-            id: p.id,
-            title: p.event_name,
-            detail: [p.client_name, status, p.event_date, p.is_active ? null : 'archived']
-              .filter(Boolean).join(' · '),
-            href: `/admin/proposals?focus=${p.id}`,
-            publicHref: p.token ? `/proposal/${p.token}` : null,
-            haystack: norm([p.event_name, p.client_name, status].filter(Boolean).join(' ')),
-          });
-        });
-
-        (packets.data ?? []).forEach((p) => {
-          all.push({
-            kind: 'packet',
-            id: p.id,
-            title: p.title,
-            detail: [p.client_name, p.kind?.replace(/_/g, ' '), p.event_date, p.is_active ? null : 'archived']
-              .filter(Boolean).join(' · '),
-            href: `/admin/packets?focus=${p.id}`,
-            publicHref: p.token ? `/packet/${p.token}` : null,
-            haystack: norm([p.title, p.client_name].filter(Boolean).join(' ')),
-          });
-        });
-
-        (sessions.data ?? []).forEach((s) => {
-          all.push({
-            kind: 'session',
-            id: s.id,
-            title: s.project_name,
-            detail: [s.client_name, s.is_public ? 'public' : 'private', s.event_date, s.is_active ? null : 'archived']
-              .filter(Boolean).join(' · '),
-            href: `/admin/creative?focus=${s.id}`,
-            publicHref: s.token ? `/creative/${s.token}` : null,
-            haystack: norm([s.project_name, s.client_name].filter(Boolean).join(' ')),
-          });
-        });
-
-        setRecords(all);
-        setLoaded(true);
-      } catch (e) {
-        console.error('CommandPalette load failed', e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+    loadRecords()
+      .then((rows) => { if (!cancelled) setRecords(rows); })
+      .catch((e) => console.error('CommandPalette load failed', e))
+      .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
-  }, [open, loaded, loading]);
+  }, [open]);
 
   // cmdk's own scoring only sees the visible label, which would miss a job
   // filed under its other name. Filter here on the full haystack instead.
@@ -154,8 +186,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     navigate(record.href);
   };
 
-  // cmdk does not hand the originating event to onSelect, so ⌘↵ is read off the
-  // input before cmdk's own Enter handling gets to the Command root.
+  // cmdk does not hand the originating event to onSelect, so modifier+Enter is
+  // read off the input before cmdk's own Enter handling reaches the root.
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter' || !(e.metaKey || e.ctrlKey)) return;
     const selected = document.querySelector<HTMLElement>('[cmdk-item][aria-selected="true"]');
@@ -239,7 +271,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       <div className="flex flex-wrap items-center gap-4 border-t border-border px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
         <span>↑↓ move</span>
         <span>↵ open</span>
-        <span>⌘↵ client page</span>
+        <span>{modKey} ↵ client page</span>
         <span>esc close</span>
       </div>
     </CommandDialog>
