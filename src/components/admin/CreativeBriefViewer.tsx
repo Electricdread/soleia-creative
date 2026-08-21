@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
+  markBriefReviewed,
   ELEVATOR_LABEL,
   PARTY_LABEL,
   answeredCount,
@@ -51,7 +52,11 @@ export function CreativeBriefViewer({ sessionId, clientName, projectName, open, 
     if (!open) return;
     setLoading(true);
     (async () => {
-      setBrief(await fetchBriefForSession(sessionId));
+      const row = await fetchBriefForSession(sessionId);
+      setBrief(row);
+      // Opening it is what marks it read — the badge clears by being looked at,
+      // not by an email having been sent.
+      if (row?.submitted_at && !row.reviewed_at) void markBriefReviewed(row.id);
       setLoading(false);
     })();
   }, [open, sessionId]);

@@ -26,8 +26,8 @@ interface NavItem {
   external?: boolean;
   /** Only rendered for the studio operator. */
   operatorOnly?: boolean;
-  /** Renders the pending-access count when there is one. */
-  badge?: 'pendingUsers';
+  /** Renders a count when there is one. */
+  badge?: 'pendingUsers' | 'newBriefs';
 }
 
 interface NavGroup {
@@ -56,7 +56,7 @@ const NAV: NavGroup[] = [
     items: [
       { label: 'Packets', href: '/admin/packets', icon: BookOpen },
       { label: 'Proposals', href: '/admin/proposals', icon: FileText },
-      { label: 'Creative sessions', href: '/admin/creative', icon: Palette },
+      { label: 'Creative sessions', href: '/admin/creative', icon: Palette, badge: 'newBriefs' },
     ],
   },
   {
@@ -114,6 +114,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
     }
   });
   const [pendingUsers, setPendingUsers] = useState(0);
+  const [newBriefs, setNewBriefs] = useState(0);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   const isOperator = user?.email?.toLowerCase() === OPERATOR_EMAIL.toLowerCase();
@@ -177,6 +178,26 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
     return () => { cancelled = true; };
   }, []);
 
+  // A submitted brief nobody has opened. Counts unread rather than unsent, so
+  // a missed email still shows up here.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const { count } = await supabase
+        .from('creative_briefs')
+        .select('id', { count: 'exact', head: true })
+        .not('submitted_at', 'is', null)
+        .is('reviewed_at', null);
+      if (!cancelled) setNewBriefs(count ?? 0);
+    };
+    void load();
+    const channel = supabase
+      .channel('shell-new-briefs')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'creative_briefs' }, () => void load())
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(channel); };
+  }, []);
+
   const isCurrent = (item: NavItem) =>
     item.href === '/admin' ? pathname === '/admin' || pathname === '/' : pathname.startsWith(item.href);
 
@@ -227,7 +248,8 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
                 {items.map((item) => {
                   const Icon = item.icon;
                   const current = isCurrent(item);
-                  const count = item.badge === 'pendingUsers' ? pendingUsers : 0;
+                  const count = item.badge === 'pendingUsers' ? pendingUsers
+                      : item.badge === 'newBriefs' ? newBriefs : 0;
                   return (
                     <li key={item.href}>
                       <button

@@ -87,3 +87,18 @@ export function briefToPlainText(b: CreativeBriefRow, heading: string): string {
     .join('\n')
     .trim();
 }
+
+/**
+ * Mark a brief as read, which is what clears the navigation badge.
+ *
+ * Separate from notified_at: that records only that an email left. A badge has
+ * to survive a missed inbox, so it counts briefs nobody has opened.
+ */
+export async function markBriefReviewed(briefId: string): Promise<void> {
+  const { error } = await supabase
+    .from('creative_briefs')
+    .update({ reviewed_at: new Date().toISOString() })
+    .eq('id', briefId)
+    .is('reviewed_at', null);
+  if (error) console.error('Could not mark the brief reviewed', error.message);
+}
