@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Maximize2, Eye, Download } from 'lucide-react';
+import { ArrowRight, Mail, Maximize2, Eye, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Reveal } from '@/components/motion/Reveal';
@@ -41,6 +41,12 @@ const ELEVATOR_LOOP_URL = '/creative-guide/elevator/loop.mp4';
 // The logo animation itself (background-examples segment of the explainer),
 // trimmed for a clean loop. Tapping the card opens the full explainer.
 const TRANSPARENT_LOOP_URL = '/creative-guide/services/transparent-logo-loop.mp4';
+
+// Carried by the link, never printed: the guide is public and indexable, so
+// the address should not be sitting there as text for a scraper to lift.
+const CONTACT_HREF =
+  'mailto:luisdreamslv@gmail.com?subject=' +
+  encodeURIComponent('Soleia Creative — event enquiry');
 
 type Item = {
   id: string;
@@ -147,6 +153,7 @@ const BUYOUT_INCLUSIONS = [
       '2 Large Vertical — Beachclub / Outside',
       '1 Beachclub Arch — Beachclub / Stage',
     ],
+    surfaces: ['IMAG SR', 'IMAG SL', 'Center', 'Sol Rays', 'Outdoor SR', 'Outdoor SL', 'Outdoor Arch'],
     fine: 'All other LED screens are activated and display in-house visual animations and motion graphics from the club library, mixed in real time by the visual operator.',
   },
   {
@@ -582,6 +589,29 @@ export default function CreativeGuideServices() {
                           </li>
                         ))}
                       </ul>
+                      {'surfaces' in inc && Array.isArray((inc as { surfaces?: string[] }).surfaces) && (
+                        <div className="mt-5 border-t border-primary/15 pt-4">
+                          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                            Your logos appear on
+                          </span>
+                          <div className="mt-2.5 flex flex-wrap gap-1.5">
+                            {(inc as { surfaces: string[] }).surfaces.map((sn) => (
+                              <span
+                                key={sn}
+                                className="rounded-full border border-primary/30 px-2.5 py-1 text-[11.5px] text-foreground"
+                              >
+                                {sn}
+                              </span>
+                            ))}
+                          </div>
+                          <button
+                            onClick={() => document.getElementById('where')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="mt-3 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-primary transition-opacity hover:opacity-80"
+                          >
+                            See them in the room <ArrowRight className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
                       <p className="mt-4 text-[12.5px] italic leading-relaxed text-muted-foreground/80">{inc.fine}</p>
                     </article>
                   </Reveal>
@@ -865,9 +895,16 @@ export default function CreativeGuideServices() {
                     </p>
                     <div className="mt-6 flex flex-wrap items-center gap-3">
                       <a
+                        href={CONTACT_HREF}
+                        className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary bg-primary/15 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/25"
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        Contact
+                      </a>
+                      <a
                         href={SERVICES_PDF_URL}
                         download="Soleia-Creative-Services.pdf"
-                        className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                        className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
                       >
                         <Download className="h-3.5 w-3.5" />
                         Download Services PDF

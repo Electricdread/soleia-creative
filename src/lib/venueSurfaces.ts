@@ -26,6 +26,12 @@ export interface VenueSurface {
   region?: [number, number, number, number];
   /** Grouped under one entry in the guide (the six ceiling rays, the TV network). */
   countNote?: string;
+  /**
+   * Carries one of the ten static logos every buyout includes, before any
+   * creative work is added. Confirmed by the owner; do not infer this from a
+   * screen's size or position.
+   */
+  logoIncluded?: boolean;
 }
 
 export const FRAME_W = 3840;
@@ -42,6 +48,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
   },
   {
     name: 'IMAG SR',
+    logoIncluded: true,
     res: '1216 × 592',
     role: 'Stage-right vertical screen — directional branding and portrait content.',
     area: 'main',
@@ -49,6 +56,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
   },
   {
     name: 'Center',
+    logoIncluded: true,
     res: '640 × 272',
     role: 'Center focal screen — logo reveals and hero moments.',
     area: 'main',
@@ -56,6 +64,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
   },
   {
     name: 'IMAG SL',
+    logoIncluded: true,
     res: '1216 × 592',
     role: 'Stage-left vertical screen — directional branding and portrait content.',
     area: 'main',
@@ -77,6 +86,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
   },
   {
     name: 'Sol Rays',
+    logoIncluded: true,
     res: '1920 × 128 – 1536 × 128',
     role: 'Six ceiling rays radiating from the sunburst — motion that fills the room overhead.',
     area: 'main',
@@ -87,6 +97,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
   // ── Beachclub · exterior ────────────────────────────────────────────────
   {
     name: 'Outdoor SR',
+    logoIncluded: true,
     res: '588 × 840',
     role: 'Stage-right exterior tower — high-brightness arrival branding.',
     area: 'beachclub',
@@ -94,6 +105,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
   },
   {
     name: 'Outdoor SL',
+    logoIncluded: true,
     res: '588 × 840',
     role: 'Stage-left exterior tower — high-brightness arrival branding.',
     area: 'beachclub',
@@ -101,6 +113,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
   },
   {
     name: 'Outdoor Arch',
+    logoIncluded: true,
     res: '1512 × 504',
     role: 'Beachclub arch — the immersive entry moment overlooking the Strip.',
     area: 'beachclub',

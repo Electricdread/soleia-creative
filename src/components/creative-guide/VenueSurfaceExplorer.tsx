@@ -138,6 +138,12 @@ export function VenueSurfaceExplorer() {
           <div className="border-t border-primary/15 px-6 py-7 sm:px-8">
             <h3 className="font-display text-2xl leading-tight text-foreground">{area.title}</h3>
             <p className="mt-2.5 max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground">{area.blurb}</p>
+            {surfaces.some((s) => s.logoIncluded) && (
+              <p className="mt-3 text-[12.5px] leading-relaxed text-muted-foreground/80">
+                Surfaces marked <span className="text-primary">Logo included</span> carry one of the
+                ten static logos every buyout comes with — before any creative work is added.
+              </p>
+            )}
           </div>
 
           {/* Every surface in it, at its real resolution */}
@@ -149,11 +155,17 @@ export function VenueSurfaceExplorer() {
                   i > 0 ? 'border-t border-primary/10' : ''
                 }`}
               >
-                <div className="flex items-baseline gap-2.5">
+                <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
                   <span className="text-[14.5px] font-medium text-foreground">{s.name}</span>
                   {s.countNote && (
                     <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
                       {s.countNote}
+                    </span>
+                  )}
+                  {s.logoIncluded && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-primary">
+                      <span className="h-1 w-1 rounded-full bg-primary" />
+                      Logo included
                     </span>
                   )}
                 </div>
