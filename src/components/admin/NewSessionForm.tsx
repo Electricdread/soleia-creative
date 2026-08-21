@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { findOrCreateJob } from '@/lib/jobMatch';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,12 +70,21 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
       coverImages = [{ url: urlData.publicUrl, theme: 'cover', prompt: '' }] as unknown as Json;
     }
 
-    const { error } = await supabase.from('creative_sessions').insert({
+    // Attach to the booking's job — finding the packet's job where one exists,
+    // creating it where this session is the first record.
+    const jobId = await findOrCreateJob({
+      clientName: clientName.trim(),
+      eventName: projectName.trim(),
+      eventDate: null,
+    });
+
+    const { data: created, error } = await supabase.from('creative_sessions').insert({
       token,
       project_name: projectName.trim(),
       client_name: clientName.trim(),
       cover_images: coverImages,
-    });
+      job_id: jobId,
+    }).select('id').maybeSingle();
 
     if (error) {
       toast.error('Failed to create session');

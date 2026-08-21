@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { findOrCreateJob } from '@/lib/jobMatch';
 import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -142,10 +143,20 @@ export default function AdminProposals() {
     setSaving(true);
     try {
       const token = generateToken();
+
+      // Land on the packet's job where the booking already has one, so the
+      // proposal and the packet are the same piece of work rather than two.
+      const jobId = await findOrCreateJob({
+        clientName,
+        eventName,
+        eventDate: eventDate || null,
+      });
+
       const { data: proposal, error } = await supabase
         .from('proposals')
         .insert({
           token,
+          job_id: jobId,
           event_name: eventName,
           client_name: clientName,
           venue_name: venueName || null,

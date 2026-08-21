@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { findOrCreateJob } from '@/lib/jobMatch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -205,7 +206,19 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
       kind: effectiveKind,
     };
 
+    // A packet is usually the first thing raised for a booking, so this is
+    // most often where the job gets created. Existing packets keep whatever
+    // they are already attached to.
+    const jobId = initial?.id
+      ? undefined
+      : await findOrCreateJob({
+          clientName: payload.client_name ?? '',
+          eventName: payload.title ?? '',
+          eventDate: payload.event_date ?? null,
+        });
+
     const dbPayload: any = { ...payload, inclusions: payload.inclusions as any };
+    if (jobId) dbPayload.job_id = jobId;
     const { data: saved, error } = initial?.id
       ? await supabase.from('pre_call_packets').update(dbPayload).eq('id', initial.id).select('id, client_name, drive_folder_url, kind').maybeSingle()
       : await supabase.from('pre_call_packets').insert({ ...dbPayload, created_by: user?.id }).select('id, client_name, drive_folder_url, kind').maybeSingle();
