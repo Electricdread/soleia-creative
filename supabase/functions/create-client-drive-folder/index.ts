@@ -5,9 +5,12 @@
 //       01_Soleia Creative Guide/
 //       02_Pixel Map/
 //       03_Client Asset Collect/
+//       04_Finals/
+//         Elevator/  TV Screens/  Main LEDs/  Ticker Marquee/
 // Permissions: parent folder set to anyone-with-link → writer.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { FINALS_FOLDER, FINAL_SLOTS, FINALS_README } from '../_shared/finalSlots.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -114,6 +117,61 @@ async function findOrCreateFolder(
   const hit = children.find((f) => test(normName(f.name)));
   if (hit) return hit.id;
   return createFolder(name, parentId, lovableKey, driveKey);
+}
+
+/**
+ * Write a small text file into a folder, skipping it when one of that name is
+ * already there — so re-running the function never stacks up copies.
+ */
+async function putTextFile(
+  name: string,
+  contents: string,
+  parentId: string,
+  lovableKey: string,
+  driveKey: string,
+): Promise<void> {
+  const q = encodeURIComponent(
+    `name='${name.replace(/'/g, "\'")}' and '${parentId}' in parents and trashed=false`,
+  );
+  const existing = await gw(
+    `/drive/v3/files?q=${q}&fields=files(id)&pageSize=1`,
+    { method: 'GET' },
+    lovableKey,
+    driveKey,
+  );
+  if (existing?.files?.length) return;
+
+  const boundary = '----soleia-' + crypto.randomUUID();
+  const enc = new TextEncoder();
+  const body = enc.encode(
+    `--${boundary}
+` +
+    `Content-Type: application/json; charset=UTF-8
+
+` +
+    JSON.stringify({ name, parents: [parentId], mimeType: 'text/plain' }) + `
+` +
+    `--${boundary}
+` +
+    `Content-Type: text/plain; charset=UTF-8
+
+` +
+    contents + `
+--${boundary}--`,
+  );
+
+  const res = await fetch(`${GATEWAY}/upload/drive/v3/files?uploadType=multipart&fields=id`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${lovableKey}`,
+      'X-Connection-Api-Key': driveKey,
+      'Content-Type': `multipart/related; boundary=${boundary}`,
+    },
+    body,
+  });
+  if (!res.ok) {
+    throw new Error(`Drive upload ${name} failed [${res.status}]: ${(await res.text()).slice(0, 300)}`);
+  }
 }
 
 /**
@@ -297,6 +355,31 @@ Deno.serve(async (req) => {
       ]);
       creativeGuideFolderId = cg;
       pixelMapFolderId = pm;
+
+      // Where the client returns finished content, one subfolder per surface.
+      // The watcher reads the folder name to decide which surface a delivered
+      // file is for, so these names are pinned in _shared/finalSlots.ts rather
+      // than typed here. Non-fatal: a folder that fails to create must not stop
+      // the client folder being returned.
+      try {
+        const finalsId = await findOrCreateFolder(FINALS_FOLDER, clientFolderId, lovableKey, driveKey);
+        for (const def of FINAL_SLOTS) {
+          await findOrCreateFolder(def.folder, finalsId, lovableKey, driveKey);
+        }
+        // The rule, sitting in the window where the drag actually happens.
+        await putTextFile(
+          'READ ME — where to put finals.txt',
+          FINALS_README,
+          finalsId,
+          lovableKey,
+          driveKey,
+        );
+      } catch (finalsErr) {
+        console.error(
+          'Finals folders failed:',
+          finalsErr instanceof Error ? finalsErr.message : finalsErr,
+        );
+      }
     }
 
     // Upload the master Creative Guide Project zip into 01_Soleia Creative Guide

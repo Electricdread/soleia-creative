@@ -5,6 +5,7 @@ import { Loader2, BookOpen, FolderOpen } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import { Button } from '@/components/ui/button';
+import { FINALS_FOLDER, FINAL_SLOTS } from '@/lib/finalSlots';
 
 interface Inclusion {
   heading: string;
@@ -143,6 +144,12 @@ export default function ClientPacket() {
                   {packet.kind === 'creative_pre_call'
                     ? 'Drop logos, brand assets, references and inspiration into the Client Asset Collect folder.'
                     : 'Creative Guide files, Pixel Map and your Client Asset Collect.'}
+                </p>
+                {/* Said here as well as in the folder itself, because a file in
+                    the wrong place is not picked up and nobody finds out. */}
+                <p className="mt-2 text-xs leading-relaxed text-foreground/60">
+                  Finished content goes in <span className="text-primary">{FINALS_FOLDER}</span>, in the
+                  subfolder for the screens it plays on — {FINAL_SLOTS.map((f) => f.folder).join(', ')}.
                 </p>
               </div>
             </a>

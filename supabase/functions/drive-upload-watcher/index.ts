@@ -3,6 +3,8 @@
 // First scan of a folder seeds existing files without firing webhooks (no backfill flood).
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { slotForFolderName, FINAL_SLOTS } from '../_shared/finalSlots.ts';
+import { sendEach, adminRecipients } from '../_shared/notify.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -57,6 +59,9 @@ interface DriveFile {
   id: string;
   name: string;
   mimeType: string;
+  /** The folder the file actually sits in — not the folder the scan started at. */
+  parentFolderId?: string;
+  parentFolderName?: string;
   size?: string;
   webViewLink?: string;
   createdTime?: string;
@@ -69,6 +74,7 @@ async function listAllFiles(
   lovableKey: string,
   driveKey: string,
   depth = 0,
+  parentName = '',
 ): Promise<DriveFile[]> {
   if (depth > 4) return [];
   const q = encodeURIComponent(`'${rootFolderId}' in parents and trashed=false`);
@@ -82,10 +88,12 @@ async function listAllFiles(
   const files: DriveFile[] = [];
   for (const item of items) {
     if (item.mimeType === 'application/vnd.google-apps.folder') {
-      const nested = await listAllFiles(item.id, lovableKey, driveKey, depth + 1);
+      const nested = await listAllFiles(item.id, lovableKey, driveKey, depth + 1, item.name);
       files.push(...nested);
     } else {
-      files.push(item);
+      // Stamp the folder this file is really in, so a delivered final can be
+      // matched to the surface its folder names.
+      files.push({ ...item, parentFolderId: rootFolderId, parentFolderName: parentName });
     }
   }
   return files;
@@ -193,7 +201,13 @@ Deno.serve(async (req) => {
       webhooks_sent: 0,
       webhook_failures: 0,
       seeded: 0,
+      finals: 0,
+      finals_emailed: 0,
     };
+
+    const finals: {
+      client: string; event: string; slot: string; fileName: string; link: string | null;
+    }[] = [];
 
     for (const p of targets.values()) {
       const folderId = p.drive_folder_id;
@@ -228,6 +242,7 @@ Deno.serve(async (req) => {
 
       for (const file of newFiles) {
         summary.new_files++;
+        const finalSlot = slotForFolderName(file.parentFolderName);
         const row = {
           proposal_id: p.proposal_id,
           drive_folder_id: folderId,
@@ -236,9 +251,26 @@ Deno.serve(async (req) => {
           mime_type: file.mimeType,
           file_size: formatBytes(file.size),
           web_view_link: file.webViewLink ?? null,
+          parent_folder_id: file.parentFolderId ?? null,
+          parent_folder_name: file.parentFolderName ?? null,
+          final_slot: finalSlot,
           notified: false,
           notified_at: null as string | null,
         };
+
+        // A finished file for a named surface. Collected here and mailed once at
+        // the end of the run rather than per file — a client dropping four
+        // deliverables at once should be one message, not four.
+        if (finalSlot && !isFirstScan) {
+          summary.finals++;
+          finals.push({
+            client: p.client_name,
+            event: p.event_name,
+            slot: finalSlot,
+            fileName: file.name,
+            link: file.webViewLink ?? p.drive_folder_url ?? null,
+          });
+        }
 
         if (isFirstScan) {
           // Seed only — no webhook
@@ -291,6 +323,51 @@ Deno.serve(async (req) => {
     }
 
     console.log('drive-upload-watcher summary:', summary);
+    if (finals.length > 0) {
+      const label = Object.fromEntries(FINAL_SLOTS.map((d) => [d.slot, d.label]));
+      const esc = (t: string) =>
+        t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const rows = finals
+        .map((f) => {
+          const name = f.link
+            ? `<a href="${f.link}" style="color:#B0700C;text-decoration:none;">${esc(f.fileName)}</a>`
+            : esc(f.fileName);
+          return `<tr>
+            <td style="padding:8px 14px 8px 0;color:#111;font-weight:600;white-space:nowrap;">${esc(label[f.slot] ?? f.slot)}</td>
+            <td style="padding:8px 14px 8px 0;color:#333;">${name}</td>
+            <td style="padding:8px 0;color:#777;">${esc(f.client)} — ${esc(f.event)}</td>
+          </tr>`;
+        })
+        .join('');
+      const heading = finals.length === 1 ? 'A final file has landed' : `${finals.length} final files have landed`;
+
+      try {
+        const report = await sendEach({
+          to: adminRecipients(),
+          subject:
+            finals.length === 1
+              ? `Final received — ${label[finals[0].slot] ?? finals[0].slot}: ${finals[0].client}`
+              : `${finals.length} finals received`,
+          template: 'finals-received',
+          html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:24px;">
+            <h1 style="font-size:20px;margin:0 0 6px;color:#111;">${heading}</h1>
+            <p style="margin:0 0 18px;color:#666;font-size:14px;">Dropped into the client's 04_Finals folder.</p>
+            <table style="border-collapse:collapse;font-size:14px;width:100%;">${rows}</table>
+            <p style="margin:22px 0 0;font-size:13px;">
+              <a href="${APP_ORIGIN}/admin/jobs" style="color:#B0700C;">Open jobs</a>
+            </p>
+          </div>`,
+        });
+        summary.finals_emailed = report.delivered.length;
+        if (report.failed.length) {
+          console.error('Finals email failed for:', JSON.stringify(report.failed));
+        }
+      } catch (mailErr) {
+        // Never let a mail failure lose the scan — the rows are already written.
+        console.error('Finals email threw:', mailErr instanceof Error ? mailErr.message : mailErr);
+      }
+    }
+
     return new Response(JSON.stringify({ success: true, summary }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

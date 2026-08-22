@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { useJobs } from '@/hooks/useJobs';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
+import { FinalsRow } from '@/components/admin/FinalsRow';
 import {
   stageFor, flagsFor, daysUntil, CREATIVE_STAGES, IN_HOUSE_STAGES, STAGE_LABEL,
   type Stage, type JobTrack,
@@ -158,6 +159,17 @@ export default function AdminJobDetail() {
           })}
         </div>
       </div>
+
+      {/* Finished files, per surface. Every folder this job is watched under —
+          a packet folder's rows carry no proposal_id, so folder is the join. */}
+      <FinalsRow
+        folderIds={Array.from(new Set([
+          job.drive_folder_id,
+          ...proposals.map((p) => p.drive_folder_id),
+          ...packets.map((k) => k.drive_folder_id),
+        ].filter(Boolean) as string[]))}
+        driveUrl={job.drive_folder_url}
+      />
 
       {flags.length > 0 && (
         <div className="mb-6 overflow-hidden rounded-xl border border-border bg-card">

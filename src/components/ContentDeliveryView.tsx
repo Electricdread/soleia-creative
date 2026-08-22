@@ -1,9 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileVideo, Download, ExternalLink, Sparkles } from 'lucide-react';
+import { ArrowLeft, FileVideo, Download, ExternalLink, Sparkles, FolderOpen } from 'lucide-react';
 import { PoweredByShowBlox } from '@/components/PoweredByShowBlox';
 import { ALL_LED_ZONES } from '@/lib/creativeGuide';
 import { Reveal } from '@/components/motion/Reveal';
+import { FINALS_FOLDER, FINAL_SLOTS } from '@/lib/finalSlots';
 import solIcon from '@/assets/sol-icon.png';
 
 const RESOLUME_ALLEY_URL = 'https://resolume.com/software/alley';
@@ -103,6 +104,32 @@ export function ContentDeliveryView() {
             <div className="mt-5 flex items-center gap-3 text-xs text-muted-foreground border-l-2 border-primary/40 pl-4 py-1">
               <span className="font-display text-3xl text-primary leading-none">21</span>
               <span>business days minimum — submit your content at least 21 business days before your event for testing and approval.</span>
+            </div>
+          </Reveal>
+        </section>
+
+        {/* Where the finished files go. The same four names the client's
+            Drive folder uses, so the page and the folder agree. */}
+        <section className="pb-10">
+          <Reveal>
+            <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-primary">
+              <FolderOpen className="w-4 h-4" /> Where to send your finals
+            </div>
+            <p className="mb-5 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              Your shared Drive folder has a <span className="text-foreground">{FINALS_FOLDER}</span> folder
+              with one subfolder per set of screens. Drop each finished file into the subfolder for the
+              screens it plays on — a file left loose in {FINALS_FOLDER} is not picked up automatically,
+              and we may not see it in time.
+            </p>
+            <div className="grid gap-px border border-primary/15 bg-primary/15 sm:grid-cols-2">
+              {FINAL_SLOTS.map((f) => (
+                <div key={f.slot} className="bg-background p-5">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">
+                    {FINALS_FOLDER} / {f.folder}
+                  </div>
+                  <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">{f.hint}</p>
+                </div>
+              ))}
             </div>
           </Reveal>
         </section>
