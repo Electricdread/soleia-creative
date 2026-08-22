@@ -52,6 +52,17 @@ interface CreativeSessionCardProps {
   onSessionUpdate?: () => void;
 }
 
+// The client cover is a 21:9 object-cover frame, so anything far off that shape
+// loses real picture on the way out. Only flag the shapes where the loss is
+// worth an admin's attention — a 16:9 still is close enough not to nag about.
+const CLIENT_COVER_RATIO = 21 / 9;
+
+function cropsOnClient({ w, h }: { w: number; h: number }) {
+  const ratio = w / h;
+  const drift = ratio > CLIENT_COVER_RATIO ? ratio / CLIENT_COVER_RATIO : CLIENT_COVER_RATIO / ratio;
+  return drift > 1.35;
+}
+
 export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOpen, onSessionUpdate }: CreativeSessionCardProps) {
   const [isPublic, setIsPublic] = useState(session.is_public ?? false);
   const [isActive, setIsActive] = useState(session.is_active ?? true);
@@ -126,6 +137,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [coverImage, setCoverImage] = useState<CoverImage | null>(
     (session.cover_images as CoverImage[])?.[0] || null
   );
+  const [coverMeta, setCoverMeta] = useState<{ w: number; h: number } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -186,6 +198,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     if (error) {
       toast.error('Failed to save cover');
     } else {
+      setCoverMeta(null);
       setCoverImage(newCover);
       toast.success('Cover updated');
       onSessionUpdate?.();
@@ -202,6 +215,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     if (error) {
       toast.error('Failed to remove cover');
     } else {
+      setCoverMeta(null);
       setCoverImage(null);
       toast.success('Cover removed');
       onSessionUpdate?.();
@@ -253,28 +267,82 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
         !isActive && "opacity-60",
         briefUnread && "brief-unread",
       )}>
-        {/* Cover thumbnail row */}
+        {/* Cover preview. Covers arrive in every shape — a 19:1 title strip, a
+            16:9 still, a portrait crop — so the band takes the image's own
+            aspect ratio between a floor and a cap and contains the artwork
+            rather than cropping it to a fixed strip. The admin sees the whole
+            picture; the chips say what the client's 21:9 frame will do to it. */}
         {coverImage && (
-          <div className="relative h-24 w-full">
-            <img src={coverImage.url} alt="Cover" className="w-full h-full object-cover" />
-            <div className="absolute top-1.5 right-1.5 flex gap-1">
-              <Button
-                variant="secondary"
-                size="icon"
-                className="h-6 w-6 bg-black/60 hover:bg-black/80 text-white"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="destructive"
-                size="icon"
-                className="h-6 w-6"
-                onClick={removeCover}
-              >
-                <X className="h-3 w-3" />
-              </Button>
+          <div
+            className="relative w-full overflow-hidden bg-secondary/40 min-h-[120px] max-h-56"
+            style={{ aspectRatio: coverMeta ? `${coverMeta.w} / ${coverMeta.h}` : '21 / 9' }}
+          >
+            {/* the same image, blown up and blurred, so odd shapes sit on their
+                own colour instead of a dead letterbox */}
+            <img
+              src={coverImage.url}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full object-cover scale-125 blur-2xl opacity-30"
+            />
+            <img
+              src={coverImage.url}
+              alt={`${session.project_name} cover`}
+              onLoad={(e) =>
+                setCoverMeta({
+                  w: e.currentTarget.naturalWidth,
+                  h: e.currentTarget.naturalHeight,
+                })
+              }
+              className="relative h-full w-full object-contain"
+            />
+
+            <div className="absolute top-2 right-2 flex items-center gap-0.5 rounded-full border border-border/60 bg-background/70 p-0.5 backdrop-blur">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={uploading}
+                      className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p className="text-xs">Replace cover image</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      onClick={removeCover}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p className="text-xs">Remove cover image</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
+
+            {coverMeta && (
+              <div className="absolute bottom-2 left-2 flex flex-wrap items-center gap-1">
+                <span className="rounded-full border border-border/60 bg-background/70 px-2 py-0.5 text-[10px] text-muted-foreground backdrop-blur">
+                  {coverMeta.w} × {coverMeta.h} · {(coverMeta.w / coverMeta.h).toFixed(2)}:1
+                </span>
+                {cropsOnClient(coverMeta) && (
+                  <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-500 backdrop-blur">
+                    Client frame crops this to 21:9
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
