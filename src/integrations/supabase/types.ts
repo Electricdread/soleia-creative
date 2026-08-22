@@ -593,10 +593,13 @@ export type Database = {
           drive_folder_id: string
           file_name: string | null
           file_size: number | null
+          final_slot: string | null
           id: string
           mime_type: string | null
           notified: boolean
           notified_at: string | null
+          parent_folder_id: string | null
+          parent_folder_name: string | null
           proposal_id: string | null
           seen_at: string
           web_view_link: string | null
@@ -606,10 +609,13 @@ export type Database = {
           drive_folder_id: string
           file_name?: string | null
           file_size?: number | null
+          final_slot?: string | null
           id?: string
           mime_type?: string | null
           notified?: boolean
           notified_at?: string | null
+          parent_folder_id?: string | null
+          parent_folder_name?: string | null
           proposal_id?: string | null
           seen_at?: string
           web_view_link?: string | null
@@ -619,10 +625,13 @@ export type Database = {
           drive_folder_id?: string
           file_name?: string | null
           file_size?: number | null
+          final_slot?: string | null
           id?: string
           mime_type?: string | null
           notified?: boolean
           notified_at?: string | null
+          parent_folder_id?: string | null
+          parent_folder_name?: string | null
           proposal_id?: string | null
           seen_at?: string
           web_view_link?: string | null
