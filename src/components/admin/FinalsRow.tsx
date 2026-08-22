@@ -71,7 +71,13 @@ export function FinalsRow({ folderIds, driveUrl }: FinalsRowProps) {
   // Sitting in the finals folder itself, not in one of the four subfolders.
   // Clients name it by hand — Whatnot's is called just "Finals" — so the test
   // is on what the name means, not on our own spelling of it.
-  const unfiled = rows.filter((r) => !r.final_slot && isFinalsFolder(r.parent_folder_name));
+  // Our own instructions file lives there on purpose and is not a delivery.
+  const unfiled = rows.filter(
+    (r) =>
+      !r.final_slot &&
+      isFinalsFolder(r.parent_folder_name) &&
+      !/^read me/i.test(r.file_name),
+  );
 
   const newest = rows.find((r) => !!r.final_slot);
 
