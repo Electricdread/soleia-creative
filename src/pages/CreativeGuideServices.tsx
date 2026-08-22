@@ -11,6 +11,7 @@ import { GuideSectionNav, type GuideSection } from '@/components/creative-guide/
 import { VenueSurfaceExplorer } from '@/components/creative-guide/VenueSurfaceExplorer';
 import { PixelMapFold } from '@/components/creative-guide/PixelMapFold';
 import { CreativeTimeline } from '@/components/creative/CreativeTimeline';
+import { PIXELMAP_RENDERS as R } from '@/lib/venueSurfaces';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
 // Same-origin document links: works in preview and on the published domain
@@ -204,8 +205,8 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Pixel-perfect mapping',
     body: 'Every surface built at its own native resolution and placed in the 3840 × 2160 frame — the walls, the curves, the ceiling rays and the beachclub exteriors.',
-    src: IMG.mapping,
-    alt: 'Client content mapped wall-to-wall across the main-room curve LED',
+    src: R.curvesInterior,
+    alt: 'SR Curve at 2304 × 272 running alongside IMAG SR, each carrying its own slice of the frame',
   },
   {
     title: 'Dynamic elevator animation',
@@ -297,24 +298,24 @@ const GROUPS: { id: GroupId; eyebrow: string; title: string; note: string }[] = 
 // Per-service media: the image that ties a service to the real venue.
 const MEDIA: Record<string, { src: string; alt: string }> = {
   'LED Screens Specific Zone Mapping': {
-    src: IMG.zones,
-    alt: 'Outdoor arch and side panels over the beachclub pool at sunset',
+    src: R.outdoorArch,
+    alt: 'The Outdoor Arch alone, labelled at its native 1512 × 504',
   },
   'Performing Artist — Mapped by Soleia Creative Team': {
-    src: IMG.artist,
-    alt: 'Show visuals across the sunburst and IMAG walls during a performance',
+    src: R.stageDjBooth,
+    alt: 'IMAG SR, the Center panel, IMAG SL and the DJ booth face, each labelled at its native resolution',
   },
   '3D Previz': {
     src: IMG.previz,
     alt: '3D preview of content rendered from the Soleia venue model',
   },
   'Static Logo': {
-    src: IMG.staticLogo,
-    alt: 'Event logo running on the main-room LED screens',
+    src: R.mainInterior2,
+    alt: 'The main-room screens from the floor, each carrying its own slice of the frame',
   },
   'Individual Cabana / Bungalow Logo': {
-    src: IMG.bungalow,
-    alt: 'Bungalow spa with private TV displays either side of the plunge pool',
+    src: R.tvCabanas,
+    alt: 'A cabana television running its own dedicated content, the beachclub beyond',
   },
   'Presentation': {
     src: IMG.presentation,

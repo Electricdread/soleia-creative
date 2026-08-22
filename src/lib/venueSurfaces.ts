@@ -14,6 +14,28 @@
 
 export type AreaId = 'main' | 'beachclub' | 'arrival' | 'tv';
 
+/**
+ * Venue renders with the pixel map itself on the screens — every surface shows
+ * its own slice, labelled with its name and native resolution burned into the
+ * render. They answer "where does my content go, and how big is that screen?"
+ * in one picture, which no photograph of the room can do.
+ */
+const R = {
+  mainInterior: '/creative-guide/pixelmap-renders/main-interior.jpg',
+  mainInterior2: '/creative-guide/pixelmap-renders/main-interior-2.jpg',
+  curvesInterior: '/creative-guide/pixelmap-renders/curves-interior.jpg',
+  stageDjBooth: '/creative-guide/pixelmap-renders/stage-dj-booth.jpg',
+  sunrays: '/creative-guide/pixelmap-renders/sunrays.jpg',
+  outdoorArch: '/creative-guide/pixelmap-renders/outdoor-arch.jpg',
+  outdoorScreens: '/creative-guide/pixelmap-renders/outdoor-screens.jpg',
+  outdoorSrSl: '/creative-guide/pixelmap-renders/outdoor-sr-sl.jpg',
+  outsidePortrait: '/creative-guide/pixelmap-renders/outside-portrait.jpg',
+  beachclub: '/creative-guide/pixelmap-renders/beachclub.jpg',
+  tvCabanas: '/creative-guide/pixelmap-renders/tv-cabanas.jpg',
+} as const;
+
+export const PIXELMAP_RENDERS = R;
+
 export interface VenueSurface {
   /** Screen name as the crew and the specs call it. */
   name: string;
@@ -155,9 +177,8 @@ export interface VenueArea {
   /** Photoreal venue render with the screens labelled inside the image. */
   image: string;
   imageAlt: string;
-  /** Second view, where one exists. */
-  image2?: string;
-  image2Alt?: string;
+  /** Further views of the same area, browsable from the thumbnail strip. */
+  gallery?: { src: string; alt: string }[];
   /** Looping video for this area, where one exists. */
   video?: string;
   videoPoster?: string;
@@ -170,9 +191,14 @@ export const VENUE_AREAS: VenueArea[] = [
     title: 'The nightclub',
     blurb:
       'Two curved walls wrap the floor, two IMAG screens face the crowd either side of the center panel, and six lit rays run overhead from the sunburst. Your content plays across all of it at once.',
-    image: '/creative-guide/led-interior-mapping.png',
+    image: R.mainInterior,
     imageAlt:
-      'Soleia main room with branded content running on the IMAG walls, the curves and the ceiling sun rays',
+      'The Soleia main room with every LED surface labelled — the curves, both IMAG walls and the six ceiling rays',
+    gallery: [
+      { src: R.sunrays, alt: 'The six ceiling Sol Rays from below, each labelled with its own slice of the frame' },
+      { src: R.stageDjBooth, alt: 'IMAG SR, the Center panel, IMAG SL and the DJ booth face, each at its native resolution' },
+      { src: R.mainInterior2, alt: 'The main room from the floor — IMAG walls and booth beneath the sunburst' },
+    ],
   },
   {
     id: 'beachclub',
@@ -180,11 +206,13 @@ export const VENUE_AREAS: VenueArea[] = [
     title: 'Open-air, facing the Strip',
     blurb:
       'Two tall exterior towers flank the pool stage and the arch spans the entry. These are the screens the street sees, so they carry arrival branding at high brightness.',
-    image: '/creative-guide/led-outdoor-mapping.png',
-    imageAlt:
-      'Beachclub pool with the Outdoor SR and Outdoor SL towers labelled at 588 × 840 either side of the stage',
-    image2: '/creative-guide/led-outdoor-arch-mapping.png',
-    image2Alt: 'The beachclub arch lit at night above the pool, overlooking the Las Vegas Strip',
+    image: R.beachclub,
+    imageAlt: 'The Soleia beachclub at dusk, exterior LED panels lit around the pool',
+    gallery: [
+      { src: R.outdoorArch, alt: 'The Outdoor Arch at 1512 × 504 above the beachclub entry' },
+      { src: R.outdoorSrSl, alt: 'Outdoor SR and Outdoor SL, the two 588 × 840 towers either side of the pool stage' },
+      { src: R.outsidePortrait, alt: 'The portrait exterior panels seen through the palms' },
+    ],
   },
   {
     id: 'arrival',
@@ -194,8 +222,9 @@ export const VENUE_AREAS: VenueArea[] = [
       'The elevator display is the first branded surface a guest sees, and the exterior marquee is what they pass on the way in. Both can carry your event for the night.',
     image: '/creative-guide/elevator/interior.jpg',
     imageAlt: 'Soleia elevator interior with the branded portrait display beside the doors',
-    image2: '/creative-guide/services/marquee-exterior.jpg',
-    image2Alt: 'Soleia exterior LED marquee carrying event branding at street level',
+    gallery: [
+      { src: '/creative-guide/services/marquee-exterior.jpg', alt: 'Soleia exterior LED marquee carrying event branding at street level' },
+    ],
     video: '/creative-guide/elevator/loop.mp4',
     videoPoster: '/creative-guide/elevator/loop-poster.jpg',
   },
@@ -205,8 +234,8 @@ export const VENUE_AREAS: VenueArea[] = [
     title: 'Cabanas, bungalows and the front door',
     blurb:
       'Twenty-eight televisions across the venue run one shared feed by default. Any of them can be switched to its own dedicated content instead.',
-    image: '/creative-guide/venue-photos/soleia-bungalow-spa.jpg',
-    imageAlt: 'Soleia bungalow spa with private TV displays either side of the plunge pool',
+    image: R.tvCabanas,
+    imageAlt: 'A cabana television running its own dedicated content, the beachclub beyond',
   },
 ];
 

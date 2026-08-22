@@ -6,12 +6,11 @@ import { VENUE_AREAS, type AreaId } from '@/lib/venueSurfaces';
 /**
  * Where a client's brand actually lands, area by area.
  *
- * The renders used here have the screens labelled inside the image — the main
- * room with the rays and both IMAG walls carrying a logo, the beachclub towers
- * marked at 588 × 840, the arch at night over the pool. They already existed in
- * `public/creative-guide/`, wired only to a specs view that is imported nowhere,
- * so until now no client could reach the one set of pictures that answers
- * "where would my logo be?".
+ * The renders used here carry the pixel map itself on the screens: every
+ * surface shows its own slice with its name and native resolution burned into
+ * the image. One picture answers both "where does my content go?" and "how big
+ * is that screen?", which no photograph of the room can do — and the thumbnail
+ * strip walks the rest of the area from there.
  *
  * The image is the whole point and is deliberately large: this section gets
  * talked over on a screenshared creative call, so the render has to read at
@@ -29,7 +28,7 @@ export function VenueSurfaceExplorer() {
 
   const shots = useMemo<Shot[]>(() => {
     const list: Shot[] = [{ src: area.image, alt: area.imageAlt, kind: 'image' }];
-    if (area.image2) list.push({ src: area.image2, alt: area.image2Alt ?? area.imageAlt, kind: 'image' });
+    for (const g of area.gallery ?? []) list.push({ src: g.src, alt: g.alt, kind: 'image' });
     if (area.video) list.push({ src: area.video, poster: area.videoPoster, alt: `${area.title} — motion`, kind: 'video' });
     return list;
   }, [area]);
