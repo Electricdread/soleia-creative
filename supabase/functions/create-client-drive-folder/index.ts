@@ -10,7 +10,7 @@
 // Permissions: parent folder set to anyone-with-link → writer.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { FINALS_FOLDER, FINAL_SLOTS, FINALS_README } from '../_shared/finalSlots.ts';
+import { FINALS_FOLDER, FINAL_SLOTS, FINALS_README, isFinalsFolder } from '../_shared/finalSlots.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -117,6 +117,34 @@ async function findOrCreateFolder(
   const hit = children.find((f) => test(normName(f.name)));
   if (hit) return hit.id;
   return createFolder(name, parentId, lovableKey, driveKey);
+}
+
+/**
+ * Find the folder finished content goes in, wherever the client put it.
+ *
+ * Clients build this themselves: Whatnot's is called `Finals` and sits inside
+ * `Client Asset Folder` rather than beside it. Looking only for `04_Finals` as
+ * a direct child would create a second, empty folder next to the one they are
+ * already filling — the duplicate-folder trap that has already split two client
+ * folders on this project. So search two levels down for anything that *means*
+ * finals, and only create ours when there is genuinely nothing.
+ */
+async function findOrCreateFinals(
+  clientFolderId: string,
+  lovableKey: string,
+  driveKey: string,
+): Promise<string> {
+  const top = await listChildFolders(clientFolderId, lovableKey, driveKey);
+  const direct = top.find((f) => isFinalsFolder(f.name));
+  if (direct) return direct.id;
+
+  for (const child of top) {
+    const nested = await listChildFolders(child.id, lovableKey, driveKey);
+    const hit = nested.find((f) => isFinalsFolder(f.name));
+    if (hit) return hit.id;
+  }
+
+  return createFolder(FINALS_FOLDER, clientFolderId, lovableKey, driveKey);
 }
 
 /**
@@ -362,7 +390,7 @@ Deno.serve(async (req) => {
       // than typed here. Non-fatal: a folder that fails to create must not stop
       // the client folder being returned.
       try {
-        const finalsId = await findOrCreateFolder(FINALS_FOLDER, clientFolderId, lovableKey, driveKey);
+        const finalsId = await findOrCreateFinals(clientFolderId, lovableKey, driveKey);
         for (const def of FINAL_SLOTS) {
           await findOrCreateFolder(def.folder, finalsId, lovableKey, driveKey);
         }

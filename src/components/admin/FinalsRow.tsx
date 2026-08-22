@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { FINAL_SLOTS, normaliseFolderKey, FINALS_FOLDER, type FinalSlot } from '@/lib/finalSlots';
+import { FINAL_SLOTS, isFinalsFolder, type FinalSlot } from '@/lib/finalSlots';
 import { AlertTriangle, ExternalLink } from 'lucide-react';
 
 /**
@@ -68,11 +68,10 @@ export function FinalsRow({ folderIds, driveUrl }: FinalsRowProps) {
     bySlot.get(slot)!.push(r);
   }
 
-  // Sitting in 04_Finals itself, not in one of the four subfolders.
-  const finalsKey = normaliseFolderKey(FINALS_FOLDER);
-  const unfiled = rows.filter(
-    (r) => !r.final_slot && normaliseFolderKey(r.parent_folder_name ?? '') === finalsKey,
-  );
+  // Sitting in the finals folder itself, not in one of the four subfolders.
+  // Clients name it by hand — Whatnot's is called just "Finals" — so the test
+  // is on what the name means, not on our own spelling of it.
+  const unfiled = rows.filter((r) => !r.final_slot && isFinalsFolder(r.parent_folder_name));
 
   const newest = rows.find((r) => !!r.final_slot);
 
@@ -151,7 +150,7 @@ export function FinalsRow({ folderIds, driveUrl }: FinalsRowProps) {
         <div className="flex items-start gap-2 border-t border-border bg-amber-500/10 px-4 py-2.5">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-xs text-foreground">
-            {unfiled.length} file{unfiled.length === 1 ? '' : 's'} sitting loose in {FINALS_FOLDER} —
+            {unfiled.length} file{unfiled.length === 1 ? '' : 's'} sitting loose in the Finals folder —
             not in a surface subfolder, so nothing above counts {unfiled.length === 1 ? 'it' : 'them'}.
             <span className="ml-1 text-muted-foreground">{unfiled.map((u) => u.file_name).join(', ')}</span>
           </p>

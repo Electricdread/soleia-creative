@@ -80,6 +80,21 @@ export function slotForFolderName(name: string | null | undefined): FinalSlot | 
   return BY_KEY.get(normaliseFolderKey(name)) ?? null;
 }
 
+/**
+ * Names that mean "this is the finals root".
+ *
+ * The Whatnot client created theirs by hand, called it `Finals`, and nested it
+ * inside `Client Asset Folder` rather than beside it. Insisting on `04_Finals`
+ * as a direct child would have created a second, empty folder next to the one
+ * they were already using — the duplicate-folder trap this project has hit
+ * twice before.
+ */
+export function isFinalsFolder(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const k = normaliseFolderKey(name);
+  return k === 'finals' || k === '04finals' || k === 'final' || k === 'finalfiles';
+}
+
 export const FINALS_README = [
   'SOLEIA — WHERE TO PUT YOUR FINAL FILES',
   '',

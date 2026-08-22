@@ -105,7 +105,22 @@ export function slotForFolderName(name: string | null | undefined): FinalSlot | 
 }
 
 /**
- * Dropped into 04_Finals when the folder is created.
+ * Names that mean "this is the finals root".
+ *
+ * The Whatnot client created theirs by hand, called it `Finals`, and nested it
+ * inside `Client Asset Folder` rather than beside it. Insisting on `04_Finals`
+ * as a direct child would have created a second, empty folder next to the one
+ * they were already using — the duplicate-folder trap this project has hit
+ * twice before.
+ */
+export function isFinalsFolder(name: string | null | undefined): boolean {
+  if (!name) return false;
+  const k = normaliseFolderKey(name);
+  return k === 'finals' || k === '04finals' || k === 'final' || k === 'finalfiles';
+}
+
+/**
+ * Dropped into the finals folder when it is created.
  *
  * The rule also appears in the packet and the Content Delivery Guide, but this
  * is the one that sits in the window where the drag is actually happening — a
