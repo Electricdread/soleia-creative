@@ -203,6 +203,7 @@ Deno.serve(async (req) => {
       seeded: 0,
       finals: 0,
       finals_emailed: 0,
+      refiled: 0,
     };
 
     const finals: {
@@ -226,12 +227,51 @@ Deno.serve(async (req) => {
       // Check which files we've already seen for this folder
       const { data: existing } = await supabase
         .from('drive_seen_files')
-        .select('drive_file_id')
+        .select('drive_file_id, parent_folder_id, final_slot')
         .eq('drive_folder_id', folderId);
-      const seen = new Set((existing ?? []).map((r: any) => r.drive_file_id));
+      const seenRows = new Map(
+        (existing ?? []).map((r: any) => [r.drive_file_id as string, r]),
+      );
       const isFirstScan = (existing?.length ?? 0) === 0;
 
-      const newFiles = files.filter((f) => !seen.has(f.id));
+      // A file the client drags into the right subfolder keeps its Drive id, so
+      // it is never "new" again. Without this it would sit unfiled forever —
+      // and filing a final that is already uploaded is the common case, not the
+      // exception. Re-stamp anything whose parent has changed, and treat a file
+      // that has just gained a slot as a final landing.
+      if (!isFirstScan) {
+        for (const f of files) {
+          const prior = seenRows.get(f.id);
+          if (!prior) continue;
+          const parentId = f.parentFolderId ?? null;
+          if (prior.parent_folder_id === parentId) continue;
+
+          const slot = slotForFolderName(f.parentFolderName);
+          await supabase
+            .from('drive_seen_files')
+            .update({
+              parent_folder_id: parentId,
+              parent_folder_name: f.parentFolderName ?? null,
+              final_slot: slot,
+            })
+            .eq('drive_folder_id', folderId)
+            .eq('drive_file_id', f.id);
+          summary.refiled++;
+
+          if (slot && slot !== prior.final_slot) {
+            summary.finals++;
+            finals.push({
+              client: p.client_name,
+              event: p.event_name,
+              slot,
+              fileName: f.name,
+              link: f.webViewLink ?? p.drive_folder_url ?? null,
+            });
+          }
+        }
+      }
+
+      const newFiles = files.filter((f) => !seenRows.has(f.id));
       if (newFiles.length === 0) continue;
 
       const lookupKey = `${p.client_name}||${p.event_name}`.toLowerCase();
