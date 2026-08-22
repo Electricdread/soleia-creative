@@ -50,13 +50,10 @@ export function FinalsRow({ folderIds, driveUrl }: FinalsRowProps) {
     (async () => {
       const { data } = await supabase
         .from('drive_seen_files')
-        .select('final_slot, parent_folder_name, file_name, web_view_link, seen_at' as '*')
+        .select('final_slot, parent_folder_name, file_name, web_view_link, seen_at')
         .in('drive_folder_id', folderIds)
         .order('seen_at', { ascending: false });
-      // TEMPORARY: parent_folder_name and final_slot land with the
-      // 20260822090000_finals_slots migration. Drop this cast once Lovable has
-      // applied it and regenerated src/integrations/supabase/types.ts.
-      if (!cancelled) setRows((data as unknown as SeenRow[] | null) ?? []);
+      if (!cancelled) setRows((data as SeenRow[] | null) ?? []);
     })();
     return () => { cancelled = true; };
   }, [folderIds.join(',')]);
