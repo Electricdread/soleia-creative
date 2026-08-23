@@ -11,7 +11,7 @@ import { GuideSectionNav, type GuideSection } from '@/components/creative-guide/
 import { VenueSurfaceExplorer } from '@/components/creative-guide/VenueSurfaceExplorer';
 import { PixelMapFold } from '@/components/creative-guide/PixelMapFold';
 import { CreativeTimeline } from '@/components/creative/CreativeTimeline';
-import { PIXELMAP_RENDERS as R } from '@/lib/venueSurfaces';
+import { PIXELMAP_RENDERS as R, VENUE_PHOTOS } from '@/lib/venueSurfaces';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
 // Same-origin document links: works in preview and on the published domain
@@ -324,8 +324,8 @@ const MEDIA: Record<string, { src: string; alt: string }> = {
     alt: 'The main-room screens from the floor, each carrying its own slice of the frame',
   },
   'Individual Cabana / Bungalow Logo': {
-    src: R.tvCabanas,
-    alt: 'A cabana television running its own dedicated content, the beachclub beyond',
+    src: VENUE_PHOTOS.cabanaInterior,
+    alt: 'A Soleia cabana with its own television on the wall, curtains drawn back to the pool',
   },
   'Presentation': {
     src: IMG.presentation,

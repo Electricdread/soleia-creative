@@ -184,6 +184,29 @@ export interface VenueArea {
   videoPoster?: string;
 }
 
+/**
+ * Photography of the real venue, area by area — the owner's own shots, not the
+ * labelled pixel-map renders this section used to carry.
+ *
+ * The renders answered "how big is that screen?" and still do, in the mapping
+ * section below and on the specs pages. The opening is now what the room
+ * actually looks like with content on it, which is the question a client asks
+ * first.
+ */
+const PHOTO = {
+  theRoom: '/creative-guide/venue-photos/the-room.jpg',
+  beachclubGoldenHour: '/creative-guide/venue-photos/beachclub-golden-hour.jpg',
+  outdoorScreensLogo: '/creative-guide/venue-photos/outdoor-screens-logo.jpg',
+  beachclubPoolArrival: '/creative-guide/venue-photos/beachclub-pool-arrival.jpg',
+  poolDeckAerial: '/creative-guide/venue-photos/pool-deck-aerial.jpg',
+  elevatorLobby: '/creative-guide/venue-photos/elevator-lobby.jpg',
+  cabanasRow: '/creative-guide/venue-photos/cabanas-row.jpg',
+  cabanaBar: '/creative-guide/venue-photos/cabana-bar.jpg',
+  cabanaInterior: '/creative-guide/venue-photos/cabana-interior.jpg',
+} as const;
+
+export const VENUE_PHOTOS = PHOTO;
+
 export const VENUE_AREAS: VenueArea[] = [
   {
     id: 'main',
@@ -191,14 +214,9 @@ export const VENUE_AREAS: VenueArea[] = [
     title: 'The nightclub',
     blurb:
       'Two curved walls wrap the floor, two IMAG screens face the crowd either side of the center panel, and six lit rays run overhead from the sunburst. Your content plays across all of it at once.',
-    image: R.mainInterior,
+    image: PHOTO.theRoom,
     imageAlt:
-      'The Soleia main room with every LED surface labelled — the curves, both IMAG walls and the six ceiling rays',
-    gallery: [
-      { src: R.sunrays, alt: 'The six ceiling Sol Rays from below, each labelled with its own slice of the frame' },
-      { src: R.stageDjBooth, alt: 'IMAG SR, the Center panel, IMAG SL and the DJ booth face, each at its native resolution' },
-      { src: R.mainInterior2, alt: 'The main room from the floor — IMAG walls and booth beneath the sunburst' },
-    ],
+      'The Soleia main room at night — the six ceiling rays, both IMAG walls and the curves all carrying content over the floor',
   },
   {
     id: 'beachclub',
@@ -206,12 +224,12 @@ export const VENUE_AREAS: VenueArea[] = [
     title: 'Open-air, facing the Strip',
     blurb:
       'Two tall exterior towers flank the pool stage and the arch spans the entry. These are the screens the street sees, so they carry arrival branding at high brightness.',
-    image: R.beachclub,
-    imageAlt: 'The Soleia beachclub at dusk, exterior LED panels lit around the pool',
+    image: PHOTO.beachclubGoldenHour,
+    imageAlt: 'The Soleia beachclub at golden hour, the exterior LED lit above the pool with the Strip beyond',
     gallery: [
-      { src: R.outdoorArch, alt: 'The Outdoor Arch at 1512 × 504 above the beachclub entry' },
-      { src: R.outdoorSrSl, alt: 'Outdoor SR and Outdoor SL, the two 588 × 840 towers either side of the pool stage' },
-      { src: R.outsidePortrait, alt: 'The portrait exterior panels seen through the palms' },
+      { src: PHOTO.outdoorScreensLogo, alt: 'The beachclub exterior LED carrying the Soleia mark beside the palms' },
+      { src: PHOTO.beachclubPoolArrival, alt: 'The pool deck and cabana bar from the walkway, the Strip skyline behind' },
+      { src: PHOTO.poolDeckAerial, alt: 'The pool deck from above at dusk, the round bar and cabanas lit around the water' },
     ],
   },
   {
@@ -220,9 +238,10 @@ export const VENUE_AREAS: VenueArea[] = [
     title: 'Before they reach the room',
     blurb:
       'The elevator display is the first branded surface a guest sees, and the exterior marquee is what they pass on the way in. Both can carry your event for the night.',
-    image: '/creative-guide/elevator/interior.jpg',
-    imageAlt: 'Soleia elevator interior with the branded portrait display beside the doors',
+    image: PHOTO.elevatorLobby,
+    imageAlt: 'The Soleia elevator lobby, lit red, the branded display beside the doors',
     gallery: [
+      { src: '/creative-guide/elevator/interior.jpg', alt: 'Soleia elevator interior with the branded portrait display beside the doors' },
       { src: '/creative-guide/services/marquee-exterior.jpg', alt: 'Soleia exterior LED marquee carrying event branding at street level' },
     ],
     video: '/creative-guide/elevator/loop.mp4',
@@ -234,8 +253,11 @@ export const VENUE_AREAS: VenueArea[] = [
     title: 'Cabanas, bungalows and the front door',
     blurb:
       'Twenty-eight televisions across the venue run one shared feed by default. Any of them can be switched to its own dedicated content instead.',
-    image: R.tvCabanas,
-    imageAlt: 'A cabana television running its own dedicated content, the beachclub beyond',
+    image: PHOTO.cabanasRow,
+    imageAlt: 'A row of Soleia cabanas, each with its own television behind the curtains',
+    gallery: [
+      { src: PHOTO.cabanaBar, alt: 'The cabana bar, Soleia branding running on the screens behind it' },
+    ],
   },
 ];
 

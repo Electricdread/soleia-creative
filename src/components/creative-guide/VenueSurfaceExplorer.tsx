@@ -6,16 +6,16 @@ import { VENUE_AREAS, type AreaId } from '@/lib/venueSurfaces';
 /**
  * Where a client's brand actually lands, area by area.
  *
- * The renders used here carry the pixel map itself on the screens: every
- * surface shows its own slice with its name and native resolution burned into
- * the image. One picture answers both "where does my content go?" and "how big
- * is that screen?", which no photograph of the room can do — and the thumbnail
- * strip walks the rest of the area from there.
+ * These are photographs of the real venue with content on the screens, and the
+ * thumbnail strip walks the rest of the area from there. They replaced the
+ * labelled pixel-map renders this section used to open with: those answer "how
+ * big is that screen?", which is the mapping section's job and the specs pages'
+ * job, not the first thing a client wants from the room.
  *
  * The image is the whole point and is deliberately large: this section gets
- * talked over on a screenshared creative call, so the render has to read at
- * meeting size. Resolutions and logo placement deliberately live further down in
- * the pixel-map legend — repeating them here made the opening a spec sheet.
+ * talked over on a screenshared creative call, so it has to read at meeting
+ * size. Resolutions and logo placement deliberately live further down in the
+ * pixel-map legend — repeating them here made the opening a spec sheet.
  */
 
 type Shot = { src: string; alt: string; kind: 'image' } | { src: string; poster?: string; alt: string; kind: 'video' };
