@@ -204,6 +204,8 @@ Deno.serve(async (req) => {
       finals: 0,
       finals_emailed: 0,
       refiled: 0,
+      marked_missing: 0,
+      restored: 0,
     };
 
     const finals: {
@@ -227,7 +229,7 @@ Deno.serve(async (req) => {
       // Check which files we've already seen for this folder
       const { data: existing } = await supabase
         .from('drive_seen_files')
-        .select('drive_file_id, parent_folder_id, final_slot')
+        .select('drive_file_id, parent_folder_id, final_slot, missing_since')
         .eq('drive_folder_id', folderId);
       const seenRows = new Map(
         (existing ?? []).map((r: any) => [r.drive_file_id as string, r]),
@@ -268,6 +270,36 @@ Deno.serve(async (req) => {
               link: f.webViewLink ?? p.drive_folder_url ?? null,
             });
           }
+        }
+      }
+
+      // What the folder holds now is the authority on what still exists. A
+      // file deleted in Drive kept appearing on the dashboard and kept counting
+      // towards the job's assets, because nothing ever contradicted the row
+      // that recorded its arrival.
+      //
+      // Only reached when the listing succeeded — a failed list `continue`s
+      // above — so an outage cannot mark a whole folder gone.
+      const present = new Set(files.map((f) => f.id));
+      for (const row of existing ?? []) {
+        const stillThere = present.has(row.drive_file_id as string);
+        const markedGone = Boolean((row as { missing_since?: string | null }).missing_since);
+
+        if (!stillThere && !markedGone) {
+          await supabase
+            .from('drive_seen_files')
+            .update({ missing_since: new Date().toISOString() })
+            .eq('drive_folder_id', folderId)
+            .eq('drive_file_id', row.drive_file_id);
+          summary.marked_missing++;
+        } else if (stillThere && markedGone) {
+          // Restored from the bin, or the sweep that marked it was wrong.
+          await supabase
+            .from('drive_seen_files')
+            .update({ missing_since: null })
+            .eq('drive_folder_id', folderId)
+            .eq('drive_file_id', row.drive_file_id);
+          summary.restored++;
         }
       }
 
