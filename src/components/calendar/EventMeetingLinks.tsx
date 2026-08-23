@@ -101,7 +101,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
       .select('*')
       .eq('event_uid', eventUid)
       .order('created_at', { ascending: false });
-    setLinks((data as unknown as MeetingLink[]) || []);
+    setLinks((data as MeetingLink[]) || []);
     setLoading(false);
   };
 
@@ -177,7 +177,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
       meeting_at: meetingAt ? meetingAt.toISOString() : null,
       duration_minutes: meetingAt ? Number(duration) || 60 : null,
       attendees: people.length ? people : null,
-    } as never);
+    });
     setSaving(false);
     if (error) {
       toast.error('Failed to save link');

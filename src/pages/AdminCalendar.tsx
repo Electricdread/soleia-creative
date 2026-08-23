@@ -121,7 +121,7 @@ export default function AdminCalendar() {
       .order('meeting_at');
     if (!data) return;
     const map: Record<string, MeetingOnCalendar[]> = {};
-    for (const m of data as unknown as MeetingOnCalendar[]) {
+    for (const m of data as MeetingOnCalendar[]) {
       const key = format(parseISO(m.meeting_at), 'yyyy-MM-dd');
       (map[key] ??= []).push(m);
     }
