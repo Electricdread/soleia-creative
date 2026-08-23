@@ -255,6 +255,7 @@ export type Database = {
       }
       calendar_event_meeting_links: {
         Row: {
+          attendees: string[] | null
           created_at: string
           duration_minutes: number | null
           event_uid: string
@@ -265,6 +266,7 @@ export type Database = {
           url: string
         }
         Insert: {
+          attendees?: string[] | null
           created_at?: string
           duration_minutes?: number | null
           event_uid: string
@@ -275,6 +277,7 @@ export type Database = {
           url: string
         }
         Update: {
+          attendees?: string[] | null
           created_at?: string
           duration_minutes?: number | null
           event_uid?: string
