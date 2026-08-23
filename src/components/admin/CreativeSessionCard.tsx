@@ -20,7 +20,7 @@ import type { Json } from '@/integrations/supabase/types';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { CreativeBriefViewer } from './CreativeBriefViewer';
 import { answeredCount, fetchBriefForSession, type CreativeBriefRow } from '@/lib/creativeBrief';
-import { syncJobTitle } from '@/lib/jobTitle';
+import { syncJobIdentity } from '@/lib/jobTitle';
 import { cleanClientName } from '@/lib/clientName';
 
 interface CoverImage {
@@ -262,7 +262,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
         .select('job_id')
         .eq('id', session.id)
         .maybeSingle();
-      await syncJobTitle(row?.job_id);
+      await syncJobIdentity(row?.job_id);
       toast.success('Session updated');
       setEditOpen(false);
       onSessionUpdate?.();

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
-import { syncJobTitle } from '@/lib/jobTitle';
+import { syncJobIdentity } from '@/lib/jobTitle';
 import { cleanClientName } from '@/lib/clientName';
 import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
@@ -192,7 +192,7 @@ export default function AdminProposals() {
 
       // Where the packet already named this job, this leaves it alone; where
       // the proposal is the first record, the job takes its name.
-      await syncJobTitle(jobId);
+      await syncJobIdentity(jobId);
 
       // Insert items
       const validItems = itemsList.filter(i => i.title.trim());

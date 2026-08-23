@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { cleanClientName } from '@/lib/clientName';
 
 /**
  * One name for a job, everywhere it appears.
@@ -14,6 +15,11 @@ import { supabase } from '@/integrations/supabase/client';
  * packet is raised at the start and is named for the calendar event it came
  * from, then the proposal, then the creative session. Rename the packet and
  * the job follows on the next save.
+ *
+ * The client is carried the same way. It used to be left alone because the
+ * records genuinely disagreed — one job read `Ascend`, `CN` and `MRI` across
+ * three tables — but those were settled by hand, so the same precedence now
+ * keeps the client aligned too rather than letting a new one drift.
  */
 
 export type TitleKind = 'packet' | 'proposal' | 'session';
@@ -51,40 +57,58 @@ export function canonicalJobTitle(candidates: TitleCandidate[], fallback: string
 }
 
 /**
- * Bring a job's stored title back in line with its records.
+ * Bring a job's stored title and client back in line with its records.
  *
- * Returns the title the job now carries, or null when there was nothing to do.
- * Like `findOrCreateJob`, it never throws: a record that saved correctly must
- * not be reported as failed because the job's name could not be tidied.
+ * Returns what the job now carries, or null when there was nothing to do. Like
+ * `findOrCreateJob`, it never throws: a record that saved correctly must not be
+ * reported as failed because the job's name could not be tidied.
  */
-export async function syncJobTitle(jobId: string | null | undefined): Promise<string | null> {
+export async function syncJobIdentity(
+  jobId: string | null | undefined,
+): Promise<{ title: string; clientName: string } | null> {
   if (!jobId) return null;
 
   try {
     const [job, packets, proposals, sessions] = await Promise.all([
-      supabase.from('jobs').select('id, title').eq('id', jobId).maybeSingle(),
-      supabase.from('pre_call_packets').select('title, updated_at').eq('job_id', jobId),
-      supabase.from('proposals').select('event_name, updated_at').eq('job_id', jobId),
-      supabase.from('creative_sessions').select('project_name, updated_at').eq('job_id', jobId),
+      supabase.from('jobs').select('id, title, client_name').eq('id', jobId).maybeSingle(),
+      supabase.from('pre_call_packets').select('title, client_name, updated_at').eq('job_id', jobId),
+      supabase.from('proposals').select('event_name, client_name, updated_at').eq('job_id', jobId),
+      supabase.from('creative_sessions').select('project_name, client_name, updated_at').eq('job_id', jobId),
     ]);
 
     const current = job.data?.title;
     if (!job.data || typeof current !== 'string') return null;
+    const currentClient = job.data.client_name ?? '';
 
-    const candidates: TitleCandidate[] = [
-      ...(packets.data ?? []).map((p) => ({ kind: 'packet' as const, name: p.title, updatedAt: p.updated_at })),
-      ...(proposals.data ?? []).map((p) => ({ kind: 'proposal' as const, name: p.event_name, updatedAt: p.updated_at })),
-      ...(sessions.data ?? []).map((s) => ({ kind: 'session' as const, name: s.project_name, updatedAt: s.updated_at })),
+    const named = <T,>(rows: T[] | null, kind: TitleKind, name: (row: T) => string | null, updated: (row: T) => string | null) =>
+      (rows ?? []).map((row) => ({ kind, name: name(row), updatedAt: updated(row) }));
+
+    const titles: TitleCandidate[] = [
+      ...named(packets.data, 'packet', (p) => p.title, (p) => p.updated_at),
+      ...named(proposals.data, 'proposal', (p) => p.event_name, (p) => p.updated_at),
+      ...named(sessions.data, 'session', (s) => s.project_name, (s) => s.updated_at),
+    ];
+    const clients: TitleCandidate[] = [
+      ...named(packets.data, 'packet', (p) => p.client_name, (p) => p.updated_at),
+      ...named(proposals.data, 'proposal', (p) => p.client_name, (p) => p.updated_at),
+      ...named(sessions.data, 'session', (s) => s.client_name, (s) => s.updated_at),
     ];
 
-    const title = canonicalJobTitle(candidates, current);
-    if (title === current) return current;
+    const title = canonicalJobTitle(titles, current);
+    const clientName = cleanClientName(canonicalJobTitle(clients, currentClient));
 
-    const { error } = await supabase.from('jobs').update({ title }).eq('id', jobId);
+    if (title === current && clientName === currentClient) {
+      return { title, clientName };
+    }
+
+    const { error } = await supabase
+      .from('jobs')
+      .update({ title, client_name: clientName })
+      .eq('id', jobId);
     if (error) throw error;
-    return title;
+    return { title, clientName };
   } catch (e) {
-    console.error('Could not sync the job title', e);
+    console.error('Could not sync the job identity', e);
     return null;
   }
 }

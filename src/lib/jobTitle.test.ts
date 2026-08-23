@@ -55,4 +55,20 @@ describe('canonicalJobTitle', () => {
       { kind: 'proposal', name: 'Dated', updatedAt: '2026-05-01T00:00:00Z' },
     ], 'fallback')).toBe('Dated');
   });
+
+  it('carries the client the same way, packet first', () => {
+    // Same picker, used for client_name once the owner settled the three
+    // spellings that job was carrying.
+    expect(canonicalJobTitle([
+      { kind: 'session', name: 'MRI', updatedAt: '2026-08-23T00:00:00Z' },
+      { kind: 'packet', name: 'MRI', updatedAt: '2026-08-23T00:00:00Z' },
+    ], 'Ascend')).toBe('MRI');
+  });
+
+  it('keeps the job client when no record names one', () => {
+    expect(canonicalJobTitle([
+      { kind: 'packet', name: null },
+      { kind: 'proposal', name: '' },
+    ], '525 Productions')).toBe('525 Productions');
+  });
 });

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
-import { syncJobTitle } from '@/lib/jobTitle';
+import { syncJobIdentity } from '@/lib/jobTitle';
 import { cleanClientNameOrNull } from '@/lib/clientName';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -260,7 +260,7 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
       : null);
     if (packetJobId) await saveJobAssignees(packetJobId, assignees, user?.id);
     // The packet names the job, so a rename here is a rename everywhere.
-    if (packetJobId) await syncJobTitle(packetJobId);
+    if (packetJobId) await syncJobIdentity(packetJobId);
 
     if (saved?.id && saved?.client_name && !saved?.drive_folder_url) {
       try {
