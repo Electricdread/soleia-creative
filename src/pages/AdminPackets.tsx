@@ -6,7 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus, Mail } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus, Mail, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PacketEditor, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
 import { PacketEmailCard } from '@/components/admin/PacketEmailCard';
@@ -33,6 +34,34 @@ interface PacketRow extends PacketRecord {
   drive_folder_id?: string | null;
 }
 
+/**
+ * What `delete-client-drive-folder` says about the folder behind a packet.
+ * `canTrash` is false while anything else — the job's proposal, a sibling
+ * packet, a job with other work attached — still points at the same folder.
+ */
+interface DriveFolderState {
+  hasFolder: boolean;
+  folderId?: string;
+  folderName?: string | null;
+  folderUrl?: string;
+  missing?: boolean;
+  alreadyTrashed?: boolean;
+  files?: number;
+  truncated?: boolean;
+  blockers?: { type: string; id: string; label: string }[];
+  canTrash?: boolean;
+}
+
+/** Read the JSON body an edge function returned alongside a non-2xx status. */
+async function fnErrorMessage(error: unknown, fallback: string): Promise<string> {
+  const withContext = error as { context?: { json?: () => Promise<{ error?: string }> }; message?: string } | null;
+  try {
+    const body = await withContext?.context?.json?.();
+    if (body?.error) return String(body.error);
+  } catch { /* the body was not JSON */ }
+  return withContext?.message ?? fallback;
+}
+
 export default function AdminPackets() {
   const navigate = useNavigate();
   const { isLoading } = useAuth();
@@ -42,7 +71,12 @@ export default function AdminPackets() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<PacketRow | null>(null);
   const [newKind, setNewKind] = useState<PacketKind>('pre_call');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PacketRow | null>(null);
+  const [drive, setDrive] = useState<DriveFolderState | null>(null);
+  const [driveChecking, setDriveChecking] = useState(false);
+  const [driveCheckFailed, setDriveCheckFailed] = useState(false);
+  const [alsoTrashFolder, setAlsoTrashFolder] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [emailPacket, setEmailPacket] = useState<PacketRow | null>(null);
   const [includePriceSheet, setIncludePriceSheet] = useState(false);
 
@@ -85,12 +119,56 @@ export default function AdminPackets() {
     toast.success('Link copied');
   };
 
+  // Deleting a packet has always left its Drive folder behind. Ask the folder
+  // what state it is in before offering to bin it — it may be shared with the
+  // job's proposal, and it may hold assets the client uploaded.
+  const openDelete = async (p: PacketRow) => {
+    setDeleteTarget(p);
+    setDrive(null);
+    setDriveCheckFailed(false);
+    setAlsoTrashFolder(false);
+    if (!p.drive_folder_id) return;
+
+    setDriveChecking(true);
+    const { data, error } = await supabase.functions.invoke('delete-client-drive-folder', {
+      body: { packet_id: p.id, action: 'check' },
+    });
+    setDriveChecking(false);
+    if (error || !data) {
+      setDriveCheckFailed(true);
+      return;
+    }
+    setDrive(data as DriveFolderState);
+    // Pre-ticked only when there is nothing to lose: no other owner, and no
+    // files inside. A folder with client uploads is an explicit choice.
+    setAlsoTrashFolder(Boolean((data as DriveFolderState).canTrash) && !(data as DriveFolderState).files);
+  };
+
   const handleDelete = async () => {
-    if (!deleteId) return;
-    const { error } = await supabase.from('pre_call_packets').delete().eq('id', deleteId);
-    if (error) return toast.error(error.message);
-    toast.success('Packet deleted');
-    setDeleteId(null);
+    if (!deleteTarget) return;
+    setDeleting(true);
+
+    let folderBinned = false;
+    if (alsoTrashFolder && drive?.canTrash) {
+      const { data, error } = await supabase.functions.invoke('delete-client-drive-folder', {
+        body: { packet_id: deleteTarget.id, action: 'trash' },
+      });
+      if (error || !data?.trashed) {
+        setDeleting(false);
+        toast.error(await fnErrorMessage(error, 'Could not move the Drive folder to the bin'));
+        return; // the packet stays: untick the box to delete it without Drive
+      }
+      folderBinned = true;
+    }
+
+    const { error } = await supabase.from('pre_call_packets').delete().eq('id', deleteTarget.id);
+    setDeleting(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(folderBinned ? 'Packet deleted, Drive folder moved to the bin' : 'Packet deleted');
+    setDeleteTarget(null);
     load();
   };
 
@@ -212,7 +290,7 @@ export default function AdminPackets() {
                     <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setEditorOpen(true); }}>
                       <Edit3 className="w-4 h-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => setDeleteId(p.id)}>
+                    <Button size="icon" variant="ghost" onClick={() => openDelete(p)}>
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
                   </div>
@@ -250,18 +328,88 @@ export default function AdminPackets() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && !deleting && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete packet?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove the packet. Public links will stop working.
+              This will permanently remove{deleteTarget?.title ? ` "${deleteTarget.title}"` : ' the packet'}. Public links will stop working.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          {deleteTarget?.drive_folder_id && (
+            <div className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-sm">
+              {driveChecking ? (
+                <p className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking its Google Drive folder...
+                </p>
+              ) : driveCheckFailed ? (
+                <p className="text-muted-foreground">
+                  Could not reach Drive to check this packet's folder, so it will be left alone.
+                </p>
+              ) : drive?.missing ? (
+                <p className="text-muted-foreground">Its Drive folder is already gone.</p>
+              ) : drive?.alreadyTrashed ? (
+                <p className="text-muted-foreground">Its Drive folder is already in the bin.</p>
+              ) : drive?.canTrash ? (
+                <label className="flex cursor-pointer items-start gap-2.5">
+                  <Checkbox
+                    checked={alsoTrashFolder}
+                    onCheckedChange={(v) => setAlsoTrashFolder(v === true)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    <span className="font-medium text-foreground">Also move its Google Drive folder to the bin</span>
+                    <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                      <FolderOpen className="h-3 w-3" />
+                      {drive.folderName || 'Drive folder'}
+                      <span>&bull;</span>
+                      {drive.files
+                        ? `${drive.files}${drive.truncated ? '+' : ''} file${drive.files === 1 ? '' : 's'} inside`
+                        : 'empty'}
+                      <span>&bull;</span>
+                      recoverable from Drive's bin for 30 days
+                    </span>
+                    {Boolean(drive.files) && (
+                      <span className="mt-1 flex items-center gap-1.5 text-xs text-amber-500">
+                        <AlertTriangle className="h-3 w-3" />
+                        Anything the client uploaded goes with it.
+                      </span>
+                    )}
+                  </span>
+                </label>
+              ) : (
+                <div className="space-y-1">
+                  <p className="text-foreground">Its Drive folder stays — it is shared.</p>
+                  <ul className="text-xs text-muted-foreground">
+                    {(drive?.blockers ?? []).map((b) => (
+                      <li key={`${b.type}-${b.id}`}>&bull; still used by the {b.type}: {b.label}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {drive?.folderUrl && !drive?.missing && (
+                <a
+                  href={drive.folderUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" /> Open the folder in Drive
+                </a>
+              )}
+            </div>
+          )}
+
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDelete(); }}
+              disabled={deleting || driveChecking}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : null}
+              {alsoTrashFolder ? 'Delete packet and folder' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
