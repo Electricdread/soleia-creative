@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus, Mail, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { PacketEditor, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
+import { PacketEditor, PACKET_KIND_LABEL, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
 import { PacketEmailCard } from '@/components/admin/PacketEmailCard';
 import IncludePriceSheetToggle, { priceSheetUrl } from '@/components/admin/IncludePriceSheetToggle';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -62,6 +62,26 @@ async function fnErrorMessage(error: unknown, fallback: string): Promise<string>
   return withContext?.message ?? fallback;
 }
 
+/**
+ * How the list is ordered and what it shows.
+ *
+ * Packets carry a kind — pre-call, post-call, custom — and until now the list
+ * ignored it and sorted by whenever a packet happened to be made. Neither is
+ * how anyone looks for one: it is either "the post-call packets" or "the one
+ * for the show that is nearly here".
+ */
+type SortKey = 'recent' | 'event' | 'client' | 'status';
+
+const SORT_LABEL: Record<SortKey, string> = {
+  recent: 'Newest first',
+  event: 'Event date',
+  client: 'Client A–Z',
+  status: 'Deployed first',
+};
+
+/** Legacy "creative_pre_call" rows are custom packets by another name. */
+const kindGroup = (kind?: string | null) => (kind === 'creative_pre_call' ? 'custom' : kind ?? 'pre_call');
+
 export default function AdminPackets() {
   const navigate = useNavigate();
   const { isLoading } = useAuth();
@@ -79,6 +99,38 @@ export default function AdminPackets() {
   const [deleting, setDeleting] = useState(false);
   const [emailPacket, setEmailPacket] = useState<PacketRow | null>(null);
   const [includePriceSheet, setIncludePriceSheet] = useState(false);
+  const [kindFilter, setKindFilter] = useState<'all' | 'pre_call' | 'post_call' | 'custom'>('all');
+  const [sortBy, setSortBy] = useState<SortKey>('recent');
+
+  const counts = useMemo(() => {
+    const c = { all: packets.length, pre_call: 0, post_call: 0, custom: 0 } as Record<string, number>;
+    packets.forEach((p) => { c[kindGroup(p.kind)] = (c[kindGroup(p.kind)] ?? 0) + 1; });
+    return c;
+  }, [packets]);
+
+  const visible = useMemo(() => {
+    const rows = kindFilter === 'all' ? [...packets] : packets.filter((p) => kindGroup(p.kind) === kindFilter);
+    const time = (v?: string | null) => (v ? new Date(v).getTime() : null);
+    return rows.sort((a, b) => {
+      if (sortBy === 'event') {
+        // Soonest show first; a packet with no date has nothing to be soon, so
+        // it falls to the bottom rather than to the top.
+        const ta = time(a.event_date);
+        const tb = time(b.event_date);
+        if (ta !== null && tb !== null && ta !== tb) return ta - tb;
+        if (ta === null && tb !== null) return 1;
+        if (tb === null && ta !== null) return -1;
+      }
+      if (sortBy === 'client') {
+        const byClient = (a.client_name ?? '').localeCompare(b.client_name ?? '', undefined, { sensitivity: 'base' });
+        if (byClient !== 0) return byClient;
+      }
+      if (sortBy === 'status' && a.is_active !== b.is_active) {
+        return a.is_active ? -1 : 1;
+      }
+      return (time(b.created_at) ?? 0) - (time(a.created_at) ?? 0);
+    });
+  }, [packets, kindFilter, sortBy]);
 
   const load = async () => {
     setLoading(true);
@@ -228,8 +280,52 @@ export default function AdminPackets() {
             </Button>
           </div>
         ) : (
+          <>
+          {/* Filter by kind, order by what you are actually looking for. */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1">
+              {([
+                ['all', 'All'],
+                ['pre_call', PACKET_KIND_LABEL.pre_call],
+                ['post_call', PACKET_KIND_LABEL.post_call],
+                ['custom', PACKET_KIND_LABEL.custom],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setKindFilter(key)}
+                  className={
+                    kindFilter === key
+                      ? 'rounded-full border border-primary bg-primary/15 px-3 py-1 text-xs font-medium text-primary'
+                      : 'rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground'
+                  }
+                >
+                  {label}
+                  <span className="ml-1.5 font-mono text-[10px] opacity-70">{counts[key] ?? 0}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Sort</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortKey)}
+                className="min-h-[36px] rounded-md border border-border bg-card px-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+              >
+                {(Object.keys(SORT_LABEL) as SortKey[]).map((key) => (
+                  <option key={key} value={key}>{SORT_LABEL[key]}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {visible.length === 0 ? (
+            <p className="py-12 text-center text-sm text-muted-foreground">
+              No {kindFilter === 'all' ? '' : (PACKET_KIND_LABEL[kindFilter] ?? '').toLowerCase()} packets.
+            </p>
+          ) : (
           <div className="grid gap-4">
-            {packets.map((p) => (
+            {visible.map((p) => (
               <div
                 key={p.id}
                 data-focus-id={p.id}
@@ -298,6 +394,8 @@ export default function AdminPackets() {
               </div>
             ))}
           </div>
+          )}
+          </>
         )}
       </div>
 

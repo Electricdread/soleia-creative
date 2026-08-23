@@ -9,13 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Loader2, FileText, BookOpen, Palette, AlertTriangle, ArrowLeft, ExternalLink,
-  FolderOpen, Check,
+  FolderOpen, Check, Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useJobs } from '@/hooks/useJobs';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
 import { FinalsRow } from '@/components/admin/FinalsRow';
+import { DeleteJobDialog } from '@/components/admin/DeleteJobDialog';
 import { ClientAssetsRow } from '@/components/admin/ClientAssetsRow';
 import {
   stageFor, flagsFor, daysUntil, CREATIVE_STAGES, IN_HOUSE_STAGES, STAGE_LABEL,
@@ -135,6 +136,15 @@ export default function AdminJobDetail() {
               <FolderOpen className="mr-2 h-4 w-4" /> Drive
             </Button>
           )}
+          <DeleteJobDialog
+            entry={entry}
+            onDeleted={() => navigate('/admin/jobs')}
+            trigger={
+              <Button variant="outline" size="sm" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive" asChild>
+                <span><Trash2 className="mr-2 h-4 w-4" /> Delete</span>
+              </Button>
+            }
+          />
           <Button variant="ghost" size="sm" onClick={() => navigate('/admin/jobs')}>
             <ArrowLeft className="mr-2 h-4 w-4" /> All jobs
           </Button>

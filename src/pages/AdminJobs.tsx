@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, FileText, BookOpen, Palette, AlertTriangle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useJobs } from '@/hooks/useJobs';
+import { DeleteJobDialog } from '@/components/admin/DeleteJobDialog';
 import {
   stageFor, flagsFor, daysUntil, CREATIVE_STAGES, STAGE_LABEL, type Stage,
 } from '@/lib/jobStage';
@@ -38,7 +39,7 @@ function Countdown({ eventDate }: { eventDate: string | null }) {
 
 export default function AdminJobs() {
   const navigate = useNavigate();
-  const { jobs, loading, error } = useJobs();
+  const { jobs, loading, error, reload } = useJobs();
   const [showPast, setShowPast] = useState(false);
 
   const rows = useMemo(
@@ -102,13 +103,17 @@ export default function AdminJobs() {
                 </div>
 
                 <div className="space-y-2">
+                  {/* The row was one button, which cannot hold another; the
+                      delete control is a sibling of the opener now. */}
                   {items.map((r) => (
-                    <button
+                    <div
                       key={r.job.id}
-                      onClick={() => navigate(`/admin/jobs/${r.job.id}`)}
                       className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/40 hover:shadow-md"
                     >
-                      <div className="min-w-0 flex-1">
+                      <button
+                        onClick={() => navigate(`/admin/jobs/${r.job.id}`)}
+                        className="min-w-0 flex-1 text-left"
+                      >
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="truncate font-medium text-foreground">{r.job.title}</span>
                           {r.job.track === 'in_house' && (
@@ -125,7 +130,7 @@ export default function AdminJobs() {
                           {r.job.client_name !== r.job.title && <>{r.job.client_name} · </>}
                           {r.reason}
                         </p>
-                      </div>
+                      </button>
 
                       <div className="hidden flex-shrink-0 items-center gap-2.5 text-muted-foreground sm:flex">
                         {r.proposals.length > 0 && (
@@ -140,8 +145,19 @@ export default function AdminJobs() {
                       </div>
 
                       <Countdown eventDate={r.job.event_date} />
-                      <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary" />
-                    </button>
+
+                      <div className="flex-shrink-0 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+                        <DeleteJobDialog entry={r} onDeleted={reload} />
+                      </div>
+
+                      <button
+                        onClick={() => navigate(`/admin/jobs/${r.job.id}`)}
+                        aria-label={`Open ${r.job.title}`}
+                        className="flex-shrink-0"
+                      >
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-colors group-hover:text-primary" />
+                      </button>
+                    </div>
                   ))}
                 </div>
               </section>
