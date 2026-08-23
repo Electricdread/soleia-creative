@@ -224,11 +224,11 @@ export const VENUE_AREAS: VenueArea[] = [
     title: 'Open-air, facing the Strip',
     blurb:
       'Two tall exterior towers flank the pool stage and the arch spans the entry. These are the screens the street sees, so they carry arrival branding at high brightness.',
-    image: PHOTO.beachclubGoldenHour,
-    imageAlt: 'The Soleia beachclub at golden hour, the exterior LED lit above the pool with the Strip beyond',
+    image: PHOTO.beachclubPoolArrival,
+    imageAlt: 'The Soleia pool deck and cabana bar from the walkway, the exterior LED lit and the Strip skyline behind',
     gallery: [
+      { src: PHOTO.beachclubGoldenHour, alt: 'The beachclub at golden hour, the exterior LED lit above the pool with the Strip beyond' },
       { src: PHOTO.outdoorScreensLogo, alt: 'The beachclub exterior LED carrying the Soleia mark beside the palms' },
-      { src: PHOTO.beachclubPoolArrival, alt: 'The pool deck and cabana bar from the walkway, the Strip skyline behind' },
       { src: PHOTO.poolDeckAerial, alt: 'The pool deck from above at dusk, the round bar and cabanas lit around the water' },
     ],
   },
