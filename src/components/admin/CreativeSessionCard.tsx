@@ -21,6 +21,7 @@ import { CountdownBadge } from '@/components/CountdownBadge';
 import { CreativeBriefViewer } from './CreativeBriefViewer';
 import { answeredCount, fetchBriefForSession, type CreativeBriefRow } from '@/lib/creativeBrief';
 import { syncJobTitle } from '@/lib/jobTitle';
+import { cleanClientName } from '@/lib/clientName';
 
 interface CoverImage {
   url: string;
@@ -243,7 +244,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
       .from('creative_sessions')
       .update({
         project_name: editProjectName.trim(),
-        client_name: editClientName.trim(),
+        client_name: cleanClientName(editClientName),
         creative_notes: editCreativeNotes.trim() || null,
         technical_notes: editTechnicalNotes.trim() || null,
         

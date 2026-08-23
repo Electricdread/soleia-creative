@@ -3,6 +3,7 @@ import { format, parseISO } from 'date-fns';
 import { Copy, ExternalLink, FileText, FolderOpen, Loader2, Pencil, Plus, Unlink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { cleanClientName } from '@/lib/clientName';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
@@ -74,7 +75,7 @@ export function EventPacket({ eventUid, summary, dtstart }: EventPacketProps) {
 
     // The brief's group name is the closest thing the event has to a client,
     // so it seeds the packet when one has been written.
-    setClientName(brief?.group_name?.trim() || '');
+    setClientName(cleanClientName(brief?.group_name));
 
     const ids = (assocs ?? []).map((a) => a.entity_id);
     if (ids.length === 0) {

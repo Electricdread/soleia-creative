@@ -3,6 +3,7 @@ import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicke
 import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
 import { syncJobTitle } from '@/lib/jobTitle';
+import { cleanClientNameOrNull } from '@/lib/clientName';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -220,7 +221,7 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
     setSaving(true);
     const payload = {
       title: form.title.trim(),
-      client_name: form.client_name?.trim() || null,
+      client_name: cleanClientNameOrNull(form.client_name),
       event_date: form.event_date || null,
       intro: form.intro?.trim() || null,
       inclusions: form.inclusions.filter((i) => i.heading.trim() || i.body.trim()),

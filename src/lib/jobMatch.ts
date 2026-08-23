@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { cleanClientName } from '@/lib/clientName';
 
 /**
  * Attaching a new record to the job it belongs to.
@@ -87,7 +88,7 @@ export async function findOrCreateJob(identity: JobIdentity): Promise<string | n
 
     const { data: created, error: createErr } = await supabase
       .from('jobs')
-      .insert({ title, client_name: clientName, event_date: eventDate })
+      .insert({ title, client_name: cleanClientName(clientName), event_date: eventDate })
       .select('id')
       .single();
     if (createErr) throw createErr;

@@ -3,6 +3,7 @@ import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicke
 import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
 import { syncJobTitle } from '@/lib/jobTitle';
+import { cleanClientName } from '@/lib/clientName';
 import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -149,8 +150,10 @@ export default function AdminProposals() {
 
       // Land on the packet's job where the booking already has one, so the
       // proposal and the packet are the same piece of work rather than two.
+      const client = cleanClientName(clientName);
+
       const jobId = await findOrCreateJob({
-        clientName,
+        clientName: client,
         eventName,
         eventDate: eventDate || null,
       });
@@ -161,7 +164,7 @@ export default function AdminProposals() {
           token,
           job_id: jobId,
           event_name: eventName,
-          client_name: clientName,
+          client_name: client,
           venue_name: venueName || null,
           event_date: eventDate || null,
           validity_days: parseInt(validityDays) || 7,

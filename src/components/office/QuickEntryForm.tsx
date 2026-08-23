@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { cleanClientName } from '@/lib/clientName';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -35,7 +36,7 @@ export function QuickEntryForm() {
         const token = crypto.randomUUID().slice(0, 8);
         const { error } = await supabase.from('creative_sessions').insert({
           project_name: projectName.trim(),
-          client_name: clientName.trim(),
+          client_name: cleanClientName(clientName),
           token,
           creative_notes: notes.trim() || null,
         });
@@ -46,7 +47,7 @@ export function QuickEntryForm() {
         const token = crypto.randomUUID().slice(0, 8);
         const { error } = await supabase.from('client_links').insert({
           event_name: projectName.trim(),
-          client_name: clientName.trim(),
+          client_name: cleanClientName(clientName),
           token,
           event_date: eventDate ? format(eventDate, 'yyyy-MM-dd') : null,
         });

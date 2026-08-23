@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { cleanClientName } from '@/lib/clientName';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -128,7 +129,7 @@ export function ClientLinkManager() {
         .from('client_links')
         .insert({
           token,
-          client_name: clientName.trim(),
+          client_name: cleanClientName(clientName),
           event_name: eventName.trim(),
           event_date: eventDate ? format(eventDate, 'yyyy-MM-dd') : null,
           is_public: isPublic,

@@ -3,6 +3,7 @@ import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicke
 import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
 import { syncJobTitle } from '@/lib/jobTitle';
+import { cleanClientName } from '@/lib/clientName';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +78,7 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
     // Attach to the booking's job — finding the packet's job where one exists,
     // creating it where this session is the first record.
     const jobId = await findOrCreateJob({
-      clientName: clientName.trim(),
+      clientName: cleanClientName(clientName),
       eventName: projectName.trim(),
       eventDate: null,
     });
@@ -89,7 +90,7 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
     const { data: created, error } = await supabase.from('creative_sessions').insert({
       token,
       project_name: projectName.trim(),
-      client_name: clientName.trim(),
+      client_name: cleanClientName(clientName),
       cover_images: coverImages,
       job_id: jobId,
     }).select('id').maybeSingle();
