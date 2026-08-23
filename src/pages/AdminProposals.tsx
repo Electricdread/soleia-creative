@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
+import { syncJobTitle } from '@/lib/jobTitle';
 import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -185,6 +186,10 @@ export default function AdminProposals() {
       if (jobId && assignees.length > 0) {
         await saveJobAssignees(jobId, assignees, user?.id);
       }
+
+      // Where the packet already named this job, this leaves it alone; where
+      // the proposal is the first record, the job takes its name.
+      await syncJobTitle(jobId);
 
       // Insert items
       const validItems = itemsList.filter(i => i.title.trim());

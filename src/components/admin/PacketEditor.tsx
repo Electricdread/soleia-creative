@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
+import { syncJobTitle } from '@/lib/jobTitle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -257,6 +258,8 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
       ? (await supabase.from('pre_call_packets').select('job_id').eq('id', initial.id).maybeSingle()).data?.job_id
       : null);
     if (packetJobId) await saveJobAssignees(packetJobId, assignees, user?.id);
+    // The packet names the job, so a rename here is a rename everywhere.
+    if (packetJobId) await syncJobTitle(packetJobId);
 
     if (saved?.id && saved?.client_name && !saved?.drive_folder_url) {
       try {

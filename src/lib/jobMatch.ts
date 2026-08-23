@@ -78,11 +78,12 @@ export async function findOrCreateJob(identity: JobIdentity): Promise<string | n
     });
     if (match) return match.id;
 
-    // Shortest real name, for the same reason the backfill used it: the longer
-    // ones are the same name with a date bolted on.
-    const title = [clientName, eventName]
-      .filter((n) => normalise(n).replace(/[\d ]/g, '').length >= 2)
-      .sort((a, b) => a.length - b.length)[0] ?? eventName ?? clientName;
+    // The job takes the name of the record raising it — the packet title, the
+    // proposal's event name — so the Jobs screen reads the same as the screen
+    // the work was started on. `syncJobTitle` keeps it that way afterwards.
+    const title = [eventName, clientName]
+      .map((n) => (n ?? '').trim())
+      .find((n) => n.length > 0) ?? eventName ?? clientName;
 
     const { data: created, error: createErr } = await supabase
       .from('jobs')

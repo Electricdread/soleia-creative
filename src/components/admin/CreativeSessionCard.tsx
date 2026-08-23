@@ -20,6 +20,7 @@ import type { Json } from '@/integrations/supabase/types';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { CreativeBriefViewer } from './CreativeBriefViewer';
 import { answeredCount, fetchBriefForSession, type CreativeBriefRow } from '@/lib/creativeBrief';
+import { syncJobTitle } from '@/lib/jobTitle';
 
 interface CoverImage {
   url: string;
@@ -253,6 +254,14 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     if (error) {
       toast.error('Failed to update session');
     } else {
+      // A session only names the job when nothing earlier does, but when it
+      // does, this rename has to reach it.
+      const { data: row } = await supabase
+        .from('creative_sessions')
+        .select('job_id')
+        .eq('id', session.id)
+        .maybeSingle();
+      await syncJobTitle(row?.job_id);
       toast.success('Session updated');
       setEditOpen(false);
       onSessionUpdate?.();

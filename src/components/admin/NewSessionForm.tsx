@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
+import { syncJobTitle } from '@/lib/jobTitle';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,6 +98,7 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
       toast.error('Failed to create session');
       console.error(error);
     } else {
+      await syncJobTitle(jobId);
       toast.success('Session created!');
       onSessionCreated();
     }
