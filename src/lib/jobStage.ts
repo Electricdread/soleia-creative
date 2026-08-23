@@ -180,6 +180,15 @@ export function daysUntil(eventDate: string | null): number | null {
   return Math.round((then.getTime() - now.getTime()) / 86_400_000);
 }
 
+export type ActionKind = 'session' | 'assets' | 'sign' | 'quote' | 'call' | 'date';
+
+/**
+ * Grouping order for the triage list's "by action" view: the pipeline order, so
+ * that batching one verb at a time reads like working down the funnel.
+ * Housekeeping — a job nobody has given a date — sits at the end.
+ */
+export const ACTION_KIND_ORDER: ActionKind[] = ['call', 'quote', 'sign', 'session', 'assets', 'date'];
+
 export interface NextAction {
   /** What is waiting, in the owner's words. */
   label: string;
@@ -189,6 +198,8 @@ export interface NextAction {
   href: string;
   /** Sorts the triage list: 0 is most urgent. */
   weight: number;
+  /** What kind of work it is, so the list can group like with like. */
+  kind: ActionKind;
 }
 
 /**
@@ -206,7 +217,7 @@ export function nextAction(j: JobWithMembers): NextAction | null {
   // An in-house booking owes nobody a proposal. Never chase it.
   if (job.track === 'in_house') {
     if (sessions.length === 0) {
-      return { label: 'In-house, no creative session yet', verb: 'Create', href: '/admin/creative', weight: 60 };
+      return { label: 'In-house, no creative session yet', verb: 'Create', href: '/admin/creative', weight: 60, kind: 'session' };
     }
     return null;
   }
@@ -215,22 +226,22 @@ export function nextAction(j: JobWithMembers): NextAction | null {
   const sent = proposals.find((p) => !p.signed_at && p.status === 'sent');
 
   if (signed && hasCreativePackage && sessions.length === 0) {
-    return { label: 'Creative Package selected — no session created', verb: 'Create', href: '/admin/creative', weight: 0 };
+    return { label: 'Creative Package selected — no session created', verb: 'Create', href: '/admin/creative', weight: 0, kind: 'session' };
   }
   if (signed && assetCount === 0) {
-    return { label: 'Signed — no brand assets in the Drive folder', verb: 'Nudge', href: `/admin/jobs/${job.id}`, weight: imminent ? 1 : 10 };
+    return { label: 'Signed — no brand assets in the Drive folder', verb: 'Nudge', href: `/admin/jobs/${job.id}`, weight: imminent ? 1 : 10, kind: 'assets' };
   }
   if (sent) {
-    return { label: 'Proposal sent, not signed', verb: 'Chase', href: '/admin/proposals', weight: imminent ? 2 : soon ? 11 : 30 };
+    return { label: 'Proposal sent, not signed', verb: 'Chase', href: '/admin/proposals', weight: imminent ? 2 : soon ? 11 : 30, kind: 'sign' };
   }
   if (proposals.length === 0 && job.call_held_on) {
-    return { label: 'Call held — no proposal raised', verb: 'Quote', href: '/admin/proposals', weight: imminent ? 3 : soon ? 12 : 31 };
+    return { label: 'Call held — no proposal raised', verb: 'Quote', href: '/admin/proposals', weight: imminent ? 3 : soon ? 12 : 31, kind: 'quote' };
   }
   if (proposals.length === 0 && j.packets.length > 0) {
-    return { label: 'Packet out — no creative call recorded', verb: 'Log call', href: `/admin/jobs/${job.id}`, weight: imminent ? 4 : soon ? 13 : 40 };
+    return { label: 'Packet out — no creative call recorded', verb: 'Log call', href: `/admin/jobs/${job.id}`, weight: imminent ? 4 : soon ? 13 : 40, kind: 'call' };
   }
   if (!job.event_date) {
-    return { label: 'No event date — no deadline anywhere', verb: 'Set', href: `/admin/jobs/${job.id}`, weight: 50 };
+    return { label: 'No event date — no deadline anywhere', verb: 'Set', href: `/admin/jobs/${job.id}`, weight: 50, kind: 'date' };
   }
   return null;
 }
