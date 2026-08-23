@@ -49,6 +49,12 @@ const TV_HERO_IMG = '/creative-guide/tv/hero.jpg';
 // trimmed for a clean loop. Tapping the card opens the full explainer.
 const TRANSPARENT_LOOP_URL = '/creative-guide/services/transparent-logo-loop.mp4';
 
+// The static-logo example: a pass through the venue model with a client's mark
+// held on the screens. It reads as a card of its own, not a still of one, so it
+// runs the same way the transparent-logo card beside it does.
+const STATIC_LOGO_LOOP_URL = '/creative-guide/services/static-logo-loop.mp4';
+const STATIC_LOGO_LOOP_POSTER = '/creative-guide/services/static-logo-loop-poster.jpg';
+
 // A real previz render: a minute through the venue model with a client's show
 // on every screen. It stays behind a poster and `preload="none"` — 12 MB has
 // no business downloading itself on the page a packet link opens.
@@ -494,6 +500,41 @@ export default function CreativeGuideServices() {
               <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
                 A real previz · one minute through the room
               </p>
+            </div>
+          </article>
+        </Reveal>
+      );
+    }
+
+    if (item.title === 'Static Logo') {
+      return (
+        <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
+          <article className={`${cardShell} flex h-full flex-col`}>
+            <div
+              className="relative aspect-[16/9.4] cursor-pointer overflow-hidden bg-black"
+              onClick={() => setFullscreenVideo(STATIC_LOGO_LOOP_URL)}
+            >
+              <video
+                src={STATIC_LOGO_LOOP_URL}
+                poster={STATIC_LOGO_LOOP_POSTER}
+                className="h-full w-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                aria-label="A client's static logo held across the Soleia screens, seen through the venue model"
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-xs uppercase tracking-[0.18em]">
+                  <Maximize2 className="h-3.5 w-3.5" />
+                  Tap for fullscreen
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 p-7 sm:p-8">
+              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
+              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
             </div>
           </article>
         </Reveal>
