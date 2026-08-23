@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from 'next-themes';
 import {
-  Calendar, FileText, BookOpen, Palette, Map, Send,
+  Calendar, FileText, BookOpen, Palette, Map,
   HardDrive, Users, Mail, LayoutDashboard, Command, LogOut, Menu, X,
   Sun, Moon, PanelLeftClose, PanelLeft, ExternalLink, Search, Briefcase,
 } from 'lucide-react';
@@ -62,10 +62,14 @@ const NAV: NavGroup[] = [
   {
     // The Look Book and the previz movie uploader were deleted with the parked
     // previz work. The client-facing /looks/:token page is still routed.
+    //
+    // The delivery guide came off this menu too: it is a page for clients, read
+    // from the creative guide's own nav, and nobody in the studio opened it from
+    // here. /creative-guide/content-delivery is still routed and still linked
+    // from the guide.
     label: 'Reference',
     items: [
       { label: 'Creative Guide', href: '/creative-guide', icon: Map, external: true },
-      { label: 'Delivery guide', href: '/creative-guide/content-delivery', icon: Send, external: true },
     ],
   },
   {
