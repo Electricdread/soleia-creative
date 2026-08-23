@@ -203,13 +203,14 @@ const PACKAGE_INCLUDES: {
   {
     title: '1–3 custom looks',
     body: 'Original visuals designed for the whole venue at once, so every surface belongs to the same idea rather than running its own loop.',
-    src: IMG.packageMain,
-    alt: 'A full-venue custom look across the sunburst, curves and booth',
+    src: IMG.artist,
+    alt: 'A custom look running live across the room during a performance',
   },
   {
     title: 'Pixel-perfect mapping',
     body: 'Every surface built at its own native resolution and placed in the 3840 × 2160 frame — the walls, the curves, the ceiling rays and the beachclub exteriors.',
     src: R.curvesInterior,
+    movie: PREVIZ_MOVIE_URL,
     alt: 'SR Curve at 2304 × 272 running alongside IMAG SR, each carrying its own slice of the frame',
   },
   {
@@ -231,8 +232,8 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Onsite playback',
     body: 'Loaded, checked against the run of show, and operated by our team throughout the night.',
-    src: IMG.artist,
-    alt: 'Show visuals running live across the room during a performance',
+    src: IMG.packageMain,
+    alt: 'The full-venue look running across the sunburst, curves and booth on the night',
   },
 ];
 
@@ -436,11 +437,13 @@ export default function CreativeGuideServices() {
       if (ELEVATOR_TITLES.includes(item.title)) continue; // shown inside the elevator panel
       out[GROUP_OF[item.title] ?? 'more'].push(item);
     }
-    // Inside the main room, lead on the signature zone-mapping card.
+    // Inside the main room, read up from what a buyout already covers: another
+    // static logo, then the same mark with an alpha channel, then mapping to a
+    // chosen zone, then a whole show built around a performer.
     const roomOrder = [
-      'LED Screens Specific Zone Mapping',
       'Static Logo',
       'Transparent Logo Animation',
+      'LED Screens Specific Zone Mapping',
       'Performing Artist — Mapped by Soleia Creative Team',
     ];
     out.room.sort((a, b) => {
@@ -717,6 +720,33 @@ export default function CreativeGuideServices() {
                 lede="Every screen in the venue is a different shape and resolution, and all of them live on one file. This is the part that makes the rest of the page make sense."
               />
               <PixelMapFold />
+
+              {/* The same idea, moving: one mapped file across every surface at
+                  once. Behind a poster and preload="none" — 12 MB has no
+                  business downloading itself on the page a packet link opens. */}
+              <Reveal className="mt-6">
+                <article className={cardShell}>
+                  <div className="aspect-video overflow-hidden bg-black">
+                    <video
+                      src={PREVIZ_MOVIE_URL}
+                      poster={PREVIZ_POSTER}
+                      className="h-full w-full object-cover"
+                      controls
+                      playsInline
+                      preload="none"
+                      aria-label="Mapping previz — one mapped file running across every surface in the Soleia venue model"
+                    />
+                  </div>
+                  <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
+                    <h4 className="font-display text-2xl leading-tight text-foreground">The map, running</h4>
+                    <p className="text-[14.5px] leading-relaxed text-muted-foreground">
+                      A minute through the venue model with one mapped file playing — the walls, the curves, the
+                      ceiling rays and the beachclub exteriors each taking their own slice of the same
+                      3840 × 2160 frame.
+                    </p>
+                  </div>
+                </article>
+              </Reveal>
             </section>
 
             {/* ══ 04 · THE FULL CREATIVE PACKAGE (UPGRADE) ══ */}
