@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { EventCircleback } from './EventCircleback';
-import { parseInvite } from '@/lib/meetingInvite';
+import { labelForUrl, parseInvite } from '@/lib/meetingInvite';
 import { cn } from '@/lib/utils';
 
 /**
@@ -65,6 +65,7 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [duration, setDuration] = useState('60');
+  const [zoneLabel, setZoneLabel] = useState<string | null>(null);
 
   const fetchLinks = async () => {
     const { data } = await supabase
@@ -94,10 +95,11 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
     });
   }, [links]);
 
-  /** Read a pasted invite into the form; anything it misses stays editable. */
-  const readPaste = (text: string) => {
-    setPaste(text);
-    if (!text.trim()) return;
+  /**
+   * Take whatever was pasted and fill in what it contains. Anything it misses
+   * stays editable, so a miss costs a correction rather than a wrong entry.
+   */
+  const absorb = (text: string, complainWhenEmpty: boolean) => {
     const parsed = parseInvite(text);
     if (parsed.url) setUrl(parsed.url);
     if (parsed.startsAt) {
@@ -105,18 +107,39 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
       setTime(format(parsed.startsAt, 'HH:mm'));
     }
     if (parsed.durationMinutes) setDuration(String(parsed.durationMinutes));
-    if (!parsed.url && !parsed.startsAt) {
+    setZoneLabel(parsed.timeZoneLabel);
+    if (complainWhenEmpty && !parsed.url && !parsed.startsAt) {
       toast.info('No link or time found in that paste — fill the fields below');
     }
   };
 
+  const readPaste = (text: string) => {
+    setPaste(text);
+    if (text.trim()) absorb(text, true);
+  };
+
+  /**
+   * The link box takes a whole invite too. Pasting the Zoom block straight into
+   * the field marked "Link" is the obvious thing to do, and it used to save the
+   * paragraph as the URL and pull no date at all.
+   */
+  const readLinkField = (text: string) => {
+    if (/\s/.test(text.trim())) {
+      absorb(text, false);
+      return;
+    }
+    setUrl(text);
+  };
+
   const addLink = async () => {
-    if (!label.trim() || !url.trim()) return;
+    if (!url.trim()) return;
     setSaving(true);
     const meetingAt = date && time ? new Date(`${date}T${time}`) : null;
+    // An unlabelled meeting is named after where it is held rather than being
+    // refused: the link and the time are the parts that matter.
     const { error } = await supabase.from('calendar_event_meeting_links').insert({
       event_uid: eventUid,
-      label: label.trim(),
+      label: label.trim() || labelForUrl(url.trim()),
       url: url.trim(),
       link_type: 'meeting',
       meeting_at: meetingAt ? meetingAt.toISOString() : null,
@@ -127,7 +150,7 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
       toast.error('Failed to save link');
       return;
     }
-    setPaste(''); setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60');
+    setPaste(''); setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60'); setZoneLabel(null);
     toast.success(meetingAt ? 'Meeting saved — it will show on the calendar' : 'Link saved');
     fetchLinks();
   };
@@ -163,11 +186,16 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
         <div className="grid gap-2 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Label</Label>
-            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Creative call #1" className="h-8 text-xs" />
+            <Input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder={url ? labelForUrl(url) : 'Creative call #1'}
+              className="h-8 text-xs"
+            />
           </div>
           <div className="sm:col-span-2">
             <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Link</Label>
-            <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://zoom.us/j/..." className="h-8 text-xs" />
+            <Input value={url} onChange={(e) => readLinkField(e.target.value)} placeholder="https://zoom.us/j/... or paste the whole invite" className="h-8 text-xs" />
           </div>
           <div>
             <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Date</Label>
@@ -187,10 +215,12 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
         <div className="flex items-center justify-between gap-2">
           <p className="text-[10px] text-muted-foreground/70">
             {date && time
-              ? 'Shows on the calendar in blue and warns the dashboard when it is close.'
+              ? `Shows on the calendar in blue and warns the dashboard when it is close.${
+                  zoneLabel ? ` Read as ${zoneLabel} time and shown in yours.` : ''
+                }`
               : 'Without a date and time this is just a saved link.'}
           </p>
-          <Button size="sm" onClick={addLink} disabled={saving || !label.trim() || !url.trim()} className="h-7 gap-1 px-2 text-[10px]">
+          <Button size="sm" onClick={addLink} disabled={saving || !url.trim()} className="h-7 gap-1 px-2 text-[10px]">
             {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />} Add
           </Button>
         </div>

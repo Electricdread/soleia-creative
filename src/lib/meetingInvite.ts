@@ -14,6 +14,79 @@ export interface ParsedInvite {
   url: string | null;
   startsAt: Date | null;
   durationMinutes: number | null;
+  /** The zone the invite stated, when it stated one. Null means read as local. */
+  timeZone: string | null;
+  /** How that zone was written in the paste, for showing back to the reader. */
+  timeZoneLabel: string | null;
+}
+
+/**
+ * Zones an invite actually names, and how they are written.
+ *
+ * A Zoom invite from a Pacific host says "Pacific Time (US and Canada)", and
+ * reading its 5:00 pm as local is right in Las Vegas. A client in New York
+ * sending "5:00 PM Eastern" is three hours out if the zone is ignored — the
+ * meeting would land at the wrong end of the afternoon. Two-letter forms must
+ * be uppercase and standalone so a "CT" inside a sentence is not a timezone.
+ */
+const ZONES: { zone: string; label: string; test: RegExp }[] = [
+  { zone: 'America/Los_Angeles', label: 'Pacific', test: /\bpacific\b|\bP[SD]T\b|\bPT\b/ },
+  { zone: 'America/Denver', label: 'Mountain', test: /\bmountain\b|\bM[SD]T\b|\bMT\b/ },
+  { zone: 'America/Chicago', label: 'Central', test: /\bcentral\b|\bC[SD]T\b|\bCT\b/ },
+  { zone: 'America/New_York', label: 'Eastern', test: /\beastern\b|\bE[SD]T\b|\bET\b/ },
+  { zone: 'America/Anchorage', label: 'Alaska', test: /\balaska\b|\bAK[SD]T\b/ },
+  { zone: 'Pacific/Honolulu', label: 'Hawaii', test: /\bhawaii\b|\bH[SA]T\b/ },
+  { zone: 'Europe/London', label: 'UK', test: /\blondon\b|\bBST\b|\bGMT\b/ },
+  { zone: 'Europe/Paris', label: 'Central European', test: /\bparis\b|\bCE[SD]?T\b/ },
+  { zone: 'UTC', label: 'UTC', test: /\bUTC\b|\bZulu\b/ },
+];
+
+/** The zone an invite names, if any. Case matters only for the abbreviations. */
+export function findTimeZone(text: string): { zone: string; label: string } | null {
+  const lower = text.toLowerCase();
+  for (const candidate of ZONES) {
+    // Word forms are matched case-insensitively; abbreviations are not, so a
+    // lowercase "ct" in prose cannot pass for Central Time.
+    if (candidate.test.test(text) || candidate.test.test(lower)) {
+      return { zone: candidate.zone, label: candidate.label };
+    }
+  }
+  return null;
+}
+
+/** How far `timeZone` is from UTC at a given instant, in milliseconds. */
+function offsetAt(timestamp: number, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }).formatToParts(new Date(timestamp));
+
+  const read: Record<string, string> = {};
+  for (const part of parts) read[part.type] = part.value;
+  const hour = read.hour === '24' ? '0' : read.hour;
+  const asUtc = Date.UTC(
+    Number(read.year), Number(read.month) - 1, Number(read.day),
+    Number(hour), Number(read.minute), Number(read.second),
+  );
+  return asUtc - timestamp;
+}
+
+/**
+ * The instant at which a wall-clock time in `timeZone` occurs.
+ *
+ * Resolved twice because the first offset is read at the wrong instant when the
+ * conversion crosses a daylight-saving change; the second pass settles it.
+ */
+export function wallTimeInZone(
+  year: number, month: number, day: number, hours: number, minutes: number, timeZone: string,
+): Date {
+  const naive = Date.UTC(year, month, day, hours, minutes);
+  const first = offsetAt(naive, timeZone);
+  const candidate = naive - first;
+  const second = offsetAt(candidate, timeZone);
+  return new Date(second === first ? candidate : naive - second);
 }
 
 /** Hosts worth preferring when a paste contains several links. */
@@ -57,6 +130,20 @@ function findDate(text: string): DateHit | null {
     const month = MONTHS.findIndex((m) => m.startsWith(namedHit[1].slice(0, 3).toLowerCase()));
     if (month >= 0) {
       return { year: Number(namedHit[3]), month, day: Number(namedHit[2]), index: namedHit.index };
+    }
+  }
+
+  // "5 October 2026" — Google Calendar writes this for a non-US locale, and it
+  // must not be read as May.
+  const dayFirst = new RegExp(
+    `\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTHS.map((m) => `${m.slice(0, 3)}[a-z]*`).join('|')})\\.?,?\\s+(\\d{4})`,
+    'i',
+  );
+  const dayFirstHit = dayFirst.exec(text);
+  if (dayFirstHit) {
+    const month = MONTHS.findIndex((m) => m.startsWith(dayFirstHit[2].slice(0, 3).toLowerCase()));
+    if (month >= 0) {
+      return { year: Number(dayFirstHit[3]), month, day: Number(dayFirstHit[1]), index: dayFirstHit.index };
     }
   }
 
@@ -105,16 +192,29 @@ function findTimes(text: string, from: number): TimeHit[] {
 
 export function parseInvite(text: string): ParsedInvite {
   const url = extractMeetingUrl(text);
+  const zone = findTimeZone(text);
+  const empty = {
+    url,
+    startsAt: null,
+    durationMinutes: null,
+    timeZone: zone?.zone ?? null,
+    timeZoneLabel: zone?.label ?? null,
+  };
+
   const date = findDate(text);
-  if (!date) return { url, startsAt: null, durationMinutes: null };
+  if (!date) return empty;
 
   // Prefer a time written after the date — "October 5, 2026 5:00 PM" — and
   // fall back to any time in the paste, which covers "5:00 PM on Oct 5".
   const after = findTimes(text, date.index);
   const times = after.length ? after : findTimes(text, 0);
-  if (times.length === 0) return { url, startsAt: null, durationMinutes: null };
+  if (times.length === 0) return empty;
 
-  const start = new Date(date.year, date.month, date.day, times[0].hours, times[0].minutes, 0, 0);
+  // An invite that names its zone is read in that zone; one that does not is
+  // read as local, which is what a Vegas-hosted call looks like.
+  const start = zone
+    ? wallTimeInZone(date.year, date.month, date.day, times[0].hours, times[0].minutes, zone.zone)
+    : new Date(date.year, date.month, date.day, times[0].hours, times[0].minutes, 0, 0);
 
   let durationMinutes: number | null = null;
   if (times.length > 1) {
@@ -122,7 +222,9 @@ export function parseInvite(text: string): ParsedInvite {
     // two are separated by a dash or the word "to" and little else.
     const between = text.slice(times[0].end, times[1].index);
     if (/^[\s–—-]*(to|until|till|-|–|—)?[\s]*$/i.test(between)) {
-      const end = new Date(date.year, date.month, date.day, times[1].hours, times[1].minutes, 0, 0);
+      const end = zone
+        ? wallTimeInZone(date.year, date.month, date.day, times[1].hours, times[1].minutes, zone.zone)
+        : new Date(date.year, date.month, date.day, times[1].hours, times[1].minutes, 0, 0);
       const minutes = Math.round((end.getTime() - start.getTime()) / 60000);
       if (minutes > 0 && minutes <= 12 * 60) durationMinutes = minutes;
     }
@@ -136,5 +238,22 @@ export function parseInvite(text: string): ParsedInvite {
     else if (hours) durationMinutes = Math.round(Number(hours[1]) * 60);
   }
 
-  return { url, startsAt: start, durationMinutes };
+  return { ...empty, startsAt: start, durationMinutes };
+}
+
+/**
+ * A name for a meeting nobody has labelled, taken from where it is held. The
+ * label is the row's heading on the event and on the dashboard, so "Zoom
+ * meeting" beats an empty string and beats refusing to save.
+ */
+export function labelForUrl(url: string): string {
+  const host = url.toLowerCase();
+  if (host.includes('zoom.us')) return 'Zoom meeting';
+  if (host.includes('teams.microsoft.com') || host.includes('teams.live.com')) return 'Teams meeting';
+  if (host.includes('meet.google.com')) return 'Google Meet';
+  if (host.includes('webex.com')) return 'Webex meeting';
+  if (host.includes('whereby.com')) return 'Whereby meeting';
+  if (host.includes('gotomeet')) return 'GoToMeeting';
+  if (host.includes('chime.aws')) return 'Chime meeting';
+  return 'Meeting';
 }
