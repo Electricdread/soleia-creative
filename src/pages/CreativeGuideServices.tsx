@@ -53,6 +53,13 @@ const TRANSPARENT_LOOP_URL = '/creative-guide/services/transparent-logo-loop.mp4
 const PREVIZ_MOVIE_URL = '/creative-guide/services/previz-soleia.mp4';
 const PREVIZ_POSTER = '/creative-guide/services/previz-soleia-poster.jpg';
 
+// The mapping previz: the pixel map itself running on the venue model, every
+// screen carrying its own labelled slice. Different film from the one above --
+// that shows a client's finished show, this shows the mechanism. Same rules:
+// poster, preload="none", 9 MB stays put until someone asks for it.
+const PIXELMAP_PREVIZ_MOVIE_URL = '/creative-guide/services/pixelmap-previz.mp4';
+const PIXELMAP_PREVIZ_POSTER = '/creative-guide/services/pixelmap-previz-poster.jpg';
+
 // Carried by the link, never printed: the guide is public and indexable, so
 // the address should not be sitting there as text for a scraper to lift.
 const CONTACT_HREF =
@@ -210,7 +217,7 @@ const PACKAGE_INCLUDES: {
     title: 'Pixel-perfect mapping',
     body: 'Every surface built at its own native resolution and placed in the 3840 × 2160 frame — the walls, the curves, the ceiling rays and the beachclub exteriors.',
     src: R.curvesInterior,
-    movie: PREVIZ_MOVIE_URL,
+    movie: PIXELMAP_PREVIZ_MOVIE_URL,
     alt: 'SR Curve at 2304 × 272 running alongside IMAG SR, each carrying its own slice of the frame',
   },
   {
@@ -721,28 +728,28 @@ export default function CreativeGuideServices() {
               />
               <PixelMapFold />
 
-              {/* The same idea, moving: one mapped file across every surface at
-                  once. Behind a poster and preload="none" — 12 MB has no
+              {/* The same idea, moving: the map itself across every surface at
+                  once. Behind a poster and preload="none" — 9 MB has no
                   business downloading itself on the page a packet link opens. */}
               <Reveal className="mt-6">
                 <article className={cardShell}>
                   <div className="aspect-video overflow-hidden bg-black">
                     <video
-                      src={PREVIZ_MOVIE_URL}
-                      poster={PREVIZ_POSTER}
+                      src={PIXELMAP_PREVIZ_MOVIE_URL}
+                      poster={PIXELMAP_PREVIZ_POSTER}
                       className="h-full w-full object-cover"
                       controls
                       playsInline
                       preload="none"
-                      aria-label="Mapping previz — one mapped file running across every surface in the Soleia venue model"
+                      aria-label="Mapping previz — the pixel map running across every surface in the Soleia venue model"
                     />
                   </div>
                   <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
                     <h4 className="font-display text-2xl leading-tight text-foreground">The map, running</h4>
                     <p className="text-[14.5px] leading-relaxed text-muted-foreground">
-                      A minute through the venue model with one mapped file playing — the walls, the curves, the
-                      ceiling rays and the beachclub exteriors each taking their own slice of the same
-                      3840 × 2160 frame.
+                      The map itself, running on the venue model — every screen carrying its own labelled slice
+                      of the same 3840 × 2160 frame. The walls take their rectangles, the Sol Rays fan across the
+                      ceiling, the beachclub exteriors take theirs, all from one file.
                     </p>
                   </div>
                 </article>
