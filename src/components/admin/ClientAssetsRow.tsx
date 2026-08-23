@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, FileUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { isFinalsFolder } from '@/lib/finalSlots';
+
 
 /**
  * What has arrived in a job's folders that is not a final.
@@ -11,7 +11,15 @@ import { isFinalsFolder } from '@/lib/finalSlots';
  * the PM dropped in `03_Client Asset Collect`. The job page counted these in a
  * checklist line and then gave no way to look at them, so a file could be sat
  * in Drive for a week without anyone on the job seeing it.
+ *
+ * Only the asset drop counts. A pixel map or a creative guide sitting in a
+ * sibling folder is Soleia's own material, and listing it here made the row
+ * claim assets that no client had sent.
  */
+
+/** True for `Client Asset Collect` under either of its spellings. */
+const isAssetDrop = (name: string | null) =>
+  !!name && name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().endsWith('client asset collect');
 
 interface SeenRow {
   drive_file_id: string;
@@ -58,10 +66,8 @@ export function ClientAssetsRow({ folderIds, driveUrl }: ClientAssetsRowProps) {
 
   if (rows === null) return null;
 
-  // Anything that is not a delivery: finals have their own row, and the README
-  // this project writes into the finals folder is furniture, not an asset.
   const assets = rows.filter(
-    (r) => !r.final_slot && !isFinalsFolder(r.parent_folder_name) && !/^read me/i.test(r.file_name),
+    (r) => !r.final_slot && isAssetDrop(r.parent_folder_name) && !/^read me/i.test(r.file_name),
   );
 
   if (assets.length === 0) return null;

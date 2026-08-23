@@ -29,13 +29,15 @@ export const PACKET_KIND_LABEL: Record<PacketKind, string> = {
 
 /**
  * Drive layout per version. Pre-call ships the full guide build so a client can
- * prepare; post-call assumes that groundwork is done and collects the assets
- * plus the agreed direction; custom starts from the full build and is edited.
+ * prepare; the rest only need somewhere for the client to put their brand
+ * assets. Custom used to build the full guide tree — pixel map, creative guide,
+ * finals — for packets raised to collect a logo, leaving folders to delete by
+ * hand afterwards.
  */
 export const PACKET_FOLDER_MODE: Record<PacketKind, 'full' | 'asset_only'> = {
   pre_call: 'full',
   post_call: 'asset_only',
-  custom: 'full',
+  custom: 'asset_only',
   creative_pre_call: 'asset_only',
 };
 
