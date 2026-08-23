@@ -260,6 +260,12 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
     setSaving(false);
   };
 
+  const coverHint = !coverImage
+    ? 'Add a cover — it heads the client session'
+    : coverMeta && cropsOnClient(coverMeta)
+      ? `The client's 21:9 frame — your ${coverMeta.w} × ${coverMeta.h} cover is cropped to fit it`
+      : "The client's 21:9 frame — exactly what heads their session";
+
   return (
     <>
       <div className={cn(
@@ -267,282 +273,270 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
         !isActive && "opacity-60",
         briefUnread && "brief-unread",
       )}>
-        {/* Cover preview. Covers arrive in every shape — a 19:1 title strip, a
-            16:9 still, a portrait crop — so the band takes the image's own
-            aspect ratio between a floor and a cap and contains the artwork
-            rather than cropping it to a fixed strip. The admin sees the whole
-            picture; the chips say what the client's 21:9 frame will do to it. */}
-        {coverImage && (
-          <div
-            className="relative w-full overflow-hidden bg-secondary/40 min-h-[120px] max-h-56"
-            style={{ aspectRatio: coverMeta ? `${coverMeta.w} / ${coverMeta.h}` : '21 / 9' }}
-          >
-            {/* the same image, blown up and blurred, so odd shapes sit on their
-                own colour instead of a dead letterbox */}
-            <img
-              src={coverImage.url}
-              alt=""
-              aria-hidden
-              className="absolute inset-0 h-full w-full object-cover scale-125 blur-2xl opacity-30"
-            />
-            <img
-              src={coverImage.url}
-              alt={`${session.project_name} cover`}
-              onLoad={(e) =>
-                setCoverMeta({
-                  w: e.currentTarget.naturalWidth,
-                  h: e.currentTarget.naturalHeight,
-                })
-              }
-              className="relative h-full w-full object-contain"
-            />
+        <div className="flex gap-3 p-3 sm:gap-4">
+          {/* The cover sits in the client's own 21:9 frame, at a fixed width, so
+              this thumbnail is not an approximation of the session header — it
+              is the same crop the client gets. Everything you can do to the
+              session lines up beside it. */}
+          <div className="w-40 shrink-0 sm:w-56">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="relative aspect-[21/9] w-full overflow-hidden rounded-lg border border-border/60 bg-secondary/50">
+                    {coverImage ? (
+                      <>
+                        <img
+                          src={coverImage.url}
+                          alt={`${session.project_name} cover`}
+                          onLoad={(e) =>
+                            setCoverMeta({
+                              w: e.currentTarget.naturalWidth,
+                              h: e.currentTarget.naturalHeight,
+                            })
+                          }
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 flex justify-end gap-0.5 bg-gradient-to-t from-black/70 to-transparent p-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={uploading}
+                            className="h-6 w-6 rounded-md text-white/80 hover:bg-white/15 hover:text-white"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 rounded-md text-white/80 hover:bg-destructive/80 hover:text-white"
+                            onClick={removeCover}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border/60 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+                      >
+                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                        <span className="text-[10px]">{uploading ? 'Uploading...' : 'Add cover'}</span>
+                      </button>
+                    )}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p className="text-xs">{coverHint}</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
 
-            <div className="absolute top-2 right-2 flex items-center gap-0.5 rounded-full border border-border/60 bg-background/70 p-0.5 backdrop-blur">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={uploading}
-                      className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent><p className="text-xs">Replace cover image</p></TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                      onClick={removeCover}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent><p className="text-xs">Remove cover image</p></TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-
-            {coverMeta && (
-              <div className="absolute bottom-2 left-2 flex flex-wrap items-center gap-1">
-                <span className="rounded-full border border-border/60 bg-background/70 px-2 py-0.5 text-[10px] text-muted-foreground backdrop-blur">
-                  {coverMeta.w} × {coverMeta.h} · {(coverMeta.w / coverMeta.h).toFixed(2)}:1
-                </span>
-                {cropsOnClient(coverMeta) && (
-                  <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-500 backdrop-blur">
-                    Client frame crops this to 21:9
-                  </span>
-                )}
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            {/* Title & meta */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h4 className="truncate text-sm font-medium text-foreground">
+                  {session.project_name}
+                </h4>
+                <p className="truncate text-xs text-muted-foreground">
+                  {session.client_name}
+                  {session.event_date && (
+                    <> &bull; {format(new Date(session.event_date + 'T00:00:00'), 'MMM d, yyyy')}</>
+                  )}
+                </p>
               </div>
-            )}
-          </div>
-        )}
-
-        <div className="p-3 space-y-2">
-          {/* Title & meta */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <h4 className="font-medium text-foreground truncate text-sm">
-                {session.project_name}
-              </h4>
-              <p className="text-xs text-muted-foreground truncate">
-                {session.client_name}
-                {session.event_date && (
-                  <> • {format(new Date(session.event_date + 'T00:00:00'), 'MMM d, yyyy')}</>
-                )}
-              </p>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <label className="flex flex-shrink-0 cursor-pointer items-center gap-2 rounded-md border border-border/60 bg-secondary/60 px-2.5 py-1.5">
+                      <Switch
+                        checked={isActive}
+                        onCheckedChange={handleActiveToggle}
+                      />
+                      <span className="text-xs font-medium text-foreground">Active</span>
+                    </label>
+                  </TooltipTrigger>
+                  <TooltipContent><p className="text-xs">Toggle off to disable client access to this link</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-secondary/60 border border-border/60 cursor-pointer flex-shrink-0">
-                    <Switch
-                      checked={isActive}
-                      onCheckedChange={handleActiveToggle}
-                    />
-                    <span className="text-xs font-medium text-foreground">Active</span>
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent><p className="text-xs">Toggle off to disable client access to this link</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
 
-          {session.creative_notes && (
-            <p className="text-xs text-muted-foreground/70 line-clamp-1 italic">
-              {session.creative_notes}
-            </p>
-          )}
-
-          {/* Badges */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className={cn(
-              "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
-              isActive
-                ? "bg-emerald-500/10 text-emerald-500"
-                : "bg-red-500/10 text-red-500"
-            )}>
-              <span className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-emerald-500" : "bg-red-500")} />
-              {isActive ? 'Active' : 'Inactive'}
-            </span>
-            <span className={cn(
-              "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
-              isPublic
-                ? "bg-emerald-500/10 text-emerald-500"
-                : "bg-amber-500/10 text-amber-500"
-            )}>
-              {isPublic ? <><Globe className="w-2.5 h-2.5" /> Public</> : <><Lock className="w-2.5 h-2.5" /> Private</>}
-            </span>
-            {session.is_active && <CountdownBadge eventDate={session.event_date} />}
-            {!coverImage && (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Upload className="w-2.5 h-2.5" />
-                {uploading ? 'Uploading...' : 'Cover'}
-              </button>
+            {session.creative_notes && (
+              <p className="line-clamp-1 text-xs italic text-muted-foreground/70">
+                {session.creative_notes}
+              </p>
             )}
-          </div>
 
-          {/* Actions row */}
-          <div className="flex items-center gap-1.5 pt-1 border-t border-border/30">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1">
-                    <Switch
-                      checked={isPublic}
-                      onCheckedChange={handlePublicToggle}
-                      className="scale-75"
-                    />
-                    <span className="text-[10px] text-muted-foreground">Public</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent><p className="text-xs">Public links don't require authentication</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1">
-                    <Switch
-                      checked={showPreviz}
-                      onCheckedChange={handlePrevizToggle}
-                      className="scale-75"
-                    />
-                    <span className="text-[10px] text-muted-foreground">Previz</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent><p className="text-xs">Include the Venue Previz section in this creative session</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1">
-                    <Switch
-                      checked={briefEnabled}
-                      onCheckedChange={handleBriefToggle}
-                      className="scale-75"
-                    />
-                    <span className="text-[10px] text-muted-foreground">Brief</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent><p className="text-xs">Include the creative questionnaire in this session</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            {brief && (
-              <button
-                type="button"
-                onClick={() => setBriefOpen(true)}
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full transition-colors",
-                  briefUnread
-                    // Unread is the thing worth crossing the room for, so it is
-                    // not the same size as the rest of the row's furniture.
-                    ? "bg-primary text-primary-foreground font-semibold text-[11px] px-2 py-1"
-                    : brief.submitted_at
-                      ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 text-[10px] px-1.5 py-0.5"
-                      : "bg-primary/10 text-primary hover:bg-primary/20 text-[10px] px-1.5 py-0.5"
-                )}
-              >
-                <ClipboardList className={briefUnread ? "w-3 h-3" : "w-2.5 h-2.5"} />
-                {briefUnread
-                  ? `Brief in · ${answeredCount(brief)}/7`
-                  : brief.submitted_at ? 'Brief read' : `Brief ${answeredCount(brief)}/7`}
-              </button>
-            )}
-            <div className="flex-1" />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={emailLoading}
-                    onClick={async () => {
-                      setEmailLoading(true);
-                      try {
-                        const { data, error } = await supabase.functions.invoke('generate-session-email', {
-                          body: null,
-                          method: 'GET',
-                        });
-                        // Use fetch directly since invoke doesn't support query params well
-                        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-                        const res = await fetch(`${supabaseUrl}/functions/v1/generate-session-email?token=${session.token}&type=creative`);
-                        const result = await res.json();
-                        if (result.html) {
-                          const blob = new Blob([result.html], { type: 'text/html' });
-                          const item = new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([result.html], { type: 'text/plain' }) });
-                          await navigator.clipboard.write([item]);
-                          toast.success('Email template copied — paste into your email client');
-                        } else {
-                          toast.error('Failed to generate email');
-                        }
-                      } catch (err) {
-                        console.error(err);
-                        toast.error('Failed to generate email template');
-                      }
-                      setEmailLoading(false);
-                    }}
-                    className="h-7 w-7 p-0"
-                  >
-                    {emailLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent><p className="text-xs">Copy branded email template to clipboard</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <Button size="sm" variant="outline" onClick={openEditDialog} className="h-7 text-xs gap-1 px-2">
-              <Pencil className="w-3 h-3" /> Edit
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => onCopyLink(session.token)} className="h-7 text-xs gap-1 px-2">
-              <Link2 className="w-3 h-3" /> Copy Link
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => onOpen(session.token)} className="h-7 w-7 p-0">
-              <ExternalLink className="w-3 h-3" />
-            </Button>
-            <div className="w-px h-5 bg-border/50 mx-1" />
-            <DeleteConfirmDialog
-              trigger={
-                <Button size="sm" variant="ghost" className="h-7 w-7 p-0 ml-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
-                  <Trash2 className="w-3 h-3" />
+            {/* State the session is in */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className={cn(
+                "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
+                isActive
+                  ? "bg-emerald-500/10 text-emerald-500"
+                  : "bg-red-500/10 text-red-500"
+              )}>
+                <span className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-emerald-500" : "bg-red-500")} />
+                {isActive ? 'Active' : 'Inactive'}
+              </span>
+              <span className={cn(
+                "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
+                isPublic
+                  ? "bg-emerald-500/10 text-emerald-500"
+                  : "bg-amber-500/10 text-amber-500"
+              )}>
+                {isPublic ? <><Globe className="w-2.5 h-2.5" /> Public</> : <><Lock className="w-2.5 h-2.5" /> Private</>}
+              </span>
+              {session.is_active && <CountdownBadge eventDate={session.event_date} />}
+              {brief && (
+                <button
+                  type="button"
+                  onClick={() => setBriefOpen(true)}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full transition-colors",
+                    briefUnread
+                      // Unread is the thing worth crossing the room for, so it is
+                      // not the same size as the rest of the row's furniture.
+                      ? "bg-primary text-primary-foreground font-semibold text-[11px] px-2 py-1"
+                      : brief.submitted_at
+                        ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 text-[10px] px-1.5 py-0.5"
+                        : "bg-primary/10 text-primary hover:bg-primary/20 text-[10px] px-1.5 py-0.5"
+                  )}
+                >
+                  <ClipboardList className={briefUnread ? "w-3 h-3" : "w-2.5 h-2.5"} />
+                  {briefUnread
+                    ? `Brief in · ${answeredCount(brief)}/7`
+                    : brief.submitted_at ? 'Brief read' : `Brief ${answeredCount(brief)}/7`}
+                </button>
+              )}
+            </div>
+
+            {/* What the session includes, and what you can do with it. Delete is
+                deliberately the far side of a gap and a rule: it is the one
+                control here that cannot be undone. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border/30 pt-2">
+              <div className="flex items-center gap-3 rounded-md border border-border/50 bg-secondary/40 px-2.5 py-1.5">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="flex cursor-pointer items-center gap-1.5">
+                        <Switch
+                          checked={isPublic}
+                          onCheckedChange={handlePublicToggle}
+                          className="scale-75"
+                        />
+                        <span className="text-[11px] text-muted-foreground">Public</span>
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent><p className="text-xs">Public links don't require authentication</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="flex cursor-pointer items-center gap-1.5">
+                        <Switch
+                          checked={showPreviz}
+                          onCheckedChange={handlePrevizToggle}
+                          className="scale-75"
+                        />
+                        <span className="text-[11px] text-muted-foreground">Previz</span>
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent><p className="text-xs">Include the Venue Previz section in this creative session</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="flex cursor-pointer items-center gap-1.5">
+                        <Switch
+                          checked={briefEnabled}
+                          onCheckedChange={handleBriefToggle}
+                          className="scale-75"
+                        />
+                        <span className="text-[11px] text-muted-foreground">Brief</span>
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent><p className="text-xs">Include the creative questionnaire in this session</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={emailLoading}
+                        onClick={async () => {
+                          setEmailLoading(true);
+                          try {
+                            const { data, error } = await supabase.functions.invoke('generate-session-email', {
+                              body: null,
+                              method: 'GET',
+                            });
+                            // Use fetch directly since invoke doesn't support query params well
+                            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                            const res = await fetch(`${supabaseUrl}/functions/v1/generate-session-email?token=${session.token}&type=creative`);
+                            const result = await res.json();
+                            if (result.html) {
+                              const blob = new Blob([result.html], { type: 'text/html' });
+                              const item = new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([result.html], { type: 'text/plain' }) });
+                              await navigator.clipboard.write([item]);
+                              toast.success('Email template copied — paste into your email client');
+                            } else {
+                              toast.error('Failed to generate email');
+                            }
+                          } catch (err) {
+                            console.error(err);
+                            toast.error('Failed to generate email template');
+                          }
+                          setEmailLoading(false);
+                        }}
+                        className="h-7 w-7 p-0"
+                      >
+                        {emailLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p className="text-xs">Copy branded email template to clipboard</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <Button size="sm" variant="outline" onClick={openEditDialog} className="h-7 gap-1 px-2 text-xs">
+                  <Pencil className="w-3 h-3" /> Edit
                 </Button>
-              }
-              title="Delete Creative Session?"
-              description={`This will permanently delete "${session.project_name}" and all its mood board items, scenes, and uploaded files. This action cannot be undone.`}
-              onConfirm={() => onDelete(session.id)}
-            />
+                <Button size="sm" variant="outline" onClick={() => onCopyLink(session.token)} className="h-7 gap-1 px-2 text-xs">
+                  <Link2 className="w-3 h-3" /> Copy Link
+                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" variant="outline" onClick={() => onOpen(session.token)} className="h-7 w-7 p-0">
+                        <ExternalLink className="w-3 h-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p className="text-xs">Open the client session in a new tab</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              <div className="ml-auto flex items-center gap-2 border-l border-border/40 pl-4 sm:pl-8">
+                <DeleteConfirmDialog
+                  trigger={
+                    <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                      <Trash2 className="w-3 h-3" /> Delete
+                    </Button>
+                  }
+                  title="Delete Creative Session?"
+                  description={`This will permanently delete "${session.project_name}" and all its mood board items, scenes, and uploaded files. This action cannot be undone.`}
+                  onConfirm={() => onDelete(session.id)}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
