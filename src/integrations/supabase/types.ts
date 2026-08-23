@@ -650,6 +650,7 @@ export type Database = {
           final_slot: string | null
           id: string
           mime_type: string | null
+          missing_since: string | null
           notified: boolean
           notified_at: string | null
           parent_folder_id: string | null
@@ -666,6 +667,7 @@ export type Database = {
           final_slot?: string | null
           id?: string
           mime_type?: string | null
+          missing_since?: string | null
           notified?: boolean
           notified_at?: string | null
           parent_folder_id?: string | null
@@ -682,6 +684,7 @@ export type Database = {
           final_slot?: string | null
           id?: string
           mime_type?: string | null
+          missing_since?: string | null
           notified?: boolean
           notified_at?: string | null
           parent_folder_id?: string | null
