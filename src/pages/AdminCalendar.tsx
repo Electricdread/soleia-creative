@@ -437,6 +437,7 @@ export default function AdminCalendar() {
                     onStatusChange={handleStatusChange}
                     proposalStatuses={proposalsByEvent[selectedEvent.uid]}
                     deadlineInfo={deadlinesByEvent[selectedEvent.uid] || null}
+                    onMeetingsChanged={fetchMeetings}
                   />
                 </div>
               </div>

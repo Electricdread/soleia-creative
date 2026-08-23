@@ -94,6 +94,10 @@ const MEETING_HOSTS = [
   /zoom\.us\/j\//i,
   /zoom\.us\/my\//i,
   /teams\.microsoft\.com\/l\/meetup-join/i,
+  // Teams' current share link, which is not the /l/meetup-join/ form the
+  // desktop client used to hand out.
+  /teams\.microsoft\.com\/meet\//i,
+  /teams\.microsoft\.com\/dl\/launcher/i,
   /teams\.live\.com\/meet/i,
   /meet\.google\.com\//i,
   /webex\.com\/(meet|join)/i,

@@ -116,4 +116,23 @@ https://teams.microsoft.com/l/meetup-join/19%3ameeting_abc/0`;
     expect(saved.getTime()).toBe(parsed.startsAt!.getTime());
     expect(parsed.durationMinutes).toBe(45);
   });
+
+  it("prefers Teams' current share link over other links in the paste", () => {
+    // The real link saved for the NCAN opening reception: teams.microsoft.com
+    // /meet/<id>, not the /l/meetup-join/ form the desktop client used to give.
+    const paste = [
+      'Agenda https://docs.google.com/document/d/abc',
+      'Join https://teams.microsoft.com/meet/283652527550095?p=SqZYx1QEDvtoMPSI48',
+    ].join('\n');
+    expect(extractMeetingUrl(paste)).toBe('https://teams.microsoft.com/meet/283652527550095?p=SqZYx1QEDvtoMPSI48');
+    expect(labelForUrl('https://teams.microsoft.com/meet/283652527550095')).toBe('Teams meeting');
+  });
+
+  it('returns no time for a bare Teams link, because it carries none', () => {
+    // Worth pinning: this is why such a meeting draws nothing until a time is
+    // set by hand, rather than a parser bug to chase.
+    const parsed = parseInvite('https://teams.microsoft.com/meet/283652527550095?p=SqZYx1QEDvtoMPSI48');
+    expect(parsed.url).toContain('teams.microsoft.com/meet/');
+    expect(parsed.startsAt).toBeNull();
+  });
 });

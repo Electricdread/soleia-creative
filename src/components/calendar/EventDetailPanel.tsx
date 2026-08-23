@@ -41,9 +41,11 @@ interface EventDetailPanelProps {
   onStatusChange: (uid: string, status: EventStatus) => void;
   proposalStatuses?: ProposalStatusInfo[];
   deadlineInfo?: { content_deadline: string; reminder_days: number } | null;
+  /** Raised when a meeting is added, timed or removed, so the grid can redraw. */
+  onMeetingsChanged?: () => void;
 }
 
-export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses, deadlineInfo }: EventDetailPanelProps) {
+export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses, deadlineInfo, onMeetingsChanged }: EventDetailPanelProps) {
   const displayStatus = statusOverride || mapIcalStatus(event.status);
   const daysUntilDeadline = deadlineInfo ? differenceInCalendarDays(new Date(deadlineInfo.content_deadline), new Date()) : null;
 
@@ -210,7 +212,11 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
             <EventPacket eventUid={event.uid} summary={event.summary} dtstart={event.dtstart} />
           </TabsContent>
           <TabsContent value="meetings" className="p-4 mt-0">
-            <EventMeetingLinks eventUid={event.uid} />
+            <EventMeetingLinks
+              eventUid={event.uid}
+              eventStart={event.dtstart}
+              onChanged={onMeetingsChanged}
+            />
           </TabsContent>
           <TabsContent value="delivery" className="p-4 mt-0">
             <EventDelivery eventUid={event.uid} />

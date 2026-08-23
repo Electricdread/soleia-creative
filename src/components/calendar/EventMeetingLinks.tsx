@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Plus, Trash2, Video, Copy, ClipboardPaste, CalendarClock } from 'lucide-react';
+import { Loader2, Plus, Trash2, Video, Copy, ClipboardPaste, CalendarClock, AlertTriangle, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
@@ -54,7 +54,15 @@ function meetingState(link: MeetingLink): { tone: 'live' | 'soon' | 'upcoming' |
   return { tone: 'upcoming', text: `in ${Math.round(minutes / (24 * 60))}d` };
 }
 
-export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
+interface EventMeetingLinksProps {
+  eventUid: string;
+  /** The booking's own start, used to offer its date to a meeting with none. */
+  eventStart?: string;
+  /** Fired whenever the set of timed meetings changes, so the grid can redraw. */
+  onChanged?: () => void;
+}
+
+export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeetingLinksProps) {
   const [links, setLinks] = useState<MeetingLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -66,6 +74,20 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
   const [time, setTime] = useState('');
   const [duration, setDuration] = useState('60');
   const [zoneLabel, setZoneLabel] = useState<string | null>(null);
+
+  // A meeting saved without a time draws nothing on the calendar, and a link
+  // pasted on its own carries no time to find — so it has to be possible to
+  // give one to a meeting that is already saved.
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editTime, setEditTime] = useState('');
+  const [editDuration, setEditDuration] = useState('60');
+  const [savingTime, setSavingTime] = useState(false);
+
+  const eventDay = (() => {
+    if (!eventStart) return '';
+    try { return format(parseISO(eventStart), 'yyyy-MM-dd'); } catch { return ''; }
+  })();
 
   const fetchLinks = async () => {
     const { data } = await supabase
@@ -82,8 +104,10 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
   // Upcoming first, then anything undated, then what has already happened.
   const ordered = useMemo(() => {
     const rank = (l: MeetingLink) => {
-      if (!l.meeting_at) return 1;
-      return new Date(l.meeting_at).getTime() >= Date.now() ? 0 : 2;
+      // Undated first: it is the one that is not on the calendar and the one
+      // somebody has to finish.
+      if (!l.meeting_at) return 0;
+      return new Date(l.meeting_at).getTime() >= Date.now() ? 1 : 2;
     };
     return [...links].sort((a, b) => {
       const byRank = rank(a) - rank(b);
@@ -151,13 +175,53 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
       return;
     }
     setPaste(''); setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60'); setZoneLabel(null);
-    toast.success(meetingAt ? 'Meeting saved — it will show on the calendar' : 'Link saved');
+    toast.success(
+      meetingAt
+        ? 'Meeting saved — it is on the calendar'
+        : 'Link saved. Give it a date and time to put it on the calendar.',
+    );
     fetchLinks();
+    onChanged?.();
+  };
+
+  const startEditing = (link: MeetingLink) => {
+    setEditingId(link.id);
+    if (link.meeting_at) {
+      const at = parseISO(link.meeting_at);
+      setEditDate(format(at, 'yyyy-MM-dd'));
+      setEditTime(format(at, 'HH:mm'));
+    } else {
+      // Most meetings about an event are not on the day of the event, so the
+      // date is offered rather than assumed, and the time is left blank.
+      setEditDate(eventDay);
+      setEditTime('');
+    }
+    setEditDuration(String(link.duration_minutes ?? 60));
+  };
+
+  const saveTime = async () => {
+    if (!editingId || !editDate || !editTime) return;
+    setSavingTime(true);
+    const at = new Date(`${editDate}T${editTime}`);
+    const { error } = await supabase
+      .from('calendar_event_meeting_links')
+      .update({ meeting_at: at.toISOString(), duration_minutes: Number(editDuration) || 60 })
+      .eq('id', editingId);
+    setSavingTime(false);
+    if (error) {
+      toast.error('Could not save the time');
+      return;
+    }
+    setEditingId(null);
+    toast.success('Meeting time set — it is on the calendar now');
+    fetchLinks();
+    onChanged?.();
   };
 
   const deleteLink = async (id: string) => {
     await supabase.from('calendar_event_meeting_links').delete().eq('id', id);
     fetchLinks();
+    onChanged?.();
   };
 
   const copyUrl = (value: string) => {
@@ -168,6 +232,48 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
   if (loading) {
     return <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>;
   }
+
+  const timeEditor = (link: MeetingLink) => (
+    <div className="mt-2 flex flex-wrap items-end gap-2 border-t border-border/40 pt-2">
+      <div>
+        <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Date</Label>
+        <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="h-8 w-auto text-xs" />
+      </div>
+      <div>
+        <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Time</Label>
+        <Input type="time" value={editTime} onChange={(e) => setEditTime(e.target.value)} className="h-8 w-auto text-xs" />
+      </div>
+      <div className="w-20">
+        <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Mins</Label>
+        <Input type="number" min={5} step={5} value={editDuration} onChange={(e) => setEditDuration(e.target.value)} className="h-8 text-xs" />
+      </div>
+      <Button
+        size="sm"
+        onClick={saveTime}
+        disabled={savingTime || !editDate || !editTime}
+        className="h-8 gap-1 px-2 text-[11px]"
+      >
+        {savingTime ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Save
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => setEditingId(null)}
+        className="h-8 gap-1 px-2 text-[11px] text-muted-foreground"
+      >
+        <X className="h-3 w-3" /> Cancel
+      </Button>
+      {!link.meeting_at && eventDay && (
+        <button
+          type="button"
+          onClick={() => setEditDate(eventDay)}
+          className="h-8 self-end rounded-md border border-border px-2 text-[10px] text-muted-foreground hover:text-foreground"
+        >
+          Use the event date
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-5">
@@ -213,13 +319,26 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
           </div>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[10px] text-muted-foreground/70">
-            {date && time
-              ? `Shows on the calendar in blue and warns the dashboard when it is close.${
-                  zoneLabel ? ` Read as ${zoneLabel} time and shown in yours.` : ''
-                }`
-              : 'Without a date and time this is just a saved link.'}
-          </p>
+          {date && time ? (
+            <p className="text-[10px] text-muted-foreground/70">
+              Shows on the calendar in blue and warns the dashboard when it is close.
+              {zoneLabel ? ` Read as ${zoneLabel} time and shown in yours.` : ''}
+            </p>
+          ) : (
+            <p className="flex flex-wrap items-center gap-1.5 text-[10px] text-amber-500">
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              A Teams or Zoom link on its own carries no time — without one this will not appear on the calendar.
+              {eventDay && (
+                <button
+                  type="button"
+                  onClick={() => setDate(eventDay)}
+                  className="rounded-full border border-amber-500/40 px-1.5 py-0.5 text-amber-500 hover:bg-amber-500/10"
+                >
+                  Use the event date
+                </button>
+              )}
+            </p>
+          )}
           <Button size="sm" onClick={addLink} disabled={saving || !url.trim()} className="h-7 gap-1 px-2 text-[10px]">
             {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />} Add
           </Button>
@@ -232,8 +351,8 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
         {ordered.map((link) => {
           const state = meetingState(link);
           return (
+            <div key={link.id}>
             <div
-              key={link.id}
               className={cn(
                 'group flex items-center gap-3 rounded-lg border border-l-[3px] border-border bg-muted/30 p-3',
                 state?.tone === 'live' ? 'border-l-blue-500 bg-blue-500/5'
@@ -258,13 +377,24 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
                   )}
                 </div>
                 {link.meeting_at ? (
-                  <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <button
+                    type="button"
+                    onClick={() => startEditing(link)}
+                    className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+                  >
                     <CalendarClock className="h-3 w-3" />
                     {format(parseISO(link.meeting_at), 'EEE, MMM d')} · {format(parseISO(link.meeting_at), 'h:mm a')}
                     {link.duration_minutes ? ` · ${link.duration_minutes}m` : ''}
-                  </p>
+                  </button>
                 ) : (
-                  <p className="truncate text-[10px] text-muted-foreground/60">{link.url}</p>
+                  <button
+                    type="button"
+                    onClick={() => startEditing(link)}
+                    className="flex items-center gap-1 text-[11px] text-amber-500 hover:underline"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    No time yet — not on the calendar. Set one.
+                  </button>
                 )}
               </div>
 
@@ -288,6 +418,8 @@ export function EventMeetingLinks({ eventUid }: { eventUid: string }) {
                 description={`This will permanently remove "${link.label}". This action cannot be undone.`}
                 onConfirm={() => deleteLink(link.id)}
               />
+            </div>
+            {editingId === link.id && timeEditor(link)}
             </div>
           );
         })}
