@@ -2,7 +2,7 @@ import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { X, MapPin, Clock, Calendar as CalendarIcon, FileText, User, ChevronDown, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { EventNotes } from './EventNotes';
@@ -155,9 +155,11 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
 
       {/* Tabs */}
       <Tabs defaultValue="details" className="flex-1 flex flex-col min-h-0">
+        {/* The tabs wrap rather than scroll: a panel this narrow put Docs off
+            the right edge, where a horizontal scrollbar nobody looks for was
+            the only way to reach it. */}
         <div className="border-b border-border bg-muted/50 shrink-0 px-1">
-          <ScrollArea className="w-full">
-            <TabsList className="inline-flex h-10 w-max gap-0 bg-transparent p-0">
+          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-0 bg-transparent p-0">
               {/* The order a job actually moves in: read the brief, send the
                   packet, hold the call, take delivery. Notes, tasks and docs
                   are the working material and sit after it. */}
@@ -173,14 +175,12 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground text-muted-foreground px-3 py-2 text-xs font-medium whitespace-nowrap min-h-0 h-auto"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground text-muted-foreground px-2.5 py-2 text-xs font-medium whitespace-nowrap min-h-0 h-auto"
                 >
                   {tab.label}
                 </TabsTrigger>
               ))}
-            </TabsList>
-            <ScrollBar orientation="horizontal" className="h-1" />
-          </ScrollArea>
+          </TabsList>
         </div>
 
         <div className="flex-1 overflow-y-auto">

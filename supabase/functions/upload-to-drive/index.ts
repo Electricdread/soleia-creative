@@ -1,5 +1,11 @@
 // Upload a file to Google Drive via the connector gateway.
-// Stores originals in a "Soleia Originals/<YYYY-Q#>" folder.
+//
+// By default a file lands in "Soleia Originals/<YYYY-Q#>" — cold storage for
+// clip masters. Pass `folderId` to put it in a job's own folder instead, and
+// `assetCollect=true` to put it in that job's client asset drop, which is where
+// a document attached to a calendar event belongs: the client is already
+// looking in there.
+//
 // Returns { fileId, webViewLink, folderId }.
 
 const corsHeaders = {
@@ -80,6 +86,38 @@ async function findOrCreateFolder(
   return created.id;
 }
 
+/** Lowercase, punctuation to spaces — the asset drop is spelled two ways. */
+const normalise = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+
+/**
+ * The client asset drop inside a job folder, under either of its spellings —
+ * `03_Client Asset Collect` or `Client Asset Collect`.
+ *
+ * When there is no such child this returns the job folder itself rather than
+ * creating one: a second asset folder beside the one the client is already
+ * uploading to is the failure this project has had twice.
+ */
+async function assetCollectFolder(
+  jobFolderId: string,
+  lovableKey: string,
+  driveKey: string,
+): Promise<string> {
+  const q = encodeURIComponent(
+    `mimeType='application/vnd.google-apps.folder' and '${jobFolderId}' in parents and trashed=false`,
+  );
+  const list = await gatewayJson(
+    `/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=100`,
+    { method: 'GET' },
+    lovableKey,
+    driveKey,
+  );
+  const hit = (list?.files ?? []).find((f: { name: string }) =>
+    normalise(f.name).endsWith('client asset collect'),
+  );
+  return hit?.id ?? jobFolderId;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -109,8 +147,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    const rootId = await findOrCreateFolder('Soleia Originals', null, lovableKey, driveKey);
-    const quarterId = await findOrCreateFolder(quarterFolderName(), rootId, lovableKey, driveKey);
+    // A caller that names a folder gets that folder; everything else keeps
+    // landing in the quarterly originals bucket.
+    const requestedFolder = String(form.get('folderId') || '').trim();
+    const wantAssetCollect = String(form.get('assetCollect') || '') === 'true';
+
+    let quarterId: string;
+    if (requestedFolder) {
+      quarterId = wantAssetCollect
+        ? await assetCollectFolder(requestedFolder, lovableKey, driveKey)
+        : requestedFolder;
+    } else {
+      const rootId = await findOrCreateFolder('Soleia Originals', null, lovableKey, driveKey);
+      quarterId = await findOrCreateFolder(quarterFolderName(), rootId, lovableKey, driveKey);
+    }
 
     // Multipart upload
     const boundary = '----soleia-' + crypto.randomUUID();

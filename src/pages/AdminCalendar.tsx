@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Settings2, Save, Search, Clock, AlertTriangle, Video } from 'lucide-react';
 import { toast } from 'sonner';
@@ -39,6 +40,8 @@ interface MeetingOnCalendar {
   label: string;
   url: string;
   meeting_at: string;
+  duration_minutes: number | null;
+  attendees: string[] | null;
 }
 
 export default function AdminCalendar() {
@@ -57,6 +60,7 @@ export default function AdminCalendar() {
   const [proposalsByEvent, setProposalsByEvent] = useState<Record<string, ProposalInfo[]>>({});
   const [deadlinesByEvent, setDeadlinesByEvent] = useState<Record<string, { content_deadline: string; reminder_days: number }>>({});
   const [meetingsByDate, setMeetingsByDate] = useState<Record<string, MeetingOnCalendar[]>>({});
+  const [openMeetingCard, setOpenMeetingCard] = useState<MeetingOnCalendar | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
@@ -112,12 +116,12 @@ export default function AdminCalendar() {
   const fetchMeetings = async () => {
     const { data } = await supabase
       .from('calendar_event_meeting_links')
-      .select('id, event_uid, label, url, meeting_at')
+      .select('id, event_uid, label, url, meeting_at, duration_minutes, attendees')
       .not('meeting_at', 'is', null)
       .order('meeting_at');
     if (!data) return;
     const map: Record<string, MeetingOnCalendar[]> = {};
-    for (const m of data as MeetingOnCalendar[]) {
+    for (const m of data as unknown as MeetingOnCalendar[]) {
       const key = format(parseISO(m.meeting_at), 'yyyy-MM-dd');
       (map[key] ??= []).push(m);
     }
@@ -227,16 +231,15 @@ export default function AdminCalendar() {
 
   const goToToday = () => { setCurrentMonth(new Date()); };
 
-  // Clicking a meeting opens the booking it belongs to. A meeting attached to
-  // an event outside the loaded feed has nowhere to open, so it launches
-  // instead — which is the other thing anyone wants from it.
-  const openMeeting = (meeting: MeetingOnCalendar) => {
+  // A meeting is not the booking. Clicking one shows the call — when it is,
+  // who is on it, and the button that joins it — rather than opening the
+  // event's whole working panel underneath.
+  const openMeeting = (meeting: MeetingOnCalendar) => setOpenMeetingCard(meeting);
+
+  const openMeetingsBooking = (meeting: MeetingOnCalendar) => {
     const parent = events.find((e) => e.uid === meeting.event_uid);
-    if (parent) {
-      setSelectedEvent(parent);
-      return;
-    }
-    window.open(meeting.url, '_blank', 'noopener,noreferrer');
+    setOpenMeetingCard(null);
+    if (parent) setSelectedEvent(parent);
   };
 
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -424,6 +427,67 @@ export default function AdminCalendar() {
                 </div>
               </div>
             </div>
+
+            <Dialog open={!!openMeetingCard} onOpenChange={(o) => !o && setOpenMeetingCard(null)}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-base">
+                    <Video className="h-4 w-4 text-blue-500" />
+                    {openMeetingCard?.label}
+                  </DialogTitle>
+                </DialogHeader>
+                {openMeetingCard && (
+                  <div className="space-y-3">
+                    <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-3">
+                      <p className="text-sm font-medium text-foreground">
+                        {format(parseISO(openMeetingCard.meeting_at), 'EEEE, MMMM d, yyyy')}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {format(parseISO(openMeetingCard.meeting_at), 'h:mm a')}
+                        {openMeetingCard.duration_minutes ? ` · ${openMeetingCard.duration_minutes} minutes` : ''}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Attendees
+                      </p>
+                      {openMeetingCard.attendees?.length ? (
+                        <ul className="space-y-1">
+                          {openMeetingCard.attendees.map((person) => (
+                            <li key={person}>
+                              <a href={`mailto:${person}`} className="text-xs text-primary hover:underline">
+                                {person}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-muted-foreground/60">
+                          None listed — paste the invite with its addresses, or add them on the event.
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <Button
+                        onClick={() => window.open(openMeetingCard.url, '_blank', 'noopener,noreferrer')}
+                        className="gap-1.5 bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        <Video className="h-4 w-4" /> Join the meeting
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => openMeetingsBooking(openMeetingCard)}
+                        className="text-xs"
+                      >
+                        Open the booking
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
 
             {/* Detail Panel */}
             {selectedEvent && (

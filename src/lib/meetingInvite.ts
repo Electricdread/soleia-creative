@@ -18,6 +18,31 @@ export interface ParsedInvite {
   timeZone: string | null;
   /** How that zone was written in the paste, for showing back to the reader. */
   timeZoneLabel: string | null;
+  /** Addresses the invite lists, minus the robots. */
+  attendees: string[];
+}
+
+/**
+ * Addresses that are in every invite and are nobody's colleague. Calendar
+ * robots and reply-to boxes would otherwise fill the attendee list on a card
+ * whose whole job is to say who is actually on the call.
+ */
+const NOT_A_PERSON = /(no-?reply|do-?not-?reply|calendar-notification|invitations?@|bounces?@|mailer-daemon|notifications?@zoom|@resource\.calendar\.google\.com)/i;
+
+/** Every address in the paste that belongs to a person, in the order given. */
+export function extractAttendees(text: string): string[] {
+  const found = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [];
+  const seen = new Set<string>();
+  const people: string[] = [];
+  for (const raw of found) {
+    const address = raw.replace(/[.,;:)]+$/, '');
+    const key = address.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (NOT_A_PERSON.test(address)) continue;
+    people.push(address);
+  }
+  return people;
 }
 
 /**
@@ -203,6 +228,7 @@ export function parseInvite(text: string): ParsedInvite {
     durationMinutes: null,
     timeZone: zone?.zone ?? null,
     timeZoneLabel: zone?.label ?? null,
+    attendees: extractAttendees(text),
   };
 
   const date = findDate(text);

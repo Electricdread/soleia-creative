@@ -243,7 +243,7 @@ export function EventBrief({ eventUid, summary, dtstart, dtend, location }: Even
 
       <div className="grid gap-2.5 sm:grid-cols-2">
         <Field label="Group Name" className="sm:col-span-2">
-          <Input value={row.group_name} onChange={(e) => set('group_name', e.target.value)} className="h-8 text-xs" placeholder="NCAN *National College Attainment Network" />
+          <Input value={row.group_name} onChange={(e) => set('group_name', e.target.value)} className="h-8 text-xs" />
         </Field>
         <Field label="Event Date">
           <Input value={row.event_date_text} onChange={(e) => set('event_date_text', e.target.value)} className="h-8 text-xs" placeholder="Monday, October 5, 2026" />
@@ -295,7 +295,6 @@ export function EventBrief({ eventUid, summary, dtstart, dtend, location }: Even
           onChange={(e) => set('additional_notes', e.target.value)}
           rows={7}
           className="text-xs leading-relaxed"
-          placeholder={'3pm public pool closure\nNCAN is a non-profit that works with high school and college kids.\nNo theme — keep to the conference logos and organization colours.'}
         />
       </Field>
     </div>

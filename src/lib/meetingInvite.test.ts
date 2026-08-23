@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractMeetingUrl, labelForUrl, parseInvite, wallTimeInZone } from './meetingInvite';
+import { extractAttendees, extractMeetingUrl, labelForUrl, parseInvite, wallTimeInZone } from './meetingInvite';
 
 const local = (d: Date | null) =>
   d
@@ -134,5 +134,28 @@ https://teams.microsoft.com/l/meetup-join/19%3ameeting_abc/0`;
     const parsed = parseInvite('https://teams.microsoft.com/meet/283652527550095?p=SqZYx1QEDvtoMPSI48');
     expect(parsed.url).toContain('teams.microsoft.com/meet/');
     expect(parsed.startsAt).toBeNull();
+  });
+
+  it('lists the people on the invite and none of the robots', () => {
+    const paste = [
+      'Required: luis@soleiacreative.app; matthew@ncan.org',
+      'Optional: producer@525productions.com',
+      'noreply@teams.microsoft.com sent this invitation',
+      'calendar-notification@google.com',
+    ].join('\n');
+    expect(extractAttendees(paste)).toEqual([
+      'luis@soleiacreative.app',
+      'matthew@ncan.org',
+      'producer@525productions.com',
+    ]);
+  });
+
+  it('does not list the same person twice or keep trailing punctuation', () => {
+    expect(extractAttendees('a@b.com, a@B.com; c@d.com.')).toEqual(['a@b.com', 'c@d.com']);
+  });
+
+  it('carries attendees through parseInvite', () => {
+    const parsed = parseInvite('Oct 5, 2026 5:00 PM with matthew@ncan.org https://teams.microsoft.com/meet/1');
+    expect(parsed.attendees).toEqual(['matthew@ncan.org']);
   });
 });

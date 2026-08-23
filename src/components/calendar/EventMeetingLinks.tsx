@@ -31,8 +31,13 @@ interface MeetingLink {
   link_type: string;
   meeting_at: string | null;
   duration_minutes: number | null;
+  attendees: string[] | null;
   created_at: string;
 }
+
+/** "a@b.com, c@d.com" as typed, or as an invite listed them. */
+const splitAttendees = (value: string): string[] =>
+  value.split(/[,;\n]/).map((s) => s.trim()).filter(Boolean);
 
 const MINUTE = 60 * 1000;
 
@@ -73,6 +78,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [duration, setDuration] = useState('60');
+  const [attendees, setAttendees] = useState('');
   const [zoneLabel, setZoneLabel] = useState<string | null>(null);
 
   // A meeting saved without a time draws nothing on the calendar, and a link
@@ -95,7 +101,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
       .select('*')
       .eq('event_uid', eventUid)
       .order('created_at', { ascending: false });
-    setLinks((data as MeetingLink[]) || []);
+    setLinks((data as unknown as MeetingLink[]) || []);
     setLoading(false);
   };
 
@@ -131,6 +137,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
       setTime(format(parsed.startsAt, 'HH:mm'));
     }
     if (parsed.durationMinutes) setDuration(String(parsed.durationMinutes));
+    if (parsed.attendees.length) setAttendees(parsed.attendees.join(', '));
     setZoneLabel(parsed.timeZoneLabel);
     if (complainWhenEmpty && !parsed.url && !parsed.startsAt) {
       toast.info('No link or time found in that paste — fill the fields below');
@@ -161,6 +168,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
     const meetingAt = date && time ? new Date(`${date}T${time}`) : null;
     // An unlabelled meeting is named after where it is held rather than being
     // refused: the link and the time are the parts that matter.
+    const people = splitAttendees(attendees);
     const { error } = await supabase.from('calendar_event_meeting_links').insert({
       event_uid: eventUid,
       label: label.trim() || labelForUrl(url.trim()),
@@ -168,13 +176,14 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
       link_type: 'meeting',
       meeting_at: meetingAt ? meetingAt.toISOString() : null,
       duration_minutes: meetingAt ? Number(duration) || 60 : null,
-    });
+      attendees: people.length ? people : null,
+    } as never);
     setSaving(false);
     if (error) {
       toast.error('Failed to save link');
       return;
     }
-    setPaste(''); setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60'); setZoneLabel(null);
+    setPaste(''); setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60'); setAttendees(''); setZoneLabel(null);
     toast.success(
       meetingAt
         ? 'Meeting saved — it is on the calendar'
@@ -302,6 +311,15 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
           <div className="sm:col-span-2">
             <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Link</Label>
             <Input value={url} onChange={(e) => readLinkField(e.target.value)} placeholder="https://zoom.us/j/... or paste the whole invite" className="h-8 text-xs" />
+          </div>
+          <div className="sm:col-span-2">
+            <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Attendees</Label>
+            <Input
+              value={attendees}
+              onChange={(e) => setAttendees(e.target.value)}
+              placeholder="pulled from the invite, or type addresses separated by commas"
+              className="h-8 text-xs"
+            />
           </div>
           <div>
             <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Date</Label>
