@@ -16,6 +16,7 @@ import { useJobs } from '@/hooks/useJobs';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
 import { FinalsRow } from '@/components/admin/FinalsRow';
+import { ClientAssetsRow } from '@/components/admin/ClientAssetsRow';
 import {
   stageFor, flagsFor, daysUntil, CREATIVE_STAGES, IN_HOUSE_STAGES, STAGE_LABEL,
   type Stage, type JobTrack,
@@ -106,6 +107,17 @@ export default function AdminJobDetail() {
   const signed = proposals.find((p) => !!p.signed_at);
   const kickoff = !!signed && assetCount > 0;
 
+  // A job usually has no folder of its own — the packet made it, and the job
+  // row's column stayed null. Falling back to whatever folder its records hold
+  // is the difference between a Drive button and no way in at all.
+  const folderIds = Array.from(new Set([
+    job.drive_folder_id,
+    ...proposals.map((p) => p.drive_folder_id),
+    ...packets.map((k) => k.drive_folder_id),
+  ].filter(Boolean) as string[]));
+  const driveUrl = job.drive_folder_url
+    ?? (folderIds[0] ? `https://drive.google.com/drive/folders/${folderIds[0]}` : null);
+
   const subtitle = [
     job.client_name !== job.title ? job.client_name : null,
     job.event_date ?? 'no event date',
@@ -118,8 +130,8 @@ export default function AdminJobDetail() {
       subtitle={subtitle}
       actions={
         <>
-          {job.drive_folder_url && (
-            <Button variant="outline" size="sm" onClick={() => window.open(job.drive_folder_url!, '_blank', 'noopener')}>
+          {driveUrl && (
+            <Button variant="outline" size="sm" onClick={() => window.open(driveUrl, '_blank', 'noopener')}>
               <FolderOpen className="mr-2 h-4 w-4" /> Drive
             </Button>
           )}
@@ -162,14 +174,9 @@ export default function AdminJobDetail() {
 
       {/* Finished files, per surface. Every folder this job is watched under —
           a packet folder's rows carry no proposal_id, so folder is the join. */}
-      <FinalsRow
-        folderIds={Array.from(new Set([
-          job.drive_folder_id,
-          ...proposals.map((p) => p.drive_folder_id),
-          ...packets.map((k) => k.drive_folder_id),
-        ].filter(Boolean) as string[]))}
-        driveUrl={job.drive_folder_url}
-      />
+      <ClientAssetsRow folderIds={folderIds} driveUrl={driveUrl} />
+
+      <FinalsRow folderIds={folderIds} driveUrl={driveUrl} />
 
       {flags.length > 0 && (
         <div className="mb-6 overflow-hidden rounded-xl border border-border bg-card">
