@@ -68,8 +68,10 @@ button, a, [role="button"] {
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 15%;
 
-    /* Warm gold primary */
-    --primary: 32 85% 38%;
+    /* The brand yellow. Sampled from the reference theme at
+       hsl(37 85% 71%) — on white that pale a fill cannot carry white text, so
+       light mode holds the same hue at a weight that can. */
+    --primary: 36 80% 40%;
     --primary-foreground: 0 0% 100%;
 
     /* Soft warm secondary */
@@ -81,7 +83,7 @@ button, a, [role="button"] {
     --muted-foreground: 220 10% 45%;
 
     /* Amber accent */
-    --accent: 28 80% 35%;
+    --accent: 34 75% 38%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 50%;
@@ -93,7 +95,7 @@ button, a, [role="button"] {
     /* Subtle borders */
     --border: 220 10% 90%;
     --input: 220 10% 93%;
-    --ring: 32 85% 38%;
+    --ring: 36 80% 40%;
 
     /* Radius — nudged toward the design-system 24px family. Base token drives
        cards/popovers/controls; hero surfaces anchor at 24px via rounded-3xl. */
@@ -115,12 +117,12 @@ button, a, [role="button"] {
     /* Sidebar */
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 220 15% 20%;
-    --sidebar-primary: 32 85% 38%;
+    --sidebar-primary: 36 80% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 35 12% 93%;
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 10% 90%;
-    --sidebar-ring: 32 85% 38%;
+    --sidebar-ring: 36 80% 40%;
 
     /* Elevation */
     --surface: 30 25% 97%;
@@ -136,13 +138,13 @@ button, a, [role="button"] {
     --card-foreground: 220 15% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 15%;
-    --primary: 32 85% 38%;
+    --primary: 36 80% 40%;
     --primary-foreground: 0 0% 100%;
     --secondary: 35 12% 93%;
     --secondary-foreground: 220 15% 20%;
     --muted: 40 10% 95%;
     --muted-foreground: 220 10% 45%;
-    --accent: 28 80% 35%;
+    --accent: 34 75% 38%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -150,7 +152,7 @@ button, a, [role="button"] {
     --success-foreground: 0 0% 100%;
     --border: 220 10% 90%;
     --input: 220 10% 93%;
-    --ring: 32 85% 38%;
+    --ring: 36 80% 40%;
     --glass: 0 0% 98%;
     --glass-border: 220 10% 85%;
     --glow-gold: 32 85% 38%;
@@ -159,12 +161,12 @@ button, a, [role="button"] {
     --gradient-luxury: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(40 20% 97%) 50%, hsl(0 0% 100%) 100%);
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 220 15% 20%;
-    --sidebar-primary: 32 85% 38%;
+    --sidebar-primary: 36 80% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 35 12% 93%;
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 10% 90%;
-    --sidebar-ring: 32 85% 38%;
+    --sidebar-ring: 36 80% 40%;
     --surface: 30 25% 97%;
     --shadow-card: 0 1px 2px hsl(220 15% 15% / 0.06), 0 8px 24px -8px hsl(220 15% 15% / 0.12);
     --shadow-card-hover: 0 2px 4px hsl(220 15% 15% / 0.08), 0 18px 40px -12px hsl(220 15% 15% / 0.18);
@@ -175,8 +177,9 @@ button, a, [role="button"] {
    * Every neutral here used to sit on hue 30 at 15–25% saturation, which is a
    * literal brown: the ground, the cards, the borders and the muted text all
    * carried it, so the whole surface read as dark tan rather than as unlit.
-   * Gold is the brand and stays exactly where it was; it reads far cleaner
-   * against a neutral ground than against one tinted towards it. */
+   * The brand yellow reads far cleaner against a neutral ground than against
+   * one tinted towards it. It softened on 2026-08-23 from the old hard gold
+   * (hsl 38 92% 50%) to hsl(37 85% 71%), the tone in the reference theme. */
   .dark {
     --background: 220 13% 9%;
     --foreground: 220 7% 92%;
@@ -184,27 +187,27 @@ button, a, [role="button"] {
     --card-foreground: 220 7% 92%;
     --popover: 220 14% 13%;
     --popover-foreground: 220 7% 92%;
-    --primary: 38 92% 50%;
+    --primary: 37 85% 71%;
     --primary-foreground: 220 15% 8%;
     --secondary: 220 14% 18%;
     --secondary-foreground: 220 8% 90%;
     --muted: 220 14% 16%;
     --muted-foreground: 215 11% 65%;
-    --accent: 32 85% 45%;
+    --accent: 37 75% 62%;
     --accent-foreground: 220 15% 8%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 14% 20%;
     --input: 220 14% 18%;
-    --ring: 38 92% 50%;
+    --ring: 37 85% 71%;
     --sidebar-background: 220 14% 11%;
     --sidebar-foreground: 220 8% 90%;
-    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary: 37 85% 71%;
     --sidebar-primary-foreground: 220 15% 8%;
     --sidebar-accent: 220 14% 18%;
     --sidebar-accent-foreground: 220 8% 90%;
     --sidebar-border: 220 14% 20%;
-    --sidebar-ring: 38 92% 50%;
+    --sidebar-ring: 37 85% 71%;
     --surface: 220 13% 7%;
     --shadow-card: inset 0 1px 0 hsl(220 20% 80% / 0.04), 0 1px 2px hsl(0 0% 0% / 0.5), 0 12px 32px -10px hsl(0 0% 0% / 0.7);
     --shadow-card-hover: inset 0 1px 0 hsl(220 20% 80% / 0.06), 0 2px 4px hsl(0 0% 0% / 0.6), 0 22px 48px -12px hsl(0 0% 0% / 0.85), 0 0 0 1px hsl(45 60% 50% / 0.12);
@@ -269,11 +272,11 @@ button, a, [role="button"] {
 @keyframes showblox-pulse {
   0%, 100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 8px hsl(38 92% 50% / 0.6));
+    filter: drop-shadow(0 0 8px hsl(37 85% 71% / 0.6));
   }
   50% {
     transform: scale(1.05);
-    filter: drop-shadow(0 0 16px hsl(38 92% 50% / 0.8));
+    filter: drop-shadow(0 0 16px hsl(37 85% 71% / 0.8));
   }
 }
 
@@ -382,14 +385,14 @@ button, a, [role="button"] {
   /* Sun goddess glows */
   .glow-gold {
     box-shadow: 
-      0 0 40px -10px hsl(38 92% 50% / 0.5),
-      0 0 80px -20px hsl(38 92% 50% / 0.3);
+      0 0 40px -10px hsl(37 85% 71% / 0.5),
+      0 0 80px -20px hsl(37 85% 71% / 0.3);
   }
   
   .glow-amber {
     box-shadow: 
-      0 0 30px -8px hsl(32 85% 45% / 0.5),
-      0 0 60px -15px hsl(32 85% 45% / 0.3);
+      0 0 30px -8px hsl(37 75% 62% / 0.5),
+      0 0 60px -15px hsl(37 75% 62% / 0.3);
   }
   
   .glow-warm {
@@ -401,8 +404,8 @@ button, a, [role="button"] {
   /* Legacy glow aliases for compatibility */
   .glow-purple {
     box-shadow: 
-      0 0 40px -10px hsl(38 92% 50% / 0.5),
-      0 0 80px -20px hsl(38 92% 50% / 0.3);
+      0 0 40px -10px hsl(37 85% 71% / 0.5),
+      0 0 80px -20px hsl(37 85% 71% / 0.3);
   }
   
   .glow-green {
@@ -430,14 +433,14 @@ button, a, [role="button"] {
   
   /* Elegant text gradient - theme aware */
   .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(32 90% 35%) 0%, hsl(28 85% 30%) 50%, hsl(22 80% 25%) 100%);
+    background: linear-gradient(135deg, hsl(38 85% 42%) 0%, hsl(34 80% 36%) 50%, hsl(28 75% 30%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .dark .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(45 90% 60%) 0%, hsl(38 92% 50%) 50%, hsl(32 85% 45%) 100%);
+    background: linear-gradient(135deg, hsl(42 90% 80%) 0%, hsl(37 85% 71%) 50%, hsl(33 78% 62%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -461,12 +464,12 @@ button, a, [role="button"] {
     transform: translateY(-4px) scale(1.02);
     box-shadow: 
       0 20px 40px -15px hsl(30 15% 5% / 0.5),
-      0 0 30px -10px hsl(38 92% 50% / 0.2);
+      0 0 30px -10px hsl(37 85% 71% / 0.2);
   }
   
   /* Luxury border accents */
   .border-gold-gradient {
-    border-image: linear-gradient(135deg, hsl(45 90% 55%), hsl(38 92% 50%), hsl(32 85% 45%)) 1;
+    border-image: linear-gradient(135deg, hsl(42 90% 78%), hsl(37 85% 71%), hsl(33 78% 62%)) 1;
   }
   
   /* Shimmer animation for luxury elements */
@@ -482,9 +485,9 @@ button, a, [role="button"] {
   .shimmer-gold {
     background: linear-gradient(
       90deg,
-      hsl(38 92% 50% / 0) 0%,
-      hsl(38 92% 50% / 0.3) 50%,
-      hsl(38 92% 50% / 0) 100%
+      hsl(37 85% 71% / 0) 0%,
+      hsl(37 85% 71% / 0.3) 50%,
+      hsl(37 85% 71% / 0) 100%
     );
     background-size: 200% 100%;
     animation: shimmer 3s infinite;
@@ -494,13 +497,13 @@ button, a, [role="button"] {
   @keyframes luxury-pulse {
     0%, 100% {
       box-shadow: 
-        0 0 30px -10px hsl(38 92% 50% / 0.4),
-        0 0 60px -20px hsl(38 92% 50% / 0.2);
+        0 0 30px -10px hsl(37 85% 71% / 0.4),
+        0 0 60px -20px hsl(37 85% 71% / 0.2);
     }
     50% {
       box-shadow: 
-        0 0 50px -10px hsl(38 92% 50% / 0.6),
-        0 0 100px -20px hsl(38 92% 50% / 0.4);
+        0 0 50px -10px hsl(37 85% 71% / 0.6),
+        0 0 100px -20px hsl(37 85% 71% / 0.4);
     }
   }
   

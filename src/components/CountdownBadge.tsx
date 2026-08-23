@@ -48,7 +48,7 @@ export function CountdownBadge({ eventDate, prefix, className, size = 'sm' }: Co
   } else if (days <= 21) {
     Icon = CalendarClock;
     label = `${days}d left`;
-    tone = 'bg-[#c49a3c]/15 text-[#c49a3c] border-[#c49a3c]/30';
+    tone = 'bg-primary/15 text-primary border-primary/30';
   } else {
     Icon = CalendarClock;
     label = `${days}d left`;

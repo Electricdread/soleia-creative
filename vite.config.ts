@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["soleia-icon.png"],
+      includeAssets: ["soleia-icon.png", "soleia-icon-192.png", "soleia-icon-512.png", "soleia-icon-maskable-512.png", "favicon.ico"],
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/~oauth/],
@@ -26,27 +26,22 @@ export default defineConfig(({ mode }) => ({
         globIgnores: ["**/creative-guide/ai-retouch/**"],
       },
       manifest: {
-        name: "Soleia Creative Management",
+        name: "Soleia Creative",
         short_name: "Soleia",
-        description: "Soleia Creative Management System",
+        description: "Soleia Creative — jobs, packets, proposals and creative sessions",
         start_url: "/",
         display: "standalone",
-        background_color: "#000000",
-        theme_color: "#D4AF37",
+        background_color: "#14161A",
+        // Charcoal: the band the OS paints around an installed window.
+        theme_color: "#1D2027",
         orientation: "portrait-primary",
+        // Square, at the sizes they claim to be. The old entries pointed both
+        // at one 450x469 file and called it "any maskable", so a launcher
+        // cropping to a circle cut into the sun.
         icons: [
-          {
-            src: "/soleia-icon.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-          {
-            src: "/soleia-icon.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable",
-          },
+          { src: "/soleia-icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "/soleia-icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "/soleia-icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
     }),

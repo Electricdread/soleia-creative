@@ -45,7 +45,7 @@ export function EventNotes({ eventUid }: { eventUid: string }) {
     fetchNotes();
   };
 
-  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-[#c49a3c]" /></div>;
+  if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-primary" /></div>;
 
   return (
     <div className="space-y-3">
@@ -57,7 +57,7 @@ export function EventNotes({ eventUid }: { eventUid: string }) {
           className="bg-[#faf8f5] border-[#d6cfc3] text-[#3d3629] text-sm min-h-[60px] placeholder:text-[#b5ab9a]"
         />
       </div>
-      <Button size="sm" onClick={addNote} disabled={saving || !newNote.trim()} className="bg-[#c49a3c] hover:bg-[#b08a30] text-white text-xs gap-1.5">
+      <Button size="sm" onClick={addNote} disabled={saving || !newNote.trim()} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5">
         {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />} Add Note
       </Button>
 

@@ -56,7 +56,7 @@ interface ActivityItem {
 const KIND_META: Record<ActivityKind, { icon: typeof Activity; label: string; tone: string; bg: string }> = {
   signed: { icon: FileSignature, label: 'Proposal signed', tone: 'text-emerald-500', bg: 'bg-emerald-500/10' },
   brief: { icon: ClipboardCheck, label: 'Creative brief submitted', tone: 'text-primary', bg: 'bg-primary/10' },
-  mood: { icon: ImageIcon, label: 'Mood board update', tone: 'text-[#c49a3c]', bg: 'bg-[#c49a3c]/10' },
+  mood: { icon: ImageIcon, label: 'Mood board update', tone: 'text-primary', bg: 'bg-primary/10' },
   upload: { icon: Folder, label: 'Uploaded to Drive', tone: 'text-blue-500', bg: 'bg-blue-500/10' },
 };
 
@@ -233,7 +233,7 @@ export function RecentActivityFeed() {
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-muted/40">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#c49a3c]" />
+          <Activity className="w-4 h-4 text-primary" />
           <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
           {!loading && (
             <span className="text-xs text-muted-foreground">last 14 days</span>

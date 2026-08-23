@@ -481,7 +481,7 @@ export function StoragePanel() {
       <section className="rounded-xl border border-border/50 bg-card p-5">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-[#c49a3c]" />
+            <Bell className="h-5 w-5 text-primary" />
             <div>
               <h3 className="text-sm font-semibold">Client Upload Notifications</h3>
               <p className="text-xs text-muted-foreground">

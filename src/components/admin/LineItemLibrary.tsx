@@ -393,7 +393,7 @@ export default function LineItemLibrary({ onSelect, compact }: LineItemLibraryPr
                     <p className="text-zinc-500 text-xs mt-0.5 line-clamp-2">{t.description}</p>
                   )}
                   {!compact && (t.long_description || (t.deliverables && t.deliverables.length > 0)) && (
-                    <p className="text-[10px] text-[#c49a3c]/80 mt-1 uppercase tracking-wide">
+                    <p className="text-[10px] text-primary/80 mt-1 uppercase tracking-wide">
                       Editorial ready
                     </p>
                   )}
