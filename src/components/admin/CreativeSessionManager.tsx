@@ -68,12 +68,42 @@ export function CreativeSessionManager() {
         .is('reviewed_at', null);
       const unread = new Set((unreadRows ?? []).map((r) => r.creative_session_id));
 
+      // Order, strongest signal first:
+      //   1. an unread brief — work waiting on someone here;
+      //   2. a live link before a retired one;
+      //   3. the show that is coming up, soonest first. A session with no date
+      //      sits under those and above the ones already played, because an
+      //      undated session might still be ahead of us and a past one is not.
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const day = (value: string | null | undefined) => {
+        if (!value) return null;
+        const t = new Date(`${value}T00:00:00`).getTime();
+        return Number.isNaN(t) ? null : t;
+      };
+      const bucket = (session: CreativeSession) => {
+        const at = day(session.event_date);
+        if (at === null) return 1;               // undated
+        return at >= today.getTime() ? 0 : 2;    // upcoming, then past
+      };
+
       typedSessions.sort((a, b) => {
         const au = unread.has(a.id) ? 1 : 0;
         const bu = unread.has(b.id) ? 1 : 0;
         if (au !== bu) return bu - au;
-        // Otherwise keep what the query already ordered: live first, newest first.
-        return 0;
+
+        const aActive = a.is_active ? 1 : 0;
+        const bActive = b.is_active ? 1 : 0;
+        if (aActive !== bActive) return bActive - aActive;
+
+        const ab = bucket(a); const bb = bucket(b);
+        if (ab !== bb) return ab - bb;
+
+        const ad = day(a.event_date); const bd = day(b.event_date);
+        if (ad !== null && bd !== null && ad !== bd) {
+          // Soonest first for what is ahead; most recent first for what is behind.
+          return ab === 0 ? ad - bd : bd - ad;
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 
       setSessions(typedSessions);
