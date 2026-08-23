@@ -97,12 +97,14 @@ export function EventDriveWatch({ eventUid }: { eventUid: string }) {
             .from('drive_seen_files')
             .select('id, file_name, web_view_link, parent_folder_name, seen_at')
             .eq('drive_folder_id', found.folderId)
+            .is('missing_since', null)
             .order('seen_at', { ascending: false })
             .limit(8),
           supabase
             .from('drive_seen_files')
             .select('id', { count: 'exact', head: true })
-            .eq('drive_folder_id', found.folderId),
+            .eq('drive_folder_id', found.folderId)
+            .is('missing_since', null),
         ]);
         if (cancelled) return;
         setFiles((recent as SeenFile[]) ?? []);

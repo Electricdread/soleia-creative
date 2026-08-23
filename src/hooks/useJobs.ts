@@ -32,7 +32,8 @@ export function useJobs(jobId?: string) {
         supabase.from('creative_sessions')
           .select('id, token, project_name, is_active, job_id')
           .not('job_id', 'is', null),
-        supabase.from('drive_seen_files').select('drive_folder_id'),
+        // Files the watcher has marked gone are not assets any more.
+        supabase.from('drive_seen_files').select('drive_folder_id').is('missing_since', null),
         supabase.from('proposal_items')
           .select('proposal_id, category, title')
           .eq('client_selected', true),

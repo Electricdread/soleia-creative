@@ -58,6 +58,8 @@ export function ClientAssetsRow({ folderIds, driveUrl }: ClientAssetsRowProps) {
         .from('drive_seen_files')
         .select('drive_file_id, file_name, parent_folder_name, web_view_link, seen_at, final_slot')
         .in('drive_folder_id', folderIds)
+        // A file deleted in Drive is stamped by the watcher and stops counting.
+        .is('missing_since', null)
         .order('seen_at', { ascending: false });
       if (!cancelled) setRows((data as SeenRow[] | null) ?? []);
     })();

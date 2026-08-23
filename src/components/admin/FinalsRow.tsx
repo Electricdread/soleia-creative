@@ -52,6 +52,7 @@ export function FinalsRow({ folderIds, driveUrl }: FinalsRowProps) {
         .from('drive_seen_files')
         .select('final_slot, parent_folder_name, file_name, web_view_link, seen_at')
         .in('drive_folder_id', folderIds)
+        .is('missing_since', null)
         .order('seen_at', { ascending: false });
       if (!cancelled) setRows((data as SeenRow[] | null) ?? []);
     })();
