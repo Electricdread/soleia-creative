@@ -40,13 +40,9 @@ const IMG = {
 } as const;
 const ELEVATOR_LOOP_URL = '/creative-guide/elevator/loop.mp4';
 
-// TV / narrowcasting. The pixel map card the network is built on, and the same
-// card in motion — a client sees the canvas and how it reads once it moves.
-// The PNG is the download; the JPG is what the page actually paints.
-const TV_MAPPING_CARD_IMG = '/creative-guide/tv/mapping-card.jpg';
-const TV_MAPPING_CARD_PNG = '/creative-guide/tv/mapping-card-1920x1080.png';
-const TV_LOOP_URL = '/creative-guide/tv/loop.mp4';
-const TV_LOOP_POSTER = '/creative-guide/tv/loop-poster.jpg';
+// TV / narrowcasting. The card shows the surface; the pixel map, the loop and
+// the delivery spec live on /creative-guide/tv, the way the elevator's do.
+const TV_HERO_IMG = '/creative-guide/tv/hero.jpg';
 // The logo animation itself (background-examples segment of the explainer),
 // trimmed for a clean loop. Tapping the card opens the full explainer.
 const TRANSPARENT_LOOP_URL = '/creative-guide/services/transparent-logo-loop.mp4';
@@ -244,24 +240,9 @@ const ELEVATOR_TITLES = [
   'Elevator Created by Client',
 ];
 
-/**
- * The TV network's delivery spec. One canvas serves all 28 screens — the entry
- * televisions on the casino level and the bungalow and cabana screens outside —
- * so a client builds once, at 1920 × 1080, and it plays everywhere.
- */
-const TV_SPECS: [string, string][] = [
-  ['Canvas', '1920 × 1080 · landscape'],
-  ['Video', '.MOV · DXV3'],
-  ['Stills', 'PNG'],
-  ['Network', '28 screens · one shared feed'],
-];
-
-/** Counted the same way the buyout inclusions above count them. */
-const TV_NETWORK = [
-  '4 Front Door Entry — Casino Level',
-  '9 Bungalows — Beachclub / Outside',
-  '15 Cabanas — Beachclub / Outside',
-];
+/** The card's brief. The numbers it quotes are the buyout inclusions above. */
+const TV_BLURB =
+  "Twenty-eight televisions run as one narrowcasting network — four at the front door on the casino level, nine bungalows and fifteen cabanas outside. They share a single feed, so one file built at 1920 × 1080 plays on every screen. A dedicated logo on a chosen cabana or bungalow is a line item below.";
 
 /**
  * Add-ons are grouped by the surface they land on, not by the rate card's
@@ -358,25 +339,6 @@ function Chip({ children, className = '' }: { children: React.ReactNode; classNa
       <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
       {children}
     </span>
-  );
-}
-
-/** Label/value rows, the same shape the elevator and ticker guides use. */
-function SpecRows({ rows }: { rows: [string, string][] }) {
-  return (
-    <dl>
-      {rows.map(([k, v], i) => (
-        <div
-          key={k}
-          className={`flex items-baseline justify-between gap-6 py-2.5 ${i > 0 ? 'border-t border-primary/10' : ''}`}
-        >
-          <dt className="whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            {k}
-          </dt>
-          <dd className="font-mono text-[13px] tracking-[0.05em] text-foreground">{v}</dd>
-        </div>
-      ))}
-    </dl>
   );
 }
 
@@ -913,97 +875,32 @@ export default function CreativeGuideServices() {
 
                     {isArrival ? (
                       <div className="space-y-6">
-                        {/* TV / Narrowcasting — the pixel map card beside the same
-                            card in motion. One canvas, every television in the venue. */}
+                        {/* TV / Narrowcasting — the surface and a brief; the pixel
+                            map, the loop and the spec are on its own page. */}
                         <Reveal>
                           <article className={cardShell}>
-                            <div className="grid sm:grid-cols-2">
-                              <figure className="flex flex-col">
-                                <div className="aspect-video overflow-hidden bg-black">
-                                  <img
-                                    src={TV_MAPPING_CARD_IMG}
-                                    alt="Soleia TV pixel map — the 1920 × 1080 landscape canvas every television is built on"
-                                    loading="lazy"
-                                    className="h-full w-full object-cover"
-                                  />
-                                </div>
-                                <figcaption className="border-t border-primary/15 px-6 py-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                                  Pixel map · 1920 × 1080
-                                </figcaption>
-                              </figure>
-                              <figure className="flex flex-col border-t border-primary/15 sm:border-l sm:border-t-0">
-                                <button
-                                  type="button"
-                                  onClick={() => setFullscreenVideo(TV_LOOP_URL)}
-                                  className="relative block aspect-video w-full overflow-hidden bg-black"
-                                  aria-label="Play the TV Guide loop full screen"
-                                >
-                                  <video
-                                    src={TV_LOOP_URL}
-                                    poster={TV_LOOP_POSTER}
-                                    className="h-full w-full object-cover"
-                                    autoPlay
-                                    loop
-                                    muted
-                                    playsInline
-                                    preload="metadata"
-                                  />
-                                  <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-background/85 px-3 py-1.5 text-[9.5px] uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">
-                                    <Maximize2 className="h-3 w-3 text-primary" />
-                                    Full screen
-                                  </span>
-                                </button>
-                                <figcaption className="border-t border-primary/15 px-6 py-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                                  TV Guide loop · the same card in motion
-                                </figcaption>
-                              </figure>
-                            </div>
-
-                            <div className="border-t border-primary/15 p-7 sm:p-8">
-                              <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-                                1920 × 1080 · Landscape
-                              </span>
-                              <div className="mt-2.5 flex flex-wrap items-center justify-between gap-4">
-                                <h4 className="font-display text-2xl leading-tight text-foreground sm:text-[1.7rem]">
+                            <MediaHeader
+                              src={TV_HERO_IMG}
+                              alt="A cabana television running the Soleia TV Guide card, the beachclub beyond the opening"
+                              aspect="aspect-[21/9]"
+                            />
+                            <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
+                              <div>
+                                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+                                  1920 × 1080 · Landscape
+                                </span>
+                                <h4 className="mt-2 font-display text-2xl leading-tight text-foreground">
                                   TV Displays / Narrowcasting
                                 </h4>
-                                <a
-                                  href={TV_MAPPING_CARD_PNG}
-                                  download="Soleia-TV-Pixel-Map-1920x1080.png"
-                                  className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                                <button
+                                  onClick={() => navigate('/creative-guide/tv')}
+                                  className="tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
                                 >
-                                  <Download className="h-3.5 w-3.5" />
-                                  Pixel Map
-                                </a>
+                                  <Eye className="h-3.5 w-3.5" />
+                                  Specs &amp; Mapping
+                                </button>
                               </div>
-
-                              <div className="mt-6 grid gap-8 md:grid-cols-2">
-                                <div>
-                                  <p className="text-[13.5px] leading-relaxed text-muted-foreground">
-                                    Every television in the venue is built on one canvas. Deliver a still or a loop at
-                                    1920 × 1080 and it plays across the whole network — the entry screens on the casino
-                                    level and the bungalow and cabana televisions outside.
-                                  </p>
-                                  <ul className="mt-4 space-y-2">
-                                    {TV_NETWORK.map((n) => (
-                                      <li key={n} className="flex gap-3 text-[13.5px] text-foreground">
-                                        <span className="flex-shrink-0 text-primary">—</span>
-                                        <span>{n}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                                <div>
-                                  <h5 className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-                                    Delivery
-                                  </h5>
-                                  <SpecRows rows={TV_SPECS} />
-                                  <p className="mt-4 text-[12.5px] italic leading-relaxed text-muted-foreground/80">
-                                    All televisions run the same feed by default. A dedicated logo per cabana or
-                                    bungalow is the Individual Cabana / Bungalow Logo line item below.
-                                  </p>
-                                </div>
-                              </div>
+                              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{TV_BLURB}</p>
                             </div>
                           </article>
                         </Reveal>

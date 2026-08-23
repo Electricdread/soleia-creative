@@ -14,6 +14,7 @@ import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
 import CreativeGuideServices from "./pages/CreativeGuideServices";
 import ElevatorDisplayGuide from "./pages/ElevatorDisplayGuide";
+import TVDisplayGuide from "./pages/TVDisplayGuide";
 import TickerDisplayGuide from "./pages/TickerDisplayGuide";
 import DocumentViewer from "./pages/DocumentViewer";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
@@ -80,6 +81,7 @@ const App = () => (
               {/* Protected Routes - Require Authentication */}
               <Route path="/creative-guide" element={<CreativeGuide />} />
               <Route path="/creative-guide/services" element={<CreativeGuideServices />} />
+              <Route path="/creative-guide/tv" element={<TVDisplayGuide />} />
               <Route path="/creative-guide/elevator" element={<ElevatorDisplayGuide />} />
               <Route path="/creative-guide/ticker" element={<TickerDisplayGuide />} />
               <Route path="/creative-guide/doc/:slug" element={<DocumentViewer />} />
