@@ -215,9 +215,11 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Dynamic elevator animation',
     body: 'The first branded surface a guest meets. Its custom animation is part of the upgrade — designed with the rest of the look, mapped to the panel and running on show day.',
-    src: '/creative-guide/elevator/loop-poster.jpg',
+    // The same interior the elevator's specs page leads with, so the surface
+    // reads as one thing across the guide. Tapping still plays the loop.
+    src: IMG.elevatorInterior,
     movie: ELEVATOR_LOOP_URL,
-    alt: 'The elevator display running branded content',
+    alt: 'Soleia elevator interior — gold trim with the branded display beside the doors',
   },
   {
     title: '3D preview before the night',
