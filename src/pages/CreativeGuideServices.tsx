@@ -26,6 +26,8 @@ const HERO_IMG = '/creative-guide/services/hero-main-room.jpg';
 const IMG = {
   packageMain: '/creative-guide/services/package-full-look.jpg',
   presentationKeynote: '/creative-guide/services/presentation-keynote.jpg',
+  creativeDirection: '/creative-guide/services/creative-direction.jpg',
+  onsitePlaybackConsole: '/creative-guide/services/onsite-playback-console.jpg',
   packageEvent: '/creative-guide/services/static-logo-event.jpg',
   packageTakeover: '/creative-guide/services/presentation-takeover.jpg',
   previz: '/creative-guide/services/previz-render.jpg',
@@ -204,8 +206,8 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Creative direction',
     body: 'We read your brand — guidelines, palette, past events — and set how the room should feel on arrival, through the programme and late in the night.',
-    src: IMG.packageEvent,
-    alt: 'Event branding running across the main-room screens',
+    src: IMG.creativeDirection,
+    alt: 'The main room mid-set — colour across both IMAG walls, lasers off the sunburst and the floor filling up',
   },
   {
     title: '1–3 custom looks',
@@ -239,8 +241,8 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Onsite playback',
     body: 'Loaded, checked against the run of show, and operated by our team throughout the night.',
-    src: IMG.packageMain,
-    alt: 'The full-venue look running across the sunburst, curves and booth on the night',
+    src: IMG.onsitePlaybackConsole,
+    alt: 'The playback desk during a show — clip columns and slice list on the console, the artist look running on the screens above',
   },
 ];
 
