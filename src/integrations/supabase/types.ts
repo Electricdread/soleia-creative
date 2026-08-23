@@ -139,6 +139,51 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_event_brief: {
+        Row: {
+          additional_notes: string | null
+          created_at: string
+          created_by: string | null
+          deadline_on: string | null
+          event_date_text: string | null
+          event_time_text: string | null
+          event_uid: string
+          group_name: string | null
+          guest_count: string | null
+          id: string
+          location: string | null
+          updated_at: string
+        }
+        Insert: {
+          additional_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline_on?: string | null
+          event_date_text?: string | null
+          event_time_text?: string | null
+          event_uid: string
+          group_name?: string | null
+          guest_count?: string | null
+          id?: string
+          location?: string | null
+          updated_at?: string
+        }
+        Update: {
+          additional_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          deadline_on?: string | null
+          event_date_text?: string | null
+          event_time_text?: string | null
+          event_uid?: string
+          group_name?: string | null
+          guest_count?: string | null
+          id?: string
+          location?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       calendar_event_circleback: {
         Row: {
           circleback_summary: string | null
@@ -211,26 +256,32 @@ export type Database = {
       calendar_event_meeting_links: {
         Row: {
           created_at: string
+          duration_minutes: number | null
           event_uid: string
           id: string
           label: string
           link_type: string
+          meeting_at: string | null
           url: string
         }
         Insert: {
           created_at?: string
+          duration_minutes?: number | null
           event_uid: string
           id?: string
           label: string
           link_type?: string
+          meeting_at?: string | null
           url: string
         }
         Update: {
           created_at?: string
+          duration_minutes?: number | null
           event_uid?: string
           id?: string
           label?: string
           link_type?: string
+          meeting_at?: string | null
           url?: string
         }
         Relationships: []
