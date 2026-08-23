@@ -25,7 +25,7 @@ const PRESENTATION_GUIDE_PDF_URL = `/Soleia-Presentation-Guide.pdf?v=${DOCUMENT_
 const HERO_IMG = '/creative-guide/services/hero-main-room.jpg';
 const IMG = {
   packageMain: '/creative-guide/services/package-full-look.jpg',
-  onsitePlayback: '/creative-guide/services/onsite-playback.jpg',
+  presentationKeynote: '/creative-guide/services/presentation-keynote.jpg',
   packageEvent: '/creative-guide/services/static-logo-event.jpg',
   packageTakeover: '/creative-guide/services/presentation-takeover.jpg',
   previz: '/creative-guide/services/previz-render.jpg',
@@ -33,7 +33,6 @@ const IMG = {
   artist: '/creative-guide/services/artist-show.jpg',
   zones: '/creative-guide/services/zones-outdoor.jpg',
   staticLogo: '/creative-guide/services/static-logo-event.jpg',
-  presentation: '/creative-guide/services/presentation-takeover.jpg',
   marquee: '/creative-guide/services/marquee-exterior.jpg',
   elevatorInterior: '/creative-guide/elevator/interior.jpg',
   elevatorDisplay: '/creative-guide/elevator/display-600x800.jpg',
@@ -240,8 +239,8 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Onsite playback',
     body: 'Loaded, checked against the run of show, and operated by our team throughout the night.',
-    src: IMG.onsitePlayback,
-    alt: 'A keynote running live at Soleia — the decks on the IMAG walls, the mark across the ceiling rays, a full room',
+    src: IMG.packageMain,
+    alt: 'The full-venue look running across the sunburst, curves and booth on the night',
   },
 ];
 
@@ -337,8 +336,8 @@ const MEDIA: Record<string, { src: string; alt: string }> = {
     alt: 'A Soleia cabana with its own television on the wall, curtains drawn back to the pool',
   },
   'Presentation': {
-    src: IMG.presentation,
-    alt: 'Client content routed across the sunburst rays and room screens',
+    src: IMG.presentationKeynote,
+    alt: 'A keynote running live at Soleia — the decks on both IMAG walls, the mark across the ceiling rays, a full room',
   },
 };
 
