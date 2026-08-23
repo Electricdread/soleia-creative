@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ExternalLink, FileUp } from 'lucide-react';
+import { AlertTriangle, ExternalLink, FileUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 
@@ -16,6 +16,17 @@ import { supabase } from '@/integrations/supabase/client';
  * sibling folder is Soleia's own material, and listing it here made the row
  * claim assets that no client had sent.
  */
+
+/**
+ * Our own material, sitting in the client's drop.
+ *
+ * Nothing in the code puts it there — the creative guide zip goes to `01_`,
+ * the pixel map and delivery guide to `02_` — but a guide generated from the
+ * app and dragged into Drive by hand lands wherever it was dropped, and
+ * Interstate15's drop held three of them for months before anyone noticed.
+ * Naming it here is cheaper than noticing it again.
+ */
+const looksLikeOurs = (fileName: string) => /^soleia/i.test(fileName.trim());
 
 /** True for `Client Asset Collect` under either of its spellings. */
 const isAssetDrop = (name: string | null) =>
@@ -108,8 +119,15 @@ export function ClientAssetsRow({ folderIds, driveUrl }: ClientAssetsRowProps) {
               ) : (
                 <span className="block truncate text-sm text-foreground">{asset.file_name}</span>
               )}
-              {asset.parent_folder_name && (
-                <span className="text-[11px] text-muted-foreground">{asset.parent_folder_name}</span>
+              {looksLikeOurs(asset.file_name) ? (
+                <span className="flex items-center gap-1 text-[11px] text-amber-500">
+                  <AlertTriangle className="h-3 w-3" />
+                  Looks like ours — the client drop is for what they send
+                </span>
+              ) : (
+                asset.parent_folder_name && (
+                  <span className="text-[11px] text-muted-foreground">{asset.parent_folder_name}</span>
+                )
               )}
             </div>
             <span className="flex-shrink-0 font-mono text-[10px] text-muted-foreground">{ago(asset.seen_at)}</span>
