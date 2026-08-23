@@ -25,6 +25,7 @@ const PRESENTATION_GUIDE_PDF_URL = `/Soleia-Presentation-Guide.pdf?v=${DOCUMENT_
 const HERO_IMG = '/creative-guide/services/hero-main-room.jpg';
 const IMG = {
   packageMain: '/creative-guide/services/package-full-look.jpg',
+  onsitePlayback: '/creative-guide/services/onsite-playback.jpg',
   packageEvent: '/creative-guide/services/static-logo-event.jpg',
   packageTakeover: '/creative-guide/services/presentation-takeover.jpg',
   previz: '/creative-guide/services/previz-render.jpg',
@@ -239,8 +240,8 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Onsite playback',
     body: 'Loaded, checked against the run of show, and operated by our team throughout the night.',
-    src: IMG.packageMain,
-    alt: 'The full-venue look running across the sunburst, curves and booth on the night',
+    src: IMG.onsitePlayback,
+    alt: 'A keynote running live at Soleia — the decks on the IMAG walls, the mark across the ceiling rays, a full room',
   },
 ];
 
