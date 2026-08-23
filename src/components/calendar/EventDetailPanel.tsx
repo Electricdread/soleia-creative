@@ -1,15 +1,17 @@
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
-import { X, MapPin, Clock, Calendar as CalendarIcon, FileText, User, ChevronDown } from 'lucide-react';
+import { X, MapPin, Clock, Calendar as CalendarIcon, FileText, User, ChevronDown, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { EventNotes } from './EventNotes';
 import { EventTripleseatDetails } from './EventTripleseatDetails';
 import { EventTasks } from './EventTasks';
 import { EventAttachments } from './EventAttachments';
 import { EventMeetingLinks } from './EventMeetingLinks';
-import { EventCircleback } from './EventCircleback';
+import { EventBrief } from './EventBrief';
+import { EventPacket } from './EventPacket';
 import { EventDelivery } from './EventDelivery';
 import { EventClientInfo } from './EventClientInfo';
 import { EventLinkedItems } from './EventLinkedItems';
@@ -154,13 +156,16 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
         <div className="border-b border-border bg-muted/50 shrink-0 px-1">
           <ScrollArea className="w-full">
             <TabsList className="inline-flex h-10 w-max gap-0 bg-transparent p-0">
+              {/* The order a job actually moves in: read the brief, send the
+                  packet, hold the call, take delivery. Notes, tasks and docs
+                  are the working material and sit after it. */}
               {[
                 { value: 'details', label: 'Details' },
+                { value: 'packet', label: 'Packet' },
+                { value: 'meetings', label: 'Meetings' },
+                { value: 'delivery', label: 'Delivery' },
                 { value: 'notes', label: 'Notes' },
                 { value: 'tasks', label: 'Tasks' },
-                { value: 'meetings', label: 'Meetings' },
-                { value: 'circleback', label: 'Call Notes' },
-                { value: 'delivery', label: 'Delivery' },
                 { value: 'docs', label: 'Docs' },
               ].map((tab) => (
                 <TabsTrigger
@@ -177,23 +182,44 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          <TabsContent value="details" className="p-4 mt-0">
-            <EventTripleseatDetails description={event.description} eventUid={event.uid} />
+          <TabsContent value="details" className="p-4 mt-0 space-y-4">
+            {/* The Triple Seat panel is reference, not the job: it is folded
+                away so the brief is the first thing in the tab. */}
+            <Collapsible>
+              <CollapsibleTrigger className="group flex w-full items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2 text-left">
+                <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-foreground/70">
+                  <Link2 className="h-3.5 w-3.5 text-primary" />
+                  Triple Seat details
+                </span>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
+                <EventTripleseatDetails description={event.description} eventUid={event.uid} />
+              </CollapsibleContent>
+            </Collapsible>
+
+            <EventBrief
+              eventUid={event.uid}
+              summary={event.summary}
+              dtstart={event.dtstart}
+              dtend={event.dtend}
+              location={event.location}
+            />
+          </TabsContent>
+          <TabsContent value="packet" className="p-4 mt-0">
+            <EventPacket eventUid={event.uid} summary={event.summary} dtstart={event.dtstart} />
+          </TabsContent>
+          <TabsContent value="meetings" className="p-4 mt-0">
+            <EventMeetingLinks eventUid={event.uid} />
+          </TabsContent>
+          <TabsContent value="delivery" className="p-4 mt-0">
+            <EventDelivery eventUid={event.uid} />
           </TabsContent>
           <TabsContent value="notes" className="p-4 mt-0">
             <EventNotes eventUid={event.uid} />
           </TabsContent>
           <TabsContent value="tasks" className="p-4 mt-0">
             <EventTasks eventUid={event.uid} />
-          </TabsContent>
-          <TabsContent value="meetings" className="p-4 mt-0">
-            <EventMeetingLinks eventUid={event.uid} />
-          </TabsContent>
-          <TabsContent value="circleback" className="p-4 mt-0">
-            <EventCircleback eventUid={event.uid} />
-          </TabsContent>
-          <TabsContent value="delivery" className="p-4 mt-0">
-            <EventDelivery eventUid={event.uid} />
           </TabsContent>
           <TabsContent value="docs" className="p-4 mt-0">
             <EventAttachments eventUid={event.uid} />

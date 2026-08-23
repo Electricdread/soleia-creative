@@ -41,6 +41,9 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
       } else if (a.entity_type === 'proposal') {
         const { data: p } = await supabase.from('proposals').select('event_name, client_name, token').eq('id', a.entity_id).maybeSingle();
         if (p) { label = `${p.event_name} – ${p.client_name}`; href = `/proposal/${p.token}`; }
+      } else if (a.entity_type === 'packet') {
+        const { data: pk } = await supabase.from('pre_call_packets').select('title, client_name, token').eq('id', a.entity_id).maybeSingle();
+        if (pk) { label = `${pk.title}${pk.client_name ? ` – ${pk.client_name}` : ''}`; href = `/packet/${pk.token}`; }
       } else if (a.entity_type === 'client_link') {
         const { data: l } = await supabase.from('client_links').select('event_name, client_name, token').eq('id', a.entity_id).maybeSingle();
         if (l) { label = `${l.event_name} – ${l.client_name}`; href = `/session/${l.token}`; }
@@ -59,6 +62,9 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
     } else if (type === 'proposal') {
       const { data } = await supabase.from('proposals').select('id, event_name, client_name').eq('is_active', true).order('created_at', { ascending: false });
       opts = (data || []).map((p) => ({ id: p.id, label: `${p.event_name} – ${p.client_name}` }));
+    } else if (type === 'packet') {
+      const { data } = await supabase.from('pre_call_packets').select('id, title, client_name').order('created_at', { ascending: false });
+      opts = (data || []).map((p) => ({ id: p.id, label: `${p.title}${p.client_name ? ` – ${p.client_name}` : ''}` }));
     } else if (type === 'client_link') {
       const { data } = await supabase.from('client_links').select('id, event_name, client_name').eq('is_active', true).order('created_at', { ascending: false });
       opts = (data || []).map((l) => ({ id: l.id, label: `${l.event_name} – ${l.client_name}` }));
@@ -93,13 +99,14 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
 
   const typeIcon = (t: string) => {
     if (t === 'creative_session') return <Palette className="w-3.5 h-3.5 text-primary" />;
-    if (t === 'proposal') return <FileText className="w-3.5 h-3.5 text-[#5a8fb4]" />;
+    if (t === 'proposal' || t === 'packet') return <FileText className="w-3.5 h-3.5 text-[#5a8fb4]" />;
     return <Link2 className="w-3.5 h-3.5 text-[#7b8a3e]" />;
   };
 
   const typeLabel = (t: string) => {
     if (t === 'creative_session') return 'Creative Session';
     if (t === 'proposal') return 'Proposal';
+    if (t === 'packet') return 'Packet';
     return 'Client Session';
   };
 
@@ -116,6 +123,7 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
             <SelectContent>
               <SelectItem value="creative_session">Creative Session</SelectItem>
               <SelectItem value="proposal">Proposal</SelectItem>
+              <SelectItem value="packet">Packet</SelectItem>
               <SelectItem value="client_link">Client Session</SelectItem>
             </SelectContent>
           </Select>

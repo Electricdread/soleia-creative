@@ -13,6 +13,7 @@ import { AdminShell } from '@/components/admin/AdminShell';
 import { PendingApproval } from '@/components/auth/PendingApproval';
 import { TodayStrip } from '@/components/admin/TodayStrip';
 import { NeedsYou } from '@/components/admin/NeedsYou';
+import { UpcomingMeetings } from '@/components/admin/UpcomingMeetings';
 import { RecentActivityFeed } from '@/components/admin/RecentActivityFeed';
 import { useDeadlineCount } from '@/hooks/useDeadlineCount';
 import { type EventStatus } from '@/components/calendar/EventStatusBadge';
@@ -198,7 +199,13 @@ export default function AdminPortal() {
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1.5fr_1fr]">
+      {/* Above the triage list: a call that starts in ten minutes outranks
+          anything on it. Renders nothing when the diary is empty. */}
+      <div className="mt-6">
+        <UpcomingMeetings />
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.5fr_1fr]">
         <NeedsYou />
         <RecentActivityFeed />
       </div>

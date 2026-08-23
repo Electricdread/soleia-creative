@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Settings2, Save, Search, Clock, AlertTriangle } from 'lucide-react';
+import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Settings2, Save, Search, Clock, AlertTriangle, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, startOfWeek, endOfWeek, differenceInCalendarDays } from 'date-fns';
 import { EventDetailPanel } from '@/components/calendar/EventDetailPanel';
@@ -28,6 +28,19 @@ interface ProposalInfo {
   client_name: string;
 }
 
+/**
+ * A meeting drawn on the grid. These are not Triple Seat bookings — they are
+ * the calls the studio arranges around one, so they are blue where a booking
+ * carries its status colour, and they sit under the booking on its day.
+ */
+interface MeetingOnCalendar {
+  id: string;
+  event_uid: string;
+  label: string;
+  url: string;
+  meeting_at: string;
+}
+
 export default function AdminCalendar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -43,6 +56,7 @@ export default function AdminCalendar() {
   const [statusOverrides, setStatusOverrides] = useState<Record<string, EventStatus>>({});
   const [proposalsByEvent, setProposalsByEvent] = useState<Record<string, ProposalInfo[]>>({});
   const [deadlinesByEvent, setDeadlinesByEvent] = useState<Record<string, { content_deadline: string; reminder_days: number }>>({});
+  const [meetingsByDate, setMeetingsByDate] = useState<Record<string, MeetingOnCalendar[]>>({});
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
@@ -62,6 +76,7 @@ export default function AdminCalendar() {
       fetchMetadata();
       fetchProposalAssociations();
       fetchDeadlines();
+      fetchMeetings();
     }
   }, [authLoading, isAdmin]);
 
@@ -92,6 +107,21 @@ export default function AdminCalendar() {
       console.error('Failed to fetch events:', e);
     }
     setLoading(false);
+  };
+
+  const fetchMeetings = async () => {
+    const { data } = await supabase
+      .from('calendar_event_meeting_links')
+      .select('id, event_uid, label, url, meeting_at')
+      .not('meeting_at', 'is', null)
+      .order('meeting_at');
+    if (!data) return;
+    const map: Record<string, MeetingOnCalendar[]> = {};
+    for (const m of data as MeetingOnCalendar[]) {
+      const key = format(parseISO(m.meeting_at), 'yyyy-MM-dd');
+      (map[key] ??= []).push(m);
+    }
+    setMeetingsByDate(map);
   };
 
   const fetchMetadata = async () => {
@@ -197,6 +227,18 @@ export default function AdminCalendar() {
 
   const goToToday = () => { setCurrentMonth(new Date()); };
 
+  // Clicking a meeting opens the booking it belongs to. A meeting attached to
+  // an event outside the loaded feed has nowhere to open, so it launches
+  // instead — which is the other thing anyone wants from it.
+  const openMeeting = (meeting: MeetingOnCalendar) => {
+    const parent = events.find((e) => e.uid === meeting.event_uid);
+    if (parent) {
+      setSelectedEvent(parent);
+      return;
+    }
+    window.open(meeting.url, '_blank', 'noopener,noreferrer');
+  };
+
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const currentYear = currentMonth.getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
@@ -271,6 +313,11 @@ export default function AdminCalendar() {
                     <EventStatusBadge status={s} size="sm" />
                   </div>
                 ))}
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/40 bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                    <Video className="h-2.5 w-2.5" /> Meeting
+                  </span>
+                </div>
               </div>
 
               {/* Calendar Grid */}
@@ -351,6 +398,20 @@ export default function AdminCalendar() {
                                 </div>
                               );
                             })()}
+                           {(meetingsByDate[format(day, 'yyyy-MM-dd')] ?? []).map((m) => (
+                             <button
+                               key={m.id}
+                               title={`${m.label} — ${format(parseISO(m.meeting_at), 'h:mm a')}`}
+                               onClick={(e) => { e.stopPropagation(); openMeeting(m); }}
+                               className="mx-1 mb-1 flex min-w-0 items-center gap-1 rounded-md border-l-[3px] border-blue-500 bg-blue-500/10 px-1.5 py-0.5 text-left hover:bg-blue-500/20"
+                             >
+                               <Video className="h-2.5 w-2.5 shrink-0 text-blue-600 dark:text-blue-400" />
+                               <span className="shrink-0 text-[9px] font-semibold text-blue-600 dark:text-blue-400">
+                                 {format(parseISO(m.meeting_at), 'h:mma').toLowerCase()}
+                               </span>
+                               <span className="truncate text-[10px] text-blue-700 dark:text-blue-300">{m.label}</span>
+                             </button>
+                           ))}
                            {dayEvents.length > 1 && (
                              <div className="px-1.5 pb-1">
                                <span className="text-[10px] text-muted-foreground">+{dayEvents.length - 1} more</span>

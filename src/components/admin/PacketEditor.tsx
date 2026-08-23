@@ -63,7 +63,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   initial?: PacketRecord | null;
   kind?: PacketKind;
-  onSaved: () => void;
+  /** Receives the saved packet's id, so a caller can link it to what raised it. */
+  onSaved: (packetId?: string) => void;
 }
 
 const DEFAULT_GUIDE_URL = 'https://soleiacreative.app/creative-guide/services';
@@ -148,7 +149,13 @@ const customDefault = (): PacketRecord => ({
   kind: 'custom',
 });
 
-const defaultFor = (k: PacketKind): PacketRecord => {
+/**
+ * The starting copy for a packet of this kind. Exported so a caller that
+ * pre-fills a new packet — the calendar event card raising one for the event
+ * it is looking at — can seed the title and client without flattening the
+ * kind's own intro, scope and inclusions.
+ */
+export const defaultFor = (k: PacketKind): PacketRecord => {
   if (k === 'post_call') return postCallDefault();
   if (k === 'custom') return customDefault();
   if (k === 'creative_pre_call') return creativeDefault();
@@ -266,7 +273,7 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
 
     setSaving(false);
     toast.success(initial?.id ? 'Packet updated' : 'Packet created');
-    onSaved();
+    onSaved(saved?.id);
     onOpenChange(false);
   };
 

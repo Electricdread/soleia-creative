@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ExternalLink, FolderOpen, Link2, Bell, AlertTriangle, Clock } from 'lucide-react';
 import { differenceInCalendarDays, format } from 'date-fns';
+import { EventDriveWatch } from './EventDriveWatch';
 
 interface LinkedSession {
   id: string;
@@ -74,11 +75,16 @@ export function EventDelivery({ eventUid }: { eventUid: string }) {
   if (loading) return <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-primary" /></div>;
 
   if (items.length === 0) {
+    // Nothing linked is not the same as nothing uploaded, so the folder watch
+    // stays visible here.
     return (
-      <div className="text-center py-6">
-        <FolderOpen className="w-8 h-8 text-border mx-auto mb-2" />
-        <p className="text-xs text-muted-foreground/60">No delivery guides or Dropbox links linked yet.</p>
-        <p className="text-[10px] text-muted-foreground/40 mt-1">Link sessions via the "Linked Items" tab to see them here.</p>
+      <div className="space-y-3">
+        <EventDriveWatch eventUid={eventUid} />
+        <div className="text-center py-6">
+          <FolderOpen className="w-8 h-8 text-border mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground/60">No delivery guides or Dropbox links linked yet.</p>
+          <p className="text-[10px] text-muted-foreground/40 mt-1">Link sessions via the "Linked Items" tab to see them here.</p>
+        </div>
       </div>
     );
   }
@@ -91,6 +97,8 @@ export function EventDelivery({ eventUid }: { eventUid: string }) {
 
   return (
     <div className="space-y-3">
+      <EventDriveWatch eventUid={eventUid} />
+
       {showAlert && daysUntilDeadline !== null && (
         <div className={`flex items-start gap-2 p-3 rounded-lg border ${
           daysUntilDeadline <= 0 ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-800' : daysUntilDeadline <= 3 ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : daysUntilDeadline <= 7 ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800' : 'bg-primary/5 border-primary/20'
