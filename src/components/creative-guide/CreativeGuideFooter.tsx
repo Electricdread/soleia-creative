@@ -33,12 +33,6 @@ export function CreativeGuideFooter() {
               >
                 Layout
               </button>
-              <button
-                onClick={() => navigate('/creative-guide/video-mapping')}
-                className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
-              >
-                Video Mapping
-              </button>
             </div>
             <div>
               <h4 className="mb-3.5 text-[10.5px] uppercase tracking-[0.2em] text-primary">Plan</h4>

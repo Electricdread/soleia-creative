@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileVideo, Boxes, Compass, Maximize2 } from 'lucide-react';
+import { FileVideo, Compass, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
 import { Reveal } from '@/components/motion/Reveal';
@@ -244,26 +244,9 @@ const CreativeGuideView = () => {
         </div>
       </section>
 
-      {/* VIDEO MAPPING CTA — interactive 3D venue + previz */}
-      <section className="pb-8 pt-24">
-        <div className="container mx-auto max-w-5xl px-6">
-          <Reveal>
-            <div
-              onClick={() => navigate('/creative-guide/video-mapping')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/creative-guide/video-mapping')}
-              className="group cursor-pointer rounded-3xl surface-elevated border border-primary/30 bg-gradient-to-br from-primary/10 to-accent/5 p-7 sm:p-8 hover:border-primary/50 transition-colors"
-            >
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-primary mb-2"><Boxes className="w-4 h-4" /> See it come alive</div>
-              <h3 className="font-display text-2xl text-foreground mb-2 group-hover:text-gradient-gold transition-colors">Video Mapping</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">Step inside an interactive 3D model of the venue and preview real mapped content on every screen — see how motion, branding and pixel-perfect mapping turn the room into one immersive canvas.</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-[10.5px] uppercase tracking-[0.18em] text-primary">Explore the venue in 3D →</span>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
+      {/* VIDEO MAPPING CTA — hidden for now. Services covers mapping end to
+          end, so this card sent a client to a second telling of it. The route
+          and the page still work for anyone holding the link. */}
 
       {/* CONTENT DELIVERY CTA — always sits just above the footer */}
       <section className="pb-24">
