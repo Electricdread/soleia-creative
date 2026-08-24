@@ -22,8 +22,12 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/~oauth/],
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        globIgnores: ["**/creative-guide/ai-retouch/**"],
+        // Shell only. This used to include png and svg, which pulled every
+        // image in public/ into the precache -- 29 MB of the 33 MB a first
+        // visit downloaded, most of it mapping diagrams nobody had opened.
+        // Images now load on demand; the app icons stay precached through
+        // includeAssets above.
+        globPatterns: ["**/*.{js,css,html,ico,woff2}"],
       },
       manifest: {
         name: "Soleia Creative",

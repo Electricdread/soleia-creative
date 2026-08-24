@@ -8,17 +8,17 @@ import { Button } from '@/components/ui/button';
 const LED_MAPPING_IMAGES = [
   { 
     name: 'Interior Mapping', 
-    path: '/creative-guide/led-interior-mapping.png',
+    path: '/creative-guide/led-interior-mapping.jpg',
     description: 'Indoor LED screens with Sol Rays, IMAG, and Curves'
   },
   { 
     name: 'Outdoor View', 
-    path: '/creative-guide/led-outdoor-mapping.png',
+    path: '/creative-guide/led-outdoor-mapping.jpg',
     description: 'Outdoor SR & SL screens with interior view'
   },
   { 
     name: 'Outdoor Arch', 
-    path: '/creative-guide/led-outdoor-arch-mapping.png',
+    path: '/creative-guide/led-outdoor-arch-mapping.jpg',
     description: 'Outdoor Arch and arrival screens'
   },
 ];

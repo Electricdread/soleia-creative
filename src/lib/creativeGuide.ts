@@ -424,7 +424,7 @@ export const GUIDE_IMAGES = {
   cover: '/creative-guide/cover.jpg',
   venueLayout: '/creative-guide/venue-layout.jpg',
   venueBlueprint: '/creative-guide/venue-blueprint.png',
-  visualization3d: '/creative-guide/outdoor-screens.png',
+  visualization3d: '/creative-guide/outdoor-screens.jpg',
   tvSpecs: '/creative-guide/tv-specs.jpg',
   tvDisplay: '/creative-guide/tv-display.jpg',
   elevatorSpecs: '/creative-guide/elevator-specs.jpg',
