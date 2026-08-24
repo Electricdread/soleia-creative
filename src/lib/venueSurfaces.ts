@@ -244,8 +244,6 @@ export const VENUE_AREAS: VenueArea[] = [
       { src: '/creative-guide/elevator/interior.jpg', alt: 'Soleia elevator interior with the branded portrait display beside the doors' },
       { src: '/creative-guide/services/marquee-exterior.jpg', alt: 'Soleia exterior LED marquee carrying event branding at street level' },
     ],
-    video: '/creative-guide/elevator/loop.mp4',
-    videoPoster: '/creative-guide/elevator/loop-poster.jpg',
   },
   {
     id: 'tv',
