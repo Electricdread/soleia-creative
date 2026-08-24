@@ -115,7 +115,7 @@ const SECTIONS: GuideSection[] = [
 // we deliver, and how they'll experience it in the room.
 const BLURBS: Record<string, string> = {
   'Static Logo':
-    "Your contract includes up to ten static logos across the LED screens. This line item covers each additional static logo beyond that allotment.",
+    "Your mark delivered on a transparent background, so it sits over the room rather than replacing it. The in-house visual animations and motion graphics from the club library keep running underneath — mixed in real time by the visual operator — so the room carries the night while your branding holds its place on the screens throughout, with no loop of your own to produce or approve. Your buyout includes ten static logos across the five main LED screens; this line item covers each one beyond that.",
   'Transparent Logo Animation':
     "A refined logo animation delivered with a true alpha channel, allowing it to sit cleanly over live content and environmental footage without blocking the screen. Your mark remains visible while the room continues to move underneath — ideal for branding moments that need to feel integrated, not interruptive. Tap the preview above to see how the transparency layer behaves on the wall.",
   'Mapped by Soleia Creative Team':
