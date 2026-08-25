@@ -397,8 +397,24 @@ export default function RateCard() {
           style={{ border: `1px solid ${GOLD}`, opacity: 0.5 }}
         />
 
+        {/* Venue contract callout — first, so the client confirms what their venue
+            contract already covers before the upgrade is raised */}
+        <section
+          className="rc-venue mt-4 sm:mt-8 p-4 rounded-sm relative"
+          style={{ backgroundColor: GOLD_TINT + '80', border: `1px solid ${GOLD}`, borderLeft: `3px solid ${GOLD}` }}
+        >
+          <div className="text-[10px] tracking-[0.3em] mb-2" style={{ color: GOLD_DEEP }}>
+            INCLUDED IN YOUR VENUE CONTRACT
+          </div>
+          <div className="rc-venue-body text-[12px] flex flex-wrap gap-x-6 gap-y-1" style={{ color: INK }}>
+            <span>Up to 10 static logos — LED screens</span>
+            <span className="hidden sm:inline" style={{ color: `${GOLD}` }}>·</span>
+            <span>1 static logo — all TVs, Cabanas &amp; Bungalows</span>
+          </div>
+        </section>
+
         {/* Section eyebrow */}
-        <div className="rc-eyebrow-wrap flex items-center gap-3 mt-4 sm:mt-8 mb-3">
+        <div className="rc-eyebrow-wrap flex items-center gap-3 mt-6 mb-3">
           <span className="text-[10px] tracking-[0.35em]" style={{ color: GOLD_DEEP }}>
             SOLEIA CREATIVE PACKAGE
           </span>
@@ -413,7 +429,7 @@ export default function RateCard() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
             <div className="flex-1 min-w-0">
               <h3 className="font-display leading-tight text-[17px] sm:text-[18px]" style={{ color: INK }}>
-                Immersive LED Environments &amp; Branded Overlay Design
+                Soleia Creative Upgrade Package
               </h3>
               <p className="mt-3 text-[12px] leading-relaxed break-words" style={{ color: SOFT_INK }}>
                 We will animate your brand's visual assets and turn them into Soleia's immersive
@@ -437,21 +453,6 @@ export default function RateCard() {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Venue contract callout */}
-        <section
-          className="rc-venue mt-5 p-4 rounded-sm relative"
-          style={{ backgroundColor: GOLD_TINT + '80', border: `1px solid ${GOLD}`, borderLeft: `3px solid ${GOLD}` }}
-        >
-          <div className="text-[10px] tracking-[0.3em] mb-2" style={{ color: GOLD_DEEP }}>
-            INCLUDED IN YOUR VENUE CONTRACT
-          </div>
-          <div className="rc-venue-body text-[12px] flex flex-wrap gap-x-6 gap-y-1" style={{ color: INK }}>
-            <span>Up to 10 static logos — LED screens</span>
-            <span className="hidden sm:inline" style={{ color: `${GOLD}` }}>·</span>
-            <span>1 static logo — all TVs, Cabanas &amp; Bungalows</span>
           </div>
         </section>
 
