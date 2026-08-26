@@ -95,13 +95,13 @@ export function StaticLogoDemo({ onFullscreen, className = '' }: StaticLogoDemoP
         {view.marks.map((m, i) => (
           <div
             key={i}
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[2px] bg-[#0a0908]/92 shadow-[0_0_0_1px_hsl(var(--primary)/0.4),0_0_26px_-4px_hsl(var(--primary)/0.55)]"
+            className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[2px] bg-[#0a0908]/[0.94] shadow-[0_0_0_1px_hsl(var(--primary)/0.4),0_0_26px_-4px_hsl(var(--primary)/0.55)]"
             style={{ left: `${m.x}%`, top: `${m.y}%`, width: `${m.w}%`, height: `${m.h}%` }}
           >
             <img
               src={MARK}
               alt=""
-              className="max-h-[62%] w-[78%] object-contain"
+              className="max-h-[68%] w-[82%] object-contain"
               style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary) / 0.35))' }}
             />
           </div>
