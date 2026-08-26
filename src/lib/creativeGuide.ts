@@ -394,12 +394,6 @@ export const creativeGuideCategories = [
     icon: 'Building2'
   },
   { 
-    key: 'virtual-tour',
-    label: '360° Tour',
-    description: 'Interactive 360° venue walkthrough',
-    icon: 'Eye'
-  },
-  { 
     key: 'display-specs', 
     label: 'Display Specs', 
     description: 'Technical specifications by display type',

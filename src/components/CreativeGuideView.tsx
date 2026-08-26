@@ -1,17 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileVideo, Compass, Maximize2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FileVideo } from 'lucide-react';
 import { InteractiveVenueMap } from '@/components/creative-guide/InteractiveVenueMap';
 import { Reveal } from '@/components/motion/Reveal';
 import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
 import { CreativeGuideFooter } from '@/components/creative-guide/CreativeGuideFooter';
 import { GuideSectionHead } from '@/components/creative-guide/GuideSectionHead';
 import soleiaWideLogo from '@/assets/soleia-wide-logo.png';
-
-const TOUR_360_URL = 'https://360virtualtour.invisionstudio.com/tours/sVpoz23SHC-';
-
-
 
 const LAYOUT_STATS: [string, string][] = [
   ['15', 'Cabanas'],
@@ -142,51 +137,10 @@ const CreativeGuideView = () => {
         </div>
       </section>
 
-      {/* 03 — 360 TOUR */}
-      <section id="tour" className="py-24 scroll-mt-20">
-        <div className="container mx-auto max-w-5xl px-6">
-          <GuideSectionHead eyebrow="03 — Soleia 360° Tour" title="Step inside." />
-          <Reveal>
-            <div className="relative rounded-3xl surface-elevated border border-primary/15 bg-black overflow-hidden">
-              <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-10 pointer-events-none" />
-              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 z-10 pointer-events-none" />
-              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 z-10 pointer-events-none" />
-              <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 z-10 pointer-events-none" />
-              <div className="aspect-video w-full">
-                <iframe
-                  src={TOUR_360_URL}
-                  title="SOLEIA Las Vegas — 360° Virtual Tour"
-                  className="w-full h-full border-0"
-                  allow="fullscreen; accelerometer; gyroscope; xr-spatial-tracking"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          </Reveal>
-          <Reveal delay={0.05} className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-sm text-muted-foreground max-w-3xl flex items-start gap-2">
-              <Compass className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <span>
-                Click and drag to explore — Dance Floor, Celebrity 1 & 2, the Rotunda, the 800s, the 200s/300s/400s, plus the beachclub, cabanas and Strip bars. Tour by Invision Studio.
-              </span>
-            </p>
-            <Button variant="outline" size="sm" asChild className="gap-2 border-primary/30 text-primary hover:bg-primary/10 shrink-0">
-              <a href={TOUR_360_URL} target="_blank" rel="noopener noreferrer">
-                <Maximize2 className="w-4 h-4" />
-                Open fullscreen
-              </a>
-            </Button>
-          </Reveal>
-        </div>
-      </section>
-
-
-
-
-      {/* 05 — BUYOUT INCLUSIONS */}
+      {/* 03 — BUYOUT INCLUSIONS */}
       <section id="branding" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <GuideSectionHead eyebrow="04 — What's Included" title="Branding, built in." />
+          <GuideSectionHead eyebrow="03 — What's Included" title="Branding, built in." />
           <div className="grid gap-4 md:grid-cols-2">
             {INCLUSIONS.map((inc, i) => (
               <Reveal key={inc.title} delay={i * 0.05}>
@@ -216,10 +170,10 @@ const CreativeGuideView = () => {
         </div>
       </section>
 
-      {/* 06 — CUSTOM CONTENT + VIDEO SPECS */}
+      {/* 04 — CUSTOM CONTENT + VIDEO SPECS */}
       <section id="specs" className="py-24 scroll-mt-20">
         <div className="container mx-auto max-w-5xl px-6">
-          <GuideSectionHead eyebrow="05 — Creative Content Design" title="We design every pixel." />
+          <GuideSectionHead eyebrow="04 — Creative Content Design" title="We design every pixel." />
           <Reveal>
             <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed mb-9">
               Our creative team designs branded content mapped to every pixel of the venue — from logo placement to fully bespoke motion built around your brand.

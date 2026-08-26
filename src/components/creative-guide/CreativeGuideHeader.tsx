@@ -12,10 +12,10 @@ import solIcon from '@/assets/sol-icon.png';
  * already on that page or on a sub-page, with ScrollToTop handling the scroll.
  */
 const NAV_LINKS: { label: string; to: string }[] = [
-  // Services leads: it is what a client is deciding on. The 360° tour sells
-  // the room next, and the technical detail follows for whoever needs it.
+  // Services leads: it is the current guide and what a client is deciding on.
+  // The remaining entries are anchors on the older landing page. The 360° tour
+  // that used to sit second is retired (2026-08-26) and is not coming back.
   { to: '/creative-guide/services', label: 'Services' },
-  { to: '/creative-guide#tour', label: '360° Tour' },
   { to: '/creative-guide#venue', label: 'Venue' },
   { to: '/creative-guide#layout', label: 'Layout' },
   // Video Mapping is hidden for now: the services page already walks a
