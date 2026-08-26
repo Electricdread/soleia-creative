@@ -7,23 +7,19 @@ import solIcon from '@/assets/sol-icon.png';
 /**
  * The Creative Guide's navigation, shared by every page in the guide.
  *
- * Section entries point at anchors on the guide's landing page. Written as
- * full paths ("/creative-guide#specs") they work identically whether you are
- * already on that page or on a sub-page, with ScrollToTop handling the scroll.
+ * Services is the guide (owner, 2026-08-26). The older landing page it used to
+ * sit beside — Venue, Layout, Branding, Specs and the 360° tour — is retired
+ * with its route, and /creative-guide now lands on Services, so this holds the
+ * one page a client is deciding on. Entries written as full paths
+ * ("/creative-guide/services#where") work identically from any sub-page, with
+ * ScrollToTop handling the scroll, should sections ever return here.
+ *
+ * Video Mapping stays out: Services already walks a client through mapping,
+ * and a second route saying the same thing split the story. Its page and
+ * route are intact.
  */
 const NAV_LINKS: { label: string; to: string }[] = [
-  // Services leads: it is the current guide and what a client is deciding on.
-  // The remaining entries are anchors on the older landing page. The 360° tour
-  // that used to sit second is retired (2026-08-26) and is not coming back.
   { to: '/creative-guide/services', label: 'Services' },
-  { to: '/creative-guide#venue', label: 'Venue' },
-  { to: '/creative-guide#layout', label: 'Layout' },
-  // Video Mapping is hidden for now: the services page already walks a
-  // client through mapping, and a second route saying the same thing split
-  // the story. The page and its route are intact -- restore this line to
-  // put it back in the nav.
-  { to: '/creative-guide#branding', label: 'Branding' },
-  { to: '/creative-guide#specs', label: 'Specs' },
 ];
 
 export interface CreativeGuideHeaderProps {
@@ -68,7 +64,7 @@ export function CreativeGuideHeader({ transparentAtTop = false }: CreativeGuideH
           solid ? 'glass border-b border-primary/15 py-3' : 'border-b border-transparent py-5'
         }`}
       >
-        <button onClick={() => go('/creative-guide')} className="flex items-center" aria-label="Creative Guide home">
+        <button onClick={() => go('/creative-guide/services')} className="flex items-center" aria-label="Creative Guide home">
           <img src={solIcon} alt="Soleia" className="h-9 w-auto object-contain sm:h-10" />
         </button>
 

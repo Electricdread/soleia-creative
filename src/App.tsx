@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "next-themes";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -12,7 +12,6 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { LegacyGuideRedirect } from "@/components/LegacyGuideRedirect";
 import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
-import CreativeGuide from "./pages/CreativeGuide";
 import CreativeGuideServices from "./pages/CreativeGuideServices";
 import ElevatorDisplayGuide from "./pages/ElevatorDisplayGuide";
 import TVDisplayGuide from "./pages/TVDisplayGuide";
@@ -80,7 +79,11 @@ const App = () => (
               <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
               
               {/* Protected Routes - Require Authentication */}
-              <Route path="/creative-guide" element={<CreativeGuide />} />
+              {/* Services is the Creative Guide. The older landing page that lived
+                  here (CreativeGuideView, retired 2026-08-26) is in git history;
+                  every "home" link in the app still points at /creative-guide,
+                  so the bare route sends them on. */}
+              <Route path="/creative-guide" element={<Navigate to="/creative-guide/services" replace />} />
               <Route path="/creativeguide/*" element={<LegacyGuideRedirect />} />
               <Route path="/creative-guide/services" element={<CreativeGuideServices />} />
               <Route path="/creative-guide/tv" element={<TVDisplayGuide />} />

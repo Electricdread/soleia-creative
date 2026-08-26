@@ -25,17 +25,10 @@ export function CreativeGuideFooter() {
             </p>
           </div>
           <div className="flex flex-wrap gap-12">
+            {/* The landing page these columns used to anchor into is retired
+                (2026-08-26); what remains are the guide's real pages. */}
             <div>
-              <h4 className="mb-3.5 text-[10.5px] uppercase tracking-[0.2em] text-primary">Venue</h4>
-              <button
-                onClick={() => navigate('/creative-guide#layout')}
-                className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
-              >
-                Layout
-              </button>
-            </div>
-            <div>
-              <h4 className="mb-3.5 text-[10.5px] uppercase tracking-[0.2em] text-primary">Plan</h4>
+              <h4 className="mb-3.5 text-[10.5px] uppercase tracking-[0.2em] text-primary">Guide</h4>
               <button
                 onClick={() => navigate('/creative-guide/services')}
                 className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
@@ -43,11 +36,29 @@ export function CreativeGuideFooter() {
                 Services
               </button>
               <button
-                onClick={() => navigate('/creative-guide#specs')}
+                onClick={() => navigate('/creative-guide/content-delivery')}
                 className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
               >
-                Specs
+                Content Delivery
               </button>
+            </div>
+            <div>
+              <h4 className="mb-3.5 text-[10.5px] uppercase tracking-[0.2em] text-primary">Display Specs</h4>
+              {(
+                [
+                  ['/creative-guide/tv', 'TV Network'],
+                  ['/creative-guide/elevator', 'Elevator'],
+                  ['/creative-guide/ticker', 'Ticker'],
+                ] as const
+              ).map(([to, label]) => (
+                <button
+                  key={to}
+                  onClick={() => navigate(to)}
+                  className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
