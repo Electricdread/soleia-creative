@@ -102,7 +102,7 @@ export function StaticLogoDemo({ onFullscreen, className = '' }: StaticLogoDemoP
       </Crossfade>
 
       <div className="relative">
-        <FadeSwap id={view.id} className="pointer-events-none absolute -top-11 left-4 max-w-[calc(100%-200px)] sm:left-5">
+        <FadeSwap id={view.id} className="pointer-events-none absolute -top-11 left-4 max-w-[calc(100%-224px)] sm:left-5">
           <span className="block truncate rounded-full border border-white/15 bg-black/65 px-3 py-1.5 font-mono text-[9.5px] uppercase tracking-[0.2em] text-white backdrop-blur-md">
             Static · {view.note}
           </span>
