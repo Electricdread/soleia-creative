@@ -5,6 +5,19 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# The guide gets typed without its hyphen. Send that spelling to the real
+# route, sub-path and all, before the SPA fallback below can swallow it.
+# (public/_redirects carries the same rule: that file is applied first.)
+[[redirects]]
+  from = "/creativeguide"
+  to = "/creative-guide"
+  status = 301
+
+[[redirects]]
+  from = "/creativeguide/*"
+  to = "/creative-guide/:splat"
+  status = 301
+
 # SPA fallback — every non-file path must serve index.html so client-side
 # routes resolve. This is what keeps live client links such as
 # /proposal/:token and /packet/:token working.

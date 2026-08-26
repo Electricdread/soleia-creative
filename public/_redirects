@@ -1,1 +1,4 @@
+# /creativeguide is the guide's unhyphenated spelling; netlify.toml explains.
+/creativeguide      /creative-guide          301
+/creativeguide/*    /creative-guide/:splat   301
 /*    /index.html   200

@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { FloatingThemeToggle } from "@/components/FloatingThemeToggle";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { LegacyGuideRedirect } from "@/components/LegacyGuideRedirect";
 import Index from "./pages/Index";
 import SharedSession from "./pages/SharedSession";
 import CreativeGuide from "./pages/CreativeGuide";
@@ -80,6 +81,7 @@ const App = () => (
               
               {/* Protected Routes - Require Authentication */}
               <Route path="/creative-guide" element={<CreativeGuide />} />
+              <Route path="/creativeguide/*" element={<LegacyGuideRedirect />} />
               <Route path="/creative-guide/services" element={<CreativeGuideServices />} />
               <Route path="/creative-guide/tv" element={<TVDisplayGuide />} />
               <Route path="/creative-guide/elevator" element={<ElevatorDisplayGuide />} />
