@@ -261,7 +261,7 @@ const BLURBS: Record<string, string> = {
   'Mapped to Spec by Client':
     "Client maps content to spec and provides to Soleia (no edits needed by Soleia Creative Team), max 50 GB. Revisions after delivery will incur additional fees.",
   'Elevator Dynamic Animation':
-    "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day. Included with the Creative Package; also available standalone.",
+    "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day. Available standalone, or alongside the Creative Package, whose inclusion is the elevator static logo.",
   'LED Screens Specific Zone Mapping':
     "Custom mapping to specific LED zones outside the main sunburst architecture — designed for moments that need to live on one focused surface instead of the whole room. Typically applied to the SR IMAG wall, SL IMAG wall, and the outdoor arch. Includes creative treatment, exact-resolution build-out, and onsite playback for the zones you select.",
   'Performing Artist — Mapped by Soleia Creative Team':
@@ -269,7 +269,7 @@ const BLURBS: Record<string, string> = {
   'Elevator Created by Client':
     "You deliver the finished elevator content built to our portrait spec, and we handle the rest: intake, QC on the actual elevator LED, mapping into the playback system, and onsite testing so it plays back correctly the day of the event.",
   'Elevator Static Logo':
-    "A single static portrait logo built for the elevator LED's idle state — always-on brand presence between rides. Color-graded and sized for the exact panel, tested onsite before doors.",
+    "A single static portrait logo built for the elevator LED's idle state — always-on brand presence between rides. Color-graded and sized for the exact panel, tested onsite before doors. Included with the Creative Package; also available standalone.",
   'Individual Cabana / Bungalow Logo':
     "Branded content assigned to a specific cabana or bungalow TV — each selected screen runs its own dedicated player feed instead of the shared network. Supported formats: still image PNG or video .MOV.",
   '3D Previz':
@@ -337,42 +337,41 @@ const PACKAGE_INCLUDES: {
 }[] = [
   {
     title: 'Creative direction',
-    body: 'We read your brand — guidelines, palette, past events — and set how the room should feel on arrival, through the programme and late in the night.',
+    body: 'We set the visual approach — how the room should feel on arrival, through the programme and late in the night — so nobody on your side has to art-direct fifteen screens.',
     src: IMG.creativeDirection,
     alt: 'The main room mid-set — colour across both IMAG walls, lasers off the sunburst and the floor filling up',
   },
   {
-    title: '1–3 custom looks',
-    body: 'Original visuals designed for the whole venue at once, so every surface belongs to the same idea rather than running its own loop.',
+    title: 'Custom animation',
+    body: 'Original visuals designed and animated for every surface at once, from concept through final delivery. You approve; we build.',
     src: IMG.artist,
     alt: 'A custom look running live across the room during a performance',
   },
   {
     title: 'Pixel-perfect mapping',
-    body: 'Every surface built at its own native resolution and placed in the 3840 × 2160 frame — the walls, the curves, the ceiling rays and the beachclub exteriors.',
+    body: 'Every surface built at its own native resolution and placed in the frame. Nothing for your team to cut, resize or export.',
     src: R.curvesInterior,
     movie: PIXELMAP_PREVIZ_MOVIE_URL,
     alt: 'SR Curve at 2304 × 272 running alongside IMAG SR, each carrying its own slice of the frame',
   },
   {
-    title: 'Dynamic elevator animation',
-    body: 'The first branded surface a guest meets. Its custom animation is part of the upgrade — designed with the rest of the look, mapped to the panel and running on show day.',
+    title: 'Elevator static logo',
+    body: 'Your mark on the elevator display for arrival — the first branded surface a guest meets — sized to the panel, tested onsite and running before doors.',
     // The same interior the elevator's specs page leads with, so the surface
-    // reads as one thing across the guide. A still: the loop plays on the
-    // elevator's own card further down, and twice on one page is once too many.
+    // reads as one thing across the guide.
     src: IMG.elevatorInterior,
     alt: 'Soleia elevator interior — gold trim with the branded display beside the doors',
   },
   {
     title: '3D preview before the night',
-    body: "Your content rendered on Soleia's real screens from our venue model, so you approve what the room will actually show — pacing, brightness, coverage — before load-in.",
+    body: 'Your content on a model of the actual venue screens. Review and approve everything before load-in — pacing, brightness, coverage — from wherever you are.',
     src: PREVIZ_POSTER,
     movie: PREVIZ_MOVIE_URL,
     alt: 'A frame from a 3D previz — a client show running on the venue model',
   },
   {
     title: 'Onsite playback',
-    body: 'Loaded, checked against the run of show, and operated by our team throughout the night.',
+    body: 'Loaded, checked against the run of show and operated by our team throughout the night. You watch the room.',
     src: IMG.onsitePlaybackConsole,
     alt: 'The playback desk during a show — clip columns and slice list on the console, the artist look running on the screens above',
   },
@@ -1019,8 +1018,10 @@ export default function CreativeGuideServices() {
                       The Soleia Creative Package Upgrade
                     </h3>
                     <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground sm:text-[15px]">
-                      Original visuals designed for every surface at once, previewed in 3D before load-in, and run
-                      live by our team on the night. Everything below is included.
+                      Full creative direction and animation — we guide the visual approach from concept through
+                      final delivery, so your team doesn't have to. It includes an elevator static logo for arrival
+                      and a 3D preview of your content on a model of the actual venue screens, so you review and
+                      approve everything before load-in.
                     </p>
                   </div>
                 </div>
@@ -1070,7 +1071,7 @@ export default function CreativeGuideServices() {
 
                 <div className="flex flex-wrap items-center justify-between gap-4 border-t border-primary/15 px-7 py-5 sm:px-10">
                   <p className="max-w-xl text-[13.5px] leading-relaxed text-muted-foreground">
-                    Concept to show night, handled by the Soleia creative team. Start with your event date.
+                    Send your event date and brand assets. We take it from there.
                   </p>
                   <a
                     href={CALL_HREF}
