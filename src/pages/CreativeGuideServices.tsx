@@ -9,6 +9,7 @@ import { CreativeGuideFooter } from '@/components/creative-guide/CreativeGuideFo
 import { GuideSectionHead } from '@/components/creative-guide/GuideSectionHead';
 import { GuideSectionNav, type GuideSection } from '@/components/creative-guide/GuideSectionNav';
 import { VenueSurfaceExplorer } from '@/components/creative-guide/VenueSurfaceExplorer';
+import { SpecificZoneSelector } from '@/components/creative-guide/SpecificZoneSelector';
 import { PixelMapFold } from '@/components/creative-guide/PixelMapFold';
 import { CreativeTimeline } from '@/components/creative/CreativeTimeline';
 import { PIXELMAP_RENDERS as R, VENUE_PHOTOS } from '@/lib/venueSurfaces';
@@ -687,6 +688,26 @@ export default function CreativeGuideServices() {
             lede="Soleia is one immersive LED environment, not a screen at the front of a room. Before anything else, here is every surface your content can land on — and what each one is actually for."
           />
           <VenueSurfaceExplorer />
+
+          {/* One zone, mapped on its own: the price-sheet service that puts a
+              client's content on a single part of the room. Five tabs, one
+              photograph of the real venue each, the screens that zone covers
+              labelled on it. Sits with the room, not the rate card, because a
+              client picks a zone by looking at the room. */}
+          <div id="zones" className="mt-16 scroll-mt-32">
+            <Reveal className="mb-6">
+              <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">
+                Focus on one zone
+              </span>
+              <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+                Focus your creative on the part of the venue that matters most to your guest journey. Select a
+                specific zone to see exactly which screens receive coordinated custom content.
+              </p>
+            </Reveal>
+            <Reveal>
+              <SpecificZoneSelector />
+            </Reveal>
+          </div>
         </section>
 
         {loading ? (
