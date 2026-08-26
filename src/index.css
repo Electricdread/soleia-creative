@@ -546,6 +546,21 @@ button, a, [role="button"] {
     opacity: 0.45;
   }
 
+  /* The package's six photographs arrive in six different lights. Pulling
+     them all to the schema's gold — desaturated, warmed, then the same veil
+     as every other cover — makes the card read as one offer photographed in
+     one room. Filter only; nothing to lay out. */
+  .media-duotone {
+    filter: grayscale(1) sepia(0.72) saturate(1.9) hue-rotate(-6deg) brightness(0.86) contrast(1.08);
+  }
+  .group\/tile:hover .media-duotone,
+  .group:hover .media-duotone {
+    filter: grayscale(0.65) sepia(0.45) saturate(1.5) hue-rotate(-6deg) brightness(0.92) contrast(1.06);
+  }
+  .media-duotone {
+    transition: filter 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   /* The club library moving under a transparent logo: two washes of gold
      light that drift across the frame on a long loop. Transform only. */
   .wash {

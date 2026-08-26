@@ -14,6 +14,7 @@ import { VenueSurfaceExplorer } from '@/components/creative-guide/VenueSurfaceEx
 import { SpecificZoneSelector } from '@/components/creative-guide/SpecificZoneSelector';
 import { PixelMapGuide } from '@/components/creative-guide/PixelMapGuide';
 import { TransparentLogoDemo } from '@/components/creative-guide/TransparentLogoDemo';
+import { StaticLogoDemo } from '@/components/creative-guide/StaticLogoDemo';
 import { CreativeTimeline } from '@/components/creative/CreativeTimeline';
 import { PIXELMAP_RENDERS as R, VENUE_PHOTOS } from '@/lib/venueSurfaces';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
@@ -26,7 +27,11 @@ const PRESENTATION_GUIDE_PDF_URL = `/Soleia-Presentation-Guide.pdf?v=${DOCUMENT_
 
 // Imagery lives in public/ so the printable guide and PDFs can reference the
 // same files. Crops in services/ are pre-cut to their display aspect.
-const HERO_IMG = '/creative-guide/services/hero-main-room.jpg';
+// The page opens on the venue from above — nightclub, beachclub and the
+// cabana rows in one render — and the same view sits in Meet the Venue. The
+// main-room photograph that used to lead now covers the Creative Package.
+const HERO_IMG = '/creative-guide/venue-layout-sunburst.jpg';
+const MAIN_ROOM_IMG = '/creative-guide/services/hero-main-room.jpg';
 const IMG = {
   packageMain: '/creative-guide/services/package-full-look.jpg',
   presentationKeynote: '/creative-guide/services/presentation-keynote.jpg',
@@ -56,7 +61,6 @@ const TV_HERO_IMG = '/creative-guide/tv/hero.jpg';
 // held on the screens. It reads as a card of its own, not a still of one, so it
 // runs the same way the transparent-logo card beside it does.
 const STATIC_LOGO_LOOP_URL = '/creative-guide/services/static-logo-loop.mp4';
-const STATIC_LOGO_LOOP_POSTER = '/creative-guide/services/static-logo-loop-poster.jpg';
 
 // A real previz render: a minute through the venue model with a client's show
 // on every screen. It stays behind a poster and `preload="none"` — 12 MB has
@@ -129,31 +133,6 @@ const WALK_PURPOSE: Record<string, string> = {
   'own-content': 'Specifications and downloads for your technical team.',
   next: 'Review your proposal, or schedule the creative call.',
 };
-
-/** The three decisions the guide walks a client through. */
-const WELCOME_DECISIONS: { eyebrow: string; title: string; body: string; cta: string; target: string }[] = [
-  {
-    eyebrow: 'Decision one',
-    title: 'What you already have',
-    body: 'Every buyout puts your logos on the five main LED screens and across the TV network before any creative work is added. Know the baseline first.',
-    cta: 'See what is included',
-    target: 'included',
-  },
-  {
-    eyebrow: 'Decision two',
-    title: 'What to add',
-    body: 'The Creative Package designs every surface together. Below it, every additional service — a single zone, a performer show, the elevator, the marquee.',
-    cta: 'See the options',
-    target: 'enhance',
-  },
-  {
-    eyebrow: 'Decision three',
-    title: 'How it gets made',
-    body: 'What we need from you and when, how the work runs from kickoff to show night, and where your own content fits if your team is building it.',
-    cta: 'See how production works',
-    target: 'production',
-  },
-];
 
 /** The venue in four numbers. */
 const VENUE_AT_A_GLANCE: [string, string][] = [
@@ -338,8 +317,8 @@ const PACKAGE_INCLUDES: {
   {
     title: 'Creative direction',
     body: 'We set the visual approach — how the room should feel on arrival, through the programme and late in the night — so nobody on your side has to art-direct fifteen screens.',
-    src: IMG.creativeDirection,
-    alt: 'The main room mid-set — colour across both IMAG walls, lasers off the sunburst and the floor filling up',
+    src: IMG.packageMain,
+    alt: 'Full-venue custom look — sunburst, curves and booth running one design',
   },
   {
     title: 'Custom animation',
@@ -672,30 +651,7 @@ export default function CreativeGuideServices() {
       return (
         <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
           <article className={`${cardShell} flex h-full flex-col`}>
-            <button
-              type="button"
-              className="relative block aspect-[16/9.4] w-full cursor-pointer overflow-hidden bg-black text-left"
-              onClick={() => setFullscreenVideo(STATIC_LOGO_LOOP_URL)}
-              aria-label={`Play fullscreen — ${item.title}`}
-            >
-              <video
-                src={STATIC_LOGO_LOOP_URL}
-                poster={STATIC_LOGO_LOOP_POSTER}
-                className="h-full w-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-                aria-label="A client's static logo held across the Soleia screens, seen through the venue model"
-              />
-              <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                <span className="btn-glow flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-xs uppercase tracking-[0.18em]">
-                  <Maximize2 className="h-3.5 w-3.5" />
-                  Tap for fullscreen
-                </span>
-              </span>
-            </button>
+            <StaticLogoDemo onFullscreen={() => setFullscreenVideo(STATIC_LOGO_LOOP_URL)} />
             <div className="flex-1 p-7 sm:p-8">
               <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
               <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
@@ -769,11 +725,11 @@ export default function CreativeGuideServices() {
       <section className="relative flex min-h-[82vh] items-end overflow-hidden">
         <motion.img
           src={HERO_IMG}
-          alt="Soleia main room — sunburst LED ceiling over the dance floor"
+          alt="Soleia from above — the nightclub's sunburst, the beachclub pools and the cabana rows in one render"
           initial={reduceMotion ? false : { opacity: 0, scale: 1.06 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.8, ease: MOTION_EASE }}
-          className="media-grade absolute inset-0 h-full w-full object-cover"
+          className="media-grade absolute inset-0 h-full w-full object-cover object-[62%_50%]"
         />
         {/* The schema's colour over the photograph: a gold veil in soft light,
             then a warm multiply from the top so the LED whites read amber. */}
@@ -832,30 +788,11 @@ export default function CreativeGuideServices() {
           <GuideSectionHead
             eyebrow="01 — Welcome"
             title="What this guide helps you decide."
-            lede="Soleia is one immersive LED environment, and your event already has a place on it. This guide walks the three decisions that shape what the room shows on the night — and hands your technical team what they need if they are building content themselves."
+            lede="Soleia is one immersive LED environment, and your event already has a place on it. This guide walks what the room already does for your brand, what you can add, and how the work gets made — and hands your technical team what they need if they are building content themselves."
           />
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {WELCOME_DECISIONS.map((d, i) => (
-              <Reveal key={d.title} delay={i * 0.05}>
-                <button
-                  type="button"
-                  onClick={() => goTo(d.target)}
-                  className={`${cardShell} btn-glow flex h-full w-full flex-col p-7 text-left`}
-                >
-                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{d.eyebrow}</span>
-                  <h3 className="mb-2.5 mt-2.5 font-display text-2xl leading-tight text-foreground">{d.title}</h3>
-                  <p className="flex-1 text-[14px] leading-relaxed text-muted-foreground">{d.body}</p>
-                  <span className="mt-5 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-primary">
-                    {d.cta} <ArrowRight className="h-3.5 w-3.5" />
-                  </span>
-                </button>
-              </Reveal>
-            ))}
-          </div>
-
           {/* The walk, as a list a client can hold in their head. */}
-          <Reveal className="mt-6">
+          <Reveal>
             <article className={`${cardShell} grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3`}>
               {SECTIONS.slice(1).map((s, i) => (
                 <button
@@ -912,6 +849,28 @@ export default function CreativeGuideServices() {
               </Reveal>
             ))}
           </div>
+
+          <Reveal className="mb-8">
+            <article className="group card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-black surface-elevated">
+              <div className="relative aspect-[1737/905] bg-black">
+                <img
+                  src={HERO_IMG}
+                  alt="Soleia from above — the nightclub's sunburst, the beachclub pools and the cabana rows"
+                  loading="lazy"
+                  className="media-grade absolute inset-0 h-full w-full object-contain"
+                />
+                <div className="media-veil absolute inset-0" aria-hidden="true" />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary/15 px-6 py-4 sm:px-8">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">The venue from above</span>
+                  <p className="mt-1 text-[13.5px] leading-relaxed text-muted-foreground">
+                    The nightclub under its sunburst on the right, the beachclub pools and cabana rows on the left, the marquee wrapping the corner between.
+                  </p>
+                </div>
+              </div>
+            </article>
+          </Reveal>
 
           <Reveal className="mb-5">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -1005,8 +964,8 @@ export default function CreativeGuideServices() {
               <div className="overflow-hidden rounded-3xl bg-card/60">
                 <div className="relative aspect-[21/9] overflow-hidden bg-black sm:aspect-[21/7.5]">
                   <img
-                    src={IMG.packageMain}
-                    alt="Full-venue custom look — sunburst, curves and booth running one design"
+                    src={MAIN_ROOM_IMG}
+                    alt="Soleia main room — sunburst LED ceiling over the dance floor"
                     loading="lazy"
                     className="media-grade absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-[1.03]"
                   />
@@ -1035,7 +994,7 @@ export default function CreativeGuideServices() {
                           src={inc.src}
                           alt={inc.alt}
                           loading="lazy"
-                          className="media-grade h-full w-full object-cover transition-transform duration-700 group-hover/tile:scale-[1.03]"
+                          className="media-duotone h-full w-full object-cover transition-transform duration-700 group-hover/tile:scale-[1.03]"
                         />
                         <div className="media-veil absolute inset-0" aria-hidden="true" />
                         {playable && (
@@ -1069,18 +1028,6 @@ export default function CreativeGuideServices() {
                   })}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-4 border-t border-primary/15 px-7 py-5 sm:px-10">
-                  <p className="max-w-xl text-[13.5px] leading-relaxed text-muted-foreground">
-                    Send your event date and brand assets. We take it from there.
-                  </p>
-                  <a
-                    href={CALL_HREF}
-                    className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary bg-primary/15 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/25"
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                    Start with your event date
-                  </a>
-                </div>
               </div>
             </article>
           </Reveal>
