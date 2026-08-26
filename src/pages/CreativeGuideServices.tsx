@@ -142,7 +142,7 @@ const WELCOME_DECISIONS: { eyebrow: string; title: string; body: string; cta: st
   {
     eyebrow: 'Decision two',
     title: 'What to add',
-    body: 'The Creative Package designs the whole room as one canvas. Below it, every additional service — a single zone, a performer show, the elevator, the marquee.',
+    body: 'The Creative Package designs every surface together. Below it, every additional service — a single zone, a performer show, the elevator, the marquee.',
     cta: 'See the options',
     target: 'enhance',
   },
