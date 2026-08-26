@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { HIGHLIGHT_SPRING } from '@/components/motion/motion';
 
 /**
  * The Services page's section spine.
@@ -45,6 +47,7 @@ export function GuideSectionNav({ sections, offset = 66 }: GuideSectionNavProps)
   const slotRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
 
   // Measure the bar once so pinning it can reserve the same height and the page
   // does not jump by a row as it detaches.
@@ -137,14 +140,24 @@ export function GuideSectionNav({ sections, offset = 66 }: GuideSectionNavProps)
                 data-chip={s.id}
                 onClick={() => go(s.id)}
                 aria-current={on ? 'true' : undefined}
-                className={`flex-shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-[10.5px] uppercase tracking-[0.16em] transition-colors ${
-                  on
-                    ? 'bg-primary/15 text-primary'
-                    : 'text-muted-foreground hover:bg-primary/5 hover:text-foreground'
+                className={`relative flex-shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-[10.5px] uppercase tracking-[0.16em] transition-colors duration-500 ${
+                  on ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <span className="mr-1.5 font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
-                {s.label}
+                {/* One highlight that slides to the section being read, so the
+                    bar moves with the page instead of blinking chip to chip. */}
+                {on && (
+                  <motion.span
+                    layoutId={reduceMotion ? undefined : 'guide-section-nav-highlight'}
+                    transition={HIGHLIGHT_SPRING}
+                    className="pointer-events-none absolute inset-0 rounded-full bg-primary/15 shadow-[0_0_18px_-4px_hsl(var(--primary)/0.45)]"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="relative">
+                  <span className="mr-1.5 font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
+                  {s.label}
+                </span>
               </button>
             );
           })}

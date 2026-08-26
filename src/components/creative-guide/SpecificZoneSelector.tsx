@@ -1,5 +1,26 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useMemo, useState, type KeyboardEvent } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Check, MapPin } from 'lucide-react';
+import { Crossfade, FadeSwap } from '@/components/motion/Crossfade';
+import { HIGHLIGHT_SPRING, useWarmImages } from '@/components/motion/motion';
+
+/**
+ * LED Screens — Specific Zone Mapping: the price-sheet service that puts a
+ * client's content on one part of the room.
+ *
+ * Five tabs, one photograph of the real venue each, with the screens that zone
+ * covers labelled on the picture. The mapping is the owner's:
+ *
+ *   Zone 1 Main Stage  IMAG SR, IMAG SL, Center, DJ Booth
+ *   Zone 2 Curves      SR Curve, SL Curve
+ *   Zone 3 Sunburst    Ceiling Sunburst
+ *   Zone 4 Outdoor     Outdoor SR, Outdoor SL
+ *   Zone 5 Arch        Outdoor Arch
+ *
+ * Motion follows the guide's standard: the highlight glides between tabs, the
+ * photograph crossfades, the copy beside it fades up, and every image is asked
+ * for on mount so no tab ever waits on the network.
+ */
 
 type ZoneLabel = {
   label: string;
@@ -59,7 +80,8 @@ const SPECIFIC_ZONES: SpecificZone[] = [
     summary: 'The overhead LED rays transform the ceiling into a high-impact motion surface visible across the room.',
     screens: ['Ceiling Sunburst'],
     bestFor: 'Radiating motion, rhythmic accents, immersive color changes and overhead brand atmospheres.',
-    labels: [{ label: 'CEILING SUNBURST', x: 50, y: 12 }],
+    // Sits clear of the zone badge in the top-left corner on a phone.
+    labels: [{ label: 'CEILING SUNBURST', x: 50, y: 20 }],
   },
   {
     id: 4,
@@ -88,9 +110,30 @@ const SPECIFIC_ZONES: SpecificZone[] = [
   },
 ];
 
-export function SpecificZoneSelector() {
+const ZONE_IMAGES = SPECIFIC_ZONES.map((z) => z.image);
+
+export interface SpecificZoneSelectorProps {
+  /** Above the title. Defaults to "Price sheet service". */
+  eyebrow?: string;
+  /**
+   * The paragraph under the title. The Services page passes the rate card's
+   * own description so the card says the same thing the proposal will.
+   */
+  description?: string;
+  className?: string;
+}
+
+export function SpecificZoneSelector({
+  eyebrow = 'Price sheet service',
+  description = 'Select a zone below to see the screens included. This service maps custom content to the exact LED screens in one targeted venue area, giving your most important guest moment a focused, coordinated visual identity.',
+  className = '',
+}: SpecificZoneSelectorProps) {
   const [selectedZoneId, setSelectedZoneId] = useState(1);
   const selectedZone = SPECIFIC_ZONES.find((zone) => zone.id === selectedZoneId) ?? SPECIFIC_ZONES[0];
+  const reduceMotion = useReducedMotion();
+
+  const images = useMemo(() => ZONE_IMAGES, []);
+  useWarmImages(images);
 
   const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, zoneIndex: number) => {
     let nextIndex: number | undefined;
@@ -109,19 +152,17 @@ export function SpecificZoneSelector() {
   };
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-primary/20 bg-card/50 surface-elevated">
+    <div className={`overflow-hidden rounded-3xl border border-primary/20 bg-card/50 surface-elevated ${className}`}>
       <div className="border-b border-primary/15 px-5 py-6 sm:px-8 sm:py-7">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <div className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-primary">
+            <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
               <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-              Price sheet service
+              {eyebrow}
             </div>
             <h3 className="font-display text-2xl text-foreground sm:text-3xl">LED Screens — Specific Zone Mapping</h3>
             <p className="mt-2 text-sm font-medium text-primary">Choose one zone. Make it unmistakably yours.</p>
-            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground sm:text-sm">
-              Select a zone below to see the screens included. This service maps custom content to the exact LED screens in one targeted venue area, giving your most important guest moment a focused, coordinated visual identity.
-            </p>
+            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground sm:text-sm">{description}</p>
           </div>
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground/80">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-primary">
@@ -147,16 +188,26 @@ export function SpecificZoneSelector() {
                 tabIndex={isSelected ? 0 : -1}
                 onClick={() => setSelectedZoneId(zone.id)}
                 onKeyDown={(event) => handleTabKeyDown(event, zoneIndex)}
-                className={`min-w-[132px] flex-1 rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                className={`tab-glow relative min-w-[132px] flex-1 rounded-2xl border px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   isSelected
-                    ? 'border-primary/60 bg-primary/10 text-foreground'
+                    ? 'border-primary/60 text-foreground'
                     : 'border-primary/10 bg-background/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
                 }`}
               >
-                <span className={`block text-[10px] uppercase tracking-[0.2em] ${isSelected ? 'text-primary' : 'text-muted-foreground/60'}`}>
+                {/* The highlight is one element that glides to whichever tab is
+                    selected, rather than five that switch on and off. */}
+                {isSelected && (
+                  <motion.span
+                    layoutId={reduceMotion ? undefined : 'specific-zone-tab-highlight'}
+                    transition={HIGHLIGHT_SPRING}
+                    className="glow-ring pointer-events-none absolute inset-0 rounded-2xl bg-primary/10"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className={`relative block font-mono text-[10px] uppercase tracking-[0.2em] ${isSelected ? 'text-primary' : 'text-muted-foreground/60'}`}>
                   Zone {zone.id}
                 </span>
-                <span className="mt-1 block text-sm font-medium">{zone.shortName}</span>
+                <span className="relative mt-1 block text-sm font-medium">{zone.shortName}</span>
               </button>
             );
           })}
@@ -169,15 +220,15 @@ export function SpecificZoneSelector() {
         aria-labelledby={`specific-zone-tab-${selectedZone.id}`}
         className="grid lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.85fr)]"
       >
-        <div className="relative aspect-video overflow-hidden bg-black lg:aspect-auto lg:min-h-[430px]">
+        <Crossfade id={selectedZone.id} className="aspect-video overflow-hidden bg-black lg:aspect-auto lg:min-h-[430px]">
           <img
-            key={selectedZone.image}
             src={selectedZone.image}
             alt={selectedZone.imageAlt}
-            className="h-full w-full animate-fade-in-up object-cover"
+            decoding="async"
+            className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/15" aria-hidden="true" />
-          <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/65 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-md sm:left-5 sm:top-5">
+          <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/65 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-md sm:left-5 sm:top-5">
             Zone {selectedZone.id} · {selectedZone.shortName}
           </div>
           {selectedZone.labels.map((item) => (
@@ -193,16 +244,16 @@ export function SpecificZoneSelector() {
               <span className="mx-auto block h-1.5 w-1.5 rounded-full bg-primary ring-4 ring-primary/20" aria-hidden="true" />
             </div>
           ))}
-        </div>
+        </Crossfade>
 
         <div className="flex flex-col justify-between border-t border-primary/15 p-6 sm:p-8 lg:border-l lg:border-t-0">
-          <div>
-            <span className="text-[10px] uppercase tracking-[0.22em] text-primary">Zone {selectedZone.id}</span>
+          <FadeSwap id={selectedZone.id}>
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Zone {selectedZone.id}</span>
             <h4 className="mt-2 font-display text-2xl leading-tight text-foreground">{selectedZone.title}</h4>
             <p className="mt-4 text-[13.5px] leading-relaxed text-muted-foreground">{selectedZone.summary}</p>
 
             <div className="mt-7">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">Screens included</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">Screens included</div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {selectedZone.screens.map((screen) => (
                   <span key={screen} className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[11px] text-foreground">
@@ -211,14 +262,16 @@ export function SpecificZoneSelector() {
                 ))}
               </div>
             </div>
-          </div>
 
-          <div className="mt-8 border-t border-primary/15 pt-5">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-primary/80">Best for</div>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">{selectedZone.bestFor}</p>
-          </div>
+            <div className="mt-8 border-t border-primary/15 pt-5">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary/80">Best for</div>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">{selectedZone.bestFor}</p>
+            </div>
+          </FadeSwap>
         </div>
       </div>
     </div>
   );
 }
+
+export default SpecificZoneSelector;

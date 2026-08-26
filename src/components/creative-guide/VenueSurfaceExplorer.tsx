@@ -1,6 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Maximize2, X } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
+import { Crossfade, FadeSwap, Overlay } from '@/components/motion/Crossfade';
+import { HIGHLIGHT_SPRING, useWarmImages } from '@/components/motion/motion';
 import { VENUE_AREAS, type AreaId } from '@/lib/venueSurfaces';
 
 /**
@@ -16,6 +19,10 @@ import { VENUE_AREAS, type AreaId } from '@/lib/venueSurfaces';
  * talked over on a screenshared creative call, so it has to read at meeting
  * size. Resolutions and logo placement deliberately live further down in the
  * pixel-map legend — repeating them here made the opening a spec sheet.
+ *
+ * Moving between areas and shots crossfades; the area highlight glides; the
+ * lightbox fades and scales rather than popping. That is the guide's motion
+ * standard (2026-08-26), and it is why nothing here swaps an `src` cold.
  */
 
 type Shot = { src: string; alt: string; kind: 'image' } | { src: string; poster?: string; alt: string; kind: 'video' };
@@ -23,6 +30,7 @@ type Shot = { src: string; alt: string; kind: 'image' } | { src: string; poster?
 export function VenueSurfaceExplorer() {
   const [areaId, setAreaId] = useState<AreaId>('main');
   const [lightbox, setLightbox] = useState<Shot | null>(null);
+  const reduceMotion = useReducedMotion();
 
   const area = useMemo(() => VENUE_AREAS.find((a) => a.id === areaId) ?? VENUE_AREAS[0], [areaId]);
 
@@ -33,6 +41,17 @@ export function VenueSurfaceExplorer() {
     return list;
   }, [area]);
 
+  // Every area's establishing shot, so the first tap on any tab is instant;
+  // the current area's alternates, so the strip beneath it is too.
+  const warm = useMemo(
+    () => [
+      ...VENUE_AREAS.map((a) => a.image),
+      ...shots.filter((s) => s.kind === 'image').map((s) => s.src),
+    ],
+    [shots],
+  );
+  useWarmImages(warm);
+
   const [shotIdex, setShotIdex] = useState(0);
   const shot = shots[Math.min(shotIdex, shots.length - 1)];
 
@@ -42,12 +61,7 @@ export function VenueSurfaceExplorer() {
     setShotIdex(0);
   }, []);
 
-  useEffect(() => {
-    if (!lightbox) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setLightbox(null);
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [lightbox]);
+  const closeLightbox = useCallback(() => setLightbox(null), []);
 
   return (
     <>
@@ -66,13 +80,21 @@ export function VenueSurfaceExplorer() {
                 role="tab"
                 aria-selected={on}
                 onClick={() => pickArea(a.id)}
-                className={`tap-44 flex-shrink-0 whitespace-nowrap rounded-full border px-5 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
+                className={`tab-glow tap-44 relative flex-shrink-0 whitespace-nowrap rounded-full border px-5 py-2.5 text-[11px] uppercase tracking-[0.18em] ${
                   on
-                    ? 'border-primary/60 bg-primary/15 text-primary'
+                    ? 'border-primary/60 text-primary'
                     : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground'
                 }`}
               >
-                {a.label}
+                {on && (
+                  <motion.span
+                    layoutId={reduceMotion ? undefined : 'venue-area-highlight'}
+                    transition={HIGHLIGHT_SPRING}
+                    className="glow-ring pointer-events-none absolute inset-0 rounded-full bg-primary/15"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="relative">{a.label}</span>
               </button>
             );
           })}
@@ -88,7 +110,7 @@ export function VenueSurfaceExplorer() {
             aria-label={`Enlarge — ${shot.alt}`}
             className="group relative block w-full cursor-zoom-in overflow-hidden bg-black"
           >
-            <div className="aspect-[16/9]">
+            <Crossfade id={shot.src} className="aspect-[16/9]">
               {shot.kind === 'video' ? (
                 <video
                   src={shot.src}
@@ -101,10 +123,10 @@ export function VenueSurfaceExplorer() {
                   preload="metadata"
                 />
               ) : (
-                <img src={shot.src} alt={shot.alt} className="h-full w-full object-cover" loading="lazy" />
+                <img src={shot.src} alt={shot.alt} decoding="async" className="h-full w-full object-cover" />
               )}
-            </div>
-            <span className="pointer-events-none absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-background/80 px-3.5 py-2 text-[10px] uppercase tracking-[0.18em] text-foreground opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+            </Crossfade>
+            <span className="btn-glow pointer-events-none absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-background/80 px-3.5 py-2 text-[10px] uppercase tracking-[0.18em] text-foreground opacity-0 backdrop-blur-sm group-hover:opacity-100 group-focus-visible:opacity-100">
               <Maximize2 className="h-3.5 w-3.5" />
               Enlarge
             </span>
@@ -119,7 +141,7 @@ export function VenueSurfaceExplorer() {
                   onClick={() => setShotIdex(i)}
                   aria-label={s.alt}
                   aria-current={i === shotIdex ? 'true' : undefined}
-                  className={`h-12 w-20 flex-shrink-0 overflow-hidden rounded-lg border transition-colors ${
+                  className={`tab-glow h-12 w-20 flex-shrink-0 overflow-hidden rounded-lg border ${
                     i === shotIdex ? 'border-primary' : 'border-border/60 hover:border-primary/50'
                   }`}
                 >
@@ -135,51 +157,38 @@ export function VenueSurfaceExplorer() {
 
           {/* What this area is */}
           <div className="border-t border-primary/15 px-6 py-7 sm:px-8">
-            <h3 className="font-display text-2xl leading-tight text-foreground">{area.title}</h3>
-            <p className="mt-2.5 max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground">{area.blurb}</p>
+            <FadeSwap id={area.id}>
+              <h3 className="font-display text-2xl leading-tight text-foreground">{area.title}</h3>
+              <p className="mt-2.5 max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground">{area.blurb}</p>
+            </FadeSwap>
           </div>
-
         </article>
       </Reveal>
 
       {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4"
-          onClick={() => setLightbox(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label={lightbox.alt}
+      <Overlay open={!!lightbox} onClose={closeLightbox} label={lightbox?.alt}>
+        {lightbox?.kind === 'video' ? (
+          <video
+            src={lightbox.src}
+            poster={lightbox.poster}
+            className="max-h-[92vh] max-w-full"
+            autoPlay
+            loop
+            muted
+            controls
+            playsInline
+          />
+        ) : lightbox ? (
+          <img src={lightbox.src} alt={lightbox.alt} className="max-h-[92vh] max-w-full object-contain" />
+        ) : null}
+        <button
+          onClick={closeLightbox}
+          aria-label="Close"
+          className="btn-glow tap-44 fixed right-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
         >
-          {lightbox.kind === 'video' ? (
-            <video
-              src={lightbox.src}
-              poster={lightbox.poster}
-              className="max-h-full max-w-full"
-              autoPlay
-              loop
-              muted
-              controls
-              playsInline
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <img
-              src={lightbox.src}
-              alt={lightbox.alt}
-              className="max-h-full max-w-full object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
-          )}
-          <button
-            onClick={() => setLightbox(null)}
-            aria-label="Close"
-            className="tap-44 absolute right-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/10"
-          >
-            <X className="h-4 w-4" /> Close
-          </button>
-        </div>
-      )}
+          <X className="h-4 w-4" /> Close
+        </button>
+      </Overlay>
     </>
   );
 }

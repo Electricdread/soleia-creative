@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Mail, Maximize2, Eye, Download, Play } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Reveal } from '@/components/motion/Reveal';
+import { Overlay } from '@/components/motion/Crossfade';
 import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
 import { CreativeGuideFooter } from '@/components/creative-guide/CreativeGuideFooter';
 import { GuideSectionHead } from '@/components/creative-guide/GuideSectionHead';
@@ -71,9 +71,12 @@ const PIXELMAP_PREVIZ_POSTER = '/creative-guide/services/pixelmap-previz-poster.
 
 // Carried by the link, never printed: the guide is public and indexable, so
 // the address should not be sitting there as text for a scraper to lift.
-const CONTACT_HREF =
-  'mailto:luisdreamslv@gmail.com?subject=' +
-  encodeURIComponent('Soleia Creative — event enquiry');
+const CONTACT_MAILTO = 'mailto:luisdreamslv@gmail.com?subject=';
+const CALL_HREF = CONTACT_MAILTO + encodeURIComponent('Soleia Creative — schedule my creative call');
+const PROPOSAL_QUESTION_HREF = CONTACT_MAILTO + encodeURIComponent('Soleia Creative — a question about my proposal');
+
+/** The rate-card title of the zone-mapping service; its card is the selector. */
+const ZONE_MAPPING_TITLE = 'LED Screens Specific Zone Mapping';
 
 type Item = {
   id: string;
@@ -93,22 +96,163 @@ type PackageSection = {
 };
 
 /**
- * The page's spine.
+ * The page's spine — the owner's seven sections (2026-08-26), in their order:
  *
- * The order follows how the creative call is actually run: show them the room,
- * then what their buyout already covers in it, then how content reaches every
- * surface, then the upgrade, then what else can be added, then what happens
- * after the call. A client reading alone from the pre-call packet gets the same
- * walk, in the same order.
+ *   01 Welcome        what the guide helps the client decide
+ *   02 Meet the Venue condensed layout, the two worlds, explore the room
+ *   03 Included       establish the buyout's value before any upgrade
+ *   04 Enhance        the package, then every additional price-sheet service
+ *   05 Production     assets, deadlines, production, QC, load-in
+ *   06 Own Content    route technical teams to specs and downloads
+ *   07 Next Step      review the proposal, or schedule the creative call
+ *
+ * A client reading alone from the pre-call packet gets the same walk the
+ * creative team drives live on the call.
  */
 const SECTIONS: GuideSection[] = [
-  { id: 'where', label: 'The Room' },
+  { id: 'welcome', label: 'Welcome' },
+  { id: 'venue', label: 'Venue' },
   { id: 'included', label: 'Included' },
-  { id: 'mapping', label: 'Mapping' },
-  { id: 'package', label: 'Package' },
-  { id: 'add-ons', label: 'Add-Ons' },
+  { id: 'enhance', label: 'Enhance' },
+  { id: 'production', label: 'Production' },
   { id: 'own-content', label: 'Own Content' },
-  { id: 'next', label: "What's Next" },
+  { id: 'next', label: 'Next Step' },
+];
+
+/** What the walk is for, step by step — the Welcome section's map of the page. */
+const WALK_TITLES: Record<string, string> = {
+  venue: 'Meet the venue',
+  included: 'Included with your buyout',
+  enhance: 'Enhance your event',
+  production: 'How creative production works',
+  'own-content': 'Providing your own content?',
+  next: 'Next step',
+};
+const WALK_PURPOSE: Record<string, string> = {
+  venue: 'The layout, the two worlds, and every surface your content can land on.',
+  included: 'The branding every activation already carries — your starting point.',
+  enhance: 'The Creative Package, and every additional price-sheet service.',
+  production: 'Assets, deadlines, production, QC and load-in — what to expect.',
+  'own-content': 'Specifications and downloads for your technical team.',
+  next: 'Review your proposal, or schedule the creative call.',
+};
+
+/** The three decisions the guide walks a client through. */
+const WELCOME_DECISIONS: { eyebrow: string; title: string; body: string; cta: string; target: string }[] = [
+  {
+    eyebrow: 'Decision one',
+    title: 'What you already have',
+    body: 'Every buyout puts your logos on the five main LED screens and across the TV network before any creative work is added. Know the baseline first.',
+    cta: 'See what is included',
+    target: 'included',
+  },
+  {
+    eyebrow: 'Decision two',
+    title: 'What to add',
+    body: 'The Creative Package designs the whole room as one canvas. Below it, every additional service — a single zone, a performer show, the elevator, the marquee.',
+    cta: 'See the options',
+    target: 'enhance',
+  },
+  {
+    eyebrow: 'Decision three',
+    title: 'How it gets made',
+    body: 'What we need from you and when, how the work runs from kickoff to show night, and where your own content fits if your team is building it.',
+    cta: 'See how production works',
+    target: 'production',
+  },
+];
+
+/** The venue in four numbers. */
+const VENUE_AT_A_GLANCE: [string, string][] = [
+  ['5,000+', 'Square feet of LED'],
+  ['15', 'Cabanas'],
+  ['9', 'Bungalows'],
+  ['30+', 'Display zones'],
+];
+
+/** The two worlds, and the private one between them. */
+const VENUE_WORLDS = [
+  {
+    k: 'Indoor',
+    title: 'The Nightclub',
+    body: 'Club stage, Bar 1 & Bar 2, Mezzanine Levels 1 & 2, the Rotunda and the 800s — tiered tables from the 100s to the 700s around the dance floor, under the sunburst ceiling.',
+  },
+  {
+    k: 'Open-air',
+    title: 'Beachclub & Pool',
+    body: 'Pool stage, day beds, the LV Strip Bar and Cabana Bar, with the vertical outdoor screens and the arch overlooking the Strip.',
+  },
+  {
+    k: 'Private',
+    title: 'Cabanas & Bungalows',
+    body: '9 Bungalows and 15 Cabanas with private TV displays — ideal for VIP hosting, breakouts and branded suites.',
+  },
+];
+
+/** Production, in the five words a client asks about. */
+const PRODUCTION_STEPS: { title: string; body: string }[] = [
+  {
+    title: 'Assets',
+    body: 'Logos in vector, fonts, palette, key artwork, brand guidelines — and any content you want on the screens. Production starts when these and a signed proposal are with us.',
+  },
+  {
+    title: 'Deadlines',
+    body: 'Fourteen days from kickoff to your first review cut; three days for one consolidated set of notes; one included revision round; final cut-off seven business days before the show.',
+  },
+  {
+    title: 'Production',
+    body: 'We study the brand, set the creative direction, then build the looks on the real venue geometry — every surface at its native resolution, in one 3840 × 2160 frame.',
+  },
+  {
+    title: 'QC',
+    body: 'Every file is checked on the actual pixel map, and with the package previewed in 3D on the venue model before load-in — pacing, brightness, coverage, placement.',
+  },
+  {
+    title: 'Load-in',
+    body: 'Content is loaded into the playback system, checked against the run of show, and operated by our team throughout the night.',
+  },
+];
+
+/** Where a technical team goes next. */
+const SPEC_LINKS: { kind: string; title: string; body: string; to: string; download?: string }[] = [
+  {
+    kind: 'Guide',
+    title: 'Content Delivery Guide',
+    body: "Every screen's pixel resolution, the DXV3 workflow, the Pixelmap and the After Effects project.",
+    to: '/creative-guide/content-delivery',
+  },
+  {
+    kind: 'Specs',
+    title: 'TV Network',
+    body: 'One 1920 × 1080 feed across the twenty-eight televisions — the pixel map, the loop and the delivery spec.',
+    to: '/creative-guide/tv',
+  },
+  {
+    kind: 'Specs',
+    title: 'Elevator Display',
+    body: 'The 600 × 800 portrait panel beside the doors — mapping, loop and delivery spec.',
+    to: '/creative-guide/elevator',
+  },
+  {
+    kind: 'Specs',
+    title: 'LED Marquee',
+    body: 'The street-facing sign — its resolution and how a static or animated graphic is scheduled into playback.',
+    to: '/creative-guide/ticker',
+  },
+  {
+    kind: 'PDF',
+    title: 'Presentation Guide',
+    body: 'Running your own decks, keynotes and reels on the room: signal, routing, playback coordination, testing.',
+    to: PRESENTATION_GUIDE_PDF_URL,
+    download: 'Soleia-Presentation-Guide.pdf',
+  },
+  {
+    kind: 'PDF',
+    title: 'Services',
+    body: 'This guide as a document, for forwarding to whoever needs it.',
+    to: SERVICES_PDF_URL,
+    download: 'Soleia-Creative-Services.pdf',
+  },
 ];
 
 // Editorial blurbs keyed by exact template title. Each one is written to help
@@ -423,6 +567,7 @@ export default function CreativeGuideServices() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullscreenVideo, setFullscreenVideo] = useState<string | null>(null);
+  const closeVideo = useCallback(() => setFullscreenVideo(null), []);
 
   useEffect(() => {
     (async () => {
@@ -473,12 +618,32 @@ export default function CreativeGuideServices() {
   const blurbFor = (item: Item) =>
     BLURBS[item.title] || item.long_description || 'Details available on request.';
 
+  const goTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 92;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
   const cardShell =
     'group card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-card/40 surface-elevated transition-colors hover:border-primary/30';
 
   /** A card that fills its grid cell. `wide` spans both columns, image beside text. */
   const renderServiceCard = (item: Item, wide = false) => {
     const media = MEDIA[item.title];
+
+    // The zone-mapping service is its own interactive card: five zones, one
+    // photograph each, the screens labelled — the client picks a zone by
+    // looking at the room. It always spans the row.
+    if (item.title === ZONE_MAPPING_TITLE) {
+      return (
+        <Reveal key={item.id} className="md:col-span-2">
+          <div id="zones" className="scroll-mt-32">
+            <SpecificZoneSelector description={blurbFor(item)} />
+          </div>
+        </Reveal>
+      );
+    }
 
     if (item.title === '3D Previz') {
       return (
@@ -507,65 +672,39 @@ export default function CreativeGuideServices() {
       );
     }
 
-    if (item.title === 'Static Logo') {
+    if (item.title === 'Static Logo' || item.title === 'Transparent Logo Animation') {
+      const isStatic = item.title === 'Static Logo';
       return (
         <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
           <article className={`${cardShell} flex h-full flex-col`}>
-            <div
-              className="relative aspect-[16/9.4] cursor-pointer overflow-hidden bg-black"
-              onClick={() => setFullscreenVideo(STATIC_LOGO_LOOP_URL)}
+            <button
+              type="button"
+              className="relative block aspect-[16/9.4] w-full cursor-pointer overflow-hidden bg-black text-left"
+              onClick={() => setFullscreenVideo(isStatic ? STATIC_LOGO_LOOP_URL : transparentLogoVideo.url)}
+              aria-label={`Play fullscreen — ${item.title}`}
             >
               <video
-                src={STATIC_LOGO_LOOP_URL}
-                poster={STATIC_LOGO_LOOP_POSTER}
+                src={isStatic ? STATIC_LOGO_LOOP_URL : TRANSPARENT_LOOP_URL}
+                poster={isStatic ? STATIC_LOGO_LOOP_POSTER : undefined}
                 className="h-full w-full object-cover"
                 autoPlay
                 loop
                 muted
                 playsInline
                 preload="metadata"
-                aria-label="A client's static logo held across the Soleia screens, seen through the venue model"
+                aria-label={
+                  isStatic
+                    ? "A client's static logo held across the Soleia screens, seen through the venue model"
+                    : 'A logo animation with a transparent background, sitting over the room'
+                }
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity group-hover:opacity-100">
-                <div className="flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-xs uppercase tracking-[0.18em]">
+              <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                <span className="btn-glow flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-xs uppercase tracking-[0.18em]">
                   <Maximize2 className="h-3.5 w-3.5" />
                   Tap for fullscreen
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 p-7 sm:p-8">
-              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
-              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-            </div>
-          </article>
-        </Reveal>
-      );
-    }
-
-    if (item.title === 'Transparent Logo Animation') {
-      return (
-        <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
-          <article className={`${cardShell} flex h-full flex-col`}>
-            <div
-              className="relative aspect-[16/9.4] cursor-pointer overflow-hidden bg-black"
-              onClick={() => setFullscreenVideo(transparentLogoVideo.url)}
-            >
-              <video
-                src={TRANSPARENT_LOOP_URL}
-                className="h-full w-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-              />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity group-hover:opacity-100">
-                <div className="flex items-center gap-2 rounded-full bg-background/90 px-4 py-2 text-xs uppercase tracking-[0.18em]">
-                  <Maximize2 className="h-3.5 w-3.5" />
-                  Tap for fullscreen
-                </div>
-              </div>
-            </div>
+                </span>
+              </span>
+            </button>
             <div className="flex-1 p-7 sm:p-8">
               <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
               <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
@@ -618,9 +757,15 @@ export default function CreativeGuideServices() {
     );
   };
 
-  /** Odd group out: the last card spans both columns so a row never half-empties. */
-  const renderGroupCards = (group: Item[]) =>
-    group.map((item, i) => renderServiceCard(item, group.length % 2 === 1 && i === group.length - 1));
+  /**
+   * The zone card always spans the row. Of the rest, an odd last card spans
+   * too, so a row never half-empties.
+   */
+  const renderGroupCards = (group: Item[]) => {
+    const narrow = group.filter((i) => i.title !== ZONE_MAPPING_TITLE);
+    const lastNarrow = narrow.length % 2 === 1 ? narrow[narrow.length - 1] : undefined;
+    return group.map((item) => renderServiceCard(item, item === lastNarrow));
+  };
 
   return (
     // Services is always presented dark. Scoping the `dark` class to this page
@@ -642,35 +787,35 @@ export default function CreativeGuideServices() {
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/60 to-transparent" />
         <div className="relative mx-auto w-full max-w-5xl px-6 pb-20 pt-40">
           <Reveal>
-            <span className="font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Services</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Soleia Creative Guide</span>
           </Reveal>
           <Reveal delay={0.05}>
             <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] text-foreground sm:text-6xl lg:text-7xl">
-              Soleia Creative <span className="text-gradient-gold">Team Services</span>
+              Your brand, <span className="text-gradient-gold">on every surface.</span>
             </h1>
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-              Custom content, pixel-perfect mapping and show-night playback for Soleia's LED
-              environment — designed and run by the Soleia creative team.
+              How the room works, what your buyout already puts on its screens, and every way the
+              Soleia creative team can take it further — in the order you'll decide it.
             </p>
           </Reveal>
           <Reveal delay={0.15}>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <button
-                onClick={() => navigate('/creative-guide/doc/services')}
-                className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary backdrop-blur-sm transition-colors hover:bg-primary/10"
+                onClick={() => goTo('welcome')}
+                className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary backdrop-blur-sm hover:bg-primary/10"
               >
-                <Eye className="h-3.5 w-3.5" />
-                View Services
+                <ArrowRight className="h-3.5 w-3.5" />
+                Start the guide
               </button>
               <a
                 href={SERVICES_PDF_URL}
                 download="Soleia-Creative-Services.pdf"
-                className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-sm transition-colors hover:border-primary/40 hover:text-foreground"
+                className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-sm hover:border-primary/40 hover:text-foreground"
               >
                 <Download className="h-3.5 w-3.5" />
-                Download
+                Download PDF
               </a>
             </div>
           </Reveal>
@@ -680,294 +825,305 @@ export default function CreativeGuideServices() {
       <GuideSectionNav sections={SECTIONS} />
 
       <main className="mx-auto max-w-5xl px-5 pb-24 sm:px-8">
-        {/* ══ 01 · WHERE YOUR BRAND LIVES ══ */}
-        <section id="where" className="scroll-mt-32 pt-20">
+        {/* ══ 01 · WELCOME ══ */}
+        <section id="welcome" className="scroll-mt-32 pt-20">
           <GuideSectionHead
-            eyebrow="01 — The Room"
-            title="Where your brand lives."
-            lede="Soleia is one immersive LED environment, not a screen at the front of a room. Before anything else, here is every surface your content can land on — and what each one is actually for."
+            eyebrow="01 — Welcome"
+            title="What this guide helps you decide."
+            lede="Soleia is one immersive LED environment, and your event already has a place on it. This guide walks the three decisions that shape what the room shows on the night — and hands your technical team what they need if they are building content themselves."
           />
-          <VenueSurfaceExplorer />
 
-          {/* One zone, mapped on its own: the price-sheet service that puts a
-              client's content on a single part of the room. Five tabs, one
-              photograph of the real venue each, the screens that zone covers
-              labelled on it. Sits with the room, not the rate card, because a
-              client picks a zone by looking at the room. */}
-          <div id="zones" className="mt-16 scroll-mt-32">
-            <Reveal className="mb-6">
-              <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">
-                Focus on one zone
-              </span>
-              <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
-                Focus your creative on the part of the venue that matters most to your guest journey. Select a
-                specific zone to see exactly which screens receive coordinated custom content.
-              </p>
-            </Reveal>
-            <Reveal>
-              <SpecificZoneSelector />
-            </Reveal>
+          <div className="grid gap-4 md:grid-cols-3">
+            {WELCOME_DECISIONS.map((d, i) => (
+              <Reveal key={d.title} delay={i * 0.05}>
+                <button
+                  type="button"
+                  onClick={() => goTo(d.target)}
+                  className={`${cardShell} btn-glow flex h-full w-full flex-col p-7 text-left`}
+                >
+                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{d.eyebrow}</span>
+                  <h3 className="mb-2.5 mt-2.5 font-display text-2xl leading-tight text-foreground">{d.title}</h3>
+                  <p className="flex-1 text-[14px] leading-relaxed text-muted-foreground">{d.body}</p>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-primary">
+                    {d.cta} <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </button>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* The walk, as a list a client can hold in their head. */}
+          <Reveal className="mt-6">
+            <article className={`${cardShell} grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3`}>
+              {SECTIONS.slice(1).map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => goTo(s.id)}
+                  className="group/step flex items-start gap-3 bg-card p-5 text-left transition-colors duration-500 hover:bg-primary/5"
+                >
+                  <span className="shrink-0 font-mono text-[11px] leading-6 text-primary">{String(i + 2).padStart(2, '0')}</span>
+                  <span>
+                    <span className="block text-[14px] font-medium text-foreground transition-colors duration-500 group-hover/step:text-primary">
+                      {WALK_TITLES[s.id] ?? s.label}
+                    </span>
+                    <span className="mt-1 block text-[12.5px] leading-relaxed text-muted-foreground">{WALK_PURPOSE[s.id]}</span>
+                  </span>
+                </button>
+              ))}
+            </article>
+          </Reveal>
+        </section>
+
+        {/* ══ 02 · MEET THE VENUE ══ */}
+        <section id="venue" className="scroll-mt-32 pt-24">
+          <GuideSectionHead
+            eyebrow="02 — Meet the Venue"
+            title="One venue, two worlds."
+            lede="Over 5,000 square feet of LED and more than twenty televisions, indoors and out. Before anything else, here is every surface your content can land on — and what each one is actually for."
+          />
+
+          <Reveal className="mb-6">
+            <div className="grid grid-cols-2 border border-primary/15 md:grid-cols-4">
+              {VENUE_AT_A_GLANCE.map(([v, l], i) => (
+                <div
+                  key={l}
+                  className={`p-5 text-center ${i % 2 === 0 ? 'border-r border-primary/15' : ''} ${
+                    i < 2 ? 'border-b border-primary/15 md:border-b-0' : ''
+                  } ${i === 1 ? 'md:border-r' : ''} ${i === 2 ? 'md:border-r' : ''}`}
+                >
+                  <div className="font-display text-2xl leading-none text-gradient-gold sm:text-3xl">{v}</div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{l}</div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+
+          <div className="mb-8 grid gap-4 md:grid-cols-3">
+            {VENUE_WORLDS.map((w, i) => (
+              <Reveal key={w.title} delay={i * 0.05}>
+                <div className={`${cardShell} h-full p-7`}>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{w.k}</div>
+                  <h3 className="mb-3 mt-2 font-display text-2xl text-foreground">{w.title}</h3>
+                  <p className="text-[13.5px] leading-relaxed text-muted-foreground">{w.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal className="mb-5">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Explore the room</span>
+                <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">
+                  Real photographs with content on the screens. Choose an area, walk its views, and tap any photo to
+                  see it full size.
+                </p>
+              </div>
+            </div>
+          </Reveal>
+          <VenueSurfaceExplorer />
+        </section>
+
+        {/* ══ 03 · INCLUDED WITH YOUR BUYOUT ══ */}
+        <section id="included" className="scroll-mt-32 pt-24">
+          <GuideSectionHead
+            eyebrow="03 — Included With Your Buyout"
+            title="What you already have."
+            lede="Every activation carries branding across the venue before any creative work is added. This is the baseline your event starts from — read it first, and the upgrades below make sense."
+          />
+
+          <Reveal className="mb-6">
+            <div className="grid grid-cols-2 border border-primary/15 md:grid-cols-4">
+              {BUYOUT_AT_A_GLANCE.map(([v, l], i) => (
+                <div
+                  key={l}
+                  className={`p-5 text-center ${i % 2 === 0 ? 'border-r border-primary/15' : ''} ${
+                    i < 2 ? 'border-b border-primary/15 md:border-b-0' : ''
+                  } ${i === 1 ? 'md:border-r' : ''} ${i === 2 ? 'md:border-r' : ''}`}
+                >
+                  <div className="font-display text-2xl leading-none text-gradient-gold sm:text-3xl">{v}</div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{l}</div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {BUYOUT_INCLUSIONS.map((inc, i) => (
+              <Reveal key={inc.title} delay={i * 0.05}>
+                <article className={`${cardShell} h-full p-8`}>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{inc.sub}</span>
+                  <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground">{inc.title}</h3>
+                  <p className="text-[14.5px] leading-relaxed text-muted-foreground">{inc.intro}</p>
+                  <ul className="mt-4 space-y-2.5">
+                    {inc.items.map((item) => (
+                      <li key={item} className="relative pl-5 text-[14px] text-foreground">
+                        <span className="absolute left-0 top-2 h-1.5 w-1.5 bg-primary" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  {'surfaces' in inc && Array.isArray((inc as { surfaces?: string[] }).surfaces) && (
+                    <div className="mt-5 border-t border-primary/15 pt-4">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                        Your logos appear on
+                      </span>
+                      <div className="mt-2.5 flex flex-wrap gap-1.5">
+                        {(inc as { surfaces: string[] }).surfaces.map((s) => (
+                          <span
+                            key={s}
+                            className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] text-foreground"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <p className="mt-5 text-[12.5px] italic leading-relaxed text-muted-foreground/80">{inc.fine}</p>
+                </article>
+              </Reveal>
+            ))}
           </div>
         </section>
 
-        {loading ? (
-          <div className="py-24 text-center text-sm text-muted-foreground">Loading services…</div>
-        ) : (
-          <>
-            {/* ══ 02 · WHAT THE BUYOUT ALREADY INCLUDES ══ */}
-            <section id="included" className="scroll-mt-32 pt-24">
-              <GuideSectionHead
-                eyebrow="02 — Included With Your Buyout"
-                title="What you already have."
-                lede="Every activation carries branding across the venue before any creative work is added. This is the baseline your event starts from."
-              />
+        {/* ══ 04 · ENHANCE YOUR EVENT ══ */}
+        <section id="enhance" className="scroll-mt-32 pt-24">
+          <GuideSectionHead
+            eyebrow="04 — Enhance Your Event"
+            title="Every way to take it further."
+            lede="The Creative Package is the full upgrade — the room designed as one canvas. Below it, every additional price-sheet service, grouped by where in the venue it plays so you can picture it before you price it."
+          />
 
-              <Reveal className="mb-6">
-                <div className="grid grid-cols-2 border border-primary/15 md:grid-cols-4">
-                  {BUYOUT_AT_A_GLANCE.map(([v, l], i) => (
-                    <div
-                      key={l}
-                      className={`p-5 text-center ${i % 2 === 0 ? 'border-r border-primary/15' : ''} ${
-                        i < 2 ? 'border-b border-primary/15 md:border-b-0' : ''
-                      } ${i === 1 ? 'md:border-r' : ''} ${i === 2 ? 'md:border-r' : ''}`}
-                    >
-                      <div className="font-display text-2xl leading-none text-gradient-gold sm:text-3xl">{v}</div>
-                      <div className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{l}</div>
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                {BUYOUT_INCLUSIONS.map((inc, i) => (
-                  <Reveal key={inc.title} delay={i * 0.05}>
-                    <article className={`${cardShell} h-full p-8`}>
-                      <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{inc.sub}</span>
-                      <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground">{inc.title}</h3>
-                      <p className="text-[14.5px] leading-relaxed text-muted-foreground">{inc.intro}</p>
-                      <ul className="mt-4 space-y-2.5">
-                        {inc.items.map((item) => (
-                          <li key={item} className="relative pl-5 text-[14px] text-foreground">
-                            <span className="absolute left-0 top-2 h-1.5 w-1.5 bg-primary" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                      {'surfaces' in inc && Array.isArray((inc as { surfaces?: string[] }).surfaces) && (
-                        <div className="mt-5 border-t border-primary/15 pt-4">
-                          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-                            Your logos appear on
-                          </span>
-                          <div className="mt-2.5 flex flex-wrap gap-1.5">
-                            {(inc as { surfaces: string[] }).surfaces.map((sn) => (
-                              <span
-                                key={sn}
-                                className="rounded-full border border-primary/30 px-2.5 py-1 text-[11.5px] text-foreground"
-                              >
-                                {sn}
-                              </span>
+          <Reveal>
+            <div className="edge-gold relative rounded-3xl surface-elevated">
+              <div className="grid overflow-hidden rounded-3xl bg-card/60 lg:grid-cols-2">
+                <div className="flex flex-col p-8 sm:p-11">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">
+                    Full Package Upgrade
+                  </span>
+                  <h3 className="mb-4 mt-3 font-display text-2xl leading-tight text-foreground sm:text-3xl">
+                    The Soleia Creative Package Upgrade
+                  </h3>
+                  <div className="space-y-4">
+                    {CREATIVE_PACKAGE_SECTIONS.map((section, idx) => (
+                      <div key={idx}>
+                        {section.heading && (
+                          <h4 className="mb-2 font-display text-base text-foreground">{section.heading}</h4>
+                        )}
+                        {section.body && (
+                          <p className="whitespace-pre-wrap text-[14.5px] leading-relaxed text-muted-foreground">
+                            {section.body}
+                          </p>
+                        )}
+                        {section.bullets && section.bullets.length > 0 && (
+                          <ul className="mt-2 space-y-2">
+                            {section.bullets.map((bullet, bIdx) => (
+                              <li key={bIdx} className="flex gap-3 text-[14px] text-foreground">
+                                <span className="flex-shrink-0 text-primary">—</span>
+                                <span>{bullet}</span>
+                              </li>
                             ))}
-                          </div>
-                          <button
-                            onClick={() => document.getElementById('where')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="mt-3 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-primary transition-opacity hover:opacity-80"
-                          >
-                            See them in the room <ArrowRight className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      )}
-                      <p className="mt-4 text-[12.5px] italic leading-relaxed text-muted-foreground/80">{inc.fine}</p>
-                    </article>
-                  </Reveal>
-                ))}
-              </div>
-            </section>
-
-            {/* ══ 03 · HOW MAPPING WORKS ══ */}
-            <section id="mapping" className="scroll-mt-32 pt-24">
-              <GuideSectionHead
-                eyebrow="03 — How Mapping Works"
-                title="One map. Every surface."
-                lede="Every screen in the venue is a different shape and resolution, and all of them live on one file. This is the part that makes the rest of the page make sense."
-              />
-              <PixelMapFold />
-
-              {/* The same idea, moving: the map itself across every surface at
-                  once. Behind a poster and preload="none" — 9 MB has no
-                  business downloading itself on the page a packet link opens. */}
-              <Reveal className="mt-6">
-                <article className={cardShell}>
-                  <div className="aspect-video overflow-hidden bg-black">
-                    <video
-                      src={PIXELMAP_PREVIZ_MOVIE_URL}
-                      poster={PIXELMAP_PREVIZ_POSTER}
-                      className="h-full w-full object-cover"
-                      controls
-                      playsInline
-                      preload="none"
-                      aria-label="Mapping previz — the pixel map running across every surface in the Soleia venue model"
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-rows-[1fr_auto] border-t border-primary/15 lg:border-l lg:border-t-0">
+                  <div className="relative min-h-[260px] overflow-hidden">
+                    <img
+                      src={IMG.packageMain}
+                      alt="Full-venue custom look — sunburst, curves and booth running one design"
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover"
                     />
                   </div>
-                  <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
-                    <h4 className="font-display text-2xl leading-tight text-foreground">The map, running</h4>
-                    <p className="text-[14.5px] leading-relaxed text-muted-foreground">
-                      The map itself, running on the venue model — every screen carrying its own labelled slice
-                      of the same 3840 × 2160 frame. The walls take their rectangles, the Sol Rays fan across the
-                      ceiling, the beachclub exteriors take theirs, all from one file.
-                    </p>
-                  </div>
-                </article>
-              </Reveal>
-            </section>
-
-            {/* ══ 04 · THE FULL CREATIVE PACKAGE (UPGRADE) ══ */}
-            <section id="package" className="scroll-mt-32 pt-24">
-              <GuideSectionHead
-                eyebrow="04 — Soleia Creative Package Upgrade"
-                title="The room, designed as one canvas."
-                lede="The upgrade on top of your buyout: original content designed for every surface at once, previewed in 3D before load-in, and operated live on the night."
-              />
-              <Reveal>
-                <div className="edge-gold relative rounded-3xl surface-elevated">
-                  <div className="grid overflow-hidden rounded-3xl bg-card/60 lg:grid-cols-2">
-                    <div className="flex flex-col p-8 sm:p-11">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">
-                        Full Package Upgrade
-                      </span>
-                      <h3 className="mb-4 mt-3 font-display text-2xl leading-tight text-foreground sm:text-3xl">
-                        The Soleia Creative Package Upgrade
-                      </h3>
-                      <div className="space-y-4">
-                        {CREATIVE_PACKAGE_SECTIONS.map((section, idx) => (
-                          <div key={idx}>
-                            {section.heading && (
-                              <h4 className="mb-2 font-display text-base text-foreground">{section.heading}</h4>
-                            )}
-                            {section.body && (
-                              <p className="whitespace-pre-wrap text-[14.5px] leading-relaxed text-muted-foreground">
-                                {section.body}
-                              </p>
-                            )}
-                            {section.bullets && section.bullets.length > 0 && (
-                              <ul className="mt-2 space-y-2">
-                                {section.bullets.map((bullet, bIdx) => (
-                                  <li key={bIdx} className="flex gap-3 text-[14px] text-foreground">
-                                    <span className="flex-shrink-0 text-primary">—</span>
-                                    <span>{bullet}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="grid grid-rows-[1fr_auto] border-t border-primary/15 lg:border-l lg:border-t-0">
-                      <div className="relative min-h-[260px] overflow-hidden">
-                        <img
-                          src={IMG.packageMain}
-                          alt="Full-venue custom look — sunburst, curves and booth running one design"
-                          loading="lazy"
-                          className="absolute inset-0 h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 border-t border-primary/15">
-                        {[
-                          {
-                            src: IMG.packageEvent,
-                            cap: 'Event branding',
-                            alt: 'Corporate event with branded stage visuals',
-                          },
-                          {
-                            src: IMG.packageTakeover,
-                            cap: 'Brand takeover',
-                            alt: 'Sponsor takeover across the sunburst rays',
-                          },
-                          {
-                            src: IMG.previz,
-                            cap: '3D previz',
-                            alt: '3D previsualization of content in the venue model',
-                          },
-                        ].map((f, i) => (
-                          <figure key={f.cap} className={`relative m-0 ${i < 2 ? 'border-r border-primary/15' : ''}`}>
-                            <img src={f.src} alt={f.alt} loading="lazy" className="aspect-[16/10] w-full object-cover" />
-                          </figure>
-                        ))}
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-3 border-t border-primary/15">
+                    {[
+                      { src: IMG.packageEvent, cap: 'Event branding', alt: 'Corporate event with branded stage visuals' },
+                      { src: IMG.packageTakeover, cap: 'Brand takeover', alt: 'Sponsor takeover across the sunburst rays' },
+                      { src: IMG.previz, cap: '3D previz', alt: '3D previsualization of content in the venue model' },
+                    ].map((f, i) => (
+                      <figure key={f.cap} className={`relative m-0 ${i < 2 ? 'border-r border-primary/15' : ''}`}>
+                        <img src={f.src} alt={f.alt} loading="lazy" className="aspect-[16/10] w-full object-cover" />
+                      </figure>
+                    ))}
                   </div>
                 </div>
-              </Reveal>
+              </div>
+            </div>
+          </Reveal>
 
-              {/* What the package covers — one card, one sub-card per inclusion,
-                  divided by hairlines so they read as parts of the same offer
-                  rather than six things floating beside it. */}
-              <Reveal className="mt-6">
-                <article className={`${cardShell} overflow-hidden`}>
-                  <div className="border-b border-primary/15 px-6 py-4 sm:px-8">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-                      What's included
-                    </span>
-                  </div>
-                  <div className="grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3">
-                    {PACKAGE_INCLUDES.map((inc) => {
-                      const playable = !!inc.movie;
-                      const Media = (
-                        <div className="relative aspect-[16/10] overflow-hidden bg-black">
-                          <img
-                            src={inc.src}
-                            alt={inc.alt}
-                            loading="lazy"
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover/tile:scale-[1.03]"
-                          />
-                          {playable && (
-                            <>
-                              <span className="pointer-events-none absolute inset-0 bg-black/10 transition-colors group-hover/tile:bg-black/0" />
-                              <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-background/85 px-3 py-1.5 text-[9.5px] uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">
-                                <Play className="h-3 w-3 text-primary" />
-                                Play
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      );
-                      return (
-                        <div key={inc.title} className="group/tile flex flex-col bg-card">
-                          {playable ? (
-                            <button
-                              type="button"
-                              onClick={() => setFullscreenVideo(inc.movie!)}
-                              aria-label={`Play — ${inc.title}`}
-                              className="block w-full cursor-pointer text-left"
-                            >
-                              {Media}
-                            </button>
-                          ) : (
-                            Media
-                          )}
-                          <div className="flex-1 p-6">
-                            <h4 className="mb-2 font-display text-xl leading-tight text-foreground">
-                              {inc.title}
-                            </h4>
-                            <p className="text-[13.5px] leading-relaxed text-muted-foreground">{inc.body}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </article>
-              </Reveal>
-            </section>
+          {/* What the package covers — one card, one sub-card per inclusion,
+              divided by hairlines so they read as parts of the same offer
+              rather than six things floating beside it. */}
+          <Reveal className="mt-6">
+            <article className={`${cardShell} overflow-hidden`}>
+              <div className="border-b border-primary/15 px-6 py-4 sm:px-8">
+                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">What's included</span>
+              </div>
+              <div className="grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3">
+                {PACKAGE_INCLUDES.map((inc) => {
+                  const playable = !!inc.movie;
+                  const Media = (
+                    <div className="relative aspect-[16/10] overflow-hidden bg-black">
+                      <img
+                        src={inc.src}
+                        alt={inc.alt}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover/tile:scale-[1.03]"
+                      />
+                      {playable && (
+                        <>
+                          <span className="pointer-events-none absolute inset-0 bg-black/10 transition-colors duration-500 group-hover/tile:bg-black/0" />
+                          <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-background/85 px-3 py-1.5 text-[9.5px] uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">
+                            <Play className="h-3 w-3 text-primary" />
+                            Play
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  );
+                  return (
+                    <div key={inc.title} className="group/tile flex flex-col bg-card">
+                      {playable ? (
+                        <button
+                          type="button"
+                          onClick={() => setFullscreenVideo(inc.movie!)}
+                          aria-label={`Play — ${inc.title}`}
+                          className="block w-full cursor-pointer text-left"
+                        >
+                          {Media}
+                        </button>
+                      ) : (
+                        Media
+                      )}
+                      <div className="flex-1 p-6">
+                        <h4 className="mb-2 font-display text-xl leading-tight text-foreground">{inc.title}</h4>
+                        <p className="text-[13.5px] leading-relaxed text-muted-foreground">{inc.body}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          </Reveal>
 
-            {/* ══ 05 · ADD-ONS, GROUPED BY SURFACE ══ */}
-            <section id="add-ons" className="scroll-mt-32 pt-24">
-              <GuideSectionHead
-                eyebrow="05 — Additional Options"
-                title="Built for the surface it lives on."
-                lede="Each option below is grouped by where in the venue it plays, so you can picture it in the room before you price it."
-              />
+          {/* Every additional price-sheet service, by surface. */}
+          <div id="add-ons" className="mt-20 scroll-mt-32">
+            <Reveal className="mb-2">
+              <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Additional options</span>
+              <h3 className="mt-3 font-display text-2xl leading-tight text-foreground sm:text-3xl">
+                Built for the surface it lives on.
+              </h3>
+            </Reveal>
 
-              {GROUPS.map((g) => {
+            {loading ? (
+              <div className="py-16 text-center text-sm text-muted-foreground">Loading services…</div>
+            ) : (
+              GROUPS.map((g) => {
                 const cards = grouped[g.id];
                 const isArrival = g.id === 'arrival';
                 if (!cards.length && !(isArrival && elevatorItems.length)) return null;
@@ -997,7 +1153,7 @@ export default function CreativeGuideServices() {
                                 </h4>
                                 <button
                                   onClick={() => navigate('/creative-guide/tv')}
-                                  className="tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                                  className="btn-glow tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
                                 >
                                   <Eye className="h-3.5 w-3.5" />
                                   Specs &amp; Mapping
@@ -1044,7 +1200,7 @@ export default function CreativeGuideServices() {
                                     </h4>
                                     <button
                                       onClick={() => navigate('/creative-guide/elevator')}
-                                      className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                                      className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
                                     >
                                       <Eye className="h-3.5 w-3.5" />
                                       Specs &amp; Mapping
@@ -1081,7 +1237,7 @@ export default function CreativeGuideServices() {
                                 <h4 className="font-display text-2xl leading-tight text-foreground">LED Marquee</h4>
                                 <button
                                   onClick={() => navigate('/creative-guide/ticker')}
-                                  className="tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+                                  className="btn-glow tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
                                 >
                                   <Eye className="h-3.5 w-3.5" />
                                   Specs &amp; Mapping
@@ -1103,125 +1259,228 @@ export default function CreativeGuideServices() {
                     )}
                   </div>
                 );
-              })}
-            </section>
-
-            {/* ══ 06 · BRINGING YOUR OWN CONTENT ══ */}
-            {loadFeeItems.length > 0 && (
-              <section id="own-content" className="scroll-mt-32 pt-24">
-                <GuideSectionHead
-                  eyebrow="06 — Video Mapping & Load Fees"
-                  title="Bringing your own content."
-                  lede="Client-supplied animations, mapped and loaded into Soleia's playback system. Two paths, depending on who builds to spec."
-                />
-                <Reveal>
-                  <article className={cardShell}>
-                    <MediaHeader
-                      src={IMG.mapping}
-                      alt="Client brand content mapped wall-to-wall across the main-room curve LED"
-                      aspect="aspect-[21/8]"
-                    />
-                    <div>
-                      {loadFeeItems.map((item, i) => (
-                        <div
-                          key={item.id}
-                          className={`grid gap-3 p-7 sm:grid-cols-[minmax(200px,0.9fr)_2fr_auto] sm:items-center sm:gap-7 sm:px-8 ${
-                            i > 0 ? 'border-t border-primary/15' : ''
-                          }`}
-                        >
-                          <h4 className="font-display text-xl leading-snug text-foreground">{item.title}</h4>
-                          <p className="text-[14px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-                          <Chip>Max 50 GB</Chip>
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => navigate('/creative-guide/content-delivery')}
-                        className="group/cd flex w-full flex-wrap items-center gap-x-5 gap-y-2 border-t border-primary/15 px-7 py-6 text-left transition-colors hover:bg-primary/5 sm:px-8"
-                      >
-                        <span className="font-display text-xl leading-snug text-foreground transition-colors group-hover/cd:text-primary">
-                          Content Delivery Guide
-                        </span>
-                        <span className="min-w-[220px] flex-1 text-[14px] leading-relaxed text-muted-foreground">
-                          Every screen's pixel resolution, the DXV3 workflow, the Pixelmap and the
-                          After Effects project — everything your team needs to build to spec.
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10.5px] uppercase tracking-[0.18em] text-primary">
-                          Open <ArrowRight className="h-3.5 w-3.5" />
-                        </span>
-                      </button>
-                    </div>
-                  </article>
-                </Reveal>
-
-              </section>
+              })
             )}
+          </div>
+        </section>
 
-            {/* ══ 07 · WHAT HAPPENS NEXT ══ */}
-            <section id="next" className="scroll-mt-32 pt-24">
-              <GuideSectionHead
-                eyebrow="07 — After This Call"
-                title="What happens from here."
-                lede="The schedule below counts forward from kickoff — a signed proposal and your brand assets both in hand — not backwards from your event date."
+        {/* ══ 05 · HOW CREATIVE PRODUCTION WORKS ══ */}
+        <section id="production" className="scroll-mt-32 pt-24">
+          <GuideSectionHead
+            eyebrow="05 — How Creative Production Works"
+            title="From your assets to show night."
+            lede="What we need from you, when we need it, and what happens to it between kickoff and doors — so nothing on the night is a surprise."
+          />
+
+          <Reveal className="mb-6">
+            <article className={`${cardShell} grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-5`}>
+              {PRODUCTION_STEPS.map((s, i) => (
+                <div key={s.title} className="flex flex-col bg-card p-6">
+                  <span className="font-mono text-[11px] text-primary">{String(i + 1).padStart(2, '0')}</span>
+                  <h4 className="mt-2 font-display text-xl leading-tight text-foreground">{s.title}</h4>
+                  <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground">{s.body}</p>
+                </div>
+              ))}
+            </article>
+          </Reveal>
+
+          <Reveal className="mb-5 mt-14">
+            <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">How mapping works</span>
+            <h3 className="mt-2 font-display text-2xl leading-tight text-foreground sm:text-3xl">One map. Every surface.</h3>
+            <p className="mt-2.5 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">
+              Every screen in the venue is a different shape and resolution, and all of them live on one file.
+              This is the part that makes the rest of the guide make sense.
+            </p>
+          </Reveal>
+          <PixelMapFold />
+
+          {/* The same idea, moving: the map itself across every surface at
+              once. Behind a poster and preload="none" — 9 MB has no
+              business downloading itself on the page a packet link opens. */}
+          <Reveal className="mt-6">
+            <article className={cardShell}>
+              <div className="aspect-video overflow-hidden bg-black">
+                <video
+                  src={PIXELMAP_PREVIZ_MOVIE_URL}
+                  poster={PIXELMAP_PREVIZ_POSTER}
+                  className="h-full w-full object-cover"
+                  controls
+                  playsInline
+                  preload="none"
+                  aria-label="Mapping previz — the pixel map running across every surface in the Soleia venue model"
+                />
+              </div>
+              <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
+                <h4 className="font-display text-2xl leading-tight text-foreground">The map, running</h4>
+                <p className="text-[14.5px] leading-relaxed text-muted-foreground">
+                  The map itself, running on the venue model — every screen carrying its own labelled slice of
+                  the same 3840 × 2160 frame. The walls take their rectangles, the Sol Rays fan across the
+                  ceiling, the beachclub exteriors take theirs, all from one file.
+                </p>
+              </div>
+            </article>
+          </Reveal>
+
+          <Reveal className="mt-14">
+            <article className={`${cardShell} p-8 sm:p-11`}>
+              <CreativeTimeline title="Kickoff to show day." />
+              <p className="mt-9 max-w-2xl border-t border-primary/15 pt-7 text-[14.5px] leading-relaxed text-muted-foreground">
+                The schedule counts forward from kickoff — a signed proposal and your brand assets both in hand —
+                not backwards from your event date. The earlier those arrive, the more of the fourteen-day window
+                goes into the work rather than the wait.
+              </p>
+            </article>
+          </Reveal>
+        </section>
+
+        {/* ══ 06 · PROVIDING YOUR OWN CONTENT? ══ */}
+        <section id="own-content" className="scroll-mt-32 pt-24">
+          <GuideSectionHead
+            eyebrow="06 — Providing Your Own Content?"
+            title="Build to spec. We load it and run it."
+            lede="For agencies and in-house teams producing their own animations: the two ways content reaches the screens, and every specification and download your technical team will ask for."
+          />
+
+          <Reveal>
+            <article className={cardShell}>
+              <MediaHeader
+                src={IMG.mapping}
+                alt="Client brand content mapped wall-to-wall across the main-room curve LED"
+                aspect="aspect-[21/8]"
               />
-              <Reveal>
-                <article className={`${cardShell} p-8 sm:p-11`}>
-                  <CreativeTimeline title="Kickoff to show day." />
-                  <div className="mt-9 border-t border-primary/15 pt-7">
-                    <p className="max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground">
-                      To get started, send the Soleia Creative Team your event date and your brand
-                      assets — logos in vector, fonts, palette, key artwork and any guidelines. The
-                      earlier those arrive, the more of the fourteen-day window goes into the work
-                      rather than the wait.
-                    </p>
-                    <div className="mt-6 flex flex-wrap items-center gap-3">
-                      <a
-                        href={CONTACT_HREF}
-                        className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary bg-primary/15 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/25"
-                      >
-                        <Mail className="h-3.5 w-3.5" />
-                        Contact
-                      </a>
-                      <a
-                        href={SERVICES_PDF_URL}
-                        download="Soleia-Creative-Services.pdf"
-                        className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        Download Services PDF
-                      </a>
+              <div>
+                {loading ? (
+                  <div className="py-10 text-center text-sm text-muted-foreground">Loading services…</div>
+                ) : (
+                  loadFeeItems.map((item, i) => (
+                    <div
+                      key={item.id}
+                      className={`grid gap-3 p-7 sm:grid-cols-[minmax(200px,0.9fr)_2fr_auto] sm:items-center sm:gap-7 sm:px-8 ${
+                        i > 0 ? 'border-t border-primary/15' : ''
+                      }`}
+                    >
+                      <h4 className="font-display text-xl leading-snug text-foreground">{item.title}</h4>
+                      <p className="text-[14px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
+                      <Chip>Max 50 GB</Chip>
                     </div>
+                  ))
+                )}
+              </div>
+            </article>
+          </Reveal>
+
+          <Reveal className="mt-6">
+            <article className={`${cardShell} grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3`}>
+              {SPEC_LINKS.map((l) => {
+                const inner = (
+                  <>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">{l.kind}</span>
+                    <span className="mt-2 block font-display text-xl leading-tight text-foreground transition-colors duration-500 group-hover/spec:text-primary">
+                      {l.title}
+                    </span>
+                    <span className="mt-2 block flex-1 text-[13px] leading-relaxed text-muted-foreground">{l.body}</span>
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-primary">
+                      {l.download ? <Download className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
+                      {l.download ? 'Download' : 'Open'}
+                    </span>
+                  </>
+                );
+                const cls = 'group/spec flex h-full flex-col bg-card p-6 text-left transition-colors duration-500 hover:bg-primary/5';
+                return l.download ? (
+                  <a key={l.title} href={l.to} download={l.download} className={cls}>
+                    {inner}
+                  </a>
+                ) : (
+                  <button key={l.title} type="button" onClick={() => navigate(l.to)} className={cls}>
+                    {inner}
+                  </button>
+                );
+              })}
+            </article>
+          </Reveal>
+        </section>
+
+        {/* ══ 07 · NEXT STEP ══ */}
+        <section id="next" className="scroll-mt-32 pt-24">
+          <GuideSectionHead
+            eyebrow="07 — Next Step"
+            title="Review your proposal, or book the call."
+            lede="Two ways forward, depending on where you are."
+          />
+          <div className="grid gap-6 md:grid-cols-2">
+            <Reveal>
+              <article className={`${cardShell} flex h-full flex-col p-8 sm:p-10`}>
+                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Have a proposal?</span>
+                <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground sm:text-3xl">
+                  Review and sign it.
+                </h3>
+                <p className="flex-1 text-[14.5px] leading-relaxed text-muted-foreground">
+                  Open your proposal from the link in your email. Tick the services you want, set the quantities,
+                  and sign — what you select there is the scope we build. You can revisit it any time before
+                  signing, and questions are welcome first.
+                </p>
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  <a
+                    href={PROPOSAL_QUESTION_HREF}
+                    className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                    Ask about my proposal
+                  </a>
+                </div>
+              </article>
+            </Reveal>
+            <Reveal delay={0.05}>
+              <article className="edge-gold relative flex h-full flex-col rounded-3xl surface-elevated">
+                <div className="flex h-full flex-col rounded-3xl bg-card/60 p-8 sm:p-10">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Not yet?</span>
+                  <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground sm:text-3xl">
+                    Schedule your creative call.
+                  </h3>
+                  <p className="flex-1 text-[14.5px] leading-relaxed text-muted-foreground">
+                    Send us your event date. We book the call, walk this guide with you in the room, and follow
+                    with a proposal built around what you choose. Bring your brand assets if you have them —
+                    logos in vector, fonts, palette, key artwork — and the clock starts sooner.
+                  </p>
+                  <div className="mt-7 flex flex-wrap items-center gap-3">
+                    <a
+                      href={CALL_HREF}
+                      className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary bg-primary/15 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/25"
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      Schedule the creative call
+                    </a>
+                    <a
+                      href={SERVICES_PDF_URL}
+                      download="Soleia-Creative-Services.pdf"
+                      className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Services PDF
+                    </a>
                   </div>
-                </article>
-              </Reveal>
-            </section>
-          </>
-        )}
+                </div>
+              </article>
+            </Reveal>
+          </div>
+        </section>
       </main>
 
       <CreativeGuideFooter />
 
-      {/* Fullscreen video modal */}
-      {fullscreenVideo && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4"
-          onClick={() => setFullscreenVideo(null)}
+      {/* Fullscreen video */}
+      <Overlay open={!!fullscreenVideo} onClose={closeVideo} label="Video">
+        {fullscreenVideo && (
+          <video src={fullscreenVideo} className="max-h-[85vh] max-w-full" autoPlay loop muted controls playsInline />
+        )}
+        <button
+          onClick={closeVideo}
+          aria-label="Close"
+          className="btn-glow tap-44 fixed right-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
         >
-          <div
-            className="relative flex h-full max-h-[80vh] w-full max-w-5xl items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <video src={fullscreenVideo} className="max-h-full max-w-full" autoPlay loop muted controls playsInline />
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute right-5 top-5 text-white"
-            onClick={() => setFullscreenVideo(null)}
-          >
-            Close
-          </Button>
-        </div>
-      )}
+          Close
+        </button>
+      </Overlay>
     </div>
   );
 }
