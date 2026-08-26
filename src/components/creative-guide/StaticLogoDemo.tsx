@@ -28,8 +28,12 @@ type View = {
   image: string;
   alt: string;
   note: string;
-  /** Where the mark sits, as a percentage of the frame, and how wide. */
-  marks: { x: number; y: number; w: number }[];
+  /**
+   * The face of each screen in this photograph, as percentages of the 16:9
+   * frame: centre x/y, width and height. Measured on the render itself, not
+   * taken from the zone card's label pins, which point at a screen from above.
+   */
+  marks: { x: number; y: number; w: number; h: number }[];
 };
 
 const VIEWS: View[] = [
@@ -40,9 +44,9 @@ const VIEWS: View[] = [
     alt: 'The main stage screens carrying the Soleia mark — IMAG SR, Center and IMAG SL',
     note: 'IMAG SR · Center · IMAG SL',
     marks: [
-      { x: 32, y: 40, w: 15 },
-      { x: 51, y: 28, w: 9 },
-      { x: 70, y: 40, w: 15 },
+      { x: 25.2, y: 38.6, w: 23, h: 27 },
+      { x: 50.8, y: 42.8, w: 13.3, h: 17 },
+      { x: 74.4, y: 38.6, w: 24, h: 27 },
     ],
   },
   {
@@ -52,8 +56,8 @@ const VIEWS: View[] = [
     alt: 'The two outdoor verticals carrying the Soleia mark',
     note: 'Outdoor SR · Outdoor SL',
     marks: [
-      { x: 19, y: 43, w: 13 },
-      { x: 82, y: 31, w: 13 },
+      { x: 19.1, y: 45.8, w: 9.4, h: 36 },
+      { x: 82, y: 35, w: 19.5, h: 45 },
     ],
   },
   {
@@ -62,7 +66,7 @@ const VIEWS: View[] = [
     image: '/creative-guide/specific-zones/zone-5-arch.jpg',
     alt: 'The outdoor arch carrying the Soleia mark',
     note: 'Outdoor Arch',
-    marks: [{ x: 50, y: 31, w: 22 }],
+    marks: [{ x: 48.6, y: 38.2, w: 45.7, h: 27.8 }],
   },
 ];
 
@@ -83,20 +87,23 @@ export function StaticLogoDemo({ onFullscreen, className = '' }: StaticLogoDemoP
 
   return (
     <div className={className}>
-      <Crossfade id={view.id} className="aspect-[16/9.4] overflow-hidden bg-black">
+      <Crossfade id={view.id} className="aspect-video overflow-hidden bg-black">
         <img src={view.image} alt={view.alt} decoding="async" className="media-grade h-full w-full object-cover" />
         <div className="media-veil absolute inset-0" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" aria-hidden="true" />
-        {/* The mark, held still on each included screen */}
+        {/* The mark, held still on the face of each included screen */}
         {view.marks.map((m, i) => (
           <div
             key={i}
-            className="absolute -translate-x-1/2 -translate-y-1/2"
-            style={{ left: `${m.x}%`, top: `${m.y}%`, width: `${m.w}%` }}
+            className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[2px] bg-[#0a0908]/92 shadow-[0_0_0_1px_hsl(var(--primary)/0.4),0_0_26px_-4px_hsl(var(--primary)/0.55)]"
+            style={{ left: `${m.x}%`, top: `${m.y}%`, width: `${m.w}%`, height: `${m.h}%` }}
           >
-            <div className="rounded-[3px] bg-black/55 px-[6%] py-[5%] shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_0_22px_-4px_hsl(var(--primary)/0.5)] backdrop-blur-[2px]">
-              <img src={MARK} alt="" className="w-full" style={{ filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.7))' }} />
-            </div>
+            <img
+              src={MARK}
+              alt=""
+              className="max-h-[62%] w-[78%] object-contain"
+              style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary) / 0.35))' }}
+            />
           </div>
         ))}
       </Crossfade>

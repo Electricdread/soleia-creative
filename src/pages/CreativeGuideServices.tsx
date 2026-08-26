@@ -432,8 +432,8 @@ const MEDIA: Record<string, { src: string; alt: string }> = {
     alt: 'The Outdoor Arch alone, labelled at its native 1512 × 504',
   },
   'Performing Artist — Mapped by Soleia Creative Team': {
-    src: R.stageDjBooth,
-    alt: 'IMAG SR, the Center panel, IMAG SL and the DJ booth face, each labelled at its native resolution',
+    src: IMG.onsitePlaybackConsole,
+    alt: 'The playback desk during a show — clip columns and slice list on the console, the artist look running on the screens above',
   },
   '3D Previz': {
     src: IMG.previz,

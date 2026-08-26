@@ -20,7 +20,9 @@ import { HIGHLIGHT_SPRING, MOTION_EASE } from '@/components/motion/motion';
  * difference in one tap. The real footage is still a tap away.
  */
 
-const ROOM = '/creative-guide/services/package-full-look.jpg';
+// The nightclub from the floor, content on every surface — the same photograph
+// the venue explorer opens on, so the room reads as one place.
+const ROOM = '/creative-guide/venue-photos/the-room.jpg';
 const MARK = '/soleia-logo-color.png';
 
 type Mode = 'transparent' | 'opaque';

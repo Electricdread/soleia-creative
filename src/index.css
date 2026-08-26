@@ -533,11 +533,13 @@ button, a, [role="button"] {
   .media-grade {
     filter: saturate(0.84) contrast(1.05) brightness(0.96);
   }
+  /* Normal blend on purpose: a soft-light veil over a filtered image blanks the
+     whole layer in software rasterisation (headless Chrome, some Safari), and
+     a cover that can vanish is worse than one that is a touch less subtle. */
   .media-veil {
     pointer-events: none;
     background:
-      linear-gradient(165deg, hsl(var(--primary) / 0.34) 0%, hsl(var(--primary) / 0.06) 42%, transparent 62%, hsl(var(--primary) / 0.16) 100%);
-    mix-blend-mode: soft-light;
+      linear-gradient(165deg, hsl(var(--primary) / 0.22) 0%, hsl(var(--primary) / 0.05) 42%, transparent 62%, hsl(var(--primary) / 0.12) 100%);
     opacity: 1;
     transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   }
