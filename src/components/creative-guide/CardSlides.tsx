@@ -115,7 +115,7 @@ export function LogoExplainerSlide({ caption }: { caption: string }) {
           src={EXPLAINER_IMG}
           alt="Logo integration guide — an opaque logo blocks the moving background; a transparent PNG with alpha blends into it"
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
         />
       </div>
       <div className="flex h-[58px] items-center border-t border-primary/15 px-5 sm:px-7">
