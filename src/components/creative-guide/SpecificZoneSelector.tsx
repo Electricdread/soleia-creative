@@ -1,4 +1,4 @@
-import { useMemo, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Check, MapPin, Play } from 'lucide-react';
 import { Crossfade, FadeSwap } from '@/components/motion/Crossfade';
@@ -113,6 +113,12 @@ export interface SpecificZoneSelectorProps {
   description?: string;
   /** Opens a video full screen; the card offers the one-minute walkthrough. */
   onFullscreen?: (src: string) => void;
+  /**
+   * Select a zone from outside — the buyout section's zone pills. The nonce
+   * changes on every request, so asking for the zone already shown still
+   * counts as a request.
+   */
+  selectZone?: { id: number; nonce: number } | null;
   className?: string;
 }
 
@@ -120,9 +126,14 @@ export function SpecificZoneSelector({
   eyebrow = 'Price sheet service',
   description = 'Select a zone below to see the screens included. This service maps custom content to the exact LED screens in one targeted venue area, giving your most important guest moment a focused, coordinated visual identity.',
   onFullscreen,
+  selectZone,
   className = '',
 }: SpecificZoneSelectorProps) {
   const [selectedZoneId, setSelectedZoneId] = useState(1);
+
+  useEffect(() => {
+    if (selectZone && SPECIFIC_ZONES.some((z) => z.id === selectZone.id)) setSelectedZoneId(selectZone.id);
+  }, [selectZone]);
   const selectedZone = SPECIFIC_ZONES.find((zone) => zone.id === selectedZoneId) ?? SPECIFIC_ZONES[0];
   const reduceMotion = useReducedMotion();
 

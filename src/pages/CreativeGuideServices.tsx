@@ -15,6 +15,7 @@ import { SpecificZoneSelector } from '@/components/creative-guide/SpecificZoneSe
 import { PixelMapGuide } from '@/components/creative-guide/PixelMapGuide';
 import { TransparentLogoDemo } from '@/components/creative-guide/TransparentLogoDemo';
 import { StaticLogoDemo } from '@/components/creative-guide/StaticLogoDemo';
+import { CardSlides, LogoExplainerSlide } from '@/components/creative-guide/CardSlides';
 import { CreativeTimeline } from '@/components/creative/CreativeTimeline';
 import { PIXELMAP_RENDERS as R, VENUE_PHOTOS } from '@/lib/venueSurfaces';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
@@ -77,6 +78,11 @@ const PIXELMAP_PREVIZ_MOVIE_URL = '/creative-guide/services/pixelmap-previz.mp4'
 const CONTACT_MAILTO = 'mailto:luisdreamslv@gmail.com?subject=';
 const CALL_HREF = CONTACT_MAILTO + encodeURIComponent('Soleia Creative — schedule my creative call');
 const PROPOSAL_QUESTION_HREF = CONTACT_MAILTO + encodeURIComponent('Soleia Creative — a question about my proposal');
+
+/** How a rate-card line is titled on the page when the sheet's own name undersells it. */
+const DISPLAY_TITLE: Record<string, string> = {
+  'Static Logo': 'Additional Static Logo',
+};
 
 /** The rate-card title of the zone-mapping service; its card is the selector. */
 const ZONE_MAPPING_TITLE = 'LED Screens Specific Zone Mapping';
@@ -224,9 +230,9 @@ const SPEC_LINKS: { kind: string; title: string; body: string; to: string; downl
 // we deliver, and how they'll experience it in the room.
 const BLURBS: Record<string, string> = {
   'Static Logo':
-    "Your mark delivered on a transparent background, so it sits over the room rather than replacing it. The in-house visual animations and motion graphics from the club library keep running underneath — mixed in real time by the visual operator — so the room carries the night while your branding holds its place on the screens throughout, with no loop of your own to produce or approve. Your buyout includes ten static logos across the five main LED screens; this line item covers each one beyond that.",
+    "Your buyout already includes ten static logos across the five main LED screens. Need more — a sponsor's mark, a second brand, a partner, a hashtag? Each additional static logo is one line item: we size it to the screen, color-check it and hold it there all night, over the club library's visuals, with nothing for you to produce or approve. Slide two shows the one thing your designer has to get right: send the mark as a PNG with a transparent background, not a JPG.",
   'Transparent Logo Animation':
-    "A refined logo animation delivered with a true alpha channel, allowing it to sit cleanly over live content and environmental footage without blocking the screen. Your mark remains visible while the room continues to move underneath — ideal for branding moments that need to feel integrated, not interruptive. Tap the preview above to see how the transparency layer behaves on the wall.",
+    "Have us animate your logo. We build a refined motion piece from your mark and deliver it with a true alpha channel, so it sits cleanly over the room's live visuals instead of blocking them — your brand moving with the night, not interrupting it. Slide one shows the idea on the wall; slide two shows why the alpha channel is the whole difference.",
   'Mapped by Soleia Creative Team':
     "Mapping of client animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.",
   'Mapped to Spec by Client':
@@ -265,7 +271,13 @@ const BUYOUT_INCLUSIONS = [
       '2 Large Vertical — Beachclub / Outside',
       '1 Beachclub Arch — Beachclub / Stage',
     ],
-    surfaces: ['IMAG SR', 'IMAG SL', 'Center', 'Sol Rays', 'Outdoor SR', 'Outdoor SL', 'Outdoor Arch'],
+    /** The zones the ten included logos land in — the zone card's own numbering. */
+    zones: [
+      { id: 1, label: 'Main Stage' },
+      { id: 3, label: 'Sunburst' },
+      { id: 4, label: 'Outdoor' },
+      { id: 5, label: 'Arch' },
+    ],
     fine: 'All other LED screens are activated and display in-house visual animations and motion graphics from the club library, mixed in real time by the visual operator.',
   },
   {
@@ -535,6 +547,8 @@ export default function CreativeGuideServices() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullscreenVideo, setFullscreenVideo] = useState<string | null>(null);
+  /** A zone the buyout pills asked the zone card to show; nonce makes repeats count. */
+  const [zoneRequest, setZoneRequest] = useState<{ id: number; nonce: number } | null>(null);
   const closeVideo = useCallback(() => setFullscreenVideo(null), []);
   const reduceMotion = useReducedMotion();
 
@@ -594,6 +608,12 @@ export default function CreativeGuideServices() {
     window.scrollTo({ top, behavior: 'smooth' });
   };
 
+  /** Scroll to the zone card and put it on this zone. */
+  const showZone = (id: number) => {
+    setZoneRequest((r) => ({ id, nonce: (r?.nonce ?? 0) + 1 }));
+    goTo('zones');
+  };
+
   const cardShell =
     'group card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-card/40 surface-elevated transition-colors hover:border-primary/30';
 
@@ -608,7 +628,7 @@ export default function CreativeGuideServices() {
       return (
         <Reveal key={item.id} className="md:col-span-2">
           <div id="zones" className="scroll-mt-32">
-            <SpecificZoneSelector description={blurbFor(item)} onFullscreen={(src) => setFullscreenVideo(src)} />
+            <SpecificZoneSelector description={blurbFor(item)} onFullscreen={(src) => setFullscreenVideo(src)} selectZone={zoneRequest} />
           </div>
         </Reveal>
       );
@@ -645,9 +665,24 @@ export default function CreativeGuideServices() {
       return (
         <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
           <article className={`${cardShell} flex h-full flex-col`}>
-            <TransparentLogoDemo onFullscreen={() => setFullscreenVideo(transparentLogoVideo.url)} />
+            <CardSlides
+              layoutId="transparent-logo-slides"
+              frameClassName="aspect-[16/9.4] pb-[58px]"
+              slides={[
+                {
+                  id: 'wall',
+                  label: 'On the wall',
+                  node: <TransparentLogoDemo onFullscreen={() => setFullscreenVideo(transparentLogoVideo.url)} />,
+                },
+                {
+                  id: 'explainer',
+                  label: 'Why alpha matters',
+                  node: <LogoExplainerSlide caption="Opaque (JPG, no alpha) blocks the room behind it. Transparent (PNG with alpha) blends — the animation we build keeps that channel." />,
+                },
+              ]}
+            />
             <div className="flex-1 p-7 sm:p-8">
-              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
+              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{DISPLAY_TITLE[item.title] ?? item.title}</h4>
               <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
             </div>
           </article>
@@ -659,9 +694,24 @@ export default function CreativeGuideServices() {
       return (
         <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
           <article className={`${cardShell} flex h-full flex-col`}>
-            <StaticLogoDemo onFullscreen={() => setFullscreenVideo(STATIC_LOGO_LOOP_URL)} />
+            <CardSlides
+              layoutId="static-logo-slides"
+              frameClassName="aspect-video pb-[58px]"
+              slides={[
+                {
+                  id: 'screens',
+                  label: 'On the screens',
+                  node: <StaticLogoDemo onFullscreen={() => setFullscreenVideo(STATIC_LOGO_LOOP_URL)} />,
+                },
+                {
+                  id: 'explainer',
+                  label: 'Opaque vs transparent',
+                  node: <LogoExplainerSlide caption="Send your mark as a PNG with a transparent background. A JPG carries a plate that blocks the screen behind it." />,
+                },
+              ]}
+            />
             <div className="flex-1 p-7 sm:p-8">
-              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
+              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{DISPLAY_TITLE[item.title] ?? item.title}</h4>
               <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
             </div>
           </article>
@@ -911,26 +961,27 @@ export default function CreativeGuideServices() {
                       </li>
                     ))}
                   </ul>
-                  {'surfaces' in inc && Array.isArray((inc as { surfaces?: string[] }).surfaces) && (
+                  {'zones' in inc && Array.isArray((inc as { zones?: unknown[] }).zones) && (
                     <div className="mt-5 border-t border-primary/15 pt-4">
                       <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-                        Your logos appear on
+                        Your logos appear in
                       </span>
                       <div className="mt-2.5 flex flex-wrap gap-1.5">
-                        {(inc as { surfaces: string[] }).surfaces.map((s) => (
+                        {(inc as { zones: { id: number; label: string }[] }).zones.map((z) => (
                           <button
-                            key={s}
+                            key={z.id}
                             type="button"
-                            onClick={() => goTo('zones')}
-                            aria-label={`${s} — see it in LED Screens: Specific Zone Mapping`}
-                            className="btn-glow inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[11.5px] text-foreground hover:border-primary/60 hover:text-primary"
+                            onClick={() => showZone(z.id)}
+                            aria-label={`Zone ${z.id} ${z.label} — open it in LED Screens: Specific Zone Mapping`}
+                            className="btn-glow inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[11.5px] text-foreground hover:border-primary/60 hover:text-primary"
                           >
-                            {s}
+                            <span className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-primary">Zone {z.id}</span>
+                            {z.label}
                             <ArrowRight className="h-3 w-3 text-primary" />
                           </button>
                         ))}
                       </div>
-                      <p className="mt-2.5 text-[12px] text-muted-foreground/80">Tap a screen to see its zone mapped.</p>
+                      <p className="mt-2.5 text-[12px] text-muted-foreground/80">Tap a zone to see it mapped.</p>
                     </div>
                   )}
                   <p className="mt-5 text-[12.5px] italic leading-relaxed text-muted-foreground/80">{inc.fine}</p>
