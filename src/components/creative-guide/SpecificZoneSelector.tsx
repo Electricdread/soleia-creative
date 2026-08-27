@@ -1,6 +1,6 @@
 import { useMemo, useState, type KeyboardEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Check, MapPin } from 'lucide-react';
+import { Check, MapPin, Play } from 'lucide-react';
 import { Crossfade, FadeSwap } from '@/components/motion/Crossfade';
 import { HIGHLIGHT_SPRING, useWarmImages } from '@/components/motion/motion';
 
@@ -8,8 +8,9 @@ import { HIGHLIGHT_SPRING, useWarmImages } from '@/components/motion/motion';
  * LED Screens — Specific Zone Mapping: the price-sheet service that puts a
  * client's content on one part of the room.
  *
- * Five tabs, one photograph of the real venue each, with the screens that zone
- * covers labelled on the picture. The mapping is the owner's:
+ * Five tabs, one moving view of the real venue model each — cut from the
+ * owner's zone previz (Logo_ZonePreviz, 2026-08-27), with the Soleia mark on
+ * the screens that zone covers. The mapping is the owner's:
  *
  *   Zone 1 Main Stage  IMAG SR, IMAG SL, Center, DJ Booth
  *   Zone 2 Curves      SR Curve, SL Curve
@@ -17,100 +18,90 @@ import { HIGHLIGHT_SPRING, useWarmImages } from '@/components/motion/motion';
  *   Zone 4 Outdoor     Outdoor SR, Outdoor SL
  *   Zone 5 Arch        Outdoor Arch
  *
- * Motion follows the guide's standard: the highlight glides between tabs, the
- * photograph crossfades, the copy beside it fades up, and every image is asked
- * for on mount so no tab ever waits on the network.
+ * Each clip is a few seconds, 1280 wide, muted, looping — small enough to
+ * autoplay the moment a tab is chosen, behind a still cut from the same
+ * frame so nothing ever shows black. The full one-minute walkthrough is
+ * behind a button. Motion follows the guide's standard: the highlight glides
+ * between tabs, the view crossfades, the copy beside it fades up.
  */
-
-type ZoneLabel = {
-  label: string;
-  x: number;
-  y: number;
-};
 
 type SpecificZone = {
   id: number;
   shortName: string;
   title: string;
-  image: string;
-  imageAlt: string;
+  /** A few seconds of the previz, the camera on this zone. */
+  video: string;
+  /** A frame from the same clip; the poster and the reduced-motion view. */
+  poster: string;
+  /** Read by assistive tech, and by the tests. */
+  label: string;
   summary: string;
   screens: string[];
   bestFor: string;
-  labels: ZoneLabel[];
 };
+
+const DIR = '/creative-guide/specific-zones';
 
 const SPECIFIC_ZONES: SpecificZone[] = [
   {
     id: 1,
     shortName: 'Main Stage',
     title: 'IMAG SR, IMAG SL, Center + DJ Booth',
-    image: '/creative-guide/specific-zones/zone-1-main-stage.jpg',
-    imageAlt: 'Zone 1 main stage screens with IMAG SR, IMAG SL, Center and DJ Booth labeled',
+    video: `${DIR}/zone-1-main-stage.mp4`,
+    poster: `${DIR}/zone-1-main-stage.jpg`,
+    label: 'Zone 1 — the main stage: IMAG SR, IMAG SL, the Center panel and the DJ Booth, with the mark on each',
     summary: 'Four coordinated canvases frame the performance area and keep your brand at the visual center of the room.',
     screens: ['IMAG SR', 'IMAG SL', 'Center', 'DJ Booth'],
     bestFor: 'Hero brand moments, speaker or performer support, logo reveals and synchronized stage content.',
-    labels: [
-      { label: 'IMAG SR', x: 32, y: 40 },
-      { label: 'CENTER', x: 51, y: 28 },
-      { label: 'IMAG SL', x: 70, y: 40 },
-      { label: 'DJ BOOTH', x: 51, y: 58 },
-    ],
   },
   {
     id: 2,
     shortName: 'Curves',
     title: 'Curves SR + SL',
-    image: '/creative-guide/specific-zones/zone-2-curves.jpg',
-    imageAlt: 'Zone 2 interior view with the stage-right and stage-left curved LED screens labeled',
+    video: `${DIR}/zone-2-curves.mp4`,
+    poster: `${DIR}/zone-2-curves.jpg`,
+    label: 'Zone 2 — the SR and SL curves wrapping the room',
     summary: 'The curved side screens extend the visual story beyond the stage and wrap the room in a unified look.',
     screens: ['SR Curve', 'SL Curve'],
     bestFor: 'Ambient motion, panoramic brand textures, color washes and wide-format campaign extensions.',
-    labels: [
-      { label: 'SR CURVE', x: 16, y: 31 },
-      { label: 'SL CURVE', x: 88, y: 31 },
-    ],
   },
   {
     id: 3,
     shortName: 'Sunburst',
     title: 'Ceiling Sunburst',
-    image: '/creative-guide/specific-zones/zone-3-sunburst.jpg',
-    imageAlt: 'Zone 3 ceiling sunburst LED rays radiating from the center of the room',
+    video: `${DIR}/zone-3-sunburst.mp4`,
+    poster: `${DIR}/zone-3-sunburst.jpg`,
+    label: 'Zone 3 — the ceiling sunburst, the mark along every ray',
     summary: 'The overhead LED rays transform the ceiling into a high-impact motion surface visible across the room.',
     screens: ['Ceiling Sunburst'],
     bestFor: 'Radiating motion, rhythmic accents, immersive color changes and overhead brand atmospheres.',
-    // Sits clear of the zone badge in the top-left corner on a phone.
-    labels: [{ label: 'CEILING SUNBURST', x: 50, y: 20 }],
   },
   {
     id: 4,
     shortName: 'Outdoor',
     title: 'Outdoor SR + SL',
-    image: '/creative-guide/specific-zones/zone-4-outdoor.jpg',
-    imageAlt: 'Zone 4 beach club view with Outdoor SR and Outdoor SL vertical LED screens labeled',
+    video: `${DIR}/zone-4-outdoor.mp4`,
+    poster: `${DIR}/zone-4-outdoor.jpg`,
+    label: 'Zone 4 — Outdoor SR and Outdoor SL, the beachclub verticals',
     summary: 'A pair of high-visibility vertical displays introduces your brand throughout the open-air beach club.',
     screens: ['Outdoor SR', 'Outdoor SL'],
     bestFor: 'Arrival branding, sponsor visibility, portrait creative and repeated outdoor messaging.',
-    labels: [
-      { label: 'OUTDOOR SR', x: 19, y: 43 },
-      { label: 'OUTDOOR SL', x: 82, y: 31 },
-    ],
   },
   {
     id: 5,
     shortName: 'Arch',
     title: 'Outdoor Arch',
-    image: '/creative-guide/specific-zones/zone-5-arch.jpg',
-    imageAlt: 'Zone 5 outdoor arch LED display labeled above the beach club opening',
+    video: `${DIR}/zone-5-arch.mp4`,
+    poster: `${DIR}/zone-5-arch.jpg`,
+    label: 'Zone 5 — the outdoor arch over the Strip',
     summary: 'The panoramic arch creates a singular branded gateway overlooking the Las Vegas Strip.',
     screens: ['Outdoor Arch'],
     bestFor: 'Welcome moments, wide logo animations, scenic loops and a signature exterior statement.',
-    labels: [{ label: 'OUTDOOR ARCH', x: 50, y: 31 }],
   },
 ];
 
-const ZONE_IMAGES = SPECIFIC_ZONES.map((z) => z.image);
+const WALKTHROUGH = `${DIR}/zones-walkthrough.mp4`;
+const POSTERS = SPECIFIC_ZONES.map((z) => z.poster);
 
 export interface SpecificZoneSelectorProps {
   /** Above the title. Defaults to "Price sheet service". */
@@ -120,20 +111,23 @@ export interface SpecificZoneSelectorProps {
    * own description so the card says the same thing the proposal will.
    */
   description?: string;
+  /** Opens a video full screen; the card offers the one-minute walkthrough. */
+  onFullscreen?: (src: string) => void;
   className?: string;
 }
 
 export function SpecificZoneSelector({
   eyebrow = 'Price sheet service',
   description = 'Select a zone below to see the screens included. This service maps custom content to the exact LED screens in one targeted venue area, giving your most important guest moment a focused, coordinated visual identity.',
+  onFullscreen,
   className = '',
 }: SpecificZoneSelectorProps) {
   const [selectedZoneId, setSelectedZoneId] = useState(1);
   const selectedZone = SPECIFIC_ZONES.find((zone) => zone.id === selectedZoneId) ?? SPECIFIC_ZONES[0];
   const reduceMotion = useReducedMotion();
 
-  const images = useMemo(() => ZONE_IMAGES, []);
-  useWarmImages(images);
+  const posters = useMemo(() => POSTERS, []);
+  useWarmImages(posters);
 
   const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, zoneIndex: number) => {
     let nextIndex: number | undefined;
@@ -220,31 +214,39 @@ export function SpecificZoneSelector({
         aria-labelledby={`specific-zone-tab-${selectedZone.id}`}
         className="grid lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.85fr)]"
       >
-        <Crossfade id={selectedZone.id} className="aspect-video overflow-hidden bg-black lg:aspect-auto lg:min-h-[430px]">
-          <img
-            src={selectedZone.image}
-            alt={selectedZone.imageAlt}
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/15" aria-hidden="true" />
-          <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/65 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-md sm:left-5 sm:top-5">
-            Zone {selectedZone.id} · {selectedZone.shortName}
-          </div>
-          {selectedZone.labels.map((item) => (
-            <div
-              key={item.label}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${item.x}%`, top: `${item.y}%` }}
-            >
-              <span className="relative block whitespace-nowrap rounded-full border border-primary/70 bg-black/80 px-2 py-1 text-[8px] font-semibold tracking-[0.12em] text-primary shadow-lg backdrop-blur sm:px-2.5 sm:text-[9px]">
-                {item.label}
-              </span>
-              <span className="mx-auto block h-3 w-px bg-primary/80" aria-hidden="true" />
-              <span className="mx-auto block h-1.5 w-1.5 rounded-full bg-primary ring-4 ring-primary/20" aria-hidden="true" />
+        <div className="relative">
+          <Crossfade id={selectedZone.id} className="aspect-video overflow-hidden bg-black lg:aspect-auto lg:h-full lg:min-h-[430px]">
+            {reduceMotion ? (
+              <img src={selectedZone.poster} alt={selectedZone.label} className="h-full w-full object-cover" />
+            ) : (
+              <video
+                src={selectedZone.video}
+                poster={selectedZone.poster}
+                aria-label={selectedZone.label}
+                className="h-full w-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/15" aria-hidden="true" />
+            <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/65 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur-md sm:left-5 sm:top-5">
+              Zone {selectedZone.id} · {selectedZone.shortName}
             </div>
-          ))}
-        </Crossfade>
+          </Crossfade>
+          {onFullscreen && (
+            <button
+              type="button"
+              onClick={() => onFullscreen(WALKTHROUGH)}
+              className="btn-glow tap-44 absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/60 px-3.5 py-2 font-mono text-[9.5px] uppercase tracking-[0.18em] text-white backdrop-blur-sm hover:bg-black/80"
+            >
+              <Play className="h-3.5 w-3.5" />
+              Watch the full walkthrough
+            </button>
+          )}
+        </div>
 
         <div className="flex flex-col justify-between border-t border-primary/15 p-6 sm:p-8 lg:border-l lg:border-t-0">
           <FadeSwap id={selectedZone.id}>

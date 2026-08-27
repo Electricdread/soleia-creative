@@ -608,7 +608,7 @@ export default function CreativeGuideServices() {
       return (
         <Reveal key={item.id} className="md:col-span-2">
           <div id="zones" className="scroll-mt-32">
-            <SpecificZoneSelector description={blurbFor(item)} />
+            <SpecificZoneSelector description={blurbFor(item)} onFullscreen={(src) => setFullscreenVideo(src)} />
           </div>
         </Reveal>
       );

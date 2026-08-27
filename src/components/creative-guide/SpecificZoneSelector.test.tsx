@@ -3,13 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { SpecificZoneSelector } from './SpecificZoneSelector';
 
 describe('SpecificZoneSelector', () => {
-  it('shows the selected zone image and included screens', () => {
+  it('shows the selected zone view and included screens', () => {
     render(<SpecificZoneSelector />);
 
     fireEvent.click(screen.getByRole('tab', { name: /zone 4 outdoor/i }));
 
     expect(screen.getByRole('tab', { name: /zone 4 outdoor/i })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByAltText(/zone 4 beach club view/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/zone 4 — outdoor sr and outdoor sl/i)).toBeInTheDocument();
     expect(screen.getByRole('tabpanel')).toHaveTextContent('Outdoor SR');
     expect(screen.getByRole('tabpanel')).toHaveTextContent('Outdoor SL');
   });
@@ -21,6 +21,6 @@ describe('SpecificZoneSelector', () => {
     fireEvent.keyDown(firstTab, { key: 'ArrowRight' });
 
     expect(screen.getByRole('tab', { name: /zone 2 curves/i })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByAltText(/zone 2 interior view/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/zone 2 — the sr and sl curves/i)).toBeInTheDocument();
   });
 });
