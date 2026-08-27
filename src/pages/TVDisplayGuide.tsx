@@ -5,11 +5,8 @@ import { Reveal } from '@/components/motion/Reveal';
 import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
 
 // Asset paths shared with the services page.
-const HERO_IMG = '/creative-guide/tv/hero.jpg';
-const MAPPING_CARD_IMG = '/creative-guide/tv/mapping-card.jpg';
-const MAPPING_CARD_PNG = '/creative-guide/tv/mapping-card-1920x1080.png';
-const LOOP_URL = '/creative-guide/tv/loop.mp4';
-const LOOP_POSTER = '/creative-guide/tv/loop-poster.jpg';
+const HERO_IMG = '/creative-guide/drive-updates/tv-hero.png';
+const MAPPING_CARD_PNG = '/creative-guide/drive-updates/tv-mapping-card.png';
 
 // Official delivery spec (source: Creative Guide — Television Displays, and
 // the TV Guide pixel map card the network is built on).
@@ -123,59 +120,23 @@ export default function TVDisplayGuide() {
           </article>
         </Reveal>
 
-        {/* MAPPING CARD + LOOP PREVIEW */}
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <Reveal>
-            <article className={`${panelShell} flex h-full flex-col`}>
-              <div className="flex flex-1 items-center justify-center bg-black/40 p-8">
-                <img
-                  src={MAPPING_CARD_IMG}
-                  alt="TV mapping card — the 1920 × 1080 landscape canvas"
-                  className="w-full rounded-lg border border-primary/30 shadow-[0_0_34px_-6px_hsl(var(--primary)/0.35)]"
-                />
-              </div>
-              <div className="border-t border-primary/15 p-6 sm:px-8">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <h2 className="font-display text-xl text-foreground">Mapping card</h2>
-                    <p className="mt-1 text-[13px] text-muted-foreground">The exact 1920 × 1080 canvas your content is built on.</p>
-                  </div>
-                  <a
-                    href={MAPPING_CARD_PNG}
-                    download="Soleia-TV-Mapping-1920x1080.png"
-                    className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    Download
-                  </a>
-                </div>
-              </div>
-            </article>
-          </Reveal>
-
-          <Reveal delay={0.05}>
-            <article className={`${panelShell} flex h-full flex-col`}>
-              <div className="flex flex-1 items-center justify-center bg-black/40 p-8">
-                <video
-                  src={LOOP_URL}
-                  poster={LOOP_POSTER}
-                  className="w-full rounded-lg border border-primary/30 object-cover shadow-[0_0_34px_-6px_hsl(var(--primary)/0.35)]"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                />
-              </div>
-              <div className="border-t border-primary/15 p-6 sm:px-8">
-                <h2 className="font-display text-xl text-foreground">Mapping card in motion</h2>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  The same 1920 × 1080 canvas animated, so you can see how motion reads across the network's screens.
-                </p>
-              </div>
-            </article>
-          </Reveal>
-        </div>
+        {/* The composed hero already shows the TV guide on the real surface. */}
+        <Reveal className="mt-6">
+          <article className={`${panelShell} flex flex-wrap items-center justify-between gap-5 p-6 sm:px-8`}>
+            <div>
+              <h2 className="font-display text-xl text-foreground">TV delivery guide</h2>
+              <p className="mt-1 text-[13px] text-muted-foreground">Download the exact 1920 × 1080 canvas for the shared network.</p>
+            </div>
+            <a
+              href={MAPPING_CARD_PNG}
+              download="Soleia-TV-Mapping-1920x1080.png"
+              className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Download TV guide
+            </a>
+          </article>
+        </Reveal>
 
         {/* CLOSING LINE */}
         <Reveal className="mt-10">

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Maximize2, X } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Reveal } from '@/components/motion/Reveal';
 import { VENUE_AREAS, type AreaId } from '@/lib/venueSurfaces';
 
@@ -21,8 +22,9 @@ import { VENUE_AREAS, type AreaId } from '@/lib/venueSurfaces';
 type Shot = { src: string; alt: string; kind: 'image' } | { src: string; poster?: string; alt: string; kind: 'video' };
 
 export function VenueSurfaceExplorer() {
-  const [areaId, setAreaId] = useState<AreaId>('main');
+  const [areaId, setAreaId] = useState<AreaId>('overview');
   const [lightbox, setLightbox] = useState<Shot | null>(null);
+  const reduceMotion = useReducedMotion();
 
   const area = useMemo(() => VENUE_AREAS.find((a) => a.id === areaId) ?? VENUE_AREAS[0], [areaId]);
 
@@ -33,13 +35,13 @@ export function VenueSurfaceExplorer() {
     return list;
   }, [area]);
 
-  const [shotIdex, setShotIdex] = useState(0);
-  const shot = shots[Math.min(shotIdex, shots.length - 1)];
+  const [shotIndex, setShotIndex] = useState(0);
+  const shot = shots[Math.min(shotIndex, shots.length - 1)];
 
   // Switching area always returns to that area's establishing view.
   const pickArea = useCallback((id: AreaId) => {
     setAreaId(id);
-    setShotIdex(0);
+    setShotIndex(0);
   }, []);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export function VenueSurfaceExplorer() {
         <div
           role="tablist"
           aria-label="Venue areas"
-          className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-7 overflow-x-auto border-b border-primary/15 pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {VENUE_AREAS.map((a) => {
             const on = a.id === area.id;
@@ -66,10 +68,10 @@ export function VenueSurfaceExplorer() {
                 role="tab"
                 aria-selected={on}
                 onClick={() => pickArea(a.id)}
-                className={`tap-44 flex-shrink-0 whitespace-nowrap rounded-full border px-5 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
+                className={`tap-44 relative flex-shrink-0 whitespace-nowrap border-b px-0 py-4 text-[10px] uppercase tracking-[0.22em] transition-colors ${
                   on
-                    ? 'border-primary/60 bg-primary/15 text-primary'
-                    : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
                 }`}
               >
                 {a.label}
@@ -79,32 +81,48 @@ export function VenueSurfaceExplorer() {
         </div>
       </Reveal>
 
-      <Reveal delay={0.05} className="mt-6">
-        <article className="card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-card/40 surface-elevated">
+      <Reveal delay={0.05} className="mt-8">
+        <article className="overflow-hidden border-y border-primary/15 bg-transparent">
           {/* Establishing view */}
           <button
             type="button"
             onClick={() => setLightbox(shot)}
             aria-label={`Enlarge — ${shot.alt}`}
-            className="group relative block w-full cursor-zoom-in overflow-hidden bg-black"
+            className="cg-editorial-cover group relative block w-full cursor-zoom-in overflow-hidden bg-black"
           >
-            <div className="aspect-[16/9]">
-              {shot.kind === 'video' ? (
-                <video
-                  src={shot.src}
-                  poster={shot.poster}
-                  className="h-full w-full object-contain"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                />
-              ) : (
-                <img src={shot.src} alt={shot.alt} className="h-full w-full object-cover" loading="lazy" />
-              )}
+            <div className="relative aspect-[16/9] lg:aspect-[2/1]">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={`${area.id}-${shot.src}`}
+                  className="absolute inset-0"
+                  initial={reduceMotion ? false : { opacity: 0, scale: 1.012 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={reduceMotion ? undefined : { opacity: 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {shot.kind === 'video' ? (
+                    <video
+                      src={shot.src}
+                      poster={shot.poster}
+                      className="h-full w-full object-contain"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                    />
+                  ) : (
+                    <img
+                      src={shot.src}
+                      alt={shot.alt}
+                      className={`h-full w-full ${area.id === 'overview' ? 'object-contain p-3 sm:p-5' : 'object-cover'}`}
+                      loading="lazy"
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
-            <span className="pointer-events-none absolute right-4 top-4 inline-flex items-center gap-2 rounded-full bg-background/80 px-3.5 py-2 text-[10px] uppercase tracking-[0.18em] text-foreground opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+            <span className="pointer-events-none absolute right-5 top-5 inline-flex items-center gap-2 border border-white/20 bg-black/55 px-3.5 py-2 text-[9px] uppercase tracking-[0.2em] text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
               <Maximize2 className="h-3.5 w-3.5" />
               Enlarge
             </span>
@@ -112,15 +130,15 @@ export function VenueSurfaceExplorer() {
 
           {/* Alternate views for this area */}
           {shots.length > 1 && (
-            <div className="flex gap-2 border-t border-primary/15 px-5 py-3 sm:px-7">
+            <div className="flex gap-2 border-t border-primary/15 px-0 py-4">
               {shots.map((s, i) => (
                 <button
                   key={s.src}
-                  onClick={() => setShotIdex(i)}
+                  onClick={() => setShotIndex(i)}
                   aria-label={s.alt}
-                  aria-current={i === shotIdex ? 'true' : undefined}
-                  className={`h-12 w-20 flex-shrink-0 overflow-hidden rounded-lg border transition-colors ${
-                    i === shotIdex ? 'border-primary' : 'border-border/60 hover:border-primary/50'
+                  aria-current={i === shotIndex ? 'true' : undefined}
+                  className={`h-12 w-20 flex-shrink-0 overflow-hidden border transition-colors ${
+                    i === shotIndex ? 'border-primary' : 'border-border/60 hover:border-primary/50'
                   }`}
                 >
                   {s.kind === 'video' ? (
@@ -134,9 +152,9 @@ export function VenueSurfaceExplorer() {
           )}
 
           {/* What this area is */}
-          <div className="border-t border-primary/15 px-6 py-7 sm:px-8">
-            <h3 className="font-display text-2xl leading-tight text-foreground">{area.title}</h3>
-            <p className="mt-2.5 max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground">{area.blurb}</p>
+          <div className="grid gap-4 border-t border-primary/15 py-8 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-12 sm:py-10">
+            <h3 className="font-display text-3xl leading-tight text-foreground">{area.title}</h3>
+            <p className="max-w-2xl text-[14.5px] font-light leading-[1.8] text-muted-foreground">{area.blurb}</p>
           </div>
 
         </article>
