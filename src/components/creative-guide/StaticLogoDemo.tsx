@@ -5,22 +5,17 @@ import { Crossfade, FadeSwap } from '@/components/motion/Crossfade';
 import { HIGHLIGHT_SPRING, useWarmImages } from '@/components/motion/motion';
 
 /**
- * Static Logo, shown rather than described.
+ * Static Logo, shown on the screens it lands on.
  *
- * The service is a still mark held on the main screens while the club library
- * keeps the rest of the room moving. The clip that used to sit here was a pass
- * through the venue model — handsome, but at card size it read as "a video",
- * not "your logo, there". This puts the Soleia mark on the actual screens in
- * photographs of the actual room, on the surfaces the buyout's ten logos land
- * on: the two IMAG walls and the Center panel indoors, the two verticals and
- * the arch outside. The photographs and the screen positions are the zone
- * card's, so the room reads the same way twice on one page.
+ * These are the owner's own renders (2026-08-27): the Soleia mark held still
+ * on the venue model's actual surfaces — the main-room walls and booth, the
+ * ceiling rays, the beachclub verticals, the arch over the Strip, the pool
+ * deck, and a cabana television. Nothing is composited in code any more; the
+ * renders carry the mark exactly where the playback system puts it.
  *
  * Nothing animates on the screens — that is the point of a static logo. The
- * highlight glides between the views and the photo crossfades; the mark stays.
+ * highlight glides between the views and the render crossfades; the mark stays.
  */
-
-const MARK = '/soleia-logo-color.png';
 
 type View = {
   id: string;
@@ -28,52 +23,59 @@ type View = {
   image: string;
   alt: string;
   note: string;
-  /**
-   * The face of each screen in this photograph, as percentages of the 16:9
-   * frame: centre x/y, width and height. Measured on the render itself, not
-   * taken from the zone card's label pins, which point at a screen from above.
-   */
-  marks: { x: number; y: number; w: number; h: number }[];
 };
+
+const DIR = '/creative-guide/static-logo';
 
 const VIEWS: View[] = [
   {
-    id: 'stage',
+    id: 'main',
     label: 'Main room',
-    image: '/creative-guide/specific-zones/zone-1-main-stage.jpg',
-    alt: 'The main stage screens carrying the Soleia mark — IMAG SR, Center and IMAG SL',
-    note: 'IMAG SR · Center · IMAG SL',
-    marks: [
-      { x: 25.2, y: 38.6, w: 23, h: 27 },
-      { x: 50.8, y: 42.8, w: 13.3, h: 17 },
-      { x: 74.4, y: 38.6, w: 24, h: 27 },
-    ],
+    image: `${DIR}/main-room.jpg`,
+    alt: 'The Soleia mark held on the main-room walls, the DJ booth face and the ceiling rays',
+    note: 'IMAG SR · IMAG SL · DJ Booth · Sol Rays',
   },
   {
-    id: 'outdoor',
+    id: 'sunburst',
+    label: 'Sunburst',
+    image: `${DIR}/sunburst.jpg`,
+    alt: 'The Soleia mark repeated along the six ceiling rays around the sunburst',
+    note: 'Sol Rays 1 – 6',
+  },
+  {
+    id: 'beachclub',
     label: 'Beachclub',
-    image: '/creative-guide/specific-zones/zone-4-outdoor.jpg',
-    alt: 'The two outdoor verticals carrying the Soleia mark',
+    image: `${DIR}/beachclub.jpg`,
+    alt: 'The Soleia mark on the two outdoor verticals, the pool and palms in front',
     note: 'Outdoor SR · Outdoor SL',
-    marks: [
-      { x: 19.1, y: 45.8, w: 9.4, h: 36 },
-      { x: 82, y: 35, w: 19.5, h: 45 },
-    ],
   },
   {
     id: 'arch',
     label: 'Arch',
-    image: '/creative-guide/specific-zones/zone-5-arch.jpg',
-    alt: 'The outdoor arch carrying the Soleia mark',
+    image: `${DIR}/arch.jpg`,
+    alt: 'The Soleia mark on the outdoor arch, the Strip behind it at sunset',
     note: 'Outdoor Arch',
-    marks: [{ x: 48.6, y: 38.2, w: 45.7, h: 27.8 }],
+  },
+  {
+    id: 'pool',
+    label: 'Pool deck',
+    image: `${DIR}/pool-deck.jpg`,
+    alt: 'The pool deck at dusk, the Soleia mark on every screen facing it',
+    note: 'The beachclub, from the water',
+  },
+  {
+    id: 'tv',
+    label: 'TV',
+    image: `${DIR}/tv.jpg`,
+    alt: 'A cabana television carrying the Soleia mark, the beachclub beyond the curtain',
+    note: 'Cabana & bungalow network',
   },
 ];
 
 const IMAGES = VIEWS.map((v) => v.image);
 
 export interface StaticLogoDemoProps {
-  /** Opens the real pass through the venue model full screen. */
+  /** Opens the pass through the venue model full screen. */
   onFullscreen?: () => void;
   className?: string;
 }
@@ -91,21 +93,6 @@ export function StaticLogoDemo({ onFullscreen, className = '' }: StaticLogoDemoP
         <img src={view.image} alt={view.alt} decoding="async" className="media-grade h-full w-full object-cover" />
         <div className="media-veil absolute inset-0" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" aria-hidden="true" />
-        {/* The mark, held still on the face of each included screen */}
-        {view.marks.map((m, i) => (
-          <div
-            key={i}
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[2px] bg-[#0a0908]/[0.94] shadow-[0_0_0_1px_hsl(var(--primary)/0.4),0_0_26px_-4px_hsl(var(--primary)/0.55)]"
-            style={{ left: `${m.x}%`, top: `${m.y}%`, width: `${m.w}%`, height: `${m.h}%` }}
-          >
-            <img
-              src={MARK}
-              alt=""
-              className="max-h-[68%] w-[82%] object-contain"
-              style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary) / 0.35))' }}
-            />
-          </div>
-        ))}
       </Crossfade>
 
       <div className="relative">
@@ -127,7 +114,7 @@ export function StaticLogoDemo({ onFullscreen, className = '' }: StaticLogoDemoP
       </div>
 
       {/* Which screens */}
-      <div className="flex items-center gap-2 border-t border-primary/15 px-5 py-3 sm:px-7" role="tablist" aria-label="Where a static logo lands">
+      <div className="flex items-center gap-2 overflow-x-auto border-t border-primary/15 px-5 py-3 scrollbar-hide sm:px-7" role="tablist" aria-label="Where a static logo lands">
         {VIEWS.map((v) => {
           const on = v.id === view.id;
           return (
@@ -137,7 +124,7 @@ export function StaticLogoDemo({ onFullscreen, className = '' }: StaticLogoDemoP
               role="tab"
               aria-selected={on}
               onClick={() => setViewId(v.id)}
-              className={`tab-glow relative rounded-full border px-4 py-2 text-[10.5px] uppercase tracking-[0.18em] ${
+              className={`tab-glow relative flex-shrink-0 rounded-full border px-4 py-2 text-[10.5px] uppercase tracking-[0.18em] ${
                 on ? 'border-primary/60 text-primary' : 'border-border/60 text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -153,7 +140,6 @@ export function StaticLogoDemo({ onFullscreen, className = '' }: StaticLogoDemoP
             </button>
           );
         })}
-        <span className="ml-auto hidden text-[12px] text-muted-foreground/80 sm:block">Held still, all night.</span>
       </div>
     </div>
   );

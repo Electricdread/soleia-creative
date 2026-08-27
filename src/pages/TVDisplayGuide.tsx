@@ -8,8 +8,6 @@ import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHe
 const HERO_IMG = '/creative-guide/tv/hero.jpg';
 const MAPPING_CARD_IMG = '/creative-guide/tv/mapping-card.jpg';
 const MAPPING_CARD_PNG = '/creative-guide/tv/mapping-card-1920x1080.png';
-const LOOP_URL = '/creative-guide/tv/loop.mp4';
-const LOOP_POSTER = '/creative-guide/tv/loop-poster.jpg';
 
 // Official delivery spec (source: Creative Guide — Television Displays, and
 // the TV Guide pixel map card the network is built on).
@@ -123,10 +121,10 @@ export default function TVDisplayGuide() {
           </article>
         </Reveal>
 
-        {/* MAPPING CARD + LOOP PREVIEW */}
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {/* MAPPING CARD */}
+        <div className="mt-6">
           <Reveal>
-            <article className={`${panelShell} flex h-full flex-col`}>
+            <article className={`${panelShell} flex flex-col`}>
               <div className="flex flex-1 items-center justify-center bg-black/40 p-8">
                 <img
                   src={MAPPING_CARD_IMG}
@@ -153,28 +151,6 @@ export default function TVDisplayGuide() {
             </article>
           </Reveal>
 
-          <Reveal delay={0.05}>
-            <article className={`${panelShell} flex h-full flex-col`}>
-              <div className="flex flex-1 items-center justify-center bg-black/40 p-8">
-                <video
-                  src={LOOP_URL}
-                  poster={LOOP_POSTER}
-                  className="w-full rounded-lg border border-primary/30 object-cover shadow-[0_0_34px_-6px_hsl(var(--primary)/0.35)]"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                />
-              </div>
-              <div className="border-t border-primary/15 p-6 sm:px-8">
-                <h2 className="font-display text-xl text-foreground">Mapping card in motion</h2>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  The same 1920 × 1080 canvas animated, so you can see how motion reads across the network's screens.
-                </p>
-              </div>
-            </article>
-          </Reveal>
         </div>
 
         {/* CLOSING LINE */}

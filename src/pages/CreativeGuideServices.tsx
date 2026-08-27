@@ -110,7 +110,7 @@ const SECTIONS: GuideSection[] = [
   { id: 'welcome', label: 'Welcome' },
   { id: 'venue', label: 'Venue' },
   { id: 'included', label: 'Included' },
-  { id: 'enhance', label: 'Enhance' },
+  { id: 'enhance', label: 'Package' },
   { id: 'production', label: 'Production' },
   { id: 'own-content', label: 'Own Content' },
   { id: 'next', label: 'Next Step' },
@@ -118,9 +118,9 @@ const SECTIONS: GuideSection[] = [
 
 /** What the walk is for, step by step — the Welcome section's map of the page. */
 const WALK_TITLES: Record<string, string> = {
-  venue: 'Meet the venue',
+  venue: 'The venue',
   included: 'Included with your buyout',
-  enhance: 'Enhance your event',
+  enhance: 'Soleia Creative Upgrade Package',
   production: 'How creative production works',
   'own-content': 'Providing your own content?',
   next: 'Next step',
@@ -128,19 +128,11 @@ const WALK_TITLES: Record<string, string> = {
 const WALK_PURPOSE: Record<string, string> = {
   venue: 'The layout, the two worlds, and every surface your content can land on.',
   included: 'The branding every activation already carries — your starting point.',
-  enhance: 'The Creative Package, and every additional price-sheet service.',
+  enhance: 'Full creative support, handled — and every additional price-sheet service.',
   production: 'Assets, deadlines, production, QC and load-in — what to expect.',
   'own-content': 'Specifications and downloads for your technical team.',
   next: 'Review your proposal, or schedule the creative call.',
 };
-
-/** The venue in four numbers. */
-const VENUE_AT_A_GLANCE: [string, string][] = [
-  ['5,000+', 'Square feet of LED'],
-  ['15', 'Cabanas'],
-  ['9', 'Bungalows'],
-  ['30+', 'Display zones'],
-];
 
 /** The two worlds, and the private one between them. */
 const VENUE_WORLDS = [
@@ -486,11 +478,27 @@ function MediaHeader({
   );
 }
 
+/**
+ * A block inside a section — the explorer, the mapping walk — set with the
+ * same weight as a section head, minus the number, so it never reads as a
+ * footnote to the card above it. Generous top margin on purpose.
+ */
+function SubHead({ eyebrow, title, lede }: { eyebrow: string; title: string; lede?: string }) {
+  return (
+    <Reveal className="mb-8 mt-20">
+      <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">{eyebrow}</span>
+      <h3 className="mt-3 font-display text-2xl leading-tight text-foreground sm:text-3xl lg:text-4xl">{title}</h3>
+      <div className="mt-4 h-px w-16 bg-gradient-to-r from-primary to-transparent" />
+      {lede && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{lede}</p>}
+    </Reveal>
+  );
+}
+
 /** Heading for one surface group inside Additional Options. */
 function GroupHead({ eyebrow, title, note }: { eyebrow: string; title: string; note: string }) {
   return (
-    <Reveal className="mb-6 mt-16 first:mt-0">
-      <div className="border-b border-primary/15 pb-4">
+    <Reveal className="mb-8 mt-20 first:mt-0">
+      <div className="border-b border-primary/15 pb-5">
         <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{eyebrow}</span>
         <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{title}</h3>
         <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">{note}</p>
@@ -799,14 +807,14 @@ export default function CreativeGuideServices() {
                   key={s.id}
                   type="button"
                   onClick={() => goTo(s.id)}
-                  className="group/step flex items-start gap-3 bg-card p-5 text-left transition-colors duration-500 hover:bg-primary/5"
+                  className="group/step flex items-start gap-4 bg-card p-7 text-left transition-colors duration-500 hover:bg-primary/5 sm:p-8"
                 >
-                  <span className="shrink-0 font-mono text-[11px] leading-6 text-primary">{String(i + 2).padStart(2, '0')}</span>
+                  <span className="shrink-0 font-display text-2xl leading-8 text-primary">{String(i + 2).padStart(2, '0')}</span>
                   <span>
-                    <span className="block text-[14px] font-medium text-foreground transition-colors duration-500 group-hover/step:text-primary">
+                    <span className="block font-display text-xl leading-tight text-foreground transition-colors duration-500 group-hover/step:text-primary sm:text-[1.35rem]">
                       {WALK_TITLES[s.id] ?? s.label}
                     </span>
-                    <span className="mt-1 block text-[12.5px] leading-relaxed text-muted-foreground">{WALK_PURPOSE[s.id]}</span>
+                    <span className="mt-2 block text-[14px] leading-relaxed text-muted-foreground">{WALK_PURPOSE[s.id]}</span>
                   </span>
                 </button>
               ))}
@@ -814,29 +822,13 @@ export default function CreativeGuideServices() {
           </Reveal>
         </section>
 
-        {/* ══ 02 · MEET THE VENUE ══ */}
+        {/* ══ 02 · THE VENUE ══ */}
         <section id="venue" className="scroll-mt-32 pt-24">
           <GuideSectionHead
-            eyebrow="02 — Meet the Venue"
+            eyebrow="02 — The Venue"
             title="One venue, two worlds."
-            lede="Over 5,000 square feet of LED and more than twenty televisions, indoors and out. Before anything else, here is every surface your content can land on — and what each one is actually for."
+            lede="Indoors and out, here is every surface your content can land on — and what each one is actually for."
           />
-
-          <Reveal className="mb-6">
-            <div className="grid grid-cols-2 border border-primary/15 md:grid-cols-4">
-              {VENUE_AT_A_GLANCE.map(([v, l], i) => (
-                <div
-                  key={l}
-                  className={`p-5 text-center ${i % 2 === 0 ? 'border-r border-primary/15' : ''} ${
-                    i < 2 ? 'border-b border-primary/15 md:border-b-0' : ''
-                  } ${i === 1 ? 'md:border-r' : ''} ${i === 2 ? 'md:border-r' : ''}`}
-                >
-                  <div className="font-display text-2xl leading-none text-gradient-gold sm:text-3xl">{v}</div>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{l}</div>
-                </div>
-              ))}
-            </div>
-          </Reveal>
 
           <div className="mb-8 grid gap-4 md:grid-cols-3">
             {VENUE_WORLDS.map((w, i) => (
@@ -872,17 +864,11 @@ export default function CreativeGuideServices() {
             </article>
           </Reveal>
 
-          <Reveal className="mb-5">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Explore the room</span>
-                <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">
-                  Real photographs with content on the screens. Choose an area, walk its views, and tap any photo to
-                  see it full size.
-                </p>
-              </div>
-            </div>
-          </Reveal>
+          <SubHead
+            eyebrow="Explore the room"
+            title="Every surface, photographed."
+            lede="Real photographs with content on the screens. Choose an area, walk its views, and tap any photo to see it full size."
+          />
           <VenueSurfaceExplorer />
         </section>
 
@@ -932,14 +918,19 @@ export default function CreativeGuideServices() {
                       </span>
                       <div className="mt-2.5 flex flex-wrap gap-1.5">
                         {(inc as { surfaces: string[] }).surfaces.map((s) => (
-                          <span
+                          <button
                             key={s}
-                            className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] text-foreground"
+                            type="button"
+                            onClick={() => goTo('zones')}
+                            aria-label={`${s} — see it in LED Screens: Specific Zone Mapping`}
+                            className="btn-glow inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[11.5px] text-foreground hover:border-primary/60 hover:text-primary"
                           >
                             {s}
-                          </span>
+                            <ArrowRight className="h-3 w-3 text-primary" />
+                          </button>
                         ))}
                       </div>
+                      <p className="mt-2.5 text-[12px] text-muted-foreground/80">Tap a screen to see its zone mapped.</p>
                     </div>
                   )}
                   <p className="mt-5 text-[12.5px] italic leading-relaxed text-muted-foreground/80">{inc.fine}</p>
@@ -949,12 +940,12 @@ export default function CreativeGuideServices() {
           </div>
         </section>
 
-        {/* ══ 04 · ENHANCE YOUR EVENT ══ */}
+        {/* ══ 04 · SOLEIA CREATIVE UPGRADE PACKAGE ══ */}
         <section id="enhance" className="scroll-mt-32 pt-24">
           <GuideSectionHead
-            eyebrow="04 — Enhance Your Event"
-            title="Every way to take it further."
-            lede="The Creative Package is the full upgrade. Below it, every additional price-sheet service, grouped by where in the venue it plays."
+            eyebrow="04 — Soleia Creative Upgrade Package"
+            title="Full creative support, handled."
+            lede="Below the package, every additional price-sheet service, grouped by where in the venue it plays."
           />
 
           {/* The package: what it is, in a line; then what it includes, each
@@ -986,60 +977,30 @@ export default function CreativeGuideServices() {
                 </div>
 
                 <div className="grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3">
-                  {PACKAGE_INCLUDES.map((inc) => {
-                    const playable = !!inc.movie;
-                    const Media = (
-                      <div className="group/tile relative aspect-[16/10] overflow-hidden bg-black">
-                        <img
-                          src={inc.src}
-                          alt={inc.alt}
-                          loading="lazy"
-                          className="media-duotone h-full w-full object-cover transition-transform duration-700 group-hover/tile:scale-[1.03]"
-                        />
-                        <div className="media-veil absolute inset-0" aria-hidden="true" />
-                        {playable && (
-                          <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-background/85 px-3 py-1.5 text-[9.5px] uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">
-                            <Play className="h-3 w-3 text-primary" />
-                            Play
-                          </span>
-                        )}
-                      </div>
-                    );
-                    return (
-                      <div key={inc.title} className="flex flex-col bg-card">
-                        {playable ? (
-                          <button
-                            type="button"
-                            onClick={() => setFullscreenVideo(inc.movie!)}
-                            aria-label={`Play — ${inc.title}`}
-                            className="block w-full cursor-pointer text-left"
-                          >
-                            {Media}
-                          </button>
-                        ) : (
-                          Media
-                        )}
-                        <div className="flex-1 p-6">
-                          <h4 className="mb-2 font-display text-xl leading-tight text-foreground">{inc.title}</h4>
-                          <p className="text-[13.5px] leading-relaxed text-muted-foreground">{inc.body}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {PACKAGE_INCLUDES.map((inc, i) => (
+                    <div key={inc.title} className="flex flex-col bg-card p-7 sm:p-8">
+                      <span className="font-mono text-[11px] text-primary">{String(i + 1).padStart(2, '0')}</span>
+                      <h4 className="mb-2.5 mt-3 font-display text-xl leading-tight text-foreground sm:text-[1.35rem]">{inc.title}</h4>
+                      <p className="text-[14px] leading-relaxed text-muted-foreground">{inc.body}</p>
+                      {inc.movie && (
+                        <button
+                          type="button"
+                          onClick={() => setFullscreenVideo(inc.movie!)}
+                          className="btn-glow tap-44 mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-primary/40 px-4 py-2 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
+                        >
+                          <Play className="h-3 w-3" />
+                          Watch
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
-
               </div>
             </article>
           </Reveal>
 
           {/* Every additional price-sheet service, by surface. */}
-          <div id="add-ons" className="mt-20 scroll-mt-32">
-            <Reveal className="mb-2">
-              <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Additional options</span>
-              <h3 className="mt-3 font-display text-2xl leading-tight text-foreground sm:text-3xl">
-                Built for the surface it lives on.
-              </h3>
-            </Reveal>
+          <div id="add-ons" className="mt-10 scroll-mt-32">
 
             {loading ? (
               <div className="py-16 text-center text-sm text-muted-foreground">Loading services…</div>
@@ -1050,8 +1011,8 @@ export default function CreativeGuideServices() {
                 if (!cards.length && !(isArrival && elevatorItems.length)) return null;
 
                 return (
-                  <div key={g.id}>
-                    <GroupHead eyebrow={g.eyebrow} title={g.title} note={g.note} />
+                  <div key={g.id} className={g.id === 'room' ? 'mt-6' : ''}>
+                    {g.id !== 'room' && <GroupHead eyebrow={g.eyebrow} title={g.title} note={g.note} />}
 
                     {isArrival ? (
                       <div className="space-y-6">
@@ -1205,14 +1166,11 @@ export default function CreativeGuideServices() {
             </article>
           </Reveal>
 
-          <Reveal className="mb-5 mt-14">
-            <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">How mapping works</span>
-            <h3 className="mt-2 font-display text-2xl leading-tight text-foreground sm:text-3xl">One map. Every surface.</h3>
-            <p className="mt-2.5 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">
-              Every screen is a different shape, and all of them live on one file. Eight short steps — the
-              same five zones as the room, then where your logo lands, then the map running.
-            </p>
-          </Reveal>
+          <SubHead
+            eyebrow="How mapping works"
+            title="One map. Every surface."
+            lede="Every screen is a different shape, and all of them live on one file. Eight short steps — the same five zones as the room, then where your logo lands, then the map running."
+          />
           <PixelMapGuide />
 
           <Reveal className="mt-14">
