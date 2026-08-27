@@ -25,7 +25,9 @@ export interface CardSlidesProps {
   /**
    * The height every slide shares, as a class on the crossfade box — the
    * media's aspect ratio plus the control row beneath it, e.g.
-   * "aspect-[16/9] pb-[58px]" is a 16:9 picture over a 58px bar.
+   * "box-content aspect-[16/9] pb-[58px]" is a 16:9 picture over a 58px bar.
+   * box-content matters: with border-box the padding would eat into the
+   * aspect box instead of adding the bar beneath it.
    */
   frameClassName: string;
   /** Distinct per card on the page; framer needs it for the sliding highlight. */

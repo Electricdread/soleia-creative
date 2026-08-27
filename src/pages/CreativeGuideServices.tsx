@@ -667,7 +667,7 @@ export default function CreativeGuideServices() {
           <article className={`${cardShell} flex h-full flex-col`}>
             <CardSlides
               layoutId="transparent-logo-slides"
-              frameClassName="aspect-[16/9.4] pb-[58px]"
+              frameClassName="box-content aspect-[16/9.4] pb-[58px]"
               slides={[
                 {
                   id: 'wall',
@@ -696,7 +696,7 @@ export default function CreativeGuideServices() {
           <article className={`${cardShell} flex h-full flex-col`}>
             <CardSlides
               layoutId="static-logo-slides"
-              frameClassName="aspect-video pb-[58px]"
+              frameClassName="box-content aspect-video pb-[58px]"
               slides={[
                 {
                   id: 'screens',
