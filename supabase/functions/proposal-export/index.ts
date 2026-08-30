@@ -4,6 +4,7 @@
 // the DSX Studios and Soleia Creative projects with one consumer shape.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { secretEquals } from "../_shared/constantTimeEqual.ts";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 Deno.serve(async (req) => {
@@ -23,7 +24,7 @@ Deno.serve(async (req) => {
     const providedKey = req.headers.get("x-api-key");
     let authorized = false;
 
-    if (exportKey && providedKey && providedKey === exportKey) {
+    if (exportKey && providedKey && await secretEquals(providedKey, exportKey)) {
       authorized = true;
     } else {
       const authHeader = req.headers.get("Authorization");
