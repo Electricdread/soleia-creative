@@ -13,13 +13,12 @@
 // POST { packet_id, action: 'check' | 'trash' }, admin session required.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { driveAuthMode, driveJson } from '../_shared/googleDrive.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), {
@@ -27,22 +26,8 @@ const json = (status: number, body: unknown) =>
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 
-async function gw(path: string, init: RequestInit, lovableKey: string, driveKey: string) {
-  const res = await fetch(`${GATEWAY}${path}`, {
-    ...init,
-    headers: {
-      ...(init.headers || {}),
-      Authorization: `Bearer ${lovableKey}`,
-      'X-Connection-Api-Key': driveKey,
-    },
-  });
-  const text = await res.text();
-  let parsed: any = null;
-  try { parsed = text ? JSON.parse(text) : null; } catch { /* ignore */ }
-  if (!res.ok) {
-    throw new Error(`Drive gateway ${path} failed [${res.status}]: ${text.slice(0, 300)}`);
-  }
-  return parsed;
+async function gw(path: string, init: RequestInit) {
+  return driveJson(path, init);
 }
 
 interface Blocker { type: 'proposal' | 'packet' | 'job'; id: string; label: string }
@@ -116,8 +101,6 @@ async function findBlockers(
  */
 async function countFiles(
   folderId: string,
-  lovableKey: string,
-  driveKey: string,
 ): Promise<{ files: number; truncated: boolean }> {
   const queue = [folderId];
   let files = 0;
@@ -136,8 +119,6 @@ async function countFiles(
         `/drive/v3/files?q=${q}&fields=nextPageToken,files(id,mimeType)&pageSize=200` +
           (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''),
         { method: 'GET' },
-        lovableKey,
-        driveKey,
       );
       for (const f of (page?.files ?? []) as { id: string; mimeType: string }[]) {
         if (f.mimeType === 'application/vnd.google-apps.folder') queue.push(f.id);
@@ -155,13 +136,10 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed' });
 
   try {
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-    const driveKey = Deno.env.get('GOOGLE_DRIVE_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
-    if (!lovableKey) throw new Error('LOVABLE_API_KEY is not configured');
-    if (!driveKey) throw new Error('GOOGLE_DRIVE_API_KEY is not configured');
+    driveAuthMode();
 
     const supabase = createClient(supabaseUrl, serviceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
@@ -213,8 +191,6 @@ Deno.serve(async (req) => {
       const meta = await gw(
         `/drive/v3/files/${folderId}?fields=id,name,trashed`,
         { method: 'GET' },
-        lovableKey,
-        driveKey,
       );
       folderName = meta?.name ?? null;
       alreadyTrashed = Boolean(meta?.trashed);
@@ -227,7 +203,7 @@ Deno.serve(async (req) => {
     let truncated = false;
     if (!missing && !alreadyTrashed) {
       try {
-        const counted = await countFiles(folderId, lovableKey, driveKey);
+        const counted = await countFiles(folderId);
         files = counted.files;
         truncated = counted.truncated;
       } catch (e) {
@@ -264,8 +240,6 @@ Deno.serve(async (req) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ trashed: true }),
         },
-        lovableKey,
-        driveKey,
       );
     }
 

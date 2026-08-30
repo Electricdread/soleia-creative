@@ -9,14 +9,13 @@
 // Body (optional): { batchSize?: number, mode?: 'cached' | 'orphans' | 'count' }
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { driveAuthMode, driveFetch, driveJson } from '../_shared/googleDrive.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type',
 };
-
-const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
 
 // Streaming uses near-zero RAM, so we can comfortably handle large files.
 // Anything bigger than this is migrated manually via "Download from bucket".
@@ -38,30 +37,18 @@ function mimeFromName(name: string) {
   return 'application/octet-stream';
 }
 
-async function gatewayJson(path: string, init: RequestInit, lovableKey: string, driveKey: string) {
-  const res = await fetch(`${GATEWAY}${path}`, {
-    ...init,
-    headers: {
-      ...(init.headers || {}),
-      Authorization: `Bearer ${lovableKey}`,
-      'X-Connection-Api-Key': driveKey,
-    },
-  });
-  const text = await res.text();
-  let json: any = null;
-  try { json = text ? JSON.parse(text) : null; } catch { /* ignore */ }
-  if (!res.ok) throw new Error(`Drive gateway ${path} [${res.status}]: ${text.slice(0, 400)}`);
-  return json;
+async function gatewayJson(path: string, init: RequestInit) {
+  return driveJson(path, init);
 }
 
-async function findOrCreateFolder(name: string, parentId: string | null, lovableKey: string, driveKey: string) {
+async function findOrCreateFolder(name: string, parentId: string | null) {
   const parentClause = parentId ? ` and '${parentId}' in parents` : '';
   const q = encodeURIComponent(
     `mimeType='application/vnd.google-apps.folder' and name='${name.replace(/'/g, "\\'")}' and trashed=false${parentClause}`,
   );
   const list = await gatewayJson(
     `/drive/v3/files?q=${q}&fields=files(id)&pageSize=1`,
-    { method: 'GET' }, lovableKey, driveKey,
+    { method: 'GET' },
   );
   if (list?.files?.length) return list.files[0].id as string;
 
@@ -70,7 +57,6 @@ async function findOrCreateFolder(name: string, parentId: string | null, lovable
   const created = await gatewayJson(
     '/drive/v3/files?fields=id',
     { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
-    lovableKey, driveKey,
   );
   return created.id as string;
 }
@@ -85,16 +71,12 @@ async function uploadStreamToDrive(
   filename: string,
   mimeType: string,
   parentId: string,
-  lovableKey: string,
-  driveKey: string,
 ): Promise<{ id: string; webViewLink?: string }> {
-  const initRes = await fetch(
-    `${GATEWAY}/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink`,
+  const initRes = await driveFetch(
+    '/upload/drive/v3/files?uploadType=resumable&fields=id,webViewLink',
     {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${lovableKey}`,
-        'X-Connection-Api-Key': driveKey,
         'Content-Type': 'application/json; charset=UTF-8',
         'X-Upload-Content-Type': mimeType,
         'X-Upload-Content-Length': String(sizeBytes),
@@ -163,12 +145,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-    const driveKey = Deno.env.get('GOOGLE_DRIVE_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!lovableKey) throw new Error('LOVABLE_API_KEY is not configured');
-    if (!driveKey) throw new Error('GOOGLE_DRIVE_API_KEY is not configured');
+    driveAuthMode();
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
 
     const { batchSize, mode = 'cached' } = await req.json().catch(() => ({}));
@@ -205,8 +184,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const rootId = await findOrCreateFolder('Soleia Originals', null, lovableKey, driveKey);
-    const quarterId = await findOrCreateFolder(quarterFolderName(), rootId, lovableKey, driveKey);
+    const rootId = await findOrCreateFolder('Soleia Originals', null);
+    const quarterId = await findOrCreateFolder(quarterFolderName(), rootId);
 
     // ===== ORPHANS mode =====
     if (mode === 'orphans') {
@@ -254,7 +233,7 @@ Deno.serve(async (req) => {
             admin, 'clips', file.name, file.size, mimeFromName(file.name),
           );
           const uploaded = await uploadStreamToDrive(
-            stream, size, file.name, mimeType, quarterId, lovableKey, driveKey,
+            stream, size, file.name, mimeType, quarterId,
           );
           const rm = await admin.storage.from('clips').remove([file.name]);
           if (rm.error) console.warn('Supabase remove warning:', rm.error.message);
@@ -349,7 +328,7 @@ Deno.serve(async (req) => {
 
         const filename = `${clip.id}-${objectPath.split('/').pop() ?? 'clip.bin'}`;
         const uploaded = await uploadStreamToDrive(
-          stream, size, filename, mimeType, quarterId, lovableKey, driveKey,
+          stream, size, filename, mimeType, quarterId,
         );
 
         const { error: updErr } = await admin

@@ -11,30 +11,15 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { FINALS_FOLDER, FINAL_SLOTS, FINALS_README, isFinalsFolder } from '../_shared/finalSlots.ts';
+import { driveAuthMode, driveFetch, driveJson } from '../_shared/googleDrive.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
-
-async function gw(path: string, init: RequestInit, lovableKey: string, driveKey: string) {
-  const res = await fetch(`${GATEWAY}${path}`, {
-    ...init,
-    headers: {
-      ...(init.headers || {}),
-      Authorization: `Bearer ${lovableKey}`,
-      'X-Connection-Api-Key': driveKey,
-    },
-  });
-  const text = await res.text();
-  let json: any = null;
-  try { json = text ? JSON.parse(text) : null; } catch { /* ignore */ }
-  if (!res.ok) {
-    throw new Error(`Drive gateway ${path} failed [${res.status}]: ${text.slice(0, 500)}`);
-  }
-  return json;
+async function gw(path: string, init: RequestInit, _lovableKey: string, _driveKey: string) {
+  return driveJson(path, init);
 }
 
 /**
@@ -188,11 +173,9 @@ async function putTextFile(
 --${boundary}--`,
   );
 
-  const res = await fetch(`${GATEWAY}/upload/drive/v3/files?uploadType=multipart&fields=id`, {
+  const res = await driveFetch('/upload/drive/v3/files?uploadType=multipart&fields=id', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      'X-Connection-Api-Key': driveKey,
       'Content-Type': `multipart/related; boundary=${boundary}`,
     },
     body,
@@ -247,12 +230,11 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-    const driveKey = Deno.env.get('GOOGLE_DRIVE_API_KEY');
+    const lovableKey = Deno.env.get('LOVABLE_API_KEY') ?? '';
+    const driveKey = Deno.env.get('GOOGLE_DRIVE_API_KEY') ?? '';
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!lovableKey) throw new Error('LOVABLE_API_KEY is not configured');
-    if (!driveKey) throw new Error('GOOGLE_DRIVE_API_KEY is not configured');
+    driveAuthMode();
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
 
     const body = await req.json().catch(() => ({}));
@@ -458,11 +440,9 @@ Deno.serve(async (req) => {
         body.set(zipBytes, head.length);
         body.set(tail, head.length + zipBytes.length);
 
-        await fetch(`${GATEWAY}/upload/drive/v3/files?uploadType=multipart&fields=id`, {
+        await driveFetch('/upload/drive/v3/files?uploadType=multipart&fields=id', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${lovableKey}`,
-            'X-Connection-Api-Key': driveKey,
             'Content-Type': `multipart/related; boundary=${boundary}`,
           },
           body,
@@ -522,11 +502,9 @@ Deno.serve(async (req) => {
         body.set(imgBytes, head.length);
         body.set(tail, head.length + imgBytes.length);
 
-        const r = await fetch(`${GATEWAY}/upload/drive/v3/files?uploadType=multipart&fields=id`, {
+        const r = await driveFetch('/upload/drive/v3/files?uploadType=multipart&fields=id', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${lovableKey}`,
-            'X-Connection-Api-Key': driveKey,
             'Content-Type': `multipart/related; boundary=${boundary}`,
           },
           body,
@@ -584,11 +562,9 @@ Deno.serve(async (req) => {
         body.set(pdfBytes, head.length);
         body.set(tail, head.length + pdfBytes.length);
 
-        const r = await fetch(`${GATEWAY}/upload/drive/v3/files?uploadType=multipart&fields=id`, {
+        const r = await driveFetch('/upload/drive/v3/files?uploadType=multipart&fields=id', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${lovableKey}`,
-            'X-Connection-Api-Key': driveKey,
             'Content-Type': `multipart/related; boundary=${boundary}`,
           },
           body,

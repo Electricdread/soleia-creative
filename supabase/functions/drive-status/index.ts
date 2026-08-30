@@ -1,5 +1,7 @@
-// Health-check for the Google Drive connector.
-// Verifies: gateway credentials, list permission, write permission.
+// Health-check for Soleia's Google Drive authorization.
+// Verifies: OAuth/gateway credentials, list permission, write permission.
+
+import { driveAuthMode, driveFetch, verifyDriveAuth } from '../_shared/googleDrive.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,23 +9,11 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 };
 
-const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
-const VERIFY_URL = 'https://connector-gateway.lovable.dev/api/v1/verify_credentials';
-
 async function gw(
   path: string,
   init: RequestInit,
-  lovableKey: string,
-  driveKey: string,
 ) {
-  const res = await fetch(`${GATEWAY}${path}`, {
-    ...init,
-    headers: {
-      ...(init.headers || {}),
-      Authorization: `Bearer ${lovableKey}`,
-      'X-Connection-Api-Key': driveKey,
-    },
-  });
+  const res = await driveFetch(path, init);
   const text = await res.text();
   let json: any = null;
   try { json = text ? JSON.parse(text) : null; } catch { /* ignore */ }
@@ -47,32 +37,23 @@ Deno.serve(async (req) => {
   const t0 = performance.now();
 
   try {
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-    const driveKey = Deno.env.get('GOOGLE_DRIVE_API_KEY');
-    if (!lovableKey) throw new Error('LOVABLE_API_KEY is not configured');
-    if (!driveKey) throw new Error('GOOGLE_DRIVE_API_KEY is not configured');
+    report.authMode = driveAuthMode();
 
-    // 1. verify_credentials
+    // 1. Verify the active authorization with a non-destructive Drive call.
     const tA = performance.now();
     try {
-      const vRes = await fetch(VERIFY_URL, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${lovableKey}`,
-          'X-Connection-Api-Key': driveKey,
-        },
-      });
-      const vText = await vRes.text();
-      let vJson: any = null;
-      try { vJson = vText ? JSON.parse(vText) : null; } catch { /* ignore */ }
+      const verified = await verifyDriveAuth();
       report.verifyCredentials = {
-        ok: vRes.ok,
-        status: vRes.status,
-        outcome: vJson?.outcome ?? null,
+        ok: verified.ok,
+        status: verified.status,
+        mode: verified.mode,
+        account: verified.json?.user?.emailAddress ?? null,
         latencyMs: Math.round(performance.now() - tA),
-        error: vJson?.error ?? (vRes.ok ? null : vText.slice(0, 300)),
+        error: verified.ok ? null : verified.text.slice(0, 300),
       };
-      if (!vRes.ok) report.errors.push(`verify_credentials [${vRes.status}]: ${vText.slice(0, 200)}`);
+      if (!verified.ok) {
+        report.errors.push(`verify_credentials [${verified.status}]: ${verified.text.slice(0, 200)}`);
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       report.verifyCredentials = { ok: false, error: msg };
@@ -87,7 +68,6 @@ Deno.serve(async (req) => {
     const listRes = await gw(
       `/drive/v3/files?q=${q}&fields=files(id,name,webViewLink)&pageSize=1`,
       { method: 'GET' },
-      lovableKey, driveKey,
     );
     report.list = {
       ok: listRes.ok,
@@ -119,7 +99,6 @@ Deno.serve(async (req) => {
           mimeType: 'application/vnd.google-apps.folder',
         }),
       },
-      lovableKey, driveKey,
     );
 
     if (!createRes.ok) {
@@ -139,7 +118,6 @@ Deno.serve(async (req) => {
         const delRes = await gw(
           `/drive/v3/files/${tempId}`,
           { method: 'DELETE' },
-          lovableKey, driveKey,
         );
         deleteOk = delRes.ok || delRes.status === 204;
         if (!deleteOk) deleteErr = `delete [${delRes.status}]: ${delRes.text.slice(0, 200)}`;
