@@ -10,7 +10,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "remotion:studio": "remotion studio",
+    "remotion:render": "remotion render SoleiaIntro out/SoleiaIntro.mp4",
+    "remotion:preview": "remotion compositions"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -46,6 +49,8 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.10",
+    "@remotion/cli": "4.0.518",
+    "@remotion/player": "4.0.518",
     "@supabase/supabase-js": "^2.91.1",
     "@tanstack/react-query": "^5.83.0",
     "@types/three": "^0.169.0",
@@ -67,6 +72,7 @@
     "react-resizable-panels": "^2.1.9",
     "react-router-dom": "^6.30.1",
     "recharts": "^2.15.4",
+    "remotion": "4.0.518",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
