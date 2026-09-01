@@ -91,6 +91,11 @@ Deno.serve(async (req) => {
     // ── The send: one intro per assigned PM, and only on an explicit ask ─────
     if (body?.send !== true) return json(400, { error: 'pass {"send":true} to send the intros' });
 
+    // Render the mail and return it instead of sending: what the studio looks
+    // at before a send is then the very thing that would go out, not a mock-up
+    // of it. Touches nothing — no token is minted, refreshed or stamped.
+    const preview = body?.preview === true;
+
     // Optional: send to named people only, for when one person's list has
     // changed and the rest of the team has no reason to hear about it again.
     const only = Array.isArray(body?.only)
@@ -133,6 +138,7 @@ Deno.serve(async (req) => {
 
     const sent: string[] = [];
     const failed: { to: string; error: string }[] = [];
+    const previews: string[] = [];
 
     for (const entry of byEmail.values()) {
       // Soonest show first; a job with no date sits at the bottom, never the top.
@@ -152,7 +158,9 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       let token = open?.token as string | undefined;
-      if (token) {
+      if (preview) {
+        token = token ?? 'preview-only-no-token';
+      } else if (token) {
         await supabase
           .from('pm_intro_confirmations')
           .update({
@@ -211,6 +219,8 @@ Deno.serve(async (req) => {
           </p>
         </div>`;
 
+      if (preview) { previews.push(html); continue; }
+
       const report = await sendEach({
         template: 'pm-intro',
         to: [entry.email],
@@ -220,6 +230,13 @@ Deno.serve(async (req) => {
       });
       sent.push(...report.delivered);
       failed.push(...report.failed);
+    }
+
+    if (preview) {
+      const divider = '<hr style="margin:40px 0;border:0;border-top:1px solid #ecf0f1;">';
+      return new Response(previews.join(divider), {
+        headers: { ...corsHeaders, 'Content-Type': 'text/html; charset=utf-8' },
+      });
     }
 
     return json(200, { success: failed.length === 0 && sent.length > 0, sent, failed });
