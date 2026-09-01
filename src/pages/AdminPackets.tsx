@@ -88,6 +88,7 @@ export default function AdminPackets() {
   const [packets, setPackets] = useState<PacketRow[]>([]);
   const [loading, setLoading] = useState(true);
   useFocusRow(!loading);
+  const [modePickerOpen, setModePickerOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<PacketRow | null>(null);
   const [newKind, setNewKind] = useState<PacketKind>('pre_call');
@@ -233,6 +234,7 @@ export default function AdminPackets() {
   };
 
   const openNewPacket = (kind: PacketKind) => {
+    setModePickerOpen(false);
     setEditing(null);
     setNewKind(kind);
     setEditorOpen(true);
@@ -262,17 +264,9 @@ export default function AdminPackets() {
       title="Packets"
       subtitle="Inclusions and scope of work for client review"
       actions={
-        <>
-          <Button variant="outline" size="sm" onClick={() => openNewPacket('pre_call')}>
-            <Plus className="w-4 h-4 mr-2" /> Pre-call
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => openNewPacket('post_call')}>
-            <Plus className="w-4 h-4 mr-2" /> Post-call
-          </Button>
-          <Button size="sm" onClick={() => openNewPacket('custom')}>
-            <Plus className="w-4 h-4 mr-2" /> Custom
-          </Button>
-        </>
+        <Button size="sm" onClick={() => setModePickerOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" /> Create packet
+        </Button>
       }
     >
       <div>
@@ -283,8 +277,8 @@ export default function AdminPackets() {
         ) : packets.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <p className="mb-4">No packets yet.</p>
-            <Button onClick={() => openNewPacket('pre_call')}>
-              <Plus className="w-4 h-4 mr-2" /> Create the first packet
+            <Button onClick={() => setModePickerOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" /> Create packet
             </Button>
           </div>
         ) : (
@@ -416,6 +410,31 @@ export default function AdminPackets() {
           </>
         )}
       </div>
+
+      <Dialog open={modePickerOpen} onOpenChange={setModePickerOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display">Create a creative packet</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Choose the moment in the creative workflow. You can tailor the packet contents before saving.</p>
+            <div className="grid gap-3 pt-2 sm:grid-cols-3">
+              <button type="button" onClick={() => openNewPacket('pre_call')} className="rounded-lg border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5">
+                <span className="block text-sm font-semibold text-foreground">Pre-call</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">Send the Creative Guide, full project files and scheduling details before the call.</span>
+              </button>
+              <button type="button" onClick={() => openNewPacket('post_call')} className="rounded-lg border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5">
+                <span className="block text-sm font-semibold text-foreground">Post-call</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">Confirm the direction, asset deadline and the next approved client materials.</span>
+              </button>
+              <button type="button" onClick={() => openNewPacket('custom')} className="rounded-lg border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5">
+                <span className="block text-sm font-semibold text-foreground">Custom</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">Keep pricing private, then choose full project files or asset collection only.</span>
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} kind={newKind} onSaved={load} />
 
