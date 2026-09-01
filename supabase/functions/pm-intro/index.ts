@@ -89,7 +89,9 @@ Deno.serve(async (req) => {
     }
 
     // ── The send: one intro per assigned PM, and only on an explicit ask ─────
-    if (body?.send !== true) return json(400, { error: 'pass {"send":true} to send the intros' });
+    if (body?.send !== true && body?.preview !== true) {
+      return json(400, { error: 'pass {"send":true} to send the intros, or {"preview":true} to render one' });
+    }
 
     // Render the mail and return it instead of sending: what the studio looks
     // at before a send is then the very thing that would go out, not a mock-up
@@ -148,16 +150,19 @@ Deno.serve(async (req) => {
       // second one, so the table stays one row per PM and a confirmation from
       // either copy of the email counts. A token already confirmed is left
       // alone — a fresh one would ask someone to confirm twice.
-      const { data: open } = await supabase
+      const { data: held } = await supabase
         .from('pm_intro_confirmations')
-        .select('token')
+        .select('token, confirmed_at')
         .eq('email', entry.email)
-        .is('confirmed_at', null)
         .order('sent_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      let token = open?.token as string | undefined;
+      // Already confirmed: they told us once, so an updated schedule must not
+      // ask again. Their row is reused rather than a second one minted, and
+      // the mail below drops the button.
+      const settled = !!held?.confirmed_at;
+      let token = held?.token as string | undefined;
       if (preview) {
         token = token ?? 'preview-only-no-token';
       } else if (token) {
@@ -206,6 +211,10 @@ Deno.serve(async (req) => {
             Here is what's currently on your plate:
           </p>
           <table style="border-collapse:collapse;width:100%;font-size:14px;border-top:1px solid #ecf0f1;">${rows}</table>
+          ${settled ? `
+          <p style="color:#8a8f98;font-size:13px;line-height:1.5;margin:22px 0 20px;">
+            You have already confirmed these reach you — nothing to do here.
+          </p>` : `
           <p style="margin:26px 0 8px;">
             <a href="${confirmUrl}" style="display:inline-block;background:#1a1d23;color:#fff;padding:12px 26px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;">
               Confirm — I've got this
@@ -213,7 +222,7 @@ Deno.serve(async (req) => {
           </p>
           <p style="color:#8a8f98;font-size:13px;line-height:1.5;margin:0 0 20px;">
             One click, just so we know these are reaching your inbox.
-          </p>
+          </p>`}
           <p style="margin:0;">
             <a href="${APP_ORIGIN}/admin/jobs" style="color:#8a8f98;font-size:13px;">Open the jobs board</a>
           </p>
@@ -225,7 +234,9 @@ Deno.serve(async (req) => {
         template: 'pm-intro',
         to: [entry.email],
         cc,
-        subject: `Your Soleia projects — ${entry.jobs.length} on your plate, please confirm`,
+        subject: settled
+          ? `Your Soleia projects — ${entry.jobs.length} on your plate`
+          : `Your Soleia projects — ${entry.jobs.length} on your plate, please confirm`,
         html,
       });
       sent.push(...report.delivered);
