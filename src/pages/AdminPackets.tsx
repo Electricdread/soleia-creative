@@ -238,7 +238,7 @@ export default function AdminPackets() {
     setEditorOpen(true);
   };
 
-  const createDriveFolder = async (p: PacketRow) => {
+  const createDriveFolder = async (p: PacketRow, folderMode?: 'full' | 'asset_only') => {
     if (!p.client_name) {
       toast.error('Add a client name before creating a Drive folder');
       return;
@@ -246,7 +246,7 @@ export default function AdminPackets() {
     const t = toast.loading('Creating Drive folder…');
     try {
       const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
-        body: { packet_id: p.id },
+        body: { packet_id: p.id, ...(folderMode ? { folder_mode: folderMode } : {}) },
       });
       if (error) throw error;
       toast.success('Drive folder ready', { id: t });
@@ -367,6 +367,15 @@ export default function AdminPackets() {
                       <Button variant="outline" size="sm" onClick={() => window.open(p.drive_folder_url!, '_blank')}>
                         <FolderOpen className="w-3.5 h-3.5 mr-1" /> Drive folder
                       </Button>
+                    ) : kindGroup(p.kind) === 'custom' ? (
+                      <div className="flex items-center gap-1">
+                        <Button variant="outline" size="sm" onClick={() => createDriveFolder(p, 'full')}>
+                          <FolderPlus className="w-3.5 h-3.5 mr-1" /> Full project folder
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => createDriveFolder(p, 'asset_only')}>
+                          <FolderPlus className="w-3.5 h-3.5 mr-1" /> Asset collect only
+                        </Button>
+                      </div>
                     ) : (
                       <Button variant="outline" size="sm" onClick={() => createDriveFolder(p)}>
                         <FolderPlus className="w-3.5 h-3.5 mr-1" /> Create Drive folder
@@ -380,7 +389,7 @@ export default function AdminPackets() {
                         <Button variant="outline" size="sm" onClick={() => window.open(`/packet/${p.token}`, '_blank')}>
                           <ExternalLink className="w-3.5 h-3.5 mr-1" /> Open
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => setEmailPacket(p)}>
+                        <Button variant="outline" size="sm" onClick={() => { setIncludePriceSheet(false); setEmailPacket(p); }}>
                           <Mail className="w-3.5 h-3.5 mr-1" /> Email
                         </Button>
                       </>
@@ -417,18 +426,25 @@ export default function AdminPackets() {
           </DialogHeader>
           {emailPacket && (
             <div className="space-y-4">
-              <IncludePriceSheetToggle
-                checked={includePriceSheet}
-                onCheckedChange={setIncludePriceSheet}
-              />
+              {kindGroup(emailPacket.kind) === 'custom' ? (
+                <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                  <p className="font-medium text-foreground">Custom delivery keeps pricing private</p>
+                  <p className="mt-1 text-xs text-muted-foreground">This email will not include the service price sheet, pricing, or proposal-selection language.</p>
+                </div>
+              ) : (
+                <IncludePriceSheetToggle
+                  checked={includePriceSheet}
+                  onCheckedChange={setIncludePriceSheet}
+                />
+              )}
               <PacketEmailCard
-                key={String(includePriceSheet)}
+                key={`${emailPacket.id}-${includePriceSheet}`}
                 kind={(emailPacket.kind as PacketKind) || 'pre_call'}
                 clientName={emailPacket.client_name || ''}
                 eventDate={emailPacket.event_date}
                 packetUrl={`${window.location.origin}/packet/${emailPacket.token}`}
                 driveUrl={emailPacket.drive_folder_url}
-                priceSheetUrl={includePriceSheet ? priceSheetUrl() : undefined}
+                priceSheetUrl={kindGroup(emailPacket.kind) === 'custom' || !includePriceSheet ? undefined : priceSheetUrl()}
               />
             </div>
           )}

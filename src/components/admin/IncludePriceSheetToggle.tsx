@@ -32,8 +32,8 @@ export function IncludePriceSheetToggle({ checked, onCheckedChange }: Props) {
             Include price sheet
           </Label>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Adds a “View Services &amp; Pricing” button so the client has a reference before
-            their proposal is drawn up.
+            Adds a “View Services &amp; Pricing” button. Turn it off whenever the client
+            should not see service pricing.
           </p>
           {checked && (
             <a
