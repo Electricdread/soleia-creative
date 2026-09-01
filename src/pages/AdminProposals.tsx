@@ -69,6 +69,11 @@ export default function AdminProposals() {
   const [loading, setLoading] = useState(true);
   useFocusRow(!loading);
   const [showForm, setShowForm] = useState(false);
+  // Raised from a job's timeline: that job is the one the proposal belongs to,
+  // so it is pinned rather than matched by name. findOrCreateJob would attach
+  // by client and event, and a name typed a shade differently would quietly
+  // start a second job for work that already has one.
+  const [pinnedJobId, setPinnedJobId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab: ViewTab = searchParams.get('tab') === 'library' ? 'library' : 'proposals';
   const setActiveTab = (tab: ViewTab) => {
@@ -139,6 +144,31 @@ export default function AdminProposals() {
 
   useEffect(() => { if (isAdmin) fetchProposals(); }, [isAdmin]);
 
+  // "+ Proposal" on a job opens this form already filled in from that job.
+  useEffect(() => {
+    const jobId = searchParams.get('newFor');
+    if (!isAdmin || !jobId || pinnedJobId === jobId) return;
+    let live = true;
+    (async () => {
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('id, title, client_name, event_date')
+        .eq('id', jobId)
+        .maybeSingle();
+      if (!live) return;
+      if (!job) {
+        toast({ title: 'That job could not be found', variant: 'destructive' });
+        return;
+      }
+      setPinnedJobId(job.id);
+      setEventName(job.title ?? '');
+      setClientName(job.client_name ?? '');
+      setEventDate(job.event_date ?? '');
+      setShowForm(true);
+    })();
+    return () => { live = false; };
+  }, [isAdmin, searchParams, pinnedJobId]);
+
   const handleCreate = async () => {
     if (!eventName.trim() || !clientName.trim()) {
       toast({ title: 'Event name and client name are required', variant: 'destructive' });
@@ -152,7 +182,7 @@ export default function AdminProposals() {
       // proposal and the packet are the same piece of work rather than two.
       const client = cleanClientName(clientName);
 
-      const jobId = await findOrCreateJob({
+      const jobId = pinnedJobId ?? await findOrCreateJob({
         clientName: client,
         eventName,
         eventDate: eventDate || null,
@@ -256,6 +286,12 @@ export default function AdminProposals() {
   };
 
   const resetForm = () => {
+    if (pinnedJobId) {
+      setPinnedJobId(null);
+      const next = new URLSearchParams(searchParams);
+      next.delete('newFor');
+      setSearchParams(next, { replace: true });
+    }
     setEventName('');
     setClientName('');
     setVenueName('');
