@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { Button } from '@/components/ui/button';
@@ -105,10 +105,11 @@ export default function AdminJobs() {
                 <div className="space-y-2">
                   {/* The row was one button, which cannot hold another; the
                       delete control is a sibling of the opener now. */}
-                  {items.map((r) => (
+                  {items.map((r, i) => (
                     <div
                       key={r.job.id}
-                      className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/40 hover:shadow-md"
+                      style={{ '--i': i } as CSSProperties}
+                      className="rise lift group flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/40"
                     >
                       <button
                         onClick={() => navigate(`/admin/jobs/${r.job.id}`)}

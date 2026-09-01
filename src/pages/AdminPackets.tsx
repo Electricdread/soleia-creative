@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate } from 'react-router-dom';
@@ -333,11 +333,12 @@ export default function AdminPackets() {
             </p>
           ) : (
           <div className="grid gap-4">
-            {visible.map((p) => (
+            {visible.map((p, i) => (
               <div
                 key={p.id}
                 data-focus-id={p.id}
-                className="card-elevated bg-card border border-border rounded-lg p-5 shadow-card hover:shadow-card-hover transition-shadow"
+                style={{ '--i': i } as CSSProperties}
+                className="rise lift card-elevated bg-card border border-border rounded-lg p-5 shadow-card hover:shadow-card-hover"
               >
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">

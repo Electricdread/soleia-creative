@@ -250,7 +250,7 @@ export default function AdminJobDetail() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
         {/* Attached records */}
         <div className="space-y-4">
-          <Section icon={FileText} label="Proposals" empty="No proposal raised.">
+          <Section icon={FileText} label="Proposals" empty="No proposal raised." index={0}>
             {proposals.map((p) => (
               <Row
                 key={p.id}
@@ -264,7 +264,7 @@ export default function AdminJobDetail() {
             ))}
           </Section>
 
-          <Section icon={BookOpen} label="Packets" empty="No packet sent.">
+          <Section icon={BookOpen} label="Packets" empty="No packet sent." index={1}>
             {packets.map((p) => (
               <Row
                 key={p.id}
@@ -276,7 +276,7 @@ export default function AdminJobDetail() {
             ))}
           </Section>
 
-          <Section icon={Palette} label="Creative sessions" empty="No session created.">
+          <Section icon={Palette} label="Creative sessions" empty="No session created." index={2}>
             {sessions.map((s) => (
               <Row
                 key={s.id}
@@ -399,14 +399,14 @@ export default function AdminJobDetail() {
 }
 
 function Section({
-  icon: Icon, label, empty, children,
+  icon: Icon, label, empty, index = 0, children,
 }: {
-  icon: typeof FileText; label: string; empty: string; children: React.ReactNode;
+  icon: typeof FileText; label: string; empty: string; index?: number; children: React.ReactNode;
 }) {
   const items = Array.isArray(children) ? children : [children];
   const hasAny = items.some(Boolean) && items.flat().length > 0;
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div className="rise rounded-xl border border-border bg-card" style={{ '--i': index } as React.CSSProperties}>
       <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
         <Icon className="h-3.5 w-3.5 text-muted-foreground" />
         <h3 className="text-sm font-semibold text-foreground">{label}</h3>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
@@ -719,8 +719,8 @@ luisdreamslv@gmail.com`;
           <p className="text-muted-foreground text-center py-12">No proposals yet. Create your first one above.</p>
         ) : (
           <div className="space-y-3">
-            {proposals.map(p => (
-              <div key={p.id} data-focus-id={p.id} className={`bg-muted/80 border border-border rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
+            {proposals.map((p, i) => (
+              <div key={p.id} data-focus-id={p.id} style={{ '--i': i } as CSSProperties} className={`rise lift bg-muted/80 border border-border rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 hover:border-primary/40 ${!p.is_active ? 'opacity-60' : ''}`}>
                 <div className="w-full min-w-0 xl:w-48 xl:flex-[0_0_12rem] overflow-hidden">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="text-foreground font-medium truncate">{p.event_name}</h3>
