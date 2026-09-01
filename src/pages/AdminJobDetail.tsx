@@ -19,7 +19,7 @@ import { FinalsRow } from '@/components/admin/FinalsRow';
 import { DeleteJobDialog } from '@/components/admin/DeleteJobDialog';
 import { ClientAssetsRow } from '@/components/admin/ClientAssetsRow';
 import {
-  stageFor, flagsFor, daysUntil, CREATIVE_STAGES, IN_HOUSE_STAGES, STAGE_LABEL,
+  stageFor, stagesFor, flagsFor, daysUntil, STAGE_LABEL,
   type Stage, type JobTrack,
 } from '@/lib/jobStage';
 
@@ -104,7 +104,9 @@ export default function AdminJobDetail() {
   const { stage, reason, done } = stageFor(entry);
   const flags = flagsFor(entry);
   const days = daysUntil(job.event_date);
-  const stages = job.track === 'in_house' ? IN_HOUSE_STAGES : CREATIVE_STAGES;
+  // The creative-call step only exists here when a meeting was scheduled (or a
+  // call logged anyway) — not every client has one.
+  const stages = stagesFor(entry);
   const signed = proposals.find((p) => !!p.signed_at);
   const kickoff = !!signed && assetCount > 0;
 

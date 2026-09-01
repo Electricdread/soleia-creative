@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { adminRecipients, notifyFrom } from "../_shared/notify.ts";
+import { adminRecipients, jobAssigneesFor, sendEach } from "../_shared/notify.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 
 const corsHeaders = {
@@ -18,6 +18,8 @@ interface DeadlineRow {
   eventDate: string;
   href: string;
   days: number;
+  /** The job this deadline belongs to, when known — how a PM's copy is scoped. */
+  jobId: string | null;
 }
 
 function daysUntil(dateStr: string): number {
@@ -83,11 +85,12 @@ serve(async (req) => {
 
     const [proposals, sessions, links] = await Promise.all([
       supabase.from('proposals')
-        .select('id, token, event_name, client_name, event_date')
+        .select('id, token, job_id, event_name, client_name, event_date')
         .eq('is_active', true).not('event_date', 'is', null).lte('event_date', horizonStr),
       supabase.from('creative_sessions')
-        .select('id, token, project_name, client_name, event_date')
+        .select('id, token, job_id, project_name, client_name, event_date')
         .eq('is_active', true).not('event_date', 'is', null).lte('event_date', horizonStr),
+      // client_links carries no job_id, so previz rows reach the admins only.
       supabase.from('client_links')
         .select('id, token, event_name, client_name, event_date')
         .eq('is_active', true).not('event_date', 'is', null).lte('event_date', horizonStr),
@@ -99,21 +102,21 @@ serve(async (req) => {
       all.push({
         module: 'Proposal', title: p.event_name, client: p.client_name,
         eventDate: p.event_date, href: `${APP_ORIGIN}/admin/proposals`,
-        days: daysUntil(p.event_date),
+        days: daysUntil(p.event_date), jobId: p.job_id ?? null,
       });
     });
     (sessions.data || []).forEach((s: any) => {
       all.push({
         module: 'Creative Session', title: s.project_name, client: s.client_name,
         eventDate: s.event_date, href: `${APP_ORIGIN}/admin/creative`,
-        days: daysUntil(s.event_date),
+        days: daysUntil(s.event_date), jobId: s.job_id ?? null,
       });
     });
     (links.data || []).forEach((l: any) => {
       all.push({
         module: 'Content Previz', title: l.event_name, client: l.client_name,
         eventDate: l.event_date, href: `${APP_ORIGIN}/admin/looks`,
-        days: daysUntil(l.event_date),
+        days: daysUntil(l.event_date), jobId: null,
       });
     });
 
@@ -123,13 +126,15 @@ serve(async (req) => {
       });
     }
 
-    const overdue = all.filter(i => i.days < 0).sort((a, b) => a.days - b.days);
-    const dueWeek = all.filter(i => i.days >= 0 && i.days <= 7).sort((a, b) => a.days - b.days);
-    const upcoming = all.filter(i => i.days > 7 && i.days <= 21).sort((a, b) => a.days - b.days);
-
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-    const html = `<!DOCTYPE html>
+    // One builder for every copy: the admins get the whole board, and each
+    // assigned PM gets the same email holding only their own jobs' rows.
+    const digest = (rows: DeadlineRow[]) => {
+      const overdue = rows.filter(i => i.days < 0).sort((a, b) => a.days - b.days);
+      const dueWeek = rows.filter(i => i.days >= 0 && i.days <= 7).sort((a, b) => a.days - b.days);
+      const upcoming = rows.filter(i => i.days > 7 && i.days <= 21).sort((a, b) => a.days - b.days);
+      const html = `<!DOCTYPE html>
 <html><body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:32px 16px;">
     <tr><td align="center">
@@ -152,33 +157,56 @@ serve(async (req) => {
     </td></tr>
   </table>
 </body></html>`;
+      return {
+        html,
+        subject: `Soleia · ${overdue.length} overdue · ${dueWeek.length} this week`,
+        counts: { overdue: overdue.length, dueWeek: dueWeek.length, upcoming: upcoming.length },
+      };
+    };
 
-    const subject = `Soleia · ${overdue.length} overdue · ${dueWeek.length} this week`;
+    const full = digest(all);
+    const adminReport = await sendEach({
+      template: 'deadline-digest',
+      to: adminRecipients(),
+      subject: full.subject,
+      html: full.html,
+    });
 
-    const recipients = adminRecipients();
-    let lastErr = '';
-    let delivered = '';
-    for (const to of recipients) {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: notifyFrom(),
-          to: [to],
-          subject,
-          html,
-        }),
-      });
-      if (res.ok) { delivered = to; break; }
-      lastErr = await res.text();
-      console.warn(`Send to ${to} failed: ${lastErr}`);
+    // Each assigned PM gets the digest filtered to their own jobs — a PM with
+    // nothing on the board this cycle simply gets no email.
+    const adminSet = new Set(adminRecipients().map((a) => a.toLowerCase()));
+    const team = await jobAssigneesFor(all.map((i) => i.jobId));
+    const rowsByAssignee = new Map<string, DeadlineRow[]>();
+    for (const member of team) {
+      if (adminSet.has(member.email.toLowerCase())) continue;
+      const theirs = all.filter((i) => i.jobId === member.job_id);
+      if (!theirs.length) continue;
+      rowsByAssignee.set(member.email, [...(rowsByAssignee.get(member.email) ?? []), ...theirs]);
     }
-    if (!delivered) throw new Error(`Resend error: ${lastErr}`);
 
-    return new Response(JSON.stringify({ success: true, delivered, counts: { overdue: overdue.length, dueWeek: dueWeek.length, upcoming: upcoming.length } }), {
+    const teamDelivered: string[] = [];
+    const teamFailed: { to: string; error: string }[] = [];
+    for (const [email, rows] of rowsByAssignee) {
+      const own = digest(rows);
+      const copy = await sendEach({
+        template: 'deadline-digest',
+        to: [email],
+        subject: own.subject,
+        html: own.html,
+      });
+      teamDelivered.push(...copy.delivered);
+      teamFailed.push(...copy.failed);
+    }
+    if (teamFailed.length) console.error('PM digest copies failed:', JSON.stringify(teamFailed));
+
+    return new Response(JSON.stringify({
+      success: adminReport.delivered.length > 0,
+      delivered: adminReport.delivered,
+      failed: adminReport.failed,
+      team_delivered: teamDelivered,
+      team_failed: teamFailed,
+      counts: full.counts,
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e: any) {

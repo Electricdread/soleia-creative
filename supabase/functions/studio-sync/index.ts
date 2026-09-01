@@ -160,7 +160,7 @@ async function buildPayload(client: SupabaseClient) {
   // Mirrors src/hooks/useJobs.ts query for query. Any divergence and Studio OS
   // shows a different stage than Soleia's own Jobs screen for the same job,
   // which is worse than showing no stage at all.
-  const [jobRows, proposalRows, packetRows, sessionRows] = await Promise.all([
+  const [jobRows, proposalRows, packetRows, sessionRows, assocRows, meetingRows] = await Promise.all([
     client.from('jobs').select('*').order('event_date', { nullsFirst: false }),
     client.from('proposals')
       .select('id, token, event_name, status, signed_at, is_active, signoff_due_on, drive_folder_id, job_id')
@@ -171,11 +171,16 @@ async function buildPayload(client: SupabaseClient) {
     client.from('creative_sessions')
       .select('id, token, project_name, is_active, job_id')
       .not('job_id', 'is', null),
+    // A job's scheduled e-meetings, reached through its records' calendar
+    // events — whether a creative call is even part of this job's timeline.
+    client.from('calendar_event_associations').select('event_uid, entity_id'),
+    client.from('calendar_event_meeting_links').select('event_uid'),
   ]);
 
   for (const [name, result] of [
     ['jobs', jobRows], ['proposals', proposalRows],
     ['pre_call_packets', packetRows], ['creative_sessions', sessionRows],
+    ['calendar_event_associations', assocRows], ['calendar_event_meeting_links', meetingRows],
   ] as const) {
     if (result.error) throw new Error(`${name}: ${result.error.message}`);
   }
@@ -241,6 +246,17 @@ async function buildPayload(client: SupabaseClient) {
       .map((item) => item.proposal_id),
   );
 
+  const meetingsByEvent = new Map<string, number>();
+  for (const m of (meetingRows.data ?? []) as { event_uid: string }[]) {
+    meetingsByEvent.set(m.event_uid, (meetingsByEvent.get(m.event_uid) ?? 0) + 1);
+  }
+  const eventsByEntity = new Map<string, string[]>();
+  for (const a of (assocRows.data ?? []) as { event_uid: string; entity_id: string }[]) {
+    const held = eventsByEntity.get(a.entity_id) ?? [];
+    held.push(a.event_uid);
+    eventsByEntity.set(a.entity_id, held);
+  }
+
   const published = jobs.map((job) => {
     const jobProposals = proposals.filter((p) => p.job_id === job.id);
     const jobPackets = packets.filter((p) => p.job_id === job.id);
@@ -262,6 +278,13 @@ async function buildPayload(client: SupabaseClient) {
       if (!latestAsset || new Date(held.latest.seen_at) > new Date(latestAsset.seen_at)) latestAsset = held.latest;
     }
 
+    const eventUids = new Set<string>();
+    for (const r of [...jobProposals, ...jobPackets, ...jobSessions]) {
+      for (const uid of eventsByEntity.get(r.id) ?? []) eventUids.add(uid);
+    }
+    let meetingCount = 0;
+    for (const uid of eventUids) meetingCount += meetingsByEvent.get(uid) ?? 0;
+
     const members: JobWithMembers = {
       job,
       proposals: jobProposals,
@@ -269,6 +292,7 @@ async function buildPayload(client: SupabaseClient) {
       sessions: jobSessions,
       assetCount,
       hasCreativePackage: jobProposals.some((p) => packageProposals.has(p.id)),
+      meetingCount,
     };
 
     const stage = stageFor(members);

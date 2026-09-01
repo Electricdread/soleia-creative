@@ -103,6 +103,8 @@ function ChoiceCard({
 export interface CreativeBriefProps {
   token: string;
   eventName?: string | null;
+  /** The event's date, so the timeline can name the real asset-deadline date. */
+  eventDate?: string | null;
   /**
    * Fold the questions behind a summary row. A client who has already sent
    * their brief gets it closed; anyone who has not gets it open, so the
@@ -111,7 +113,7 @@ export interface CreativeBriefProps {
   collapsible?: boolean;
 }
 
-export function CreativeBrief({ token, eventName, collapsible = false }: CreativeBriefProps) {
+export function CreativeBrief({ token, eventName, eventDate, collapsible = false }: CreativeBriefProps) {
   const [state, setState] = useState<BriefState>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -456,7 +458,7 @@ export function CreativeBrief({ token, eventName, collapsible = false }: Creativ
       {/* Creative timeline — what happens next, so the brief ends with clarity
           rather than a dead end. */}
       <footer className="mt-4 rounded-2xl border border-primary/15 bg-card/40 p-7">
-        <CreativeTimeline />
+        <CreativeTimeline eventDate={eventDate} />
         <p className="mt-6 border-t border-primary/15 pt-4 text-[13px] leading-relaxed text-muted-foreground">
           Your answers reach the Soleia creative team as you write them. We will bring a direction to your
           creative call — you do not need to have it all figured out here.

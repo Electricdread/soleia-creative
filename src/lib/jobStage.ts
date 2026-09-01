@@ -69,6 +69,12 @@ export interface JobWithMembers {
   assetCount: number;
   /** The client ticked a Soleia Creative Package line item. */
   hasCreativePackage: boolean;
+  /**
+   * E-meetings scheduled on the job's calendar events. Not every client has a
+   * creative call (owner, 2026-09-01): the call step only exists for a job
+   * once a meeting has actually been scheduled — or a call was logged anyway.
+   */
+  meetingCount: number;
 }
 
 export interface StageResult {
@@ -77,6 +83,18 @@ export interface StageResult {
   reason: string;
   /** Stages already behind it, for the tracker. */
   done: Stage[];
+}
+
+/**
+ * The stage list a job's own tracker shows. The creative-call step is not part
+ * of every job's timeline: it appears only when a call was actually scheduled
+ * (a meeting on the job's calendar events) or already logged. A job that never
+ * books one is not "missing" it.
+ */
+export function stagesFor(j: JobWithMembers): Stage[] {
+  if (j.job.track === 'in_house') return IN_HOUSE_STAGES;
+  if (j.meetingCount > 0 || j.job.call_held_on) return CREATIVE_STAGES;
+  return CREATIVE_STAGES.filter((s) => s !== 'call_held');
 }
 
 export function stageFor(j: JobWithMembers): StageResult {
@@ -123,7 +141,13 @@ export function stageFor(j: JobWithMembers): StageResult {
     return { stage: 'call_held', reason: 'Call held — no proposal raised yet', done: done.filter((s) => s !== 'call_held') };
   }
   if (packets.length > 0) {
-    return { stage: 'packet_sent', reason: 'Packet out — no creative call recorded yet', done: ['booked'] };
+    return {
+      stage: 'packet_sent',
+      reason: j.meetingCount > 0
+        ? 'Packet out — no creative call recorded yet'
+        : 'Packet out — no proposal raised yet',
+      done: ['booked'],
+    };
   }
   return { stage: 'booked', reason: 'Nothing raised against this booking yet', done: [] };
 }
@@ -153,7 +177,7 @@ export function flagsFor(j: JobWithMembers): Blocker[] {
   if (!job.event_date) {
     out.push({ label: 'No event date — job has no deadline', verb: 'Set', href: `/admin/jobs/${job.id}` });
   }
-  if (job.track === 'creative' && !job.call_held_on && packets.length > 0 && proposals.length === 0) {
+  if (job.track === 'creative' && !job.call_held_on && j.meetingCount > 0 && packets.length > 0 && proposals.length === 0) {
     out.push({ label: 'Packet out — no creative call recorded', verb: 'Log', href: `/admin/jobs/${job.id}` });
   }
 
@@ -238,7 +262,12 @@ export function nextAction(j: JobWithMembers): NextAction | null {
     return { label: 'Call held — no proposal raised', verb: 'Quote', href: '/admin/proposals', weight: imminent ? 3 : soon ? 12 : 31, kind: 'quote' };
   }
   if (proposals.length === 0 && j.packets.length > 0) {
-    return { label: 'Packet out — no creative call recorded', verb: 'Log call', href: `/admin/jobs/${job.id}`, weight: imminent ? 4 : soon ? 13 : 40, kind: 'call' };
+    // A call is only owed when one was actually scheduled; a job that never
+    // books one moves straight from packet to proposal.
+    if (j.meetingCount > 0) {
+      return { label: 'Packet out — no creative call recorded', verb: 'Log call', href: `/admin/jobs/${job.id}`, weight: imminent ? 4 : soon ? 13 : 40, kind: 'call' };
+    }
+    return { label: 'Packet out — no proposal raised', verb: 'Quote', href: '/admin/proposals', weight: imminent ? 3 : soon ? 12 : 31, kind: 'quote' };
   }
   if (!job.event_date) {
     return { label: 'No event date — no deadline anywhere', verb: 'Set', href: `/admin/jobs/${job.id}`, weight: 50, kind: 'date' };

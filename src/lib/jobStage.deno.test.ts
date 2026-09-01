@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { nextAction, stageFor, type JobRecord, type JobWithMembers } from './jobStage';
+import { nextAction, stageFor, stagesFor, type JobRecord, type JobWithMembers } from './jobStage';
 
 /**
  * `supabase/functions/_shared/jobStage.ts` is a copy of this module, because
@@ -39,7 +39,8 @@ const job = (over: Partial<JobRecord> = {}): JobRecord => ({
 });
 
 const members = (over: Partial<JobWithMembers> = {}): JobWithMembers => ({
-  job: job(), proposals: [], packets: [], sessions: [], assetCount: 0, hasCreativePackage: false, ...over,
+  job: job(), proposals: [], packets: [], sessions: [], assetCount: 0, hasCreativePackage: false,
+  meetingCount: 0, ...over,
 });
 
 /**
@@ -71,5 +72,24 @@ describe('the rules studio-sync publishes', () => {
     }];
     expect(stageFor(members({ proposals: signed, assetCount: 0 })).stage).toBe('awaiting_assets');
     expect(stageFor(members({ proposals: signed, assetCount: 3 })).stage).toBe('in_production');
+  });
+
+  // Not every client has a creative call (owner, 2026-09-01): the step exists
+  // only once an e-meeting is on the calendar, or a call was logged anyway.
+  it('never chases a call that was never scheduled', () => {
+    const packet = [{ id: 'k', token: null, title: 'Packet', kind: 'pre_call', is_active: true, drive_folder_id: null }];
+    const noMeeting = members({ packets: packet, meetingCount: 0 });
+    expect(nextAction(noMeeting)?.kind).toBe('quote');
+    expect(stageFor(noMeeting).reason).not.toContain('call');
+    expect(stagesFor(noMeeting)).not.toContain('call_held');
+
+    const withMeeting = members({ packets: packet, meetingCount: 1 });
+    expect(nextAction(withMeeting)?.kind).toBe('call');
+    expect(stagesFor(withMeeting)).toContain('call_held');
+  });
+
+  it('keeps the call step for a call that was logged without a calendar entry', () => {
+    const logged = members({ job: job({ call_held_on: '2026-08-15' }) });
+    expect(stagesFor(logged)).toContain('call_held');
   });
 });

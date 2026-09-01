@@ -1,9 +1,11 @@
 /**
  * The creative timeline, from kickoff to show day.
  *
- * The dates here are the ones in the proposal terms — kickoff is a signed
- * proposal plus brand assets in hand, then 14 days to the first review cut,
- * a 3-day review window and one included revision round. See
+ * The dates here are the ones in the proposal terms — the count starts from a
+ * signed proposal plus brand assets in hand, due 21 business days before the
+ * event (the client-facing name for what the terms call kickoff), then 14 days
+ * to the first review cut, a 3-day review window and one included revision
+ * round. See
  * src/components/proposal/ProposalTerms.tsx; if those terms change, this
  * changes with them.
  *
@@ -17,6 +19,9 @@
  * rather than arbitrary.
  */
 
+import { format, parseISO } from 'date-fns';
+import { assetDeadlineFor } from '@/lib/businessDays';
+
 type Owner = 'You' | 'Soleia';
 
 interface TimelineStep {
@@ -29,7 +34,9 @@ interface TimelineStep {
 
 export const CREATIVE_TIMELINE: TimelineStep[] = [
   {
-    when: 'Kickoff',
+    // The owner's wording (2026-09-01): the deadline is named for what it is,
+    // not for the internal "kickoff" concept a client has no reason to know.
+    when: '21 business days prior to the event',
     title: 'Signed proposal and brand assets in hand',
     what:
       'Production starts when both are with us — not before. Logos in vector, fonts, palette, key ' +
@@ -93,17 +100,32 @@ const OWNER_STYLE: Record<Owner, string> = {
 export interface CreativeTimelineProps {
   /** Heading above the steps. */
   title?: string;
+  /**
+   * The event's date (ISO yyyy-MM-dd). When known, the first step also names
+   * the actual calendar date the 21-business-day count lands on.
+   */
+  eventDate?: string | null;
   className?: string;
 }
 
-export function CreativeTimeline({ title = 'What happens from here.', className = '' }: CreativeTimelineProps) {
+export function CreativeTimeline({ title = 'What happens from here.', eventDate, className = '' }: CreativeTimelineProps) {
+  let kickoffDate: Date | null = null;
+  if (eventDate) {
+    try {
+      const parsed = parseISO(eventDate);
+      if (!isNaN(parsed.getTime())) kickoffDate = assetDeadlineFor(parsed);
+    } catch {
+      kickoffDate = null;
+    }
+  }
+
   return (
     <div className={className}>
       <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Creative Timeline</span>
       <h3 className="mt-2 font-display text-xl text-foreground">{title}</h3>
 
       <ol className="mt-6 space-y-6">
-        {CREATIVE_TIMELINE.map((step) => (
+        {CREATIVE_TIMELINE.map((step, index) => (
           <li key={step.when} className="grid gap-1.5 sm:grid-cols-[190px_1fr] sm:gap-6">
             <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary sm:pt-1">
               {step.when}
@@ -118,6 +140,11 @@ export function CreativeTimeline({ title = 'What happens from here.', className 
                 </span>
               </div>
               <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">{step.what}</p>
+              {index === 0 && kickoffDate && (
+                <p className="mt-1.5 text-[14px] font-medium text-primary">
+                  For your event, that is {format(kickoffDate, 'EEEE, MMMM d, yyyy')}.
+                </p>
+              )}
               {step.detail && (
                 <ol className="mt-3 space-y-2.5 border-l border-primary/20 pl-4">
                   {step.detail.map((d, i) => (
