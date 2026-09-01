@@ -131,6 +131,11 @@ Deno.serve(async (req) => {
     // ── The send: one intro per assigned PM, and only on an explicit ask ─────
     if (body?.send !== true) return json(400, { error: 'pass {"send":true} to send the intros' });
 
+    // Optional cc, so the studio can watch a send arrive in its own inbox.
+    const cc = Array.isArray(body?.cc)
+      ? (body.cc as unknown[]).filter((c): c is string => typeof c === 'string' && c.includes('@'))
+      : [];
+
     const [jobsRes, assigneesRes] = await Promise.all([
       supabase.from('jobs').select('id, title, client_name, event_date').eq('is_active', true),
       supabase.from('job_assignees').select('job_id, email, display_name'),
@@ -159,17 +164,43 @@ Deno.serve(async (req) => {
       // Soonest show first; a job with no date sits at the bottom, never the top.
       entry.jobs.sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999'));
 
-      const { data: row, error: insErr } = await supabase
+      // A resend reuses the person's outstanding token instead of minting a
+      // second one, so the table stays one row per PM and a confirmation from
+      // either copy of the email counts. A token already confirmed is left
+      // alone — a fresh one would ask someone to confirm twice.
+      const { data: open } = await supabase
         .from('pm_intro_confirmations')
-        .insert({ email: entry.email, display_name: entry.name, job_count: entry.jobs.length })
         .select('token')
-        .single();
-      if (insErr || !row) {
-        failed.push({ to: entry.email, error: insErr?.message ?? 'could not create confirmation token' });
-        continue;
+        .eq('email', entry.email)
+        .is('confirmed_at', null)
+        .order('sent_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let token = open?.token as string | undefined;
+      if (token) {
+        await supabase
+          .from('pm_intro_confirmations')
+          .update({
+            display_name: entry.name,
+            job_count: entry.jobs.length,
+            sent_at: new Date().toISOString(),
+          })
+          .eq('token', token);
+      } else {
+        const { data: row, error: insErr } = await supabase
+          .from('pm_intro_confirmations')
+          .insert({ email: entry.email, display_name: entry.name, job_count: entry.jobs.length })
+          .select('token')
+          .single();
+        if (insErr || !row) {
+          failed.push({ to: entry.email, error: insErr?.message ?? 'could not create confirmation token' });
+          continue;
+        }
+        token = row.token as string;
       }
 
-      const confirmUrl = `${supabaseUrl}/functions/v1/pm-intro?confirm=${row.token}`;
+      const confirmUrl = `${supabaseUrl}/functions/v1/pm-intro?confirm=${token}`;
       const first = (entry.name ?? '').trim().split(/\s+/)[0] || null;
       const rows = entry.jobs.map((j) => `
         <tr>
@@ -209,6 +240,7 @@ Deno.serve(async (req) => {
       const report = await sendEach({
         template: 'pm-intro',
         to: [entry.email],
+        cc,
         subject: `Your Soleia projects — ${entry.jobs.length} on your plate, please confirm`,
         html,
       });

@@ -83,6 +83,14 @@ export interface NotificationMessage {
   to: string[];
   subject: string;
   html: string;
+  /**
+   * Copied on every message in the batch — for the studio to watch a send land
+   * in its own inbox. Use it only for addresses Resend is certain to accept: a
+   * cc rides in the same request as the recipient, so a rejected one fails that
+   * recipient too. An address that is already the recipient is dropped rather
+   * than delivered twice.
+   */
+  cc?: string[];
   attachments?: { filename: string; content: string }[];
   /** What this is, for the send log. Defaults to the subject if omitted. */
   template?: string;
@@ -172,8 +180,11 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
     sandboxFallback: [],
   };
 
-  const post = (from: string, to: string) =>
-    fetch('https://api.resend.com/emails', {
+  const cc = Array.from(new Set((msg.cc ?? []).map((c) => c.trim()).filter(Boolean)));
+
+  const post = (from: string, to: string) => {
+    const copies = cc.filter((c) => c.toLowerCase() !== to.toLowerCase());
+    return fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -182,11 +193,13 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
       body: JSON.stringify({
         from,
         to: [to],
+        ...(copies.length ? { cc: copies } : {}),
         subject: msg.subject,
         html: msg.html,
         ...(msg.attachments ? { attachments: msg.attachments } : {}),
       }),
     });
+  };
 
   for (const to of recipients) {
     let viaFallback = false;
