@@ -1245,6 +1245,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           creative_guide_url: string | null
+          deploy_notified_at: string | null
           drive_folder_id: string | null
           drive_folder_url: string | null
           event_date: string | null
@@ -1265,6 +1266,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           creative_guide_url?: string | null
+          deploy_notified_at?: string | null
           drive_folder_id?: string | null
           drive_folder_url?: string | null
           event_date?: string | null
@@ -1285,6 +1287,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           creative_guide_url?: string | null
+          deploy_notified_at?: string | null
           drive_folder_id?: string | null
           drive_folder_url?: string | null
           event_date?: string | null
@@ -1980,6 +1983,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           creative_guide_url: string | null
+          deploy_notified_at: string | null
           drive_folder_id: string | null
           drive_folder_url: string | null
           event_date: string | null
