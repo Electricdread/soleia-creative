@@ -91,6 +91,15 @@ Deno.serve(async (req) => {
     // ── The send: one intro per assigned PM, and only on an explicit ask ─────
     if (body?.send !== true) return json(400, { error: 'pass {"send":true} to send the intros' });
 
+    // Optional: send to named people only, for when one person's list has
+    // changed and the rest of the team has no reason to hear about it again.
+    const only = Array.isArray(body?.only)
+      ? (body.only as unknown[])
+          .filter((c): c is string => typeof c === 'string')
+          .map((c) => c.trim().toLowerCase())
+          .filter(Boolean)
+      : [];
+
     // Optional cc, so the studio can watch a send arrive in its own inbox.
     const cc = Array.isArray(body?.cc)
       ? (body.cc as unknown[]).filter((c): c is string => typeof c === 'string' && c.includes('@'))
@@ -115,6 +124,11 @@ Deno.serve(async (req) => {
       const entry = byEmail.get(key) ?? { email, name: (a.display_name ?? '').trim() || null, jobs: [] };
       entry.jobs.push({ title: job.title, client: job.client_name, date: job.event_date ?? null });
       byEmail.set(key, entry);
+    }
+
+    if (only.length) {
+      for (const key of [...byEmail.keys()]) if (!only.includes(key)) byEmail.delete(key);
+      if (byEmail.size === 0) return json(404, { error: 'nobody assigned matches "only"' });
     }
 
     const sent: string[] = [];
