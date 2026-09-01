@@ -20,6 +20,7 @@ import DocumentViewer from "./pages/DocumentViewer";
 import PrintCreativeGuide from "./pages/PrintCreativeGuide";
 import ContentDelivery from "./pages/ContentDelivery";
 import CreativeSession from "./pages/CreativeSession";
+import PmConfirm from "./pages/PmConfirm";
 
 
 import AdminLogin from "./pages/AdminLogin";
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/tutorial" element={<Tutorial />} />
               <Route path="/looks/:token" element={<SharedLookBook />} />
               <Route path="/rate-card" element={<RateCard />} />
+              <Route path="/pm-confirm" element={<PmConfirm />} />
               
               {/* Root redirects to Admin Portal */}
               <Route path="/" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />

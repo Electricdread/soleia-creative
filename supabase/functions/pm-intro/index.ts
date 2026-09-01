@@ -20,7 +20,6 @@ const corsHeaders = {
 };
 
 const APP_ORIGIN = 'https://soleiacreative.app';
-const GOLD = '#c49a3c';
 
 const esc = (v: unknown): string =>
   String(v ?? '')
@@ -31,49 +30,6 @@ const fmtDate = (iso: string | null): string =>
   iso
     ? new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
     : 'Date TBD';
-
-/**
- * The page the email's button opens. Confirmation itself happens only when the
- * person presses the button HERE, which sends a POST — link-scanning mail
- * gateways prefetch GET links, and a prefetch must never read as a human
- * saying "I've got this".
- */
-function confirmPage(name: string | null, jobCount: number, token: string, already: boolean): string {
-  const projects = jobCount === 1 ? 'project' : `${jobCount} projects`;
-  const who = name ? `, ${esc(name)}` : '';
-  return `<!DOCTYPE html>
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Soleia Creative</title></head>
-<body style="margin:0;background:#14161A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e8e6e1;">
-  <div style="max-width:520px;margin:18vh auto 0;padding:40px 32px;background:#1D2027;border:1px solid #2a2d35;border-radius:16px;text-align:center;">
-    <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:${GOLD};margin-bottom:14px;">Soleia Creative</div>
-    ${already
-      ? `<h1 style="font-size:22px;margin:0 0 10px;color:#fff;">Already confirmed — thank you${who}</h1>
-         <p style="font-size:14px;line-height:1.6;color:#9ca3af;margin:0;">Pipeline notifications for your ${projects} are reaching you. You can close this tab.</p>`
-      : `<h1 style="font-size:22px;margin:0 0 10px;color:#fff;">One press to confirm${who}</h1>
-         <p style="font-size:14px;line-height:1.6;color:#9ca3af;margin:0 0 24px;">This tells the studio the pipeline emails for your ${projects} are reaching your inbox.</p>
-         <button id="go" style="background:${GOLD};color:#14161A;border:0;border-radius:8px;padding:13px 30px;font-size:15px;font-weight:700;cursor:pointer;">Confirm — I've got this</button>
-         <p id="done" style="display:none;font-size:14px;line-height:1.6;color:#9ca3af;margin:24px 0 0;">Confirmed — thank you. You can close this tab.</p>
-         <script>
-           document.getElementById('go').addEventListener('click', async () => {
-             const btn = document.getElementById('go');
-             btn.disabled = true; btn.textContent = 'Confirming…';
-             try {
-               const res = await fetch(location.pathname, {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ confirm: ${JSON.stringify(token)} }),
-               });
-               if (!res.ok) throw new Error('bad status');
-               btn.style.display = 'none';
-               document.getElementById('done').style.display = 'block';
-             } catch {
-               btn.disabled = false; btn.textContent = 'Try again';
-             }
-           });
-         </script>`}
-  </div>
-</body></html>`;
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -90,7 +46,10 @@ Deno.serve(async (req) => {
     if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // ── The email's link: render the confirm page (a GET never confirms) ─────
+    // ── The link's lookup: state as JSON, for /pm-confirm to render ──────────
+    //
+    // Never a side effect: mail gateways follow links before a person does, so
+    // only the POST below counts as someone saying "I've got this".
     if (req.method === 'GET') {
       const token = new URL(req.url).searchParams.get('confirm');
       if (!token || !/^[0-9a-f-]{36}$/i.test(token)) {
@@ -103,9 +62,10 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (!row) return new Response('Not found', { status: 404, headers: corsHeaders });
 
-      const first = (row.display_name ?? '').trim().split(/\s+/)[0] || null;
-      return new Response(confirmPage(first, row.job_count, token, !!row.confirmed_at), {
-        headers: { ...corsHeaders, 'Content-Type': 'text/html; charset=utf-8' },
+      return json(200, {
+        display_name: row.display_name,
+        job_count: row.job_count,
+        confirmed: !!row.confirmed_at,
       });
     }
 
@@ -200,7 +160,7 @@ Deno.serve(async (req) => {
         token = row.token as string;
       }
 
-      const confirmUrl = `${supabaseUrl}/functions/v1/pm-intro?confirm=${token}`;
+      const confirmUrl = `${APP_ORIGIN}/pm-confirm?t=${token}`;
       const first = (entry.name ?? '').trim().split(/\s+/)[0] || null;
       const rows = entry.jobs.map((j) => `
         <tr>
