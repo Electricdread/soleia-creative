@@ -1242,6 +1242,33 @@ export type Database = {
           },
         ]
       }
+      pm_intro_confirmations: {
+        Row: {
+          confirmed_at: string | null
+          display_name: string | null
+          email: string
+          job_count: number
+          sent_at: string
+          token: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          display_name?: string | null
+          email: string
+          job_count?: number
+          sent_at?: string
+          token?: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          display_name?: string | null
+          email?: string
+          job_count?: number
+          sent_at?: string
+          token?: string
+        }
+        Relationships: []
+      }
       pre_call_packets: {
         Row: {
           client_name: string | null
