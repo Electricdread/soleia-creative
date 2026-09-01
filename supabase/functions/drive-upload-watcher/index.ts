@@ -5,7 +5,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { slotForFolderName, FINAL_SLOTS } from '../_shared/finalSlots.ts';
 import { driveAuthMode, driveFetch } from '../_shared/googleDrive.ts';
-import { sendEach, adminRecipients } from '../_shared/notify.ts';
+import { sendEach, adminRecipients, jobAssigneesFor } from '../_shared/notify.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -125,6 +125,7 @@ Deno.serve(async (req) => {
     // folder were never seen and kickoff could not be detected.
     interface WatchTarget {
       proposal_id: string | null;
+      job_id: string | null;
       client_name: string;
       event_name: string;
       event_date: string | null;
@@ -135,14 +136,14 @@ Deno.serve(async (req) => {
 
     const { data: proposals, error } = await supabase
       .from('proposals')
-      .select('id, token, client_name, event_name, event_date, drive_folder_id, drive_folder_url')
+      .select('id, token, job_id, client_name, event_name, event_date, drive_folder_id, drive_folder_url')
       .not('drive_folder_id', 'is', null);
 
     if (error) throw error;
 
     const { data: packets, error: packetErr } = await supabase
       .from('pre_call_packets')
-      .select('id, client_name, title, event_date, drive_folder_id, drive_folder_url')
+      .select('id, job_id, client_name, title, event_date, drive_folder_id, drive_folder_url')
       .not('drive_folder_id', 'is', null);
 
     if (packetErr) throw packetErr;
@@ -157,6 +158,7 @@ Deno.serve(async (req) => {
       if (!folderId) continue;
       targets.set(folderId, {
         proposal_id: (p as any).id,
+        job_id: (p as any).job_id ?? null,
         client_name: (p as any).client_name,
         event_name: (p as any).event_name,
         event_date: (p as any).event_date ?? null,
@@ -171,6 +173,7 @@ Deno.serve(async (req) => {
       if (!folderId || targets.has(folderId)) continue;
       targets.set(folderId, {
         proposal_id: null,
+        job_id: (pk as any).job_id ?? null,
         client_name: (pk as any).client_name ?? 'Client',
         event_name: (pk as any).title ?? 'Pre-Call Packet',
         event_date: (pk as any).event_date ?? null,
@@ -204,13 +207,15 @@ Deno.serve(async (req) => {
       pending_notifications: 0,
       upload_notifications_delivered: 0,
       upload_notification_failures: 0,
+      team_upload_copies: 0,
+      team_finals_copies: 0,
       refiled: 0,
       marked_missing: 0,
       restored: 0,
     };
 
     const finals: {
-      client: string; event: string; slot: string; fileName: string; link: string | null;
+      client: string; event: string; jobId: string | null; slot: string; fileName: string; link: string | null;
     }[] = [];
 
     const scanTarget = async (p: WatchTarget) => {
@@ -266,6 +271,7 @@ Deno.serve(async (req) => {
             finals.push({
               client: p.client_name,
               event: p.event_name,
+              jobId: p.job_id,
               slot,
               fileName: f.name,
               link: f.webViewLink ?? p.drive_folder_url ?? null,
@@ -339,6 +345,7 @@ Deno.serve(async (req) => {
           finals.push({
             client: p.client_name,
             event: p.event_name,
+            jobId: p.job_id,
             slot: finalSlot,
             fileName: file.name,
             link: file.webViewLink ?? p.drive_folder_url ?? null,
@@ -406,6 +413,17 @@ Deno.serve(async (req) => {
       }
     }));
 
+    // Who is on each job, so the digests below can copy the assigned PMs on
+    // their own clients' files — and only theirs. An admin already gets the
+    // full digest, so an assignee who is also an admin is not sent a second copy.
+    const teamByJob = new Map<string, { email: string; name: string | null }[]>();
+    for (const member of await jobAssigneesFor(Array.from(targets.values()).map((t) => t.job_id))) {
+      const list = teamByJob.get(member.job_id) ?? [];
+      list.push({ email: member.email, name: member.name });
+      teamByJob.set(member.job_id, list);
+    }
+    const adminSet = new Set(adminRecipients().map((a) => a.toLowerCase()));
+
     // Retry every recent row whose notification has not been delivered. This
     // includes files recorded during the Aug 28 outage: the database row is a
     // durable queue, so an email-provider or function failure cannot make an
@@ -424,7 +442,7 @@ Deno.serve(async (req) => {
 
       summary.pending_notifications = pending?.length ?? 0;
       if (pending?.length) {
-        const rows = pending.map((row: any) => {
+        const rendered = pending.map((row: any) => {
           const owner = targets.get(row.drive_folder_id as string);
           const label = owner
             ? `${owner.client_name} — ${owner.event_name}`
@@ -433,11 +451,23 @@ Deno.serve(async (req) => {
           const linkedName = row.web_view_link
             ? `<a href="${row.web_view_link}" style="color:#B0700C;text-decoration:none;">${fileName}</a>`
             : fileName;
-          return `<tr>
+          return {
+            jobId: owner?.job_id ?? null,
+            fileName: (row.file_name as string | null) || 'Soleia upload',
+            html: `<tr>
             <td style="padding:8px 14px 8px 0;color:#333;">${linkedName}</td>
             <td style="padding:8px 0;color:#777;">${escapeHtml(label)}</td>
-          </tr>`;
-        }).join('');
+          </tr>`,
+          };
+        });
+
+        const uploadDigest = (count: number, rows: string) =>
+          `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:24px;">
+            <h1 style="font-size:20px;margin:0 0 6px;color:#111;">${count === 1 ? 'A client file has landed' : `${count} client files have landed`}</h1>
+            <p style="margin:0 0 18px;color:#666;font-size:14px;">Soleia recorded these files in the client Drive folders.</p>
+            <table style="border-collapse:collapse;font-size:14px;width:100%;">${rows}</table>
+            <p style="margin:22px 0 0;font-size:13px;"><a href="${APP_ORIGIN}/admin/jobs" style="color:#B0700C;">Open jobs</a></p>
+          </div>`;
 
         const report = await sendEach({
           to: adminRecipients(),
@@ -445,16 +475,40 @@ Deno.serve(async (req) => {
             ? `Client file received — ${pending[0].file_name || 'Soleia upload'}`
             : `${pending.length} client files received`,
           template: 'client-files-received',
-          html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:24px;">
-            <h1 style="font-size:20px;margin:0 0 6px;color:#111;">${pending.length === 1 ? 'A client file has landed' : `${pending.length} client files have landed`}</h1>
-            <p style="margin:0 0 18px;color:#666;font-size:14px;">Soleia recorded these files in the client Drive folders.</p>
-            <table style="border-collapse:collapse;font-size:14px;width:100%;">${rows}</table>
-            <p style="margin:22px 0 0;font-size:13px;"><a href="${APP_ORIGIN}/admin/jobs" style="color:#B0700C;">Open jobs</a></p>
-          </div>`,
+          html: uploadDigest(pending.length, rendered.map((r) => r.html).join('')),
         });
 
         summary.upload_notifications_delivered = report.delivered.length;
         summary.upload_notification_failures = report.failed.length;
+
+        // The assigned PMs hear about their own clients' files. Best-effort on
+        // top of the admin digest, which alone owns the `notified` flag — a
+        // failed PM copy is in email_send_log but does not re-queue the row.
+        const uploadsByAssignee = new Map<string, { fileNames: string[]; rows: string[] }>();
+        for (const r of rendered) {
+          if (!r.jobId) continue;
+          for (const member of teamByJob.get(r.jobId) ?? []) {
+            if (adminSet.has(member.email.toLowerCase())) continue;
+            const entry = uploadsByAssignee.get(member.email) ?? { fileNames: [], rows: [] };
+            entry.fileNames.push(r.fileName);
+            entry.rows.push(r.html);
+            uploadsByAssignee.set(member.email, entry);
+          }
+        }
+        for (const [email, entry] of uploadsByAssignee) {
+          const copy = await sendEach({
+            to: [email],
+            subject: entry.rows.length === 1
+              ? `Client file received — ${entry.fileNames[0]}`
+              : `${entry.rows.length} client files received`,
+            template: 'client-files-received',
+            html: uploadDigest(entry.rows.length, entry.rows.join('')),
+          });
+          summary.team_upload_copies += copy.delivered.length;
+          if (copy.failed.length) {
+            console.error('Upload notification PM copy failed for:', JSON.stringify(copy.failed));
+          }
+        }
         if (report.delivered.length > 0) {
           const notifiedAt = new Date().toISOString();
           const { error: markError } = await supabase
@@ -478,40 +532,69 @@ Deno.serve(async (req) => {
     console.log('drive-upload-watcher summary:', summary);
     if (finals.length > 0) {
       const label = Object.fromEntries(FINAL_SLOTS.map((d) => [d.slot, d.label]));
-      const rows = finals
-        .map((f) => {
-          const name = f.link
-            ? `<a href="${f.link}" style="color:#B0700C;text-decoration:none;">${escapeHtml(f.fileName)}</a>`
-            : escapeHtml(f.fileName);
-          return `<tr>
+      const renderedFinals = finals.map((f) => {
+        const name = f.link
+          ? `<a href="${f.link}" style="color:#B0700C;text-decoration:none;">${escapeHtml(f.fileName)}</a>`
+          : escapeHtml(f.fileName);
+        return {
+          final: f,
+          html: `<tr>
             <td style="padding:8px 14px 8px 0;color:#111;font-weight:600;white-space:nowrap;">${escapeHtml(label[f.slot] ?? f.slot)}</td>
             <td style="padding:8px 14px 8px 0;color:#333;">${name}</td>
             <td style="padding:8px 0;color:#777;">${escapeHtml(f.client)} — ${escapeHtml(f.event)}</td>
-          </tr>`;
-        })
-        .join('');
-      const heading = finals.length === 1 ? 'A final file has landed' : `${finals.length} final files have landed`;
+          </tr>`,
+        };
+      });
 
-      try {
-        const report = await sendEach({
-          to: adminRecipients(),
-          subject:
-            finals.length === 1
-              ? `Final received — ${label[finals[0].slot] ?? finals[0].slot}: ${finals[0].client}`
-              : `${finals.length} finals received`,
-          template: 'finals-received',
-          html: `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:24px;">
-            <h1 style="font-size:20px;margin:0 0 6px;color:#111;">${heading}</h1>
+      const finalsDigest = (rows: string, count: number) =>
+        `<div style="font-family:system-ui,-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:24px;">
+            <h1 style="font-size:20px;margin:0 0 6px;color:#111;">${count === 1 ? 'A final file has landed' : `${count} final files have landed`}</h1>
             <p style="margin:0 0 18px;color:#666;font-size:14px;">Dropped into the client's 04_Finals folder.</p>
             <table style="border-collapse:collapse;font-size:14px;width:100%;">${rows}</table>
             <p style="margin:22px 0 0;font-size:13px;">
               <a href="${APP_ORIGIN}/admin/jobs" style="color:#B0700C;">Open jobs</a>
             </p>
-          </div>`,
+          </div>`;
+      const finalsSubject = (items: typeof finals) =>
+        items.length === 1
+          ? `Final received — ${label[items[0].slot] ?? items[0].slot}: ${items[0].client}`
+          : `${items.length} finals received`;
+
+      try {
+        const report = await sendEach({
+          to: adminRecipients(),
+          subject: finalsSubject(finals),
+          template: 'finals-received',
+          html: finalsDigest(renderedFinals.map((r) => r.html).join(''), finals.length),
         });
         summary.finals_emailed = report.delivered.length;
         if (report.failed.length) {
           console.error('Finals email failed for:', JSON.stringify(report.failed));
+        }
+
+        // As with uploads: each assigned PM gets the finals for their jobs.
+        const finalsByAssignee = new Map<string, { items: typeof finals; rows: string[] }>();
+        for (const r of renderedFinals) {
+          if (!r.final.jobId) continue;
+          for (const member of teamByJob.get(r.final.jobId) ?? []) {
+            if (adminSet.has(member.email.toLowerCase())) continue;
+            const entry = finalsByAssignee.get(member.email) ?? { items: [], rows: [] };
+            entry.items.push(r.final);
+            entry.rows.push(r.html);
+            finalsByAssignee.set(member.email, entry);
+          }
+        }
+        for (const [email, entry] of finalsByAssignee) {
+          const copy = await sendEach({
+            to: [email],
+            subject: finalsSubject(entry.items),
+            template: 'finals-received',
+            html: finalsDigest(entry.rows.join(''), entry.items.length),
+          });
+          summary.team_finals_copies += copy.delivered.length;
+          if (copy.failed.length) {
+            console.error('Finals PM copy failed for:', JSON.stringify(copy.failed));
+          }
         }
       } catch (mailErr) {
         // Never let a mail failure lose the scan — the rows are already written.

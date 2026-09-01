@@ -38,6 +38,47 @@ export function adminRecipients(): string[] {
   return Array.from(new Set(list));
 }
 
+export interface JobTeamMember {
+  job_id: string;
+  email: string;
+  name: string | null;
+}
+
+/**
+ * Everyone assigned to these jobs, from job_assignees — which snapshots the
+ * address at assignment time, so a renamed or removed profile still gets its
+ * mail. Returns [] on any failure: a team lookup must never stop the studio
+ * being told.
+ */
+export async function jobAssigneesFor(jobIds: (string | null | undefined)[]): Promise<JobTeamMember[]> {
+  const ids = Array.from(new Set(jobIds.filter((id): id is string => Boolean(id))));
+  if (ids.length === 0) return [];
+  try {
+    const url = Deno.env.get('SUPABASE_URL');
+    const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!url || !key) return [];
+    const res = await fetch(
+      `${url}/rest/v1/job_assignees?job_id=in.${encodeURIComponent(`(${ids.join(',')})`)}&select=job_id,email,display_name&order=created_at`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+    );
+    if (!res.ok) {
+      console.error('job_assignees lookup failed', { status: res.status, body: (await res.text()).slice(0, 200) });
+      return [];
+    }
+    const rows = (await res.json()) as { job_id: string; email: string | null; display_name: string | null }[];
+    const team: JobTeamMember[] = [];
+    for (const r of rows) {
+      const email = (r.email ?? '').trim();
+      if (!email) continue;
+      team.push({ job_id: r.job_id, email, name: (r.display_name ?? '').trim() || null });
+    }
+    return team;
+  } catch (e) {
+    console.error('job_assignees lookup threw', e);
+    return [];
+  }
+}
+
 export interface NotificationMessage {
   to: string[];
   subject: string;

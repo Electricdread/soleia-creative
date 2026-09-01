@@ -15,6 +15,10 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = false
   [functions.notify-admin-signup]
     verify_jwt = false
+  [functions.notify-brief-submitted]
+    verify_jwt = false
+  [functions.notify-packet-deployed]
+    verify_jwt = true
   [functions.notify-proposal-signed]
     verify_jwt = false
   [functions.notify-upload]
