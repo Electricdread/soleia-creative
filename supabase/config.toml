@@ -15,6 +15,14 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = false
   [functions.notify-admin-signup]
     verify_jwt = false
+  [functions.notify-brief-submitted]
+    verify_jwt = false
+  [functions.notify-job-assigned]
+    verify_jwt = true
+  [functions.notify-packet-deployed]
+    verify_jwt = true
+  [functions.pm-intro]
+    verify_jwt = false
   [functions.notify-proposal-signed]
     verify_jwt = false
   [functions.notify-upload]
@@ -44,4 +52,10 @@ project_id = "rszawchsbpsmtrtvljta"
   [functions.drive-upload-watcher]
     verify_jwt = false
   [functions.send-signed-proposal]
+    verify_jwt = false
+  [functions.weekly-report]
+    verify_jwt = false
+  [functions.studio-sync]
+    verify_jwt = false
+  [functions.proposal-export]
     verify_jwt = false

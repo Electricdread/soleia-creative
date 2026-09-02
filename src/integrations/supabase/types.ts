@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -798,6 +798,7 @@ export type Database = {
           email: string
           id: string
           job_id: string
+          notified_at: string | null
           user_id: string
         }
         Insert: {
@@ -807,6 +808,7 @@ export type Database = {
           email: string
           id?: string
           job_id: string
+          notified_at?: string | null
           user_id: string
         }
         Update: {
@@ -816,6 +818,7 @@ export type Database = {
           email?: string
           id?: string
           job_id?: string
+          notified_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1239,12 +1242,40 @@ export type Database = {
           },
         ]
       }
+      pm_intro_confirmations: {
+        Row: {
+          confirmed_at: string | null
+          display_name: string | null
+          email: string
+          job_count: number
+          sent_at: string
+          token: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          display_name?: string | null
+          email: string
+          job_count?: number
+          sent_at?: string
+          token?: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          display_name?: string | null
+          email?: string
+          job_count?: number
+          sent_at?: string
+          token?: string
+        }
+        Relationships: []
+      }
       pre_call_packets: {
         Row: {
           client_name: string | null
           created_at: string
           created_by: string | null
           creative_guide_url: string | null
+          deploy_notified_at: string | null
           drive_folder_id: string | null
           drive_folder_url: string | null
           event_date: string | null
@@ -1265,6 +1296,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           creative_guide_url?: string | null
+          deploy_notified_at?: string | null
           drive_folder_id?: string | null
           drive_folder_url?: string | null
           event_date?: string | null
@@ -1285,6 +1317,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           creative_guide_url?: string | null
+          deploy_notified_at?: string | null
           drive_folder_id?: string | null
           drive_folder_url?: string | null
           event_date?: string | null
@@ -1604,6 +1637,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      report_subscriptions: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          scope: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          scope?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          scope?: string
+        }
+        Relationships: []
       }
       session_previz_clips: {
         Row: {
@@ -1980,6 +2034,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           creative_guide_url: string | null
+          deploy_notified_at: string | null
           drive_folder_id: string | null
           drive_folder_url: string | null
           event_date: string | null
@@ -2230,7 +2285,7 @@ export type Database = {
           }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "pm"
       job_track: "creative" | "in_house"
     }
     CompositeTypes: {
@@ -2359,7 +2414,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "pm"],
       job_track: ["creative", "in_house"],
     },
   },

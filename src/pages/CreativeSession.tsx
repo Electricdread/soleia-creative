@@ -29,6 +29,7 @@ interface CreativeSessionData {
   token: string;
   project_name: string;
   client_name: string;
+  event_date?: string | null;
   created_at: string;
   cover_images?: CoverImage[] | null;
   creative_notes?: string | null;
@@ -348,7 +349,7 @@ export default function CreativeSession() {
             once they have sent it so it stops competing with the work. */}
         {session.brief_enabled && (
           <section className="rounded-2xl border border-primary/15 bg-card/40">
-            <CreativeBrief token={session.token} eventName={session.project_name} collapsible />
+            <CreativeBrief token={session.token} eventName={session.project_name} eventDate={session.event_date} collapsible />
           </section>
         )}
 

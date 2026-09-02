@@ -1,15 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
-import solIcon from '@/assets/sol-icon.png';
 
 // Ticker assets (public/ so documents and downloads share the same files).
 const HERO_IMG = '/creative-guide/ticker/soleia-welcomes.jpg';
 const WORK_MAP = '/creative-guide/ticker/ticker-work-map-dark.png';
 const LOOP_URL = '/creative-guide/ticker/ticker-preview-loop.mp4';
-const LOOP_POSTER = '/creative-guide/ticker/ticker-preview-poster.jpg';
 
 // Official mapping (source: Ticker work comp / DLV marquee pixelmap).
 const SIDES: [string, string][] = [
@@ -17,17 +15,9 @@ const SIDES: [string, string][] = [
   ['South Side · Flamingo Rd', '2184 × 192 px'],
   ['Total display', '3792 × 192 px'],
 ];
-const SEGMENTS: [string, string][] = [
-  ['West 1', '672 × 192'],
-  ['West 2', '960 × 192'],
-  ['South 1', '960 × 192'],
-  ['South 2', '1200 × 192'],
-];
 const DELIVERY: [string, string][] = [
-  ['Format', '.MOV · DXV3'],
-  ['Alternate', 'ProRes 4444'],
+  ['Format', 'Hi-res H.264'],
   ['Frame rate', '30 fps'],
-  ['Stills', 'PNG or JPG'],
 ];
 
 function SpecRows({ rows }: { rows: [string, string][] }) {
@@ -70,8 +60,18 @@ export default function TickerDisplayGuide() {
         {/* HERO + SPECS */}
         <Reveal>
           <article className={`${panelShell} grid lg:grid-cols-[1.2fr_1fr]`}>
-            <div className="relative min-h-[320px] overflow-hidden border-b border-primary/15 lg:min-h-[520px] lg:border-b-0 lg:border-r">
-              <img src={HERO_IMG} alt="The ticker running Soleia branding across both sides of the building at dusk" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="relative min-h-[320px] overflow-hidden border-b border-primary/15 bg-black lg:min-h-[520px] lg:border-b-0 lg:border-r">
+              <video
+                src={LOOP_URL}
+                poster={HERO_IMG}
+                aria-label="The ticker welcomes look moving across both sides of the building"
+                className="absolute inset-0 h-full w-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+              />
             </div>
             <div className="p-7 sm:p-9">
               <h2 className="font-display text-2xl text-foreground">Display mapping</h2>
@@ -79,19 +79,12 @@ export default function TickerDisplayGuide() {
                 <h3 className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Sides</h3>
                 <SpecRows rows={SIDES} />
               </div>
-              <div className="mt-7 grid gap-8 sm:grid-cols-2">
-                <div>
-                  <h3 className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Panel segments</h3>
-                  <SpecRows rows={SEGMENTS} />
-                </div>
-                <div>
-                  <h3 className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Delivery</h3>
-                  <SpecRows rows={DELIVERY} />
-                </div>
+              <div className="mt-7">
+                <h3 className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Delivery</h3>
+                <SpecRows rows={DELIVERY} />
               </div>
               <p className="mt-6 text-[12.5px] italic leading-relaxed text-muted-foreground/80">
-                Content runs edge to edge across both sides. Design as one 3792 × 192 canvas; the corner split lands
-                between West 2 and South 1.
+                Content runs edge to edge across both sides. Design as one continuous 3792 × 192 canvas.
               </p>
             </div>
           </article>
@@ -118,30 +111,6 @@ export default function TickerDisplayGuide() {
                   Download
                 </a>
               </div>
-            </div>
-          </article>
-        </Reveal>
-
-        {/* ANIMATION PREVIEW */}
-        <Reveal className="mt-6">
-          <article className={panelShell}>
-            <div className="relative overflow-hidden bg-black">
-              <video
-                src={LOOP_URL}
-                poster={LOOP_POSTER}
-                className="aspect-video w-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-              />
-            </div>
-            <div className="border-t border-primary/15 p-6 sm:px-8">
-              <h2 className="font-display text-xl text-foreground">Animation preview</h2>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                A client ticker animation running the full wrap — designed as one continuous 3792 × 192 loop across both sides.
-              </p>
             </div>
           </article>
         </Reveal>

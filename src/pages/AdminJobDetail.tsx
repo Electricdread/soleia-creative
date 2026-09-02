@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Loader2, FileText, BookOpen, Palette, AlertTriangle, ArrowLeft, ExternalLink,
-  FolderOpen, Check, Trash2,
+  FolderOpen, Check, Trash2, Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useJobs } from '@/hooks/useJobs';
@@ -19,7 +19,7 @@ import { FinalsRow } from '@/components/admin/FinalsRow';
 import { DeleteJobDialog } from '@/components/admin/DeleteJobDialog';
 import { ClientAssetsRow } from '@/components/admin/ClientAssetsRow';
 import {
-  stageFor, flagsFor, daysUntil, CREATIVE_STAGES, IN_HOUSE_STAGES, STAGE_LABEL,
+  stageFor, stagesFor, flagsFor, daysUntil, STAGE_LABEL,
   type Stage, type JobTrack,
 } from '@/lib/jobStage';
 
@@ -104,7 +104,13 @@ export default function AdminJobDetail() {
   const { stage, reason, done } = stageFor(entry);
   const flags = flagsFor(entry);
   const days = daysUntil(job.event_date);
-  const stages = job.track === 'in_house' ? IN_HOUSE_STAGES : CREATIVE_STAGES;
+  // The creative-call step only exists here when a meeting was scheduled (or a
+  // call logged anyway) — not every client has one.
+  const stages = stagesFor(entry);
+  // Where the rail's marker comes to rest. A stage the tracker is not showing
+  // (an in-house job never reaches most of them) parks it at the start rather
+  // than off the end.
+  const activeIndex = Math.max(0, stages.indexOf(stage));
   const signed = proposals.find((p) => !!p.signed_at);
   const kickoff = !!signed && assetCount > 0;
 
@@ -151,9 +157,12 @@ export default function AdminJobDetail() {
         </>
       }
     >
-      {/* Stage tracker */}
+      {/* Stage tracker — the motion library's 05 "Event rail": a marker eases
+          between held stops instead of jumping, and each stage settles into its
+          colour. Transform and colour only, one ease, still under reduced
+          motion. */}
       <div className="mb-6 overflow-x-auto rounded-xl border border-border bg-card">
-        <div className="flex min-w-[640px]">
+        <div className="relative flex min-w-[640px]">
           {stages.map((s) => {
             const isDone = done.includes(s);
             const isNow = s === stage;
@@ -162,6 +171,7 @@ export default function AdminJobDetail() {
                 key={s}
                 className={cn(
                   'flex-1 border-r border-border px-3 py-3 last:border-r-0',
+                  'transition-colors duration-500 ease-[cubic-bezier(.16,1,.3,1)] motion-reduce:transition-none',
                   isDone && 'bg-emerald-500/10',
                   isNow && 'bg-primary/10',
                 )}
@@ -176,9 +186,30 @@ export default function AdminJobDetail() {
                   </span>
                 </div>
                 {isNow && <p className="mt-1 text-xs font-medium text-foreground">{reason}</p>}
+                {s === 'proposal_out' && proposals.length === 0 && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/admin/proposals?newFor=${job.id}`)}
+                    className="transition-luxury mt-2 inline-flex items-center gap-1 rounded-md border border-dashed border-primary/40 px-2 py-1 text-[11px] font-medium text-primary hover:border-primary hover:bg-primary/10"
+                  >
+                    <Plus className="h-3 w-3" /> Proposal
+                  </button>
+                )}
               </div>
             );
           })}
+
+          {/* The rail itself: one marker, eased between stops. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-border/60">
+            <div
+              className="h-full rounded-full bg-primary transition-transform duration-700 ease-[cubic-bezier(.16,1,.3,1)] motion-reduce:transition-none"
+              style={{
+                width: `${100 / stages.length}%`,
+                transform: `translateX(${activeIndex * 100}%)`,
+                boxShadow: '0 0 10px hsl(var(--primary) / 0.55)',
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -219,7 +250,7 @@ export default function AdminJobDetail() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
         {/* Attached records */}
         <div className="space-y-4">
-          <Section icon={FileText} label="Proposals" empty="No proposal raised.">
+          <Section icon={FileText} label="Proposals" empty="No proposal raised." index={0}>
             {proposals.map((p) => (
               <Row
                 key={p.id}
@@ -233,7 +264,7 @@ export default function AdminJobDetail() {
             ))}
           </Section>
 
-          <Section icon={BookOpen} label="Packets" empty="No packet sent.">
+          <Section icon={BookOpen} label="Packets" empty="No packet sent." index={1}>
             {packets.map((p) => (
               <Row
                 key={p.id}
@@ -245,7 +276,7 @@ export default function AdminJobDetail() {
             ))}
           </Section>
 
-          <Section icon={Palette} label="Creative sessions" empty="No session created.">
+          <Section icon={Palette} label="Creative sessions" empty="No session created." index={2}>
             {sessions.map((s) => (
               <Row
                 key={s.id}
@@ -368,14 +399,14 @@ export default function AdminJobDetail() {
 }
 
 function Section({
-  icon: Icon, label, empty, children,
+  icon: Icon, label, empty, index = 0, children,
 }: {
-  icon: typeof FileText; label: string; empty: string; children: React.ReactNode;
+  icon: typeof FileText; label: string; empty: string; index?: number; children: React.ReactNode;
 }) {
   const items = Array.isArray(children) ? children : [children];
   const hasAny = items.some(Boolean) && items.flat().length > 0;
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div className="rise rounded-xl border border-border bg-card" style={{ '--i': index } as React.CSSProperties}>
       <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
         <Icon className="h-3.5 w-3.5 text-muted-foreground" />
         <h3 className="text-sm font-semibold text-foreground">{label}</h3>

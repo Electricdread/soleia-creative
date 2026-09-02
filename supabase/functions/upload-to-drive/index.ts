@@ -1,4 +1,4 @@
-// Upload a file to Google Drive via the connector gateway.
+// Upload a file to Google Drive using Soleia's server-side Google OAuth grant.
 //
 // By default a file lands in "Soleia Originals/<YYYY-Q#>" — cold storage for
 // clip masters. Pass `folderId` to put it in a job's own folder instead, and
@@ -8,13 +8,13 @@
 //
 // Returns { fileId, webViewLink, folderId }.
 
+import { driveAuthMode, driveJson } from '../_shared/googleDrive.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
     'authorization, x-client-info, apikey, content-type',
 };
-
-const GATEWAY = 'https://connector-gateway.lovable.dev/google_drive';
 
 function quarterFolderName(d = new Date()) {
   const year = d.getUTCFullYear();
@@ -25,33 +25,13 @@ function quarterFolderName(d = new Date()) {
 async function gatewayJson(
   path: string,
   init: RequestInit,
-  lovableKey: string,
-  driveKey: string,
 ) {
-  const res = await fetch(`${GATEWAY}${path}`, {
-    ...init,
-    headers: {
-      ...(init.headers || {}),
-      Authorization: `Bearer ${lovableKey}`,
-      'X-Connection-Api-Key': driveKey,
-    },
-  });
-  const text = await res.text();
-  let json: any = null;
-  try { json = text ? JSON.parse(text) : null; } catch { /* ignore */ }
-  if (!res.ok) {
-    throw new Error(
-      `Drive gateway ${path} failed [${res.status}]: ${text.slice(0, 500)}`,
-    );
-  }
-  return json;
+  return driveJson(path, init);
 }
 
 async function findOrCreateFolder(
   name: string,
   parentId: string | null,
-  lovableKey: string,
-  driveKey: string,
 ): Promise<string> {
   const parentClause = parentId
     ? ` and '${parentId}' in parents`
@@ -62,8 +42,6 @@ async function findOrCreateFolder(
   const list = await gatewayJson(
     `/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=1`,
     { method: 'GET' },
-    lovableKey,
-    driveKey,
   );
   if (list?.files?.length) return list.files[0].id;
 
@@ -80,8 +58,6 @@ async function findOrCreateFolder(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     },
-    lovableKey,
-    driveKey,
   );
   return created.id;
 }
@@ -100,8 +76,6 @@ const normalise = (value: string) =>
  */
 async function assetCollectFolder(
   jobFolderId: string,
-  lovableKey: string,
-  driveKey: string,
 ): Promise<string> {
   const q = encodeURIComponent(
     `mimeType='application/vnd.google-apps.folder' and '${jobFolderId}' in parents and trashed=false`,
@@ -109,8 +83,6 @@ async function assetCollectFolder(
   const list = await gatewayJson(
     `/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=100`,
     { method: 'GET' },
-    lovableKey,
-    driveKey,
   );
   const hit = (list?.files ?? []).find((f: { name: string }) =>
     normalise(f.name).endsWith('client asset collect'),
@@ -124,10 +96,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-    const driveKey = Deno.env.get('GOOGLE_DRIVE_API_KEY');
-    if (!lovableKey) throw new Error('LOVABLE_API_KEY is not configured');
-    if (!driveKey) throw new Error('GOOGLE_DRIVE_API_KEY is not configured');
+    driveAuthMode();
 
     const form = await req.formData();
     const file = form.get('file');
@@ -155,11 +124,11 @@ Deno.serve(async (req) => {
     let quarterId: string;
     if (requestedFolder) {
       quarterId = wantAssetCollect
-        ? await assetCollectFolder(requestedFolder, lovableKey, driveKey)
+        ? await assetCollectFolder(requestedFolder)
         : requestedFolder;
     } else {
-      const rootId = await findOrCreateFolder('Soleia Originals', null, lovableKey, driveKey);
-      quarterId = await findOrCreateFolder(quarterFolderName(), rootId, lovableKey, driveKey);
+      const rootId = await findOrCreateFolder('Soleia Originals', null);
+      quarterId = await findOrCreateFolder(quarterFolderName(), rootId);
     }
 
     // Multipart upload
@@ -191,8 +160,6 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
         body,
       },
-      lovableKey,
-      driveKey,
     );
 
     return new Response(

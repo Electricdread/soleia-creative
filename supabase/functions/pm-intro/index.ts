@@ -1,0 +1,258 @@
+// Introduces the pipeline notifications to each assigned PM, and hears back.
+//
+// POST sends every assigned PM one email: a short introduction, the schedule
+// of their active jobs, and a Confirm button. The button is a plain GET link
+// back to this function carrying a per-send token — clicked from any mail
+// client, no login — which stamps pm_intro_confirmations.confirmed_at and
+// shows a small thanks page. So "did they receive it" is answered by a row,
+// not by asking around.
+//
+// verify_jwt is false because the confirm click arrives bare from an email.
+// The POST side is triggered by the studio and simply re-sends intros; the
+// worst an abuser could do is re-mail the team their own schedule.
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { firstNameOf, sendEach } from '../_shared/notify.ts';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const APP_ORIGIN = 'https://soleiacreative.app';
+
+const esc = (v: unknown): string =>
+  String(v ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+const fmtDate = (iso: string | null): string =>
+  iso
+    ? new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+    : 'Date TBD';
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  const json = (status: number, body: unknown) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !serviceKey) throw new Error('Supabase env not configured');
+    const supabase = createClient(supabaseUrl, serviceKey);
+
+    // ── The link's lookup: state as JSON, for /pm-confirm to render ──────────
+    //
+    // Never a side effect: mail gateways follow links before a person does, so
+    // only the POST below counts as someone saying "I've got this".
+    if (req.method === 'GET') {
+      const token = new URL(req.url).searchParams.get('confirm');
+      if (!token || !/^[0-9a-f-]{36}$/i.test(token)) {
+        return new Response('Not found', { status: 404, headers: corsHeaders });
+      }
+      const { data: row } = await supabase
+        .from('pm_intro_confirmations')
+        .select('token, display_name, job_count, confirmed_at')
+        .eq('token', token)
+        .maybeSingle();
+      if (!row) return new Response('Not found', { status: 404, headers: corsHeaders });
+
+      return json(200, {
+        display_name: row.display_name,
+        job_count: row.job_count,
+        confirmed: !!row.confirmed_at,
+      });
+    }
+
+    // ── The button's press: the POST that actually confirms ──────────────────
+    const body = await req.clone().json().catch(() => ({}));
+    if (typeof body?.confirm === 'string') {
+      if (!/^[0-9a-f-]{36}$/i.test(body.confirm)) return json(404, { error: 'not found' });
+      const { data: row } = await supabase
+        .from('pm_intro_confirmations')
+        .select('token, confirmed_at')
+        .eq('token', body.confirm)
+        .maybeSingle();
+      if (!row) return json(404, { error: 'not found' });
+      if (!row.confirmed_at) {
+        await supabase
+          .from('pm_intro_confirmations')
+          .update({ confirmed_at: new Date().toISOString() })
+          .eq('token', body.confirm);
+      }
+      return json(200, { confirmed: true });
+    }
+
+    // ── The send: one intro per assigned PM, and only on an explicit ask ─────
+    if (body?.send !== true && body?.preview !== true) {
+      return json(400, { error: 'pass {"send":true} to send the intros, or {"preview":true} to render one' });
+    }
+
+    // Render the mail and return it instead of sending: what the studio looks
+    // at before a send is then the very thing that would go out, not a mock-up
+    // of it. Touches nothing — no token is minted, refreshed or stamped.
+    const preview = body?.preview === true;
+
+    // Optional: send to named people only, for when one person's list has
+    // changed and the rest of the team has no reason to hear about it again.
+    const only = Array.isArray(body?.only)
+      ? (body.only as unknown[])
+          .filter((c): c is string => typeof c === 'string')
+          .map((c) => c.trim().toLowerCase())
+          .filter(Boolean)
+      : [];
+
+    // Optional cc, so the studio can watch a send arrive in its own inbox.
+    const cc = Array.isArray(body?.cc)
+      ? (body.cc as unknown[]).filter((c): c is string => typeof c === 'string' && c.includes('@'))
+      : [];
+
+    const [jobsRes, assigneesRes] = await Promise.all([
+      supabase.from('jobs').select('id, title, client_name, event_date').eq('is_active', true),
+      supabase.from('job_assignees').select('job_id, email, display_name'),
+    ]);
+    if (jobsRes.error) throw new Error(`jobs: ${jobsRes.error.message}`);
+    if (assigneesRes.error) throw new Error(`job_assignees: ${assigneesRes.error.message}`);
+
+    const jobById = new Map((jobsRes.data ?? []).map((j) => [j.id, j]));
+
+    interface PmEntry { email: string; name: string | null; jobs: { title: string; client: string; date: string | null }[] }
+    const byEmail = new Map<string, PmEntry>();
+    for (const a of assigneesRes.data ?? []) {
+      const email = (a.email ?? '').trim();
+      const job = jobById.get(a.job_id);
+      if (!email || !job) continue;
+      const key = email.toLowerCase();
+      const entry = byEmail.get(key) ?? { email, name: (a.display_name ?? '').trim() || null, jobs: [] };
+      entry.jobs.push({ title: job.title, client: job.client_name, date: job.event_date ?? null });
+      byEmail.set(key, entry);
+    }
+
+    if (only.length) {
+      for (const key of [...byEmail.keys()]) if (!only.includes(key)) byEmail.delete(key);
+      if (byEmail.size === 0) return json(404, { error: 'nobody assigned matches "only"' });
+    }
+
+    const sent: string[] = [];
+    const failed: { to: string; error: string }[] = [];
+    const previews: string[] = [];
+
+    for (const entry of byEmail.values()) {
+      // Soonest show first; a job with no date sits at the bottom, never the top.
+      entry.jobs.sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999'));
+
+      // A resend reuses the person's outstanding token instead of minting a
+      // second one, so the table stays one row per PM and a confirmation from
+      // either copy of the email counts. A token already confirmed is left
+      // alone — a fresh one would ask someone to confirm twice.
+      const { data: held } = await supabase
+        .from('pm_intro_confirmations')
+        .select('token, confirmed_at')
+        .eq('email', entry.email)
+        .order('sent_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Already confirmed: they told us once, so an updated schedule must not
+      // ask again. Their row is reused rather than a second one minted, and
+      // the mail below drops the button.
+      const settled = !!held?.confirmed_at;
+      let token = held?.token as string | undefined;
+      if (preview) {
+        token = token ?? 'preview-only-no-token';
+      } else if (token) {
+        await supabase
+          .from('pm_intro_confirmations')
+          .update({
+            display_name: entry.name,
+            job_count: entry.jobs.length,
+            sent_at: new Date().toISOString(),
+          })
+          .eq('token', token);
+      } else {
+        const { data: row, error: insErr } = await supabase
+          .from('pm_intro_confirmations')
+          .insert({ email: entry.email, display_name: entry.name, job_count: entry.jobs.length })
+          .select('token')
+          .single();
+        if (insErr || !row) {
+          failed.push({ to: entry.email, error: insErr?.message ?? 'could not create confirmation token' });
+          continue;
+        }
+        token = row.token as string;
+      }
+
+      const confirmUrl = `${APP_ORIGIN}/pm-confirm?t=${token}`;
+      const first = firstNameOf(entry.name);
+      const rows = entry.jobs.map((j) => `
+        <tr>
+          <td style="padding:10px 16px 10px 0;color:#8a8f98;font-size:13px;white-space:nowrap;vertical-align:top;">${esc(fmtDate(j.date))}</td>
+          <td style="padding:10px 0;vertical-align:top;">
+            <div style="color:#1a1d23;font-size:14px;font-weight:600;">${esc(j.title)}</div>
+            <div style="color:#8a8f98;font-size:13px;">${esc(j.client)}</div>
+          </td>
+        </tr>`).join('');
+
+      const html = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:640px;color:#1a1d23;">
+          <p style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#b0762a;margin:0 0 6px;">
+            Soleia Creative &middot; pipeline notifications
+          </p>
+          <h1 style="font-size:22px;margin:0 0 12px;">${first ? `${esc(first)}, your` : 'Your'} projects now come to you</h1>
+          <p style="font-size:14px;line-height:1.6;margin:0 0 18px;">
+            Soleia Creative emails you directly as your assigned projects move —
+            when a packet goes live, when client files and briefs land, when a
+            proposal is signed, and a daily deadlines digest for what's coming up.
+            Here is what's currently on your plate:
+          </p>
+          <table style="border-collapse:collapse;width:100%;font-size:14px;border-top:1px solid #ecf0f1;">${rows}</table>
+          ${settled ? `
+          <p style="color:#8a8f98;font-size:13px;line-height:1.5;margin:22px 0 20px;">
+            You have already confirmed these reach you — nothing to do here.
+          </p>` : `
+          <p style="margin:26px 0 8px;">
+            <a href="${confirmUrl}" style="display:inline-block;background:#1a1d23;color:#fff;padding:12px 26px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;">
+              Confirm — I've got this
+            </a>
+          </p>
+          <p style="color:#8a8f98;font-size:13px;line-height:1.5;margin:0 0 20px;">
+            One click, just so we know these are reaching your inbox.
+          </p>`}
+          <p style="margin:0;">
+            <a href="${APP_ORIGIN}/admin/jobs" style="color:#8a8f98;font-size:13px;">Open the jobs board</a>
+          </p>
+        </div>`;
+
+      if (preview) { previews.push(html); continue; }
+
+      const report = await sendEach({
+        template: 'pm-intro',
+        to: [entry.email],
+        cc,
+        subject: settled
+          ? `Your Soleia projects — ${entry.jobs.length} on your plate`
+          : `Your Soleia projects — ${entry.jobs.length} on your plate, please confirm`,
+        html,
+      });
+      sent.push(...report.delivered);
+      failed.push(...report.failed);
+    }
+
+    if (preview) {
+      const divider = '<hr style="margin:40px 0;border:0;border-top:1px solid #ecf0f1;">';
+      return new Response(previews.join(divider), {
+        headers: { ...corsHeaders, 'Content-Type': 'text/html; charset=utf-8' },
+      });
+    }
+
+    return json(200, { success: failed.length === 0 && sent.length > 0, sent, failed });
+  } catch (e) {
+    console.error('pm-intro error:', e);
+    return json(500, { error: e instanceof Error ? e.message : String(e) });
+  }
+});

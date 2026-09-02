@@ -44,95 +44,95 @@ function formatDate(d?: string | null) {
 function packetCopy(f: PacketEmailFields) {
   const withProposal = Boolean(f.proposalUrl);
   const withPriceSheet = Boolean(f.priceSheetUrl);
-
-  // The packet kind owns the timeline — whether the creative call has happened
-  // yet. Attachments only add content; they must never imply a meeting that has
-  // not taken place, which is why they are layered on rather than replacing it.
-  const base = (() => {
-    switch (f.kind) {
-      case 'post_call':
-        return {
-          title: 'Your Post-Call Packet',
-          lead:
-            'Following our creative call — the direction we agreed on is collected here, along ' +
-            'with your delivery schedule and a secure folder for your final assets.',
-          eyebrow: 'Post-Call Packet',
-          driveLabel: 'Upload Your Assets',
-          banner: 'Asset deadlines and delivery dates are in your packet.',
-          tail: 'as you pull your assets together',
-        };
-      case 'custom':
-      case 'creative_pre_call':
-        return {
-          title: 'Your Soleia Creative Packet',
-          lead:
-            'Your creative packet is ready. Review the Soleia Creative Guide for what we build ' +
-            'and how it maps to the venue, and upload your brand assets to your secure project folder.',
-          eyebrow: 'Creative Packet',
-          driveLabel: 'Upload Your Assets',
-          banner: 'Please review the materials below.',
-          tail: '',
-        };
-      default:
-        return {
-          title: 'Your Pre-Call Packet',
-          lead:
-            "Ahead of our creative call, we've prepared a private packet with everything you need — " +
-            'the Creative Guide, your Pixel Map reference, and a secure folder to upload your brand assets.',
-          eyebrow: 'Pre-Call Packet',
-          driveLabel: 'Open Your Project Folder',
-          banner: 'Please review the materials below ahead of our call.',
-          tail: 'ahead of our call',
-        };
-    }
-  })();
-
-  // Sentences appended for what rides along, phrased so they read correctly
-  // whether the call is still to come or already happened.
-  const priceSentence = withPriceSheet
-    ? ' Our price sheet is included as well, so you have a reference for the services we offer ' +
-      'and what they cost.'
-    : '';
-  const hasMet = f.kind === 'post_call';
   const proposalSentence = withProposal
-    ? ` Your proposal is included with the additional services ${hasMet ? 'we discussed' : 'available'} — ` +
-      'open it to select the line items you want and sign off when you are ready.'
+    ? ' Your proposal is ready to review, select and sign.'
     : '';
 
-  // Read as a list: "Packet & Price Sheet", or "Packet, Price Sheet & Proposal".
-  const extras = [withPriceSheet ? 'Price Sheet' : null, withProposal ? 'Proposal' : null].filter(
-    Boolean,
-  ) as string[];
-  const withExtras = (stem: string) =>
-    extras.length === 0
-      ? stem
-      : extras.length === 1
-        ? `${stem} & ${extras[0]}`
-        : `${stem}, ${extras.slice(0, -1).join(', ')} & ${extras[extras.length - 1]}`;
+  switch (f.kind) {
+    case 'post_call':
+      return {
+        subject: withPriceSheet
+          ? 'Choose your Soleia services and next steps for {{event_name}}'
+          : 'Next steps for {{event_name}}',
+        title: withPriceSheet
+          ? 'Choose the services that make your event feel like yours.'
+          : 'Your next creative step.',
+        intro: 'Thank you for the thoughtful conversation today. We’ve captured the direction, screen opportunities and next decisions so everyone is moving from the same brief.' + proposalSentence,
+        primaryLabel: 'Open Your Packet',
+        driveLabel: 'Open Shared Project Folder',
+        eyebrow: 'After the Creative Call',
+        closing: withPriceSheet
+          ? 'Please make your selections and sign within 72 hours. Reply here with any questions.'
+          : 'The Creative Guide remains available in your project folder whenever your team needs venue or delivery details.',
+        banner: 'Client content is due 21 business days before the event.',
+      };
+    case 'custom':
+    case 'creative_pre_call':
+      return {
+        subject: 'Your Soleia creative packet for {{event_name}}',
+        title: 'A creative path built around the decisions you need next.',
+        intro: 'We’ve prepared a tailored creative packet for your event. It gives your team the shared venue references while keeping the next step focused on the decisions we still need to make together.',
+        primaryLabel: 'Open Your Creative Packet',
+        driveLabel: 'Open Shared Google Drive',
+        eyebrow: 'Soleia Creative',
+        closing: 'Reply here with any questions, or with the context that will make the next conversation more productive.',
+        banner: 'Please review the materials below.',
+      };
+    default:
+      return {
+        subject: 'Let’s find a time to shape your Soleia creative direction',
+        title: 'Let’s get the right pieces in front of your team.',
+        intro: 'Thank you for the introduction. I’m sharing the essentials now so your team can explore the venue and start gathering what will help us shape your event together.',
+        primaryLabel: 'Open Your Packet',
+        driveLabel: 'Open Shared Project Folder',
+        eyebrow: 'Before the Creative Call',
+        closing: 'Looking forward to meeting you. Please reply with three dates and three time windows that work for your team.',
+        banner: 'Please review the materials below ahead of our call.',
+      };
+  }
+}
 
-  const closingSubject = withProposal
-    ? 'the services or the proposal'
-    : withPriceSheet
-      ? 'the services or pricing'
-      : 'anything';
-  const closing = base.tail
-    ? `Any questions on ${closingSubject} ${base.tail}, just reply to this email.`
-    : `Any questions on ${closingSubject}, just reply to this email.`;
+const emailCard = (label: string, text: string) => `
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 12px;">
+    <tr><td style="padding:17px 18px;border-left:3px solid #c9963d;background:#faf8f3;">
+      <p style="margin:0 0 5px;color:#9a6f20;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;font-weight:700;">${label}</p>
+      <p style="margin:0;color:#3e3b36;font-size:14px;line-height:1.62;">${text}</p>
+    </td></tr>
+  </table>`;
 
-  return {
-    title: withExtras(base.title),
-    intro: base.lead + priceSentence + proposalSentence,
-    primaryLabel: 'Open Your Packet',
-    driveLabel: base.driveLabel,
-    eyebrow: withExtras(base.eyebrow),
-    closing,
-    banner: base.banner,
-  };
+function emailCards(f: PacketEmailFields) {
+  const withPriceSheet = Boolean(f.priceSheetUrl);
+  switch (f.kind) {
+    case 'post_call':
+      return [
+        withPriceSheet
+          ? emailCard('Your interactive service price sheet', 'Review the Soleia services, tick the options you would like for your event and adjust eligible quantities. Your selections become the accepted scope when you sign.')
+          : emailCard('Your next creative step', 'We’ll share only the project materials and approvals appropriate for your event. Please reply with any decisions needed from your team.'),
+        emailCard('Your shared Google Drive', 'Use <strong>03_Client Asset Collect</strong> for logos, fonts, approved brand materials and references. Finished mapped content belongs in the matching <strong>04_Finals</strong> surface folder.'),
+        emailCard('Content deadline', 'Please submit client content no later than 21 business days before the event so the team can test, map and prepare playback correctly.'),
+      ].join('');
+    case 'custom':
+    case 'creative_pre_call':
+      return [
+        emailCard('What to review now', 'Use the Creative Guide and your shared Google Drive to understand the venue, screen capabilities and delivery requirements.'),
+        emailCard('When direction is still forming', 'If your team is still exploring a direction and the event is months away, we’ll schedule a focused follow-up before confirming the next creative step.'),
+        emailCard('A single source of truth', 'Your shared Google Drive remains with the project and contains only the materials approved for this custom path.'),
+      ].join('');
+    default:
+      return [
+        emailCard('Your shared project folder', 'Inside: the Soleia Creative Guide project with the After Effects file, the Pixel Map and Content Delivery Guide, plus <strong>03_Client Asset Collect</strong> for logos, fonts, brand files and references.'),
+        emailCard('Choose a Creative Call', 'Please send back three dates and three time windows that work for your team. Once we compare availability, the Event Manager will confirm a 30-minute Microsoft Teams call.'),
+        withPriceSheet
+          ? emailCard('Price sheet', 'Use the included service price sheet as a reference before we talk through the right scope for your event.')
+          : '',
+      ].join('');
+  }
 }
 
 function buildPacketEmailHtml(f: PacketEmailFields) {
   const c = packetCopy(f);
   const { title, intro, primaryLabel, driveLabel } = c;
+  const cards = emailCards(f);
   const eventBanner = f.eventDate
     ? `<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;margin:0 0 24px;">
         <tr>
@@ -165,22 +165,24 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
     <td align="center" style="padding:0;background-color:#f3f1eb;">
       <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background-color:#ffffff;border:1px solid #e5e5e5;">
         <tr>
-          <td style="background-color:#111111;padding:40px 24px;text-align:center;">
+          <td style="background-color:#171817;padding:34px 34px 27px;text-align:center;">
             <img src="${LOGO_URL}" alt="Soleia Las Vegas" width="180" style="display:block;height:60px;width:auto;margin:0 auto;border:0;outline:none;text-decoration:none;" />
-            <p style="margin:18px 0 0;font-size:12px;color:#DAA520;letter-spacing:3px;text-transform:uppercase;">${c.eyebrow}</p>
+            <p style="margin:18px 0 0;font-size:10px;color:#d7a84c;letter-spacing:3px;text-transform:uppercase;font-weight:700;">${c.eyebrow}</p>
           </td>
         </tr>
 
         <tr>
-          <td style="padding:32px 28px;background-color:#ffffff;">
-            <h1 style="margin:0 0 18px;font-size:22px;line-height:1.3;color:#1a1a1a;font-weight:600;">${title}</h1>
+          <td style="padding:34px 34px 18px;background-color:#ffffff;">
+            <h1 style="font-family:Georgia,'Times New Roman',serif;margin:0 0 20px;font-size:30px;line-height:1.12;color:#1b1b19;font-weight:500;">${title}</h1>
             <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 20px;">
               Hi${f.clientName ? ` <strong>${f.clientName}</strong>` : ''},
             </p>
 
             ${eventBanner}
 
-            <p style="font-size:15px;line-height:1.7;color:#333333;margin:0 0 24px;">${intro}</p>
+            <p style="font-size:15px;line-height:1.7;color:#383631;margin:0 0 22px;">${intro}</p>
+
+            ${cards}
 
             <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
               <tr>
@@ -247,7 +249,7 @@ function buildPacketEmailHtml(f: PacketEmailFields) {
         </tr>
 
         <tr>
-          <td style="background-color:#111111;padding:24px;text-align:center;">
+          <td style="background-color:#171817;padding:24px;text-align:center;">
             <img src="${LOGO_URL}" alt="Soleia" width="84" style="display:block;height:28px;width:auto;margin:0 auto 8px;border:0;opacity:0.85;outline:none;text-decoration:none;" />
             <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
             <p style="margin:0;font-size:12px;color:#888888;">
@@ -308,6 +310,12 @@ export function PacketEmailCard({ kind, clientName: initialName, eventDate, pack
     proposalUrl: proposal.trim() || undefined,
     priceSheetUrl: priceSheetUrl?.trim() || undefined,
   };
+  const copy = packetCopy(fields);
+  const emailLabel = kind === 'post_call'
+    ? 'Post-Call Packet Email'
+    : kind === 'custom' || kind === 'creative_pre_call'
+      ? 'Custom Creative Packet Email'
+      : 'Pre-Call Packet Email';
 
   const handleCopy = async () => {
     const html = buildPacketEmailHtml(fields);
@@ -339,7 +347,7 @@ export function PacketEmailCard({ kind, clientName: initialName, eventDate, pack
           </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground">
-              {kind === 'creative_pre_call' ? 'Creative Pre-Call Email' : 'Pre-Call Packet Email'}
+              {emailLabel}
             </h3>
             <p className="text-sm text-muted-foreground">
               Branded HTML email — copy and paste into your email client
@@ -354,6 +362,11 @@ export function PacketEmailCard({ kind, clientName: initialName, eventDate, pack
         >
           {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </Button>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Suggested subject</Label>
+        <Input value={copy.subject} readOnly onFocus={(event) => event.currentTarget.select()} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useFocusRow } from '@/hooks/useFocusRow';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { useNavigate } from 'react-router-dom';
@@ -88,6 +88,7 @@ export default function AdminPackets() {
   const [packets, setPackets] = useState<PacketRow[]>([]);
   const [loading, setLoading] = useState(true);
   useFocusRow(!loading);
+  const [modePickerOpen, setModePickerOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<PacketRow | null>(null);
   const [newKind, setNewKind] = useState<PacketKind>('pre_call');
@@ -162,6 +163,14 @@ export default function AdminPackets() {
       .eq('id', p.id);
     if (error) return toast.error(error.message);
     toast.success(!p.is_active ? 'Packet deployed' : 'Packet unpublished');
+    if (!p.is_active) {
+      // The job's team hears about it once the link is live. Fire-and-forget:
+      // the notification must never block, or undo, the deploy. The function
+      // reads the packet server-side and refuses to send twice.
+      void supabase.functions
+        .invoke('notify-packet-deployed', { body: { packet_id: p.id } })
+        .catch((e) => console.error('Packet deploy notification failed', e));
+    }
     load();
   };
 
@@ -225,12 +234,13 @@ export default function AdminPackets() {
   };
 
   const openNewPacket = (kind: PacketKind) => {
+    setModePickerOpen(false);
     setEditing(null);
     setNewKind(kind);
     setEditorOpen(true);
   };
 
-  const createDriveFolder = async (p: PacketRow) => {
+  const createDriveFolder = async (p: PacketRow, folderMode?: 'full' | 'asset_only') => {
     if (!p.client_name) {
       toast.error('Add a client name before creating a Drive folder');
       return;
@@ -238,7 +248,7 @@ export default function AdminPackets() {
     const t = toast.loading('Creating Drive folder…');
     try {
       const { data, error } = await supabase.functions.invoke('create-client-drive-folder', {
-        body: { packet_id: p.id },
+        body: { packet_id: p.id, ...(folderMode ? { folder_mode: folderMode } : {}) },
       });
       if (error) throw error;
       toast.success('Drive folder ready', { id: t });
@@ -254,17 +264,9 @@ export default function AdminPackets() {
       title="Packets"
       subtitle="Inclusions and scope of work for client review"
       actions={
-        <>
-          <Button variant="outline" size="sm" onClick={() => openNewPacket('pre_call')}>
-            <Plus className="w-4 h-4 mr-2" /> Pre-call
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => openNewPacket('post_call')}>
-            <Plus className="w-4 h-4 mr-2" /> Post-call
-          </Button>
-          <Button size="sm" onClick={() => openNewPacket('custom')}>
-            <Plus className="w-4 h-4 mr-2" /> Custom
-          </Button>
-        </>
+        <Button size="sm" onClick={() => setModePickerOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" /> Create packet
+        </Button>
       }
     >
       <div>
@@ -275,8 +277,8 @@ export default function AdminPackets() {
         ) : packets.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <p className="mb-4">No packets yet.</p>
-            <Button onClick={() => openNewPacket('pre_call')}>
-              <Plus className="w-4 h-4 mr-2" /> Create the first packet
+            <Button onClick={() => setModePickerOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" /> Create packet
             </Button>
           </div>
         ) : (
@@ -325,11 +327,12 @@ export default function AdminPackets() {
             </p>
           ) : (
           <div className="grid gap-4">
-            {visible.map((p) => (
+            {visible.map((p, i) => (
               <div
                 key={p.id}
                 data-focus-id={p.id}
-                className="card-elevated bg-card border border-border rounded-lg p-5 shadow-card hover:shadow-card-hover transition-shadow"
+                style={{ '--i': i } as CSSProperties}
+                className="rise lift card-elevated bg-card border border-border rounded-lg p-5 shadow-card hover:shadow-card-hover"
               >
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">
@@ -358,6 +361,15 @@ export default function AdminPackets() {
                       <Button variant="outline" size="sm" onClick={() => window.open(p.drive_folder_url!, '_blank')}>
                         <FolderOpen className="w-3.5 h-3.5 mr-1" /> Drive folder
                       </Button>
+                    ) : kindGroup(p.kind) === 'custom' ? (
+                      <div className="flex items-center gap-1">
+                        <Button variant="outline" size="sm" onClick={() => createDriveFolder(p, 'full')}>
+                          <FolderPlus className="w-3.5 h-3.5 mr-1" /> Full project folder
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => createDriveFolder(p, 'asset_only')}>
+                          <FolderPlus className="w-3.5 h-3.5 mr-1" /> Asset collect only
+                        </Button>
+                      </div>
                     ) : (
                       <Button variant="outline" size="sm" onClick={() => createDriveFolder(p)}>
                         <FolderPlus className="w-3.5 h-3.5 mr-1" /> Create Drive folder
@@ -371,7 +383,7 @@ export default function AdminPackets() {
                         <Button variant="outline" size="sm" onClick={() => window.open(`/packet/${p.token}`, '_blank')}>
                           <ExternalLink className="w-3.5 h-3.5 mr-1" /> Open
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => setEmailPacket(p)}>
+                        <Button variant="outline" size="sm" onClick={() => { setIncludePriceSheet(false); setEmailPacket(p); }}>
                           <Mail className="w-3.5 h-3.5 mr-1" /> Email
                         </Button>
                       </>
@@ -399,6 +411,31 @@ export default function AdminPackets() {
         )}
       </div>
 
+      <Dialog open={modePickerOpen} onOpenChange={setModePickerOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display">Create a creative packet</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Choose the moment in the creative workflow. You can tailor the packet contents before saving.</p>
+            <div className="grid gap-3 pt-2 sm:grid-cols-3">
+              <button type="button" onClick={() => openNewPacket('pre_call')} className="rounded-lg border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5">
+                <span className="block text-sm font-semibold text-foreground">Pre-call</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">Send the Creative Guide, full project files and scheduling details before the call.</span>
+              </button>
+              <button type="button" onClick={() => openNewPacket('post_call')} className="rounded-lg border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5">
+                <span className="block text-sm font-semibold text-foreground">Post-call</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">Confirm the direction, asset deadline and the next approved client materials.</span>
+              </button>
+              <button type="button" onClick={() => openNewPacket('custom')} className="rounded-lg border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5">
+                <span className="block text-sm font-semibold text-foreground">Custom</span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">Keep pricing private, then choose full project files or asset collection only.</span>
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} kind={newKind} onSaved={load} />
 
       <Dialog open={!!emailPacket} onOpenChange={(o) => { if (!o) { setEmailPacket(null); setIncludePriceSheet(false); } }}>
@@ -408,18 +445,25 @@ export default function AdminPackets() {
           </DialogHeader>
           {emailPacket && (
             <div className="space-y-4">
-              <IncludePriceSheetToggle
-                checked={includePriceSheet}
-                onCheckedChange={setIncludePriceSheet}
-              />
+              {kindGroup(emailPacket.kind) === 'custom' ? (
+                <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                  <p className="font-medium text-foreground">Custom delivery keeps pricing private</p>
+                  <p className="mt-1 text-xs text-muted-foreground">This email will not include the service price sheet, pricing, or proposal-selection language.</p>
+                </div>
+              ) : (
+                <IncludePriceSheetToggle
+                  checked={includePriceSheet}
+                  onCheckedChange={setIncludePriceSheet}
+                />
+              )}
               <PacketEmailCard
-                key={String(includePriceSheet)}
+                key={`${emailPacket.id}-${includePriceSheet}`}
                 kind={(emailPacket.kind as PacketKind) || 'pre_call'}
                 clientName={emailPacket.client_name || ''}
                 eventDate={emailPacket.event_date}
                 packetUrl={`${window.location.origin}/packet/${emailPacket.token}`}
                 driveUrl={emailPacket.drive_folder_url}
-                priceSheetUrl={includePriceSheet ? priceSheetUrl() : undefined}
+                priceSheetUrl={kindGroup(emailPacket.kind) === 'custom' || !includePriceSheet ? undefined : priceSheetUrl()}
               />
             </div>
           )}

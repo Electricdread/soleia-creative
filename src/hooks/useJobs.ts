@@ -21,7 +21,7 @@ export function useJobs(jobId?: string) {
       let jobQuery = supabase.from('jobs').select('*').order('event_date', { nullsFirst: false });
       if (jobId) jobQuery = supabase.from('jobs').select('*').eq('id', jobId);
 
-      const [jobRows, proposals, packets, sessions, assets, packageItems] = await Promise.all([
+      const [jobRows, proposals, packets, sessions, assets, packageItems, assocs, meetings] = await Promise.all([
         jobQuery,
         supabase.from('proposals')
           .select('id, token, event_name, status, signed_at, is_active, signoff_due_on, drive_folder_id, job_id')
@@ -37,6 +37,10 @@ export function useJobs(jobId?: string) {
         supabase.from('proposal_items')
           .select('proposal_id, category, title')
           .eq('client_selected', true),
+        // A job's scheduled e-meetings, reached through its records' calendar
+        // events — whether a creative call is even part of this job's timeline.
+        supabase.from('calendar_event_associations').select('event_uid, entity_id'),
+        supabase.from('calendar_event_meeting_links').select('event_uid'),
       ]);
 
       if (jobRows.error) throw jobRows.error;
@@ -57,6 +61,17 @@ export function useJobs(jobId?: string) {
           .map((i) => i.proposal_id),
       );
 
+      const meetingsByEvent = new Map<string, number>();
+      (meetings.data ?? []).forEach((m) => {
+        meetingsByEvent.set(m.event_uid, (meetingsByEvent.get(m.event_uid) ?? 0) + 1);
+      });
+      const eventsByEntity = new Map<string, string[]>();
+      (assocs.data ?? []).forEach((a) => {
+        const held = eventsByEntity.get(a.entity_id) ?? [];
+        held.push(a.event_uid);
+        eventsByEntity.set(a.entity_id, held);
+      });
+
       const built = (jobRows.data ?? []).map((row): JobWithMembers => {
         const job = row as unknown as JobRecord;
         const jobProposals = (proposals.data ?? []).filter((p) => p.job_id === job.id) as unknown as AttachedProposal[];
@@ -71,6 +86,13 @@ export function useJobs(jobId?: string) {
         let assetCount = 0;
         folders.forEach((f) => { assetCount += filesByFolder.get(f) ?? 0; });
 
+        const eventUids = new Set<string>();
+        [...jobProposals, ...jobPackets, ...jobSessions].forEach((r) => {
+          (eventsByEntity.get(r.id) ?? []).forEach((uid) => eventUids.add(uid));
+        });
+        let meetingCount = 0;
+        eventUids.forEach((uid) => { meetingCount += meetingsByEvent.get(uid) ?? 0; });
+
         return {
           job,
           proposals: jobProposals,
@@ -78,6 +100,7 @@ export function useJobs(jobId?: string) {
           sessions: jobSessions,
           assetCount,
           hasCreativePackage: jobProposals.some((p) => packageProposals.has(p.id)),
+          meetingCount,
         };
       });
 

@@ -38,10 +38,74 @@ export function adminRecipients(): string[] {
   return Array.from(new Set(list));
 }
 
+/**
+ * A person's first name, or nothing.
+ *
+ * display_name is often just the address — the assignee picker stores whatever
+ * it was given — and "mdimond@soleialv.com, your week" is worse than no
+ * greeting at all. An address is therefore treated as an absent name rather
+ * than dressed up into one: guessing "Mdimond" from a local part invents a
+ * person's name, which is not ours to invent.
+ */
+export function firstNameOf(displayName: string | null | undefined): string | null {
+  const raw = String(displayName ?? '').trim();
+  if (!raw || raw.includes('@')) return null;
+  return raw.split(' ').filter(Boolean)[0] || null;
+}
+
+export interface JobTeamMember {
+  job_id: string;
+  email: string;
+  name: string | null;
+}
+
+/**
+ * Everyone assigned to these jobs, from job_assignees — which snapshots the
+ * address at assignment time, so a renamed or removed profile still gets its
+ * mail. Returns [] on any failure: a team lookup must never stop the studio
+ * being told.
+ */
+export async function jobAssigneesFor(jobIds: (string | null | undefined)[]): Promise<JobTeamMember[]> {
+  const ids = Array.from(new Set(jobIds.filter((id): id is string => Boolean(id))));
+  if (ids.length === 0) return [];
+  try {
+    const url = Deno.env.get('SUPABASE_URL');
+    const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!url || !key) return [];
+    const res = await fetch(
+      `${url}/rest/v1/job_assignees?job_id=in.${encodeURIComponent(`(${ids.join(',')})`)}&select=job_id,email,display_name&order=created_at`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+    );
+    if (!res.ok) {
+      console.error('job_assignees lookup failed', { status: res.status, body: (await res.text()).slice(0, 200) });
+      return [];
+    }
+    const rows = (await res.json()) as { job_id: string; email: string | null; display_name: string | null }[];
+    const team: JobTeamMember[] = [];
+    for (const r of rows) {
+      const email = (r.email ?? '').trim();
+      if (!email) continue;
+      team.push({ job_id: r.job_id, email, name: (r.display_name ?? '').trim() || null });
+    }
+    return team;
+  } catch (e) {
+    console.error('job_assignees lookup threw', e);
+    return [];
+  }
+}
+
 export interface NotificationMessage {
   to: string[];
   subject: string;
   html: string;
+  /**
+   * Copied on every message in the batch — for the studio to watch a send land
+   * in its own inbox. Use it only for addresses Resend is certain to accept: a
+   * cc rides in the same request as the recipient, so a rejected one fails that
+   * recipient too. An address that is already the recipient is dropped rather
+   * than delivered twice.
+   */
+  cc?: string[];
   attachments?: { filename: string; content: string }[];
   /** What this is, for the send log. Defaults to the subject if omitted. */
   template?: string;
@@ -131,8 +195,11 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
     sandboxFallback: [],
   };
 
-  const post = (from: string, to: string) =>
-    fetch('https://api.resend.com/emails', {
+  const cc = Array.from(new Set((msg.cc ?? []).map((c) => c.trim()).filter(Boolean)));
+
+  const post = (from: string, to: string) => {
+    const copies = cc.filter((c) => c.toLowerCase() !== to.toLowerCase());
+    return fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -141,11 +208,13 @@ export async function sendEach(msg: NotificationMessage): Promise<DeliveryReport
       body: JSON.stringify({
         from,
         to: [to],
+        ...(copies.length ? { cc: copies } : {}),
         subject: msg.subject,
         html: msg.html,
         ...(msg.attachments ? { attachments: msg.attachments } : {}),
       }),
     });
+  };
 
   for (const to of recipients) {
     let viaFallback = false;

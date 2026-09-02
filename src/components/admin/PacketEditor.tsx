@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
 export type PacketKind = 'pre_call' | 'post_call' | 'custom' | 'creative_pre_call';
+type DriveFolderMode = 'full' | 'asset_only';
 
 /** The three versions offered for new packets. */
 export const PACKET_KINDS = ['pre_call', 'post_call', 'custom'] as const;
@@ -34,7 +35,7 @@ export const PACKET_KIND_LABEL: Record<PacketKind, string> = {
  * finals — for packets raised to collect a logo, leaving folders to delete by
  * hand afterwards.
  */
-export const PACKET_FOLDER_MODE: Record<PacketKind, 'full' | 'asset_only'> = {
+export const PACKET_FOLDER_MODE: Record<PacketKind, DriveFolderMode> = {
   pre_call: 'full',
   post_call: 'asset_only',
   custom: 'asset_only',
@@ -81,14 +82,14 @@ const fullDefault = (): PacketRecord => ({
     'Welcome — this packet prepares us for your creative pre-call with the Soleia team. ' +
     'Please review the Creative Guide ahead of our meeting and use the shared Google Drive ' +
     'folder (created on save) to drop logos, brand assets, references, and any inspiration. ' +
-    'Final creative is delivered no later than 21 business days before your event.',
+    'Please submit client content no later than 21 business days before your event.',
   inclusions: [
     { heading: 'Soleia Creative Guide', body: 'Our living technical & creative reference covering the venue, LED canvas, motion graphics standards and delivery specs. Open the Creative Guide link above to explore.' },
     { heading: 'Pixel Map', body: 'The master LED pixel map for the venue lives in the "02_Pixel Map" folder of your shared Drive, alongside the SOLEIA Content Delivery Guide.' },
     { heading: 'Client Asset Collect', body: 'Upload logos (vector preferred), brand colors, fonts, photography and any reference films to the "03_Client Asset Collect" folder in your shared Drive.' },
   ],
   scope:
-    'Soleia delivers custom motion graphics and venue mapping for your event. Creative direction, asset preparation, encoding and on-site QC are included. Final assets due 21 business days before show date.',
+    'Soleia delivers custom motion graphics and venue mapping for your event. Creative direction, asset preparation, encoding and on-site QC are included. Client content is due 21 business days before show date.',
   notes: '',
   creative_guide_url: DEFAULT_GUIDE_URL,
   kind: 'pre_call',
@@ -101,12 +102,12 @@ const creativeDefault = (): PacketRecord => ({
   intro:
     'Before our creative pre-call, please review the Soleia Creative Guide using the button ' +
     'below. Then drop your logos, brand assets, references and inspiration into the shared ' +
-    'Client Asset Collect folder (created on save). Final assets are due 21 business days ' +
+    'Client Asset Collect folder (created on save). Client content is due 21 business days ' +
     'before your event.',
   inclusions: [
     { heading: 'Client Asset Collect', body: 'Upload logos (vector preferred), brand colors, fonts, photography and any reference films. The shared folder is automatically created when this packet is saved.' },
   ],
-  scope: 'Creative pre-call review. Final assets due 21 business days before show date.',
+  scope: 'Creative pre-call review. Client content is due 21 business days before show date.',
   notes: '',
   creative_guide_url: DEFAULT_GUIDE_URL,
   kind: 'creative_pre_call',
@@ -119,7 +120,7 @@ const postCallDefault = (): PacketRecord => ({
   intro:
     'Following our creative call — everything discussed is collected here. The shared Google ' +
     'Drive folder (created on save) is where your final assets go: logos, brand files, fonts ' +
-    'and any footage we agreed you would supply. Final creative is delivered no later than ' +
+    'and any footage we agreed you would supply. Please submit client content no later than ' +
     '21 business days before your event.',
   inclusions: [
     { heading: 'Agreed Creative Direction', body: 'The direction confirmed on our call, so the whole team is building against the same brief.' },
@@ -127,7 +128,7 @@ const postCallDefault = (): PacketRecord => ({
     { heading: 'Delivery Schedule', body: 'Asset deadlines and the delivery dates that keep your content on the wall for show day.' },
   ],
   scope:
-    'Production of the creative direction agreed on our call. Asset preparation, pixel-perfect mapping, encoding and onsite playback are included. Final assets due 21 business days before show date.',
+    'Production of the creative direction agreed on our call. Asset preparation, pixel-perfect mapping, encoding and onsite playback are included. Client content is due 21 business days before show date.',
   notes: '',
   creative_guide_url: DEFAULT_GUIDE_URL,
   kind: 'post_call',
@@ -140,8 +141,8 @@ const customDefault = (): PacketRecord => ({
   intro:
     'This packet collects everything your event needs from the Soleia creative team. Review the ' +
     'Creative Guide using the button below, and use the shared Google Drive folder (created on ' +
-    'save) for your brand assets. Final creative is delivered no later than 21 business days ' +
-    'before your event.',
+    'save) for the materials your team has been asked to share. This custom path does not include ' +
+    'service pricing. Client content is due 21 business days before your event.',
   inclusions: [
     { heading: 'Soleia Creative Guide', body: 'Our living technical & creative reference covering the venue, LED canvas, motion graphics standards and delivery specs.' },
     { heading: 'Client Asset Collect', body: 'Upload logos (vector preferred), brand colors, fonts, photography and any reference films to the shared Drive folder.' },
@@ -171,6 +172,7 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
   const [form, setForm] = useState<PacketRecord>(defaultFor(kind));
   const [saving, setSaving] = useState(false);
   const [assignees, setAssignees] = useState<Colleague[]>([]);
+  const [customFolderMode, setCustomFolderMode] = useState<DriveFolderMode>('full');
 
   // An existing packet already belongs to a job, so show who is on it.
   useEffect(() => {
@@ -202,6 +204,8 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
             }
           : defaultFor(kind),
       );
+      const packetKind = initial?.kind ?? kind;
+      setCustomFolderMode(packetKind === 'custom' ? 'full' : PACKET_FOLDER_MODE[packetKind]);
     }
   }, [open, initial, kind]);
 
@@ -266,7 +270,10 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
 
     if (saved?.id && saved?.client_name && !saved?.drive_folder_url) {
       try {
-        const folderMode = PACKET_FOLDER_MODE[(saved.kind as PacketKind) ?? 'pre_call'] ?? 'full';
+        const savedKind = (saved.kind as PacketKind) ?? 'pre_call';
+        const folderMode = savedKind === 'custom'
+          ? customFolderMode
+          : PACKET_FOLDER_MODE[savedKind] ?? 'full';
         const { data: fnData, error: fnErr } = await supabase.functions.invoke('create-client-drive-folder', {
           body: { packet_id: saved.id, folder_mode: folderMode },
         });
@@ -330,11 +337,42 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
               placeholder={DEFAULT_GUIDE_URL}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {effectiveKind === 'creative_pre_call'
-                ? 'Saving with a client name auto-creates a shared Drive folder with just a Client Asset Collect subfolder.'
-                : 'Saving with a client name auto-creates a shared Drive folder with Creative Guide, Pixel Map, and Client Asset Collect subfolders.'}
+              {effectiveKind === 'custom'
+                ? 'Choose the custom Google Drive delivery below before saving.'
+                : effectiveKind === 'creative_pre_call' || effectiveKind === 'post_call'
+                  ? 'Saving with a client name auto-creates a shared Drive folder with just a Client Asset Collect subfolder.'
+                  : 'Saving with a client name auto-creates a shared Drive folder with Creative Guide, Pixel Map, and Client Asset Collect subfolders.'}
             </p>
           </div>
+
+          {effectiveKind === 'custom' && (
+            <div className="rounded-lg border border-border p-3">
+              <Label>Custom Google Drive delivery</Label>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Custom packets do not expose the service price sheet. Choose what the client can access in Google Drive.
+              </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setCustomFolderMode('full')}
+                  aria-pressed={customFolderMode === 'full'}
+                  className={`rounded-md border p-3 text-left transition-colors ${customFolderMode === 'full' ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/60'}`}
+                >
+                  <span className="block text-sm font-medium">Full project files</span>
+                  <span className="mt-1 block text-xs leading-5 text-muted-foreground">Creative Guide project, Pixel Map, Content Delivery Guide and Client Asset Collect.</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomFolderMode('asset_only')}
+                  aria-pressed={customFolderMode === 'asset_only'}
+                  className={`rounded-md border p-3 text-left transition-colors ${customFolderMode === 'asset_only' ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/60'}`}
+                >
+                  <span className="block text-sm font-medium">Asset collection only</span>
+                  <span className="mt-1 block text-xs leading-5 text-muted-foreground">Only 03_Client Asset Collect for client source materials; no project files, Pixel Map or pricing.</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           <div>
             <Label htmlFor="intro">Intro</Label>

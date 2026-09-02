@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle2, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -142,10 +142,10 @@ export function NeedsYou() {
       ) : (
         <>
           <div className="divide-y divide-border">
-            {visible.map(({ j, action, days }) => {
+            {visible.map(({ j, action, days }, i) => {
               const urgent = days !== null && days <= 7;
               return (
-                <div key={j.job.id} className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-muted/40">
+                <div key={j.job.id} style={{ '--i': i } as CSSProperties} className="rise flex items-center gap-2 px-4 py-2.5 transition-colors duration-300 ease-[cubic-bezier(.16,1,.3,1)] hover:bg-muted/40 motion-reduce:transition-none">
                   <button
                     onClick={() => navigate(`/admin/jobs/${j.job.id}`)}
                     className="min-w-0 flex-1 text-left"

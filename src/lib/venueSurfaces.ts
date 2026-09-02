@@ -12,7 +12,7 @@
  * 3D room always agree about where a screen lives in the file.
  */
 
-export type AreaId = 'main' | 'beachclub' | 'arrival' | 'tv';
+export type AreaId = 'overview' | 'main' | 'beachclub' | 'arrival' | 'tv';
 
 /**
  * Venue renders with the pixel map itself on the screens — every surface shows
@@ -209,6 +209,15 @@ export const VENUE_PHOTOS = PHOTO;
 
 export const VENUE_AREAS: VenueArea[] = [
   {
+    id: 'overview',
+    label: 'Full Venue',
+    title: 'The complete venue',
+    blurb:
+      'Start with the full layout: the nightclub, beachclub, arrival route, cabanas and bungalows all belong to one guest experience. The views that follow show where your brand can live within it.',
+    image: '/creative-guide/venue-layout-original.png',
+    imageAlt: 'Full Soleia venue layout showing the nightclub, beachclub, arrival route, cabanas and bungalows',
+  },
+  {
     id: 'main',
     label: 'Main Room',
     title: 'The nightclub',
@@ -247,8 +256,8 @@ export const VENUE_AREAS: VenueArea[] = [
   },
   {
     id: 'tv',
-    label: 'Private Displays',
-    title: 'Cabanas, bungalows and the front door',
+    label: 'Cabanas & Bungalows',
+    title: 'Private hospitality displays',
     blurb:
       'Twenty-eight televisions across the venue run one shared feed by default. Any of them can be switched to its own dedicated content instead.',
     image: PHOTO.cabanasRow,

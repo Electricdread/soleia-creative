@@ -145,6 +145,14 @@ export function EventPacket({ eventUid, summary, dtstart }: EventPacketProps) {
       .eq('id', p.id);
     if (error) return toast.error(error.message);
     toast.success(!p.is_active ? 'Packet deployed — the link is live' : 'Packet unpublished');
+    if (!p.is_active) {
+      // The job's team hears about it once the link is live. Fire-and-forget:
+      // the notification must never block, or undo, the deploy. The function
+      // reads the packet server-side and refuses to send twice.
+      void supabase.functions
+        .invoke('notify-packet-deployed', { body: { packet_id: p.id } })
+        .catch((e) => console.error('Packet deploy notification failed', e));
+    }
     load();
   };
 

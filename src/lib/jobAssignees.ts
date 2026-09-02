@@ -53,6 +53,14 @@ export async function saveJobAssignees(
       })),
     );
     if (error) { console.error('Could not assign', error.message); ok = false; }
+    else {
+      // Tell the new assignees they are on the job. Fire-and-forget: the
+      // notification must never block, or undo, the save. The function reads
+      // the rows server-side and only emails people not yet notified.
+      void supabase.functions
+        .invoke('notify-job-assigned', { body: { job_id: jobId } })
+        .catch((e) => console.error('Assignment notification failed', e));
+    }
   }
 
   if (toRemove.length > 0) {

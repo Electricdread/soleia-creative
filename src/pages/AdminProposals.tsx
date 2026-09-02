@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { saveJobAssignees } from '@/lib/jobAssignees';
 import { findOrCreateJob } from '@/lib/jobMatch';
@@ -69,6 +69,11 @@ export default function AdminProposals() {
   const [loading, setLoading] = useState(true);
   useFocusRow(!loading);
   const [showForm, setShowForm] = useState(false);
+  // Raised from a job's timeline: that job is the one the proposal belongs to,
+  // so it is pinned rather than matched by name. findOrCreateJob would attach
+  // by client and event, and a name typed a shade differently would quietly
+  // start a second job for work that already has one.
+  const [pinnedJobId, setPinnedJobId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab: ViewTab = searchParams.get('tab') === 'library' ? 'library' : 'proposals';
   const setActiveTab = (tab: ViewTab) => {
@@ -139,6 +144,31 @@ export default function AdminProposals() {
 
   useEffect(() => { if (isAdmin) fetchProposals(); }, [isAdmin]);
 
+  // "+ Proposal" on a job opens this form already filled in from that job.
+  useEffect(() => {
+    const jobId = searchParams.get('newFor');
+    if (!isAdmin || !jobId || pinnedJobId === jobId) return;
+    let live = true;
+    (async () => {
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('id, title, client_name, event_date')
+        .eq('id', jobId)
+        .maybeSingle();
+      if (!live) return;
+      if (!job) {
+        toast({ title: 'That job could not be found', variant: 'destructive' });
+        return;
+      }
+      setPinnedJobId(job.id);
+      setEventName(job.title ?? '');
+      setClientName(job.client_name ?? '');
+      setEventDate(job.event_date ?? '');
+      setShowForm(true);
+    })();
+    return () => { live = false; };
+  }, [isAdmin, searchParams, pinnedJobId]);
+
   const handleCreate = async () => {
     if (!eventName.trim() || !clientName.trim()) {
       toast({ title: 'Event name and client name are required', variant: 'destructive' });
@@ -152,7 +182,7 @@ export default function AdminProposals() {
       // proposal and the packet are the same piece of work rather than two.
       const client = cleanClientName(clientName);
 
-      const jobId = await findOrCreateJob({
+      const jobId = pinnedJobId ?? await findOrCreateJob({
         clientName: client,
         eventName,
         eventDate: eventDate || null,
@@ -256,6 +286,12 @@ export default function AdminProposals() {
   };
 
   const resetForm = () => {
+    if (pinnedJobId) {
+      setPinnedJobId(null);
+      const next = new URLSearchParams(searchParams);
+      next.delete('newFor');
+      setSearchParams(next, { replace: true });
+    }
     setEventName('');
     setClientName('');
     setVenueName('');
@@ -683,8 +719,8 @@ luisdreamslv@gmail.com`;
           <p className="text-muted-foreground text-center py-12">No proposals yet. Create your first one above.</p>
         ) : (
           <div className="space-y-3">
-            {proposals.map(p => (
-              <div key={p.id} data-focus-id={p.id} className={`bg-muted/80 border border-border rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 transition-opacity ${!p.is_active ? 'opacity-60' : ''}`}>
+            {proposals.map((p, i) => (
+              <div key={p.id} data-focus-id={p.id} style={{ '--i': i } as CSSProperties} className={`rise lift bg-muted/80 border border-border rounded-xl p-5 flex flex-col xl:flex-row xl:items-center gap-4 hover:border-primary/40 ${!p.is_active ? 'opacity-60' : ''}`}>
                 <div className="w-full min-w-0 xl:w-48 xl:flex-[0_0_12rem] overflow-hidden">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="text-foreground font-medium truncate">{p.event_name}</h3>

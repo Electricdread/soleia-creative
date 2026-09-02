@@ -23,15 +23,18 @@ export interface GuideSectionHeadProps {
 
 export function GuideSectionHead({ eyebrow, title, lede, className = '' }: GuideSectionHeadProps) {
   return (
-    <Reveal className={`mb-11 ${className}`}>
-      <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">{eyebrow}</span>
-      <h2 className="mt-3.5 font-display text-3xl leading-tight text-foreground sm:text-4xl lg:text-5xl">
-        {title}
-      </h2>
-      <div className="mt-4 h-px w-16 bg-gradient-to-r from-primary to-transparent" />
-      {lede && (
-        <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{lede}</p>
-      )}
+    <Reveal className={`mb-14 border-t border-primary/20 pt-6 sm:mb-16 lg:grid lg:grid-cols-12 lg:gap-8 lg:pt-8 ${className}`}>
+      <div className="lg:col-span-3">
+        <span className="block text-[9.5px] uppercase tracking-[0.34em] text-primary">{eyebrow}</span>
+      </div>
+      <div className="mt-5 lg:col-span-9 lg:mt-0">
+        <h2 className="max-w-4xl font-display text-4xl leading-[0.98] tracking-[-0.025em] text-foreground sm:text-5xl lg:text-6xl">
+          {title}
+        </h2>
+        {lede && (
+          <p className="mt-6 max-w-2xl text-[15px] font-light leading-[1.8] text-muted-foreground">{lede}</p>
+        )}
+      </div>
     </Reveal>
   );
 }
