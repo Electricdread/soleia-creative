@@ -13,7 +13,7 @@
 // sending; {"only": ["someone@..."]} narrows a real send to named people.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { adminRecipients, sendEach } from '../_shared/notify.ts';
+import { adminRecipients, firstNameOf, sendEach } from '../_shared/notify.ts';
 import { calcProposalTotal, type ProposalLineItem } from '../_shared/proposalTotals.ts';
 import {
   nextAction, stageFor, STAGE_LABEL,
@@ -370,7 +370,7 @@ Deno.serve(async (req) => {
       sends.push({
         to: email, scope: 'pm',
         subject: `Your Soleia week — ${mine.length} project${mine.length === 1 ? '' : 's'}`,
-        html: buildFor('pm', mine, (name ?? '').trim().split(/\s+/)[0] || null),
+        html: buildFor('pm', mine, firstNameOf(name)),
       });
     }
 

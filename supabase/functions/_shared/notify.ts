@@ -38,6 +38,21 @@ export function adminRecipients(): string[] {
   return Array.from(new Set(list));
 }
 
+/**
+ * A person's first name, or nothing.
+ *
+ * display_name is often just the address — the assignee picker stores whatever
+ * it was given — and "mdimond@soleialv.com, your week" is worse than no
+ * greeting at all. An address is therefore treated as an absent name rather
+ * than dressed up into one: guessing "Mdimond" from a local part invents a
+ * person's name, which is not ours to invent.
+ */
+export function firstNameOf(displayName: string | null | undefined): string | null {
+  const raw = String(displayName ?? '').trim();
+  if (!raw || raw.includes('@')) return null;
+  return raw.split(' ').filter(Boolean)[0] || null;
+}
+
 export interface JobTeamMember {
   job_id: string;
   email: string;

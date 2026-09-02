@@ -12,7 +12,7 @@
 // worst an abuser could do is re-mail the team their own schedule.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { sendEach } from '../_shared/notify.ts';
+import { firstNameOf, sendEach } from '../_shared/notify.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
       }
 
       const confirmUrl = `${APP_ORIGIN}/pm-confirm?t=${token}`;
-      const first = (entry.name ?? '').trim().split(/\s+/)[0] || null;
+      const first = firstNameOf(entry.name);
       const rows = entry.jobs.map((j) => `
         <tr>
           <td style="padding:10px 16px 10px 0;color:#8a8f98;font-size:13px;white-space:nowrap;vertical-align:top;">${esc(fmtDate(j.date))}</td>

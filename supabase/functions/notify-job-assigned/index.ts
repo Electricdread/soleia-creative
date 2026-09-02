@@ -7,7 +7,7 @@
 // anyone. Existing rows were backfilled as notified when the column landed.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { sendEach } from '../_shared/notify.ts';
+import { firstNameOf, sendEach } from '../_shared/notify.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     for (const person of pending) {
       const email = (person.email ?? '').trim();
       if (!email) continue;
-      const firstName = ((person.display_name ?? '').trim().split(/\s+/)[0]) || null;
+      const firstName = firstNameOf(person.display_name);
 
       const html = `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:640px;color:#1a1d23;">
