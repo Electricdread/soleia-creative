@@ -1,8 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
 import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
+import { CreativeGuideFooter } from '@/components/creative-guide/CreativeGuideFooter';
+import { motion, useReducedMotion } from 'framer-motion';
+import { MOTION_EASE } from '@/components/motion/motion';
 import solIcon from '@/assets/sol-icon.png';
 
 // Asset paths shared with the services page.
@@ -42,25 +45,51 @@ function SpecRows({ rows }: { rows: [string, string][] }) {
 
 export default function ElevatorDisplayGuide() {
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
 
   const panelShell = 'card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-card/40 surface-elevated';
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="dark min-h-screen bg-background text-foreground">
       <CreativeGuideHeader />
 
-      <main className="mx-auto max-w-5xl px-5 pb-32 pt-32 sm:px-8">
-        {/* HEAD */}
-        <Reveal className="mb-12">
-          <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Arrival · Elevator Displays</span>
-          <h1 className="mt-4 font-display text-4xl leading-[1.08] text-foreground sm:text-5xl">
-            The first surface guests see.
-          </h1>
+      {/* The delivery layout below stays deliberately familiar; this hero simply
+          brings the display-spec page into the new Guide's visual system. */}
+      <section className="relative flex min-h-[66vh] items-end overflow-hidden">
+        <motion.img
+          src={INTERIOR_IMG}
+          alt="Soleia elevator interior — branded portrait display beside the doors"
+          initial={reduceMotion ? false : { opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.8, ease: MOTION_EASE }}
+          className="media-grade absolute inset-0 h-full w-full object-cover object-[58%_50%]"
+        />
+        <div className="media-veil absolute inset-0" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-background" aria-hidden="true" />
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/70 to-transparent" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-36 sm:px-8 sm:pb-20">
+          <Reveal>
+            <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Arrival · Elevator Displays</span>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.06] text-foreground sm:text-6xl">
+              The first surface <span className="text-gradient-gold">guests see.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+              A portrait display that sets the arrival moment. Build to the spec, or hand us your assets and we map,
+              QC and test them on the actual panel before doors.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      <main className="mx-auto max-w-5xl px-5 pb-32 pt-20 sm:px-8">
+        <Reveal className="mb-10">
+          <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">01 — Your elevator canvas</span>
+          <h2 className="mt-3 font-display text-3xl leading-tight text-foreground sm:text-4xl">Build it once. Let it carry the arrival.</h2>
           <div className="mt-4 h-px w-16 bg-gradient-to-r from-primary to-transparent" />
-          <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
-            The elevator LED is a portrait display that runs branded content between rides. Build to the spec below, or hand
-            us your assets and we map, QC and test them on the actual panel before doors.
-          </p>
         </Reveal>
 
         {/* INTERIOR + SPECS */}
@@ -165,6 +194,8 @@ export default function ElevatorDisplayGuide() {
           </p>
         </Reveal>
       </main>
+
+      <CreativeGuideFooter />
     </div>
   );
 }

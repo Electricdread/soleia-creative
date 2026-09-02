@@ -248,11 +248,7 @@ export function PixelMapGuide() {
                             style={{ filter: 'drop-shadow(0 1px 6px rgba(0,0,0,0.7))' }}
                           />
                         ) : (
-                          <span
-                            className={`pointer-events-none truncate px-1 font-mono text-[7px] uppercase tracking-[0.12em] sm:text-[8.5px] lg:text-[9.5px] ${
-                              isLit || isHot ? 'text-primary' : 'text-primary/55'
-                            }`}
-                          >
+                          <span className="pointer-events-none truncate px-1 font-mono text-[7px] uppercase tracking-[0.12em] text-primary sm:text-[8.5px] lg:text-[9.5px]">
                             {r.label}
                           </span>
                         )}

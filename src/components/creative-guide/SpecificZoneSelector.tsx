@@ -5,18 +5,16 @@ import { Crossfade, FadeSwap } from '@/components/motion/Crossfade';
 import { HIGHLIGHT_SPRING, useWarmImages } from '@/components/motion/motion';
 
 /**
- * LED Screens — Specific Zone Mapping: the price-sheet service that puts a
- * client's content on one part of the room.
+ * LED Screens — Specific Zone Mapping puts a client's content on one focused
+ * part of the room.
  *
- * Five tabs, one moving view of the real venue model each — cut from the
+ * Three focused zones, each with one moving view of the real venue model — cut from the
  * owner's zone previz (Logo_ZonePreviz, 2026-08-27), with the Soleia mark on
  * the screens that zone covers. The mapping is the owner's:
  *
  *   Zone 1 Main Stage  IMAG SR, IMAG SL, Center, DJ Booth
- *   Zone 2 Curves      SR Curve, SL Curve
- *   Zone 3 Sunburst    Ceiling Sunburst
- *   Zone 4 Outdoor     Outdoor SR, Outdoor SL
- *   Zone 5 Arch        Outdoor Arch
+ *   Zone 2 Outdoor     Outdoor SR, Outdoor SL
+ *   Zone 3 Arch        Outdoor Arch
  *
  * Each clip is a few seconds, 1280 wide, muted, looping — small enough to
  * autoplay the moment a tab is chosen, behind a still cut from the same
@@ -56,44 +54,22 @@ const SPECIFIC_ZONES: SpecificZone[] = [
   },
   {
     id: 2,
-    shortName: 'Curves',
-    title: 'Curves SR + SL',
-    video: `${DIR}/zone-2-curves.mp4`,
-    poster: `${DIR}/zone-2-curves.jpg`,
-    label: 'Zone 2 — the SR and SL curves wrapping the room',
-    summary: 'The curved side screens extend the visual story beyond the stage and wrap the room in a unified look.',
-    screens: ['SR Curve', 'SL Curve'],
-    bestFor: 'Ambient motion, panoramic brand textures, color washes and wide-format campaign extensions.',
-  },
-  {
-    id: 3,
-    shortName: 'Sunburst',
-    title: 'Ceiling Sunburst',
-    video: `${DIR}/zone-3-sunburst.mp4`,
-    poster: `${DIR}/zone-3-sunburst.jpg`,
-    label: 'Zone 3 — the ceiling sunburst, the mark along every ray',
-    summary: 'The overhead LED rays transform the ceiling into a high-impact motion surface visible across the room.',
-    screens: ['Ceiling Sunburst'],
-    bestFor: 'Radiating motion, rhythmic accents, immersive color changes and overhead brand atmospheres.',
-  },
-  {
-    id: 4,
     shortName: 'Outdoor',
     title: 'Outdoor SR + SL',
     video: `${DIR}/zone-4-outdoor.mp4`,
     poster: `${DIR}/zone-4-outdoor.jpg`,
-    label: 'Zone 4 — Outdoor SR and Outdoor SL, the beachclub verticals',
+    label: 'Zone 2 — Outdoor SR and Outdoor SL, the beachclub verticals',
     summary: 'A pair of high-visibility vertical displays introduces your brand throughout the open-air beach club.',
     screens: ['Outdoor SR', 'Outdoor SL'],
     bestFor: 'Arrival branding, sponsor visibility, portrait creative and repeated outdoor messaging.',
   },
   {
-    id: 5,
+    id: 3,
     shortName: 'Arch',
     title: 'Outdoor Arch',
     video: `${DIR}/zone-5-arch.mp4`,
     poster: `${DIR}/zone-5-arch.jpg`,
-    label: 'Zone 5 — the outdoor arch over the Strip',
+    label: 'Zone 3 — the outdoor arch over the Strip',
     summary: 'The panoramic arch creates a singular branded gateway overlooking the Las Vegas Strip.',
     screens: ['Outdoor Arch'],
     bestFor: 'Welcome moments, wide logo animations, scenic loops and a signature exterior statement.',
@@ -104,7 +80,7 @@ const WALKTHROUGH = `${DIR}/zones-walkthrough.mp4`;
 const POSTERS = SPECIFIC_ZONES.map((z) => z.poster);
 
 export interface SpecificZoneSelectorProps {
-  /** Above the title. Defaults to "Price sheet service". */
+  /** Optional label above the title. */
   eyebrow?: string;
   /**
    * The paragraph under the title. The Services page passes the rate card's
@@ -123,7 +99,7 @@ export interface SpecificZoneSelectorProps {
 }
 
 export function SpecificZoneSelector({
-  eyebrow = 'Price sheet service',
+  eyebrow,
   description = 'Select a zone below to see the screens included. This service maps custom content to the exact LED screens in one targeted venue area, giving your most important guest moment a focused, coordinated visual identity.',
   onFullscreen,
   selectZone,
@@ -161,10 +137,12 @@ export function SpecificZoneSelector({
       <div className="border-b border-primary/15 px-5 py-6 sm:px-8 sm:py-7">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
-              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-              {eyebrow}
-            </div>
+            {eyebrow && (
+              <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-primary">
+                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                {eyebrow}
+              </div>
+            )}
             <h3 className="font-display text-2xl text-foreground sm:text-3xl">LED Screens — Specific Zone Mapping</h3>
             <p className="mt-2 text-sm font-medium text-primary">Choose one zone. Make it unmistakably yours.</p>
             <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground sm:text-sm">{description}</p>

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Mail, Maximize2, Eye, Download, Play } from 'lucide-react';
+import { ArrowRight, Maximize2, Eye, Download, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Reveal } from '@/components/motion/Reveal';
 import { Overlay } from '@/components/motion/Crossfade';
@@ -10,7 +10,6 @@ import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHe
 import { CreativeGuideFooter } from '@/components/creative-guide/CreativeGuideFooter';
 import { GuideSectionHead } from '@/components/creative-guide/GuideSectionHead';
 import { GuideSectionNav, type GuideSection } from '@/components/creative-guide/GuideSectionNav';
-import { VenueSurfaceExplorer } from '@/components/creative-guide/VenueSurfaceExplorer';
 import { SpecificZoneSelector } from '@/components/creative-guide/SpecificZoneSelector';
 import { PixelMapGuide } from '@/components/creative-guide/PixelMapGuide';
 import { TransparentLogoDemo } from '@/components/creative-guide/TransparentLogoDemo';
@@ -73,12 +72,6 @@ const PREVIZ_POSTER = '/creative-guide/services/previz-soleia-poster.jpg';
 // last step of PixelMapGuide, and the Package's mapping tile opens it.
 const PIXELMAP_PREVIZ_MOVIE_URL = '/creative-guide/services/pixelmap-previz.mp4';
 
-// Carried by the link, never printed: the guide is public and indexable, so
-// the address should not be sitting there as text for a scraper to lift.
-const CONTACT_MAILTO = 'mailto:luisdreamslv@gmail.com?subject=';
-const CALL_HREF = CONTACT_MAILTO + encodeURIComponent('Soleia Creative — schedule my creative call');
-const PROPOSAL_QUESTION_HREF = CONTACT_MAILTO + encodeURIComponent('Soleia Creative — a question about my proposal');
-
 /** How a rate-card line is titled on the page when the sheet's own name undersells it. */
 const DISPLAY_TITLE: Record<string, string> = {
   'Static Logo': 'Additional Static Logo',
@@ -104,10 +97,9 @@ type Item = {
  *   01 Welcome        what the guide helps the client decide
  *   02 Meet the Venue condensed layout, the two worlds, explore the room
  *   03 Included       establish the buyout's value before any upgrade
- *   04 Enhance        the package, then every additional price-sheet service
+ *   04 Enhance        the package, then every additional service
  *   05 Production     assets, deadlines, production, QC, load-in
  *   06 Own Content    route technical teams to specs and downloads
- *   07 Next Step      review the proposal, or schedule the creative call
  *
  * A client reading alone from the pre-call packet gets the same walk the
  * creative team drives live on the call.
@@ -119,7 +111,6 @@ const SECTIONS: GuideSection[] = [
   { id: 'enhance', label: 'Package' },
   { id: 'production', label: 'Production' },
   { id: 'own-content', label: 'Own Content' },
-  { id: 'next', label: 'Next Step' },
 ];
 
 /** What the walk is for, step by step — the Welcome section's map of the page. */
@@ -129,15 +120,13 @@ const WALK_TITLES: Record<string, string> = {
   enhance: 'Soleia Creative Upgrade Package',
   production: 'How creative production works',
   'own-content': 'Providing your own content?',
-  next: 'Next step',
 };
 const WALK_PURPOSE: Record<string, string> = {
   venue: 'The layout, the two worlds, and every surface your content can land on.',
   included: 'The branding every activation already carries — your starting point.',
-  enhance: 'Full creative support, handled — and every additional price-sheet service.',
+  enhance: 'Full creative support, handled — and every additional service.',
   production: 'Assets, deadlines, production, QC and load-in — what to expect.',
   'own-content': 'Specifications and downloads for your technical team.',
-  next: 'Review your proposal, or schedule the creative call.',
 };
 
 /** The two worlds, and the private one between them. */
@@ -185,6 +174,12 @@ const PRODUCTION_STEPS: { title: string; body: string }[] = [
 
 /** Where a technical team goes next. */
 const SPEC_LINKS: { kind: string; title: string; body: string; to: string; download?: string }[] = [
+  {
+    kind: 'Guide',
+    title: 'Video Mapping',
+    body: 'See how one 3840 × 2160 pixel map carries a continuous visual move across the room.',
+    to: '/creative-guide/video-mapping',
+  },
   {
     kind: 'Guide',
     title: 'Content Delivery Guide',
@@ -274,9 +269,8 @@ const BUYOUT_INCLUSIONS = [
     /** The zones the ten included logos land in — the zone card's own numbering. */
     zones: [
       { id: 1, label: 'Main Stage' },
-      { id: 3, label: 'Sunburst' },
-      { id: 4, label: 'Outdoor' },
-      { id: 5, label: 'Arch' },
+      { id: 2, label: 'Outdoor' },
+      { id: 3, label: 'Arch' },
     ],
     fine: 'All other LED screens are activated and display in-house visual animations and motion graphics from the club library, mixed in real time by the visual operator.',
   },
@@ -407,13 +401,13 @@ const GROUPS: { id: GroupId; eyebrow: string; title: string; note: string }[] = 
     id: 'arrival',
     eyebrow: 'On arrival',
     title: 'Before they reach the room',
-    note: 'The entry televisions, the elevator display and the street-facing marquee — the first branded surfaces of the night. The same TV canvas carries the bungalow and cabana screens outside.',
+    note: 'The elevator display and the street-facing marquee — the first branded surfaces of the night.',
   },
   {
     id: 'private',
-    eyebrow: 'Private displays',
-    title: 'Cabanas and bungalows',
-    note: 'Individual screens switched off the shared feed and onto their own content.',
+    eyebrow: 'TV displays · cabanas and bungalows',
+    title: 'One shared feed, or a screen of its own.',
+    note: 'The venue-wide narrowcasting feed, plus dedicated content for an individual cabana or bungalow.',
   },
   {
     id: 'production',
@@ -914,12 +908,6 @@ export default function CreativeGuideServices() {
             </article>
           </Reveal>
 
-          <SubHead
-            eyebrow="Explore the room"
-            title="Every surface, photographed."
-            lede="Real photographs with content on the screens. Choose an area, walk its views, and tap any photo to see it full size."
-          />
-          <VenueSurfaceExplorer />
         </section>
 
         {/* ══ 03 · INCLUDED WITH YOUR BUYOUT ══ */}
@@ -996,7 +984,7 @@ export default function CreativeGuideServices() {
           <GuideSectionHead
             eyebrow="04 — Soleia Creative Upgrade Package"
             title="Full creative support, handled."
-            lede="Below the package, every additional price-sheet service, grouped by where in the venue it plays."
+            lede="Below the package, every additional service, grouped by where in the venue it plays."
           />
 
           {/* The package: what it is, in a line; then what it includes, each
@@ -1050,7 +1038,7 @@ export default function CreativeGuideServices() {
             </article>
           </Reveal>
 
-          {/* Every additional price-sheet service, by surface. */}
+          {/* Every additional service, by surface. */}
           <div id="add-ons" className="mt-10 scroll-mt-32">
 
             {loading ? (
@@ -1059,7 +1047,8 @@ export default function CreativeGuideServices() {
               GROUPS.map((g) => {
                 const cards = grouped[g.id];
                 const isArrival = g.id === 'arrival';
-                if (!cards.length && !(isArrival && elevatorItems.length)) return null;
+                const isPrivate = g.id === 'private';
+                if (!cards.length && !(isArrival && elevatorItems.length) && !isPrivate) return null;
 
                 return (
                   <div key={g.id} className={g.id === 'room' ? 'mt-6' : ''}>
@@ -1067,36 +1056,6 @@ export default function CreativeGuideServices() {
 
                     {isArrival ? (
                       <div className="space-y-6">
-                        {/* TV / Narrowcasting — the surface and a brief; the pixel
-                            map, the loop and the spec are on its own page. */}
-                        <Reveal>
-                          <article className={cardShell}>
-                            <MediaHeader
-                              src={TV_HERO_IMG}
-                              alt="A cabana television running the Soleia TV Guide card, the beachclub beyond the opening"
-                              aspect="aspect-[21/9]"
-                            />
-                            <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
-                              <div>
-                                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-                                  1920 × 1080 · Landscape
-                                </span>
-                                <h4 className="mt-2 font-display text-2xl leading-tight text-foreground">
-                                  TV Displays / Narrowcasting
-                                </h4>
-                                <button
-                                  onClick={() => navigate('/creative-guide/tv')}
-                                  className="btn-glow tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                  Specs &amp; Mapping
-                                </button>
-                              </div>
-                              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{TV_BLURB}</p>
-                            </div>
-                          </article>
-                        </Reveal>
-
                         {/* Elevator Displays — the interior render with the display
                             close-up at its native 600 × 800 mapping */}
                         {elevatorItems.length > 0 && (
@@ -1187,6 +1146,39 @@ export default function CreativeGuideServices() {
                           <div className="grid items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
                         )}
                       </div>
+                    ) : isPrivate ? (
+                      <div className="space-y-6">
+                        <Reveal>
+                          <article className={cardShell}>
+                            <MediaHeader
+                              src={TV_HERO_IMG}
+                              alt="A cabana television running the Soleia TV Guide card, the beachclub beyond the opening"
+                              aspect="aspect-[21/9]"
+                            />
+                            <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
+                              <div>
+                                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+                                  1920 × 1080 · Landscape
+                                </span>
+                                <h4 className="mt-2 font-display text-2xl leading-tight text-foreground">
+                                  TV Displays / Narrowcasting
+                                </h4>
+                                <button
+                                  onClick={() => navigate('/creative-guide/tv')}
+                                  className="btn-glow tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                  Specs &amp; Mapping
+                                </button>
+                              </div>
+                              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{TV_BLURB}</p>
+                            </div>
+                          </article>
+                        </Reveal>
+                        {cards.length > 0 && (
+                          <div className="grid items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
+                        )}
+                      </div>
                     ) : (
                       <div className="grid items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
                     )}
@@ -1217,13 +1209,6 @@ export default function CreativeGuideServices() {
             </article>
           </Reveal>
 
-          <SubHead
-            eyebrow="How mapping works"
-            title="One map. Every surface."
-            lede="Every screen is a different shape, and all of them live on one file. Eight short steps — the same five zones as the room, then where your logo lands, then the map running."
-          />
-          <PixelMapGuide />
-
           <Reveal className="mt-14">
             <article className={`${cardShell} p-8 sm:p-11`}>
               <CreativeTimeline title="Kickoff to show day." />
@@ -1241,10 +1226,19 @@ export default function CreativeGuideServices() {
           <GuideSectionHead
             eyebrow="06 — Providing Your Own Content?"
             title="Build to spec. We load it and run it."
-            lede="For agencies and in-house teams producing their own animations: the two ways content reaches the screens, and every specification and download your technical team will ask for."
+            lede="For agencies and in-house teams producing their own animations: start with video mapping, then choose how your finished content reaches the screens and download every specification your technical team will need."
           />
 
-          <Reveal>
+          <div>
+            <SubHead
+              eyebrow="How mapping works"
+              title="One map. Every surface."
+              lede="Every screen is a different shape, and all of them live on one file. See how the map carries your content across the room before your team starts building."
+            />
+            <PixelMapGuide />
+          </div>
+
+          <Reveal className="mt-6">
             <article className={cardShell}>
               <MediaHeader
                 src={IMG.mapping}
@@ -1303,70 +1297,6 @@ export default function CreativeGuideServices() {
           </Reveal>
         </section>
 
-        {/* ══ 07 · NEXT STEP ══ */}
-        <section id="next" className="scroll-mt-32 pt-24">
-          <GuideSectionHead
-            eyebrow="07 — Next Step"
-            title="Review your proposal, or book the call."
-            lede="Two ways forward, depending on where you are."
-          />
-          <div className="grid gap-6 md:grid-cols-2">
-            <Reveal>
-              <article className={`${cardShell} flex h-full flex-col p-8 sm:p-10`}>
-                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Have a proposal?</span>
-                <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground sm:text-3xl">
-                  Review and sign it.
-                </h3>
-                <p className="flex-1 text-[14.5px] leading-relaxed text-muted-foreground">
-                  Open your proposal from the link in your email. Tick the services you want, set the quantities,
-                  and sign — what you select there is the scope we build. You can revisit it any time before
-                  signing, and questions are welcome first.
-                </p>
-                <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <a
-                    href={PROPOSAL_QUESTION_HREF}
-                    className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                    Ask about my proposal
-                  </a>
-                </div>
-              </article>
-            </Reveal>
-            <Reveal delay={0.05}>
-              <article className="edge-gold relative flex h-full flex-col rounded-3xl surface-elevated">
-                <div className="flex h-full flex-col rounded-3xl bg-card/60 p-8 sm:p-10">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">Not yet?</span>
-                  <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground sm:text-3xl">
-                    Schedule your creative call.
-                  </h3>
-                  <p className="flex-1 text-[14.5px] leading-relaxed text-muted-foreground">
-                    Send us your event date. We book the call, walk this guide with you in the room, and follow
-                    with a proposal built around what you choose. Bring your brand assets if you have them —
-                    logos in vector, fonts, palette, key artwork — and the clock starts sooner.
-                  </p>
-                  <div className="mt-7 flex flex-wrap items-center gap-3">
-                    <a
-                      href={CALL_HREF}
-                      className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary bg-primary/15 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary hover:bg-primary/25"
-                    >
-                      <Mail className="h-3.5 w-3.5" />
-                      Schedule the creative call
-                    </a>
-                    <a
-                      href={SERVICES_PDF_URL}
-                      download="Soleia-Creative-Services.pdf"
-                      className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                      Services PDF
-                    </a>
-                  </div>
-                </div>
-              </article>
-            </Reveal>
-          </div>
-        </section>
       </main>
 
       <CreativeGuideFooter />
