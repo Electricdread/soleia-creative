@@ -53,6 +53,8 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = false
   [functions.send-signed-proposal]
     verify_jwt = false
+  [functions.weekly-report]
+    verify_jwt = false
   [functions.studio-sync]
     verify_jwt = false
   [functions.proposal-export]
