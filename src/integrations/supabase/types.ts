@@ -1638,6 +1638,27 @@ export type Database = {
           },
         ]
       }
+      report_subscriptions: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          scope: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          scope?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          scope?: string
+        }
+        Relationships: []
+      }
       session_previz_clips: {
         Row: {
           created_at: string
