@@ -97,8 +97,7 @@ export default function AdminCalendar() {
         },
       });
       const data = await res.json();
-      // Cast until Lovable regenerates types.ts for the new table; remove then.
-      const { data: local, error: localErr } = await (supabase as any)
+      const { data: local, error: localErr } = await supabase
         .from('calendar_local_events')
         .select('uid, summary, description, location, dtstart, dtend, status');
       if (localErr) console.error('Could not load studio events:', localErr.message);

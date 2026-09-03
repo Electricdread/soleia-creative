@@ -57,8 +57,7 @@ export function AddEventDialog({ open, onOpenChange, defaultDate, onCreated }: A
     }
     setSaving(true);
     const { data: session } = await supabase.auth.getUser();
-    // Cast until Lovable regenerates types.ts for the new table; remove then.
-    const { error } = await (supabase as any).from('calendar_local_events').insert({
+    const { error } = await supabase.from('calendar_local_events').insert({
       summary: summary.trim(),
       description: description.trim() || null,
       location: location.trim() || null,
