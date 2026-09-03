@@ -1588,6 +1588,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           creative_call_url: string | null
+          discount_label: string | null
+          discount_type: string | null
+          discount_value: number | null
           drive_folder_id: string | null
           drive_folder_url: string | null
           event_date: string | null
@@ -1618,6 +1621,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           creative_call_url?: string | null
+          discount_label?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
           drive_folder_id?: string | null
           drive_folder_url?: string | null
           event_date?: string | null
@@ -1648,6 +1654,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           creative_call_url?: string | null
+          discount_label?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
           drive_folder_id?: string | null
           drive_folder_url?: string | null
           event_date?: string | null
@@ -2109,6 +2118,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           creative_call_url: string | null
+          discount_label: string | null
+          discount_type: string | null
+          discount_value: number | null
           drive_folder_id: string | null
           drive_folder_url: string | null
           event_date: string | null
