@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Plus, Trash2, Palette, FileText, Link2, ExternalLink } from 'lucide-react';
+import { Loader2, Plus, Trash2, Palette, FileText, Link2, ExternalLink, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
@@ -44,6 +44,9 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
       } else if (a.entity_type === 'packet') {
         const { data: pk } = await supabase.from('pre_call_packets').select('title, client_name, token').eq('id', a.entity_id).maybeSingle();
         if (pk) { label = `${pk.title}${pk.client_name ? ` – ${pk.client_name}` : ''}`; href = `/packet/${pk.token}`; }
+      } else if (a.entity_type === 'job') {
+        const { data: j } = await supabase.from('jobs').select('title, client_name').eq('id', a.entity_id).maybeSingle();
+        if (j) { label = `${j.title}${j.client_name ? ` – ${j.client_name}` : ''}`; href = `/admin/jobs/${a.entity_id}`; }
       } else if (a.entity_type === 'client_link') {
         const { data: l } = await supabase.from('client_links').select('event_name, client_name, token').eq('id', a.entity_id).maybeSingle();
         if (l) { label = `${l.event_name} – ${l.client_name}`; href = `/session/${l.token}`; }
@@ -65,6 +68,12 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
     } else if (type === 'packet') {
       const { data } = await supabase.from('pre_call_packets').select('id, title, client_name').order('created_at', { ascending: false });
       opts = (data || []).map((p) => ({ id: p.id, label: `${p.title}${p.client_name ? ` – ${p.client_name}` : ''}` }));
+    } else if (type === 'job') {
+      const { data } = await supabase.from('jobs')
+        .select('id, title, client_name, event_date')
+        .eq('is_active', true)
+        .order('event_date', { ascending: true, nullsFirst: false });
+      opts = (data || []).map((j) => ({ id: j.id, label: `${j.title}${j.client_name ? ` – ${j.client_name}` : ''}` }));
     } else if (type === 'client_link') {
       const { data } = await supabase.from('client_links').select('id, event_name, client_name').eq('is_active', true).order('created_at', { ascending: false });
       opts = (data || []).map((l) => ({ id: l.id, label: `${l.event_name} – ${l.client_name}` }));
@@ -98,12 +107,14 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
   };
 
   const typeIcon = (t: string) => {
+    if (t === 'job') return <Briefcase className="w-3.5 h-3.5 text-primary" />;
     if (t === 'creative_session') return <Palette className="w-3.5 h-3.5 text-primary" />;
     if (t === 'proposal' || t === 'packet') return <FileText className="w-3.5 h-3.5 text-[#5a8fb4]" />;
     return <Link2 className="w-3.5 h-3.5 text-[#7b8a3e]" />;
   };
 
   const typeLabel = (t: string) => {
+    if (t === 'job') return 'Job';
     if (t === 'creative_session') return 'Creative Session';
     if (t === 'proposal') return 'Proposal';
     if (t === 'packet') return 'Packet';
@@ -121,6 +132,7 @@ export function EventLinkedItems({ eventUid }: { eventUid: string }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="job">Job</SelectItem>
               <SelectItem value="creative_session">Creative Session</SelectItem>
               <SelectItem value="proposal">Proposal</SelectItem>
               <SelectItem value="packet">Packet</SelectItem>

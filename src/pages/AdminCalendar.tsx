@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AdminShell } from '@/components/admin/AdminShell';
+import { AddEventDialog } from '@/components/calendar/AddEventDialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Settings2, Save, Search, Clock, AlertTriangle, Video } from 'lucide-react';
+import { Loader2, ArrowLeft, ChevronLeft, ChevronRight, Settings2, CalendarPlus, Save, Search, Clock, AlertTriangle, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, startOfWeek, endOfWeek, differenceInCalendarDays } from 'date-fns';
 import { EventDetailPanel } from '@/components/calendar/EventDetailPanel';
@@ -53,6 +54,7 @@ export default function AdminCalendar() {
   const [icalUrl, setIcalUrl] = useState('');
   const [savingUrl, setSavingUrl] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAddEvent, setShowAddEvent] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,11 +97,26 @@ export default function AdminCalendar() {
         },
       });
       const data = await res.json();
-      if (data.events) {
-        setEvents(data.events);
+      // Cast until Lovable regenerates types.ts for the new table; remove then.
+      const { data: local, error: localErr } = await (supabase as any)
+        .from('calendar_local_events')
+        .select('uid, summary, description, location, dtstart, dtend, status');
+      if (localErr) console.error('Could not load studio events:', localErr.message);
+      const mine: CalendarEvent[] = (local ?? []).map((e: any) => ({
+        uid: e.uid,
+        summary: e.summary,
+        description: e.description ?? '',
+        location: e.location ?? '',
+        dtstart: e.dtstart,
+        dtend: e.dtend ?? e.dtstart,
+        status: e.status ?? 'CONFIRMED',
+      }));
+      if (data.events || mine.length) {
+        const merged = [...(data.events ?? []), ...mine];
+        setEvents(merged);
         const eventUid = searchParams.get('event');
         if (eventUid) {
-          const match = data.events.find((e: CalendarEvent) => e.uid === eventUid);
+          const match = merged.find((e: CalendarEvent) => e.uid === eventUid);
           if (match) {
             setSelectedEvent(match);
             setCurrentMonth(parseISO(match.dtstart));
@@ -254,6 +271,14 @@ export default function AdminCalendar() {
       title="Calendar"
       subtitle="Events synced from Triple Seat"
       actions={
+        <div className="flex items-center gap-1.5">
+        <Button
+          size="sm"
+          onClick={() => setShowAddEvent(true)}
+          className="min-h-[44px] gap-1.5"
+        >
+          <CalendarPlus className="h-4 w-4" /> <span className="hidden sm:inline">Add event</span>
+        </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -262,8 +287,16 @@ export default function AdminCalendar() {
         >
           <Settings2 className="mr-1 h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Feed settings</span>
         </Button>
+        </div>
       }
     >
+      <AddEventDialog
+        open={showAddEvent}
+        onOpenChange={setShowAddEvent}
+        defaultDate={format(currentMonth, 'yyyy-MM-dd')}
+        onCreated={fetchEvents}
+      />
+
       <div className="safe-area-bottom">
         {showSettings && (
           <Card className="mb-6 bg-card border-border">
