@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
     const [jobRows, proposalRows, packetRows, sessionRows, assignRows, subRows] = await Promise.all([
       client.from('jobs').select('*').eq('is_active', true),
       client.from('proposals')
-        .select('id, token, event_name, client_name, status, signed_at, is_active, signoff_due_on, drive_folder_id, job_id, event_date')
+        .select('id, token, event_name, client_name, status, signed_at, is_active, signoff_due_on, drive_folder_id, job_id, event_date, discount_type, discount_value, discount_label')
         .not('job_id', 'is', null),
       client.from('pre_call_packets').select('id, token, title, kind, is_active, drive_folder_id, job_id').not('job_id', 'is', null),
       client.from('creative_sessions').select('id, token, project_name, is_active, job_id').not('job_id', 'is', null),
@@ -258,7 +258,12 @@ Deno.serve(async (req) => {
           // no knowable total, so it is reported by its dates instead of a
           // figure nobody agreed to.
           if (p.signed_at && p.signed_at >= since) {
-            const total = calcProposalTotal(itemsByProposal.get(p.id) ?? [], { signed: true });
+            const total = calcProposalTotal(itemsByProposal.get(p.id) ?? [], {
+              signed: true,
+              discount: p.discount_type && p.discount_value
+                ? { type: p.discount_type, value: Number(p.discount_value), label: p.discount_label ?? null }
+                : null,
+            });
             signed.push({
               title: b.job.title, client: b.job.client_name,
               detail: `signed ${shortDate(p.signed_at)}`,

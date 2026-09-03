@@ -18,7 +18,7 @@ import ProposalTerms from './ProposalTerms';
 import ProposalApprovedClips from './ProposalApprovedClips';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
-import { calcProposalTotal, calcLineTotal as calcLineTotalShared } from '@/lib/proposalTotals';
+import { calcProposalTotal, calcSubtotal, calcDiscountAmount, calcLineTotal as calcLineTotalShared, type ProposalDiscount } from '@/lib/proposalTotals';
 import ProposalServiceRow, {
   RC_IVORY, RC_GOLD, RC_GOLD_DEEP, RC_GOLD_TINT, RC_INK, RC_SOFT_INK,
 } from './ProposalServiceRow';
@@ -145,6 +145,9 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     creative_call_url: proposal.creative_call_url || '',
     linked_session_id: '',
     assigned_pm_id: proposal.assigned_pm_id || '',
+    discount_type: proposal.discount_type || '',
+    discount_value: proposal.discount_value != null ? String(proposal.discount_value) : '',
+    discount_label: proposal.discount_label || '',
   });
   const [adminUsers, setAdminUsers] = useState<{ user_id: string; email: string; display_name: string }[]>([]);
   useEffect(() => {
@@ -178,17 +181,32 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const calcLineTotal = (i: any) =>
     calcLineTotalShared(i, isClientEditable ? clientQty : undefined);
 
-  const total = useMemo(
-    () => calcProposalTotal(items, { signed: false, selectedIds, qtyOverrides: isClientEditable ? clientQty : undefined }),
-    [selectedIds, items, clientQty, isClientEditable]
+  // The proposal's own discount, applied to whatever scope is live: what the
+  // client has ticked before signing, what they accepted after.
+  const discount: ProposalDiscount | null = proposal?.discount_type && proposal?.discount_value
+    ? {
+        type: proposal.discount_type as 'percent' | 'amount',
+        value: Number(proposal.discount_value),
+        label: proposal.discount_label ?? null,
+      }
+    : null;
+
+  const totalCtx = useMemo(
+    () => ({ signed: false, selectedIds, qtyOverrides: isClientEditable ? clientQty : undefined, discount }),
+    [selectedIds, clientQty, isClientEditable, discount],
   );
 
-  const acceptedTotal = useMemo(
-    () => calcProposalTotal(items, { signed: true }),
-    [items]
-  );
+  const total = useMemo(() => calcProposalTotal(items, totalCtx), [items, totalCtx]);
+  const acceptedTotal = useMemo(() => calcProposalTotal(items, { signed: true, discount }), [items, discount]);
 
   const displayedTotal = signed ? acceptedTotal : total;
+
+  // Shown beside the total so a discount is visible as a line rather than as
+  // an unexplained gap between the items and what is owed.
+  const displayedSubtotal = signed
+    ? calcSubtotal(items, { signed: true })
+    : calcSubtotal(items, totalCtx);
+  const discountOff = calcDiscountAmount(displayedSubtotal, discount);
 
   const toggleItem = (id: string) => {
     setSelectedIds(prev => {
@@ -338,6 +356,15 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
 
   const saveHeader = async () => {
     try {
+      const discountValueNum = Number(editFields.discount_value);
+      if (editFields.discount_type && !(discountValueNum > 0)) {
+        toast({ title: 'A discount needs an amount above zero', variant: 'destructive' });
+        return;
+      }
+      if (editFields.discount_type === 'percent' && discountValueNum > 100) {
+        toast({ title: 'A percentage discount cannot exceed 100%', variant: 'destructive' });
+        return;
+      }
       const newSessionId = editFields.linked_session_id || null;
       const oldSessionId = linkedSessionId;
 
@@ -357,6 +384,14 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         assigned_pm_id: editFields.assigned_pm_id || null,
         assigned_pm_email: pickedPm?.email || null,
         assigned_pm_name: pickedPm?.display_name || pickedPm?.email || null,
+        // Both halves or neither, matching the table's own constraint: a value
+        // with no kind cannot be applied, and a kind with no value reads as
+        // "0% off" to anyone looking at the proposal.
+        discount_type: discountValueNum > 0 && editFields.discount_type ? editFields.discount_type : null,
+        discount_value: discountValueNum > 0 && editFields.discount_type ? discountValueNum : null,
+        discount_label: discountValueNum > 0 && editFields.discount_type
+          ? (editFields.discount_label?.trim() || null)
+          : null,
       };
 
       if (import.meta.env.DEV) {
@@ -618,6 +653,52 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
                   placeholder="https://calendly.com/..."
                 />
                 <p className="text-[11px] text-muted-foreground/80 mt-1">When set, adds a "Schedule Our Creative Call" button to the proposal email.</p>
+              </div>
+              {/* A discount is a decision about a client, so it lives on the
+                  proposal rather than as a negative line item that could be
+                  unticked out of the accepted scope. Signed proposals are not
+                  repriced here — reopen first, which clears the signature. */}
+              <div className="col-span-2 rounded-md border border-border/60 p-3">
+                <label className="text-xs text-muted-foreground/80 font-semibold">Discount (optional)</label>
+                {signed ? (
+                  <p className="text-[11px] text-muted-foreground/80 mt-1">
+                    This proposal is signed. Reopen it to change the price — that clears the
+                    signature, which is the point: the client agreed to a figure.
+                  </p>
+                ) : (
+                  <>
+                    <div className="mt-1.5 grid grid-cols-2 gap-2">
+                      <select
+                        value={editFields.discount_type}
+                        onChange={e => setEditFields({ ...editFields, discount_type: e.target.value })}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">— No discount —</option>
+                        <option value="percent">Percentage off</option>
+                        <option value="amount">Amount off</option>
+                      </select>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editFields.discount_value}
+                        onChange={e => setEditFields({ ...editFields, discount_value: e.target.value })}
+                        placeholder={editFields.discount_type === 'percent' ? '10' : '500'}
+                        disabled={!editFields.discount_type}
+                      />
+                    </div>
+                    <Input
+                      className="mt-2"
+                      value={editFields.discount_label}
+                      onChange={e => setEditFields({ ...editFields, discount_label: e.target.value })}
+                      placeholder="Repeat client (shown to the client)"
+                      disabled={!editFields.discount_type}
+                    />
+                    <p className="text-[11px] text-muted-foreground/80 mt-1">
+                      Shown to the client as its own line above the total, on the page and in the PDF.
+                    </p>
+                  </>
+                )}
               </div>
               <div className="col-span-2">
                 <label className="text-xs text-muted-foreground/80 font-semibold">Link Creative Session</label>
@@ -907,6 +988,25 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
         )}
 
         {/* Total */}
+        {discountOff > 0 && (
+          <div className="mb-2 space-y-1 px-5 text-[13px]" style={{ color: RC_INK }}>
+            <div className="flex items-center justify-between">
+              <span style={{ color: RC_GOLD_DEEP }}>Subtotal</span>
+              <span>{formatCurrency(displayedSubtotal)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span style={{ color: RC_GOLD_DEEP }}>
+                {discount?.label?.trim()
+                  ? discount.label
+                  : discount?.type === 'percent'
+                    ? `Discount (${Number(discount.value)}%)`
+                    : 'Discount'}
+              </span>
+              <span>−{formatCurrency(discountOff)}</span>
+            </div>
+          </div>
+        )}
+
         <div
           className="rounded-sm p-5 mb-6 flex items-center justify-between"
           style={{ backgroundColor: RC_GOLD_TINT, border: `1px solid ${RC_GOLD}`, borderLeft: `4px solid ${RC_GOLD}` }}

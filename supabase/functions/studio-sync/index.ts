@@ -41,7 +41,7 @@ import {
 // BUMP THIS ON EVERY CHANGE TO THIS FUNCTION. A date-and-letter label rather
 // than a commit SHA, because a SHA cannot name the commit that contains it —
 // all that is required is that the string be new.
-const BUILD = 'studio-sync-2026-08-29a';
+const BUILD = 'studio-sync-2026-09-03a';
 const CONTRACT_NAME = 'soleia.studio-sync';
 const SUPPORTED_VERSIONS = [1];
 
@@ -56,7 +56,12 @@ const MAX_PAGES = 40;
 // Named here rather than inferred, because supabase-js has no generated types
 // for this project and every field below is one Studio OS renders.
 
-type ProposalRow = AttachedProposal & { job_id: string };
+type ProposalRow = AttachedProposal & {
+  job_id: string;
+  discount_type?: 'percent' | 'amount' | null;
+  discount_value?: number | string | null;
+  discount_label?: string | null;
+};
 type PacketRow = AttachedPacket & { job_id: string; created_at: string | null };
 type SessionRow = AttachedSession & { job_id: string };
 type ItemRow = ProposalLineItem & { proposal_id: string };
@@ -144,7 +149,12 @@ function proposalTotal(
     return { total: null, total_status: 'none_selected', signature_history_total: null, totals_disagree: false };
   }
 
-  const total = Math.round(calcProposalTotal(items, { signed: true }) * 100) / 100;
+  // The published figure is what the client owes, discount included — Studio
+  // OS must never show a number above the agreement.
+  const discount = proposal.discount_type && proposal.discount_value
+    ? { type: proposal.discount_type as 'percent' | 'amount', value: Number(proposal.discount_value), label: proposal.discount_label ?? null }
+    : null;
+  const total = Math.round(calcProposalTotal(items, { signed: true, discount }) * 100) / 100;
   const history = historyByProposal.get(proposal.id);
   const stored = history?.total;
   const comparable = stored != null && !isBackfilled(history!.signed_at, history!.created_at);
@@ -163,7 +173,7 @@ async function buildPayload(client: SupabaseClient) {
   const [jobRows, proposalRows, packetRows, sessionRows, assocRows, meetingRows] = await Promise.all([
     client.from('jobs').select('*').order('event_date', { nullsFirst: false }),
     client.from('proposals')
-      .select('id, token, event_name, status, signed_at, is_active, signoff_due_on, drive_folder_id, job_id')
+      .select('id, token, event_name, status, signed_at, is_active, signoff_due_on, drive_folder_id, job_id, discount_type, discount_value, discount_label')
       .not('job_id', 'is', null),
     client.from('pre_call_packets')
       .select('id, token, title, kind, is_active, drive_folder_id, job_id, created_at')

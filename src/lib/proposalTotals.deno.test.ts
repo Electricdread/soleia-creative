@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { calcLineTotal, calcProposalTotal } from './proposalTotals';
+import { calcLineTotal, calcProposalTotal, calcSubtotal } from './proposalTotals';
 
 /**
  * `supabase/functions/_shared/proposalTotals.ts` is a copy of this module,
@@ -72,5 +72,49 @@ describe('the rules studio-sync publishes', () => {
       { id: 'b', price: 7000, client_selected: false },
     ];
     expect(calcProposalTotal(items, { signed: true })).toBe(0);
+  });
+});
+
+/**
+ * A discount is money, and money that is wrong is worse than money that is
+ * missing. These pin the edges: the shape of each kind, and the two slips that
+ * would otherwise print a proposal owing the client money.
+ */
+describe('discounts', () => {
+  const items = [
+    { id: 'a', price: 1000, quantity: 1, client_selected: true },
+    { id: 'b', price: 500, quantity: 2, client_selected: true },
+  ];
+  const signed = { signed: true } as const;
+
+  it('takes a percentage off the selected scope', () => {
+    expect(calcSubtotal(items, signed)).toBe(2000);
+    expect(calcProposalTotal(items, { ...signed, discount: { type: 'percent', value: 10 } })).toBe(1800);
+  });
+
+  it('takes a flat amount off', () => {
+    expect(calcProposalTotal(items, { ...signed, discount: { type: 'amount', value: 250 } })).toBe(1750);
+  });
+
+  it('never discounts below zero, however large the slip', () => {
+    expect(calcProposalTotal(items, { ...signed, discount: { type: 'amount', value: 99999 } })).toBe(0);
+    expect(calcProposalTotal(items, { ...signed, discount: { type: 'percent', value: 500 } })).toBe(0);
+  });
+
+  it('ignores a discount that is absent, zero or nonsense', () => {
+    expect(calcProposalTotal(items, signed)).toBe(2000);
+    expect(calcProposalTotal(items, { ...signed, discount: null })).toBe(2000);
+    expect(calcProposalTotal(items, { ...signed, discount: { type: 'amount', value: 0 } })).toBe(2000);
+    expect(calcProposalTotal(items, { ...signed, discount: { type: 'percent', value: -5 } })).toBe(2000);
+  });
+
+  it('discounts only what the client actually accepted', () => {
+    const mixed = [...items, { id: 'c', price: 4000, quantity: 1, client_selected: false }];
+    expect(calcProposalTotal(mixed, { ...signed, discount: { type: 'percent', value: 50 } })).toBe(1000);
+  });
+
+  it('rounds to the cent rather than trailing float dust', () => {
+    const odd = [{ id: 'a', price: 333.33, quantity: 1, client_selected: true }];
+    expect(calcProposalTotal(odd, { ...signed, discount: { type: 'percent', value: 33 } })).toBe(223.33);
   });
 });

@@ -36,6 +36,9 @@ interface ProposalData {
   status?: string;
   proposal_scenario?: 'pre_call_packet' | 'pre_packet_no_call' | 'direct_quote' | null;
   is_pre_call_packet?: boolean | null;
+  discount_type?: 'percent' | 'amount' | null;
+  discount_value?: number | string | null;
+  discount_label?: string | null;
 }
 
 
@@ -79,6 +82,24 @@ function itemTotal(item: ProposalItem) {
 
 function proposalTotal(items: ProposalItem[]) {
   return items.reduce((sum, item) => sum + itemTotal(item), 0);
+}
+
+/** Mirrors calcDiscountAmount in src/lib/proposalTotals.ts. */
+function discountAmountFor(proposal: ProposalData, subtotal: number) {
+  const value = Number(proposal.discount_value);
+  if (!proposal.discount_type || !Number.isFinite(value) || value <= 0) return 0;
+  const off = proposal.discount_type === 'percent'
+    ? subtotal * (Math.min(value, 100) / 100)
+    : value;
+  return Math.round(Math.min(off, subtotal) * 100) / 100;
+}
+
+function discountLabelFor(proposal: ProposalData) {
+  const label = (proposal.discount_label ?? '').trim();
+  if (label) return label;
+  return proposal.discount_type === 'percent'
+    ? `Discount (${Number(proposal.discount_value)}%)`
+    : 'Discount';
 }
 
 function formatDate(d: string) {
@@ -267,7 +288,12 @@ export async function generateProposalPdf(
   if (signed) {
     items = selectedItems;
   }
-  const grandTotal = proposalTotal(selectedItems);
+  // The discount is part of the agreement, so the PDF states it as its own
+  // line: a total that is simply lower than the items above it invites the
+  // question this answers.
+  const subtotal = proposalTotal(selectedItems);
+  const discountOff = discountAmountFor(proposal, subtotal);
+  const grandTotal = Math.round((subtotal - discountOff) * 100) / 100;
   let y = 0;
 
   // === COVER PAGE (optional) ===
@@ -471,11 +497,25 @@ export async function generateProposalPdf(
   }
 
   // === TOTAL ===
-  if (y + 28 > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
+  // A discount is stated, never implied: the subtotal and the money off sit
+  // above the total so the figure can be checked against the lines.
+  if (y + (discountOff > 0 ? 60 : 28) > PAGE_H - 80) { doc.addPage(); y = MARGIN; }
   doc.setDrawColor('#ecf0f1');
   doc.setLineWidth(0.5);
   doc.line(MARGIN, y, MARGIN + CONTENT_W, y);
   y += 4;
+
+  if (discountOff > 0) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(GRAY);
+    doc.text('Subtotal', MARGIN + 12, y + 12);
+    doc.text(formatCurrency(subtotal), PAGE_W - MARGIN - 6, y + 12, { align: 'right' });
+    y += 16;
+    doc.text(discountLabelFor(proposal), MARGIN + 12, y + 12);
+    doc.text(`-${formatCurrency(discountOff)}`, PAGE_W - MARGIN - 6, y + 12, { align: 'right' });
+    y += 18;
+  }
   doc.setFillColor('#faf8f4');
   doc.rect(MARGIN, y, CONTENT_W, 22, 'F');
   doc.setFillColor(GOLD);

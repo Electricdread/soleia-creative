@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useJobs } from '@/hooks/useJobs';
 import { DeleteJobDialog } from '@/components/admin/DeleteJobDialog';
 import {
-  stageFor, flagsFor, daysUntil, CREATIVE_STAGES, STAGE_LABEL, type Stage,
+  stageFor, flagsFor, daysUntil, STAGE_LABEL, type Stage,
 } from '@/lib/jobStage';
 
 const STAGE_TONE: Record<Stage, string> = {
@@ -57,12 +57,12 @@ export default function AdminJobs() {
 
   const shown = showPast ? past : live;
 
-  const byStage = useMemo(() => {
-    const map = new Map<Stage, typeof shown>();
-    CREATIVE_STAGES.forEach((s) => map.set(s, []));
-    shown.forEach((r) => map.get(r.stage)!.push(r));
-    return map;
-  }, [shown]);
+  // Soonest show first; a job with no date sits at the bottom, never the top.
+  const ordered = useMemo(
+    () => [...shown].sort((a, b) =>
+      (a.job.event_date ?? '9999-12-31').localeCompare(b.job.event_date ?? '9999-12-31')),
+    [shown],
+  );
 
   const flagged = live.filter((r) => r.flags.length > 0).length;
 
@@ -91,21 +91,10 @@ export default function AdminJobs() {
           {showPast ? 'No past jobs.' : 'No live jobs.'}
         </p>
       ) : (
-        <div className="space-y-8">
-          {CREATIVE_STAGES.map((stage) => {
-            const items = byStage.get(stage) ?? [];
-            if (items.length === 0) return null;
-            return (
-              <section key={stage}>
-                <div className="mb-3 flex items-baseline gap-3 border-b border-border pb-2">
-                  <h2 className={cn('font-display text-lg', STAGE_TONE[stage])}>{STAGE_LABEL[stage]}</h2>
-                  <span className="font-mono text-xs text-muted-foreground">{items.length}</span>
-                </div>
-
-                <div className="space-y-2">
-                  {/* The row was one button, which cannot hold another; the
-                      delete control is a sibling of the opener now. */}
-                  {items.map((r, i) => (
+        <div className="space-y-2">
+          {/* The row was one button, which cannot hold another; the delete
+              control is a sibling of the opener now. */}
+          {ordered.map((r, i) => (
                     <div
                       key={r.job.id}
                       style={{ '--i': i } as CSSProperties}
@@ -120,6 +109,14 @@ export default function AdminJobs() {
                           {r.job.track === 'in_house' && (
                             <Badge variant="outline" className="text-[10px] uppercase tracking-wider">In-house</Badge>
                           )}
+                          {/* The stage rides with the job rather than sorting
+                              it into a bucket of its own. */}
+                          <span className={cn(
+                            'font-mono text-[10px] uppercase tracking-wider',
+                            STAGE_TONE[r.stage],
+                          )}>
+                            {STAGE_LABEL[r.stage]}
+                          </span>
                           {r.flags.length > 0 && (
                             <span className="flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-400">
                               <AlertTriangle className="h-3 w-3" />
@@ -158,12 +155,8 @@ export default function AdminJobs() {
                       >
                         <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-colors group-hover:text-primary" />
                       </button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
     </AdminShell>

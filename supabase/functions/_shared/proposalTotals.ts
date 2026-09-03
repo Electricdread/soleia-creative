@@ -18,6 +18,20 @@ export interface ProposalLineItem {
   client_selected?: boolean | null;
 }
 
+/**
+ * Money off, either as a percentage of the selected scope or a flat amount.
+ *
+ * A discount is a decision about a client, so it is recorded on the proposal
+ * rather than smuggled in as a negative line item — a negative line can be
+ * ticked off, reordered, or quietly dropped from the accepted scope.
+ */
+export interface ProposalDiscount {
+  type: 'percent' | 'amount';
+  value: number | string;
+  /** Why, in the client's words: "Repeat client", "Multi-event". */
+  label?: string | null;
+}
+
 export interface ProposalTotalContext {
   /** True once the proposal has been signed by the client. */
   signed: boolean;
@@ -25,6 +39,8 @@ export interface ProposalTotalContext {
   selectedIds?: Set<string>;
   /** Client-side quantity overrides keyed by item id (unsigned, non-admin only). */
   qtyOverrides?: Record<string, number>;
+  /** The proposal's discount, if it carries one. */
+  discount?: ProposalDiscount | null;
 }
 
 export function getEffectiveQty(item: ProposalLineItem, qtyOverrides?: Record<string, number>): number {
@@ -50,6 +66,28 @@ export function getActiveItems<T extends ProposalLineItem>(items: T[], ctx: Prop
   return items.filter(i => i.id != null && sel.has(String(i.id)));
 }
 
-export function calcProposalTotal(items: ProposalLineItem[], ctx: ProposalTotalContext): number {
+/** The selected scope before any discount. */
+export function calcSubtotal(items: ProposalLineItem[], ctx: ProposalTotalContext): number {
   return getActiveItems(items, ctx).reduce((sum, i) => sum + calcLineTotal(i, ctx.qtyOverrides), 0);
+}
+
+/**
+ * What the discount takes off this subtotal, in dollars.
+ *
+ * Never more than the subtotal and never negative: a discount larger than the
+ * work is a data-entry slip, and a proposal that owes the client money is not
+ * a thing we would ever mean to print.
+ */
+export function calcDiscountAmount(subtotal: number, discount?: ProposalDiscount | null): number {
+  if (!discount) return 0;
+  const value = Number(discount.value);
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  const off = discount.type === 'percent' ? subtotal * (Math.min(value, 100) / 100) : value;
+  return Math.round(Math.min(off, subtotal) * 100) / 100;
+}
+
+/** What the client owes: the selected scope, less any discount. */
+export function calcProposalTotal(items: ProposalLineItem[], ctx: ProposalTotalContext): number {
+  const subtotal = calcSubtotal(items, ctx);
+  return Math.round((subtotal - calcDiscountAmount(subtotal, ctx.discount)) * 100) / 100;
 }
