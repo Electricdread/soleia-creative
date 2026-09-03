@@ -403,6 +403,45 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_local_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          dtend: string | null
+          dtstart: string
+          location: string | null
+          status: string
+          summary: string
+          uid: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          dtend?: string | null
+          dtstart: string
+          location?: string | null
+          status?: string
+          summary: string
+          uid?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          dtend?: string | null
+          dtstart?: string
+          location?: string | null
+          status?: string
+          summary?: string
+          uid?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       client_links: {
         Row: {
           client_name: string
