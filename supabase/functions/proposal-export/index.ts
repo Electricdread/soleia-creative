@@ -125,6 +125,42 @@ Deno.serve(async (req) => {
       event_uid: a.event_uid,
     }));
 
+    // Job-level data — lets DSXBooks see in-house jobs (which have no
+    // proposal) alongside creative jobs. Additive only; does not alter the
+    // proposals/items/clients/events/associations fields above.
+    const { data: jobRows, error: jobsError } = await supabase
+      .from("jobs")
+      .select("id, title, client_name, event_date, track, is_active")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+    if (jobsError) throw jobsError;
+
+    // Unfiltered existence check: does this job have ANY proposal attached at
+    // all, regardless of status — independent of the ?status= query param
+    // already used for the main proposals query above.
+    const jobIds = (jobRows || []).map((j: any) => j.id);
+    let jobsWithProposal = new Set<string>();
+    if (jobIds.length > 0) {
+      const { data: propJobRows, error: propJobsError } = await supabase
+        .from("proposals")
+        .select("job_id")
+        .in("job_id", jobIds);
+      if (propJobsError) throw propJobsError;
+      jobsWithProposal = new Set(
+        (propJobRows || []).map((r: any) => r.job_id).filter(Boolean),
+      );
+    }
+
+    const jobs = (jobRows || []).map((j: any) => ({
+      id: j.id,
+      title: j.title,
+      client_name: j.client_name,
+      event_date: j.event_date,
+      track: j.track,
+      is_active: j.is_active,
+      has_proposal: jobsWithProposal.has(j.id),
+    }));
+
     return new Response(
       JSON.stringify({
         proposals,
@@ -134,6 +170,7 @@ Deno.serve(async (req) => {
         clients: [],
         events: [],
         associations,
+        jobs,
         exported_at: new Date().toISOString(),
         source: "soleia",
       }),
