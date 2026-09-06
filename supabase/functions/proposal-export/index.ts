@@ -86,48 +86,11 @@ Deno.serve(async (req) => {
     const { data: proposals, error: proposalsError } = await query;
     if (proposalsError) throw proposalsError;
 
-    if (!proposals || proposals.length === 0) {
-      return new Response(
-        JSON.stringify({
-          proposals: [],
-          items: [],
-          clients: [],
-          events: [],
-          associations: [],
-          exported_at: new Date().toISOString(),
-          source: "soleia",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const proposalIds = proposals.map((p: any) => p.id);
-
-    // Line items for all returned proposals
-    const { data: items, error: itemsError } = await supabase
-      .from("proposal_items")
-      .select("*")
-      .in("proposal_id", proposalIds)
-      .order("sort_order", { ascending: true });
-    if (itemsError) throw itemsError;
-
-    // Tripleseat calendar associations — lets DSXBooks tie a Soleia proposal
-    // to the same Tripleseat event it already knows from DSX.
-    const { data: assocRows, error: assocError } = await supabase
-      .from("calendar_event_associations")
-      .select("entity_id, event_uid")
-      .eq("entity_type", "proposal")
-      .in("entity_id", proposalIds);
-    if (assocError) throw assocError;
-
-    const associations = (assocRows || []).map((a: any) => ({
-      proposal_id: a.entity_id,
-      event_uid: a.event_uid,
-    }));
-
     // Job-level data — lets DSXBooks see in-house jobs (which have no
     // proposal) alongside creative jobs. Additive only; does not alter the
-    // proposals/items/clients/events/associations fields above.
+    // proposals/items/clients/events/associations fields. Computed up here so
+    // it is always returned, even when the ?status= filter matches zero
+    // proposals (e.g. in-house jobs with no proposal at all must still appear).
     const { data: jobRows, error: jobsError } = await supabase
       .from("jobs")
       .select("id, title, client_name, event_date, track, is_active")
@@ -159,6 +122,46 @@ Deno.serve(async (req) => {
       track: j.track,
       is_active: j.is_active,
       has_proposal: jobsWithProposal.has(j.id),
+    }));
+
+    if (!proposals || proposals.length === 0) {
+      return new Response(
+        JSON.stringify({
+          proposals: [],
+          items: [],
+          clients: [],
+          events: [],
+          associations: [],
+          jobs,
+          exported_at: new Date().toISOString(),
+          source: "soleia",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const proposalIds = proposals.map((p: any) => p.id);
+
+    // Line items for all returned proposals
+    const { data: items, error: itemsError } = await supabase
+      .from("proposal_items")
+      .select("*")
+      .in("proposal_id", proposalIds)
+      .order("sort_order", { ascending: true });
+    if (itemsError) throw itemsError;
+
+    // Tripleseat calendar associations — lets DSXBooks tie a Soleia proposal
+    // to the same Tripleseat event it already knows from DSX.
+    const { data: assocRows, error: assocError } = await supabase
+      .from("calendar_event_associations")
+      .select("entity_id, event_uid")
+      .eq("entity_type", "proposal")
+      .in("entity_id", proposalIds);
+    if (assocError) throw assocError;
+
+    const associations = (assocRows || []).map((a: any) => ({
+      proposal_id: a.entity_id,
+      event_uid: a.event_uid,
     }));
 
     return new Response(
