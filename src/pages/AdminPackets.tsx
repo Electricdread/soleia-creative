@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Plus, ArrowLeft, ExternalLink, Copy, Loader2, Trash2, Edit3, Globe, Lock, FolderOpen, FolderPlus, Mail, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { PacketEditor, PACKET_KIND_LABEL, type PacketRecord, type PacketInclusion, type PacketKind } from '@/components/admin/PacketEditor';
@@ -350,11 +351,11 @@ export default function AdminPackets() {
                       <h2 className="font-display text-lg text-foreground truncate">{p.title}</h2>
                       {p.is_active ? (
                         <Badge className="bg-primary/15 text-primary border-primary/30">
-                          <Globe className="w-3 h-3 mr-1" /> Deployed
+                          <Globe className="w-3 h-3 mr-1" /> Active
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-muted-foreground">
-                          <Lock className="w-3 h-3 mr-1" /> Draft
+                          <Lock className="w-3 h-3 mr-1" /> Inactive
                         </Badge>
                       )}
                       <Badge variant="outline" className="text-xs">
@@ -398,13 +399,13 @@ export default function AdminPackets() {
                         </Button>
                       </>
                     )}
-                    <Button
-                      size="sm"
-                      variant={p.is_active ? 'outline' : 'default'}
-                      onClick={() => toggleDeploy(p)}
+                    <label
+                      className="flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-2 text-xs font-medium text-foreground cursor-pointer select-none"
+                      title="Turn on to make this packet available to its client. Turn off to make it inactive."
                     >
-                      {p.is_active ? 'Unpublish' : 'Deploy'}
-                    </Button>
+                      <Switch checked={p.is_active} onCheckedChange={() => toggleDeploy(p)} />
+                      {p.is_active ? 'Active' : 'Inactive'}
+                    </label>
                     <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setEditorOpen(true); }}>
                       <Edit3 className="w-4 h-4" />
                     </Button>

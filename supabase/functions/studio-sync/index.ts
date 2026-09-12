@@ -41,7 +41,7 @@ import {
 // BUMP THIS ON EVERY CHANGE TO THIS FUNCTION. A date-and-letter label rather
 // than a commit SHA, because a SHA cannot name the commit that contains it —
 // all that is required is that the string be new.
-const BUILD = 'studio-sync-2026-09-03a';
+const BUILD = 'studio-sync-2026-09-12a';
 const CONTRACT_NAME = 'soleia.studio-sync';
 const SUPPORTED_VERSIONS = [1];
 
@@ -279,6 +279,22 @@ async function buildPayload(client: SupabaseClient) {
       [job.drive_folder_id, ...jobProposals.map((p) => p.drive_folder_id), ...jobPackets.map((p) => p.drive_folder_id)]
         .filter(Boolean) as string[],
     );
+    // `drive_folder_id` remains exactly the job column in v1. Older records
+    // can have the shared folder only on their packet or proposal, however, so
+    // publish one additive asset-folder fallback when (and only when) the
+    // attached records agree on one folder. A conflict stays null: Studio OS
+    // must never choose a client drop by guesswork.
+    const attachedFolders = new Set(
+      [...jobProposals.map((p) => p.drive_folder_id), ...jobPackets.map((p) => p.drive_folder_id)]
+        .filter(Boolean) as string[],
+    );
+    const assetFolderId = job.drive_folder_id
+      || (attachedFolders.size === 1 ? [...attachedFolders][0] : null);
+    const assetFolderUrl = job.drive_folder_id
+      ? job.drive_folder_url
+      : assetFolderId
+        ? `https://drive.google.com/drive/folders/${assetFolderId}`
+        : null;
     let assetCount = 0;
     let latestAsset: AssetRow | null = null;
     for (const folder of folders) {
@@ -324,6 +340,8 @@ async function buildPayload(client: SupabaseClient) {
       call_held_on: job.call_held_on,
       drive_folder_id: job.drive_folder_id,
       drive_folder_url: job.drive_folder_url,
+      asset_folder_id: assetFolderId,
+      asset_folder_url: assetFolderUrl,
 
       stage: { value: stage.stage, reason: stage.reason, done: stage.done },
       // `href` and `weight` are Soleia's own routing table and the sort order of
