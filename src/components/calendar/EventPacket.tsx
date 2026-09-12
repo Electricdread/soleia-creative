@@ -144,7 +144,17 @@ export function EventPacket({ eventUid, summary, dtstart }: EventPacketProps) {
       .update({ is_active: !p.is_active })
       .eq('id', p.id);
     if (error) return toast.error(error.message);
-    toast.success(!p.is_active ? 'Packet deployed — the link is live' : 'Packet unpublished');
+    if (!p.is_active) {
+      const folder = await supabase.functions.invoke('create-client-drive-folder', {
+        body: { packet_id: p.id },
+      });
+      if (folder.error || !folder.data?.folderId) {
+        toast.error('Packet deployed, but its Google Drive folder could not be prepared. Open the packet and try the folder action again.');
+        load();
+        return;
+      }
+    }
+    toast.success(!p.is_active ? 'Packet deployed — Google Drive is ready' : 'Packet unpublished');
     if (!p.is_active) {
       // The job's team hears about it once the link is live. Fire-and-forget:
       // the notification must never block, or undo, the deploy. The function

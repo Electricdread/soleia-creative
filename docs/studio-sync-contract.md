@@ -83,7 +83,7 @@ a `304` means keep what you have.
 
 | Field | Notes |
 |---|---|
-| `id` `title` `client_name` `event_date` `track` `is_active` `notes` `call_held_on` `drive_folder_id` `drive_folder_url` | Straight from `jobs`. `track` is `creative` or `in_house`. |
+| `id` `title` `client_name` `event_date` `track` `is_active` `notes` `call_held_on` `drive_folder_id` `drive_folder_url` | From `jobs`. A packet or proposal that creates the shared client folder also links that folder to its job, so Studio OS always has one explicit folder to mirror. `track` is `creative` or `in_house`. |
 | `stage` | `{ value, reason, done[] }` from `jobStage.ts`. `value` is one of `booked`, `packet_sent`, `call_held`, `proposal_out`, `awaiting_assets`, `in_production`. Not every job has a creative call (owner, 2026-09-01): `call_held` appears only for a job with a meeting scheduled on its calendar events or a `call_held_on` actually logged; other jobs go straight from `packet_sent` towards `proposal_out` and are never chased for a call. |
 | `next_action` | `{ kind, label, verb }` or `null`. `kind` is one of `call`, `quote`, `sign`, `session`, `assets`, `date`. `call` is only ever returned when a meeting is scheduled. |
 | `proposal` | `null` when the job has none. See below. |

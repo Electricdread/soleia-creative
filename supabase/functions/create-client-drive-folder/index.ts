@@ -254,14 +254,22 @@ Deno.serve(async (req) => {
     // Load the source row (proposal or packet) into a normalized shape
     let sourceTable: 'proposals' | 'pre_call_packets';
     let sourceId: string;
-    let proposal: { id: string; event_name: string; client_name: string; event_date: string | null; drive_folder_url: string | null; drive_folder_id: string | null };
+    let proposal: {
+      id: string;
+      event_name: string;
+      client_name: string;
+      event_date: string | null;
+      job_id: string | null;
+      drive_folder_url: string | null;
+      drive_folder_id: string | null;
+    };
 
     if (proposal_id) {
       sourceTable = 'proposals';
       sourceId = proposal_id;
       const { data, error: fetchErr } = await supabase
         .from('proposals')
-        .select('id, event_name, client_name, event_date, drive_folder_url, drive_folder_id')
+        .select('id, event_name, client_name, event_date, job_id, drive_folder_url, drive_folder_id')
         .eq('id', proposal_id)
         .maybeSingle();
       if (fetchErr) throw new Error(`Fetch proposal failed: ${fetchErr.message}`);
@@ -272,7 +280,7 @@ Deno.serve(async (req) => {
       sourceId = packet_id!;
       const { data, error: fetchErr } = await supabase
         .from('pre_call_packets')
-        .select('id, title, client_name, event_date, drive_folder_url, drive_folder_id')
+        .select('id, title, client_name, event_date, job_id, drive_folder_url, drive_folder_id')
         .eq('id', packet_id!)
         .maybeSingle();
       if (fetchErr) throw new Error(`Fetch packet failed: ${fetchErr.message}`);
@@ -282,18 +290,70 @@ Deno.serve(async (req) => {
         event_name: data.title || 'Pre-Call Packet',
         client_name: data.client_name || 'Client',
         event_date: data.event_date ?? null,
+        job_id: data.job_id ?? null,
         drive_folder_url: data.drive_folder_url,
         drive_folder_id: data.drive_folder_id,
       };
     }
 
+    // The job is the stable identity that Studio OS mirrors. A packet or
+    // proposal may create the shared client folder, but its link must be
+    // published on the job as well. Never silently choose between two folders:
+    // that would put one client's assets into another booking's local folder.
+    const readJobFolder = async () => {
+      if (!proposal.job_id) return null;
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('id, drive_folder_id, drive_folder_url')
+        .eq('id', proposal.job_id)
+        .maybeSingle();
+      if (error) throw new Error(`Fetch job folder failed: ${error.message}`);
+      if (!data) throw new Error('The linked job no longer exists. Reopen the packet and link it to a job.');
+      return data as { id: string; drive_folder_id: string | null; drive_folder_url: string | null };
+    };
+
+    const linkJobFolder = async (folderId: string, folderUrl: string | null) => {
+      const job = await readJobFolder();
+      if (!job) return;
+      if (job.drive_folder_id && job.drive_folder_id !== folderId) {
+        throw new Error('This job is already linked to a different Google Drive folder. Resolve the folder conflict before continuing.');
+      }
+      const { error } = await supabase
+        .from('jobs')
+        .update({ drive_folder_id: folderId, drive_folder_url: folderUrl })
+        .eq('id', job.id);
+      if (error) throw new Error(`Update job folder failed: ${error.message}`);
+    };
+
     // Idempotent: return existing if already created
     if (proposal.drive_folder_url && proposal.drive_folder_id) {
+      await linkJobFolder(proposal.drive_folder_id, proposal.drive_folder_url);
       return new Response(
         JSON.stringify({
           folderUrl: proposal.drive_folder_url,
           folderId: proposal.drive_folder_id,
           existing: true,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // Prefer the folder already attached to this exact job over a name/date
+    // lookup. This is both more precise and avoids creating a second folder
+    // when a packet is deployed after its proposal (or vice versa).
+    const jobFolder = await readJobFolder();
+    if (jobFolder?.drive_folder_id) {
+      const { error: reuseJobErr } = await supabase
+        .from(sourceTable)
+        .update({ drive_folder_id: jobFolder.drive_folder_id, drive_folder_url: jobFolder.drive_folder_url })
+        .eq('id', sourceId);
+      if (reuseJobErr) throw new Error(`Update ${sourceTable} failed: ${reuseJobErr.message}`);
+      return new Response(
+        JSON.stringify({
+          folderUrl: jobFolder.drive_folder_url,
+          folderId: jobFolder.drive_folder_id,
+          existing: true,
+          reused: true,
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
@@ -334,6 +394,7 @@ Deno.serve(async (req) => {
         .update({ drive_folder_id: reuse.drive_folder_id, drive_folder_url: reuse.drive_folder_url })
         .eq('id', sourceId);
       if (reuseErr) throw new Error(`Update ${sourceTable} failed: ${reuseErr.message}`);
+      await linkJobFolder(reuse.drive_folder_id, reuse.drive_folder_url);
       console.log(`Reused the ${siblingTable} folder for "${proposal.client_name}"`);
       return new Response(
         JSON.stringify({
@@ -602,6 +663,7 @@ Deno.serve(async (req) => {
       .update({ drive_folder_url: folderUrl, drive_folder_id: folderId })
       .eq('id', sourceId);
     if (updErr) throw new Error(`Update ${sourceTable} failed: ${updErr.message}`);
+    await linkJobFolder(folderId, folderUrl);
 
     return new Response(
       JSON.stringify({ folderUrl, folderId, existing: false }),
