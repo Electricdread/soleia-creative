@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, startOfWeek, endOfWeek, differenceInCalendarDays } from 'date-fns';
 import { EventDetailPanel } from '@/components/calendar/EventDetailPanel';
 import { EventStatusBadge, getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
+import { eventDisplayName } from '@/lib/eventName';
+import { loadJobsByEvent } from '@/lib/eventJobs';
 
 interface CalendarEvent {
   uid: string;
@@ -63,6 +65,8 @@ export default function AdminCalendar() {
   const [deadlinesByEvent, setDeadlinesByEvent] = useState<Record<string, { content_deadline: string; reminder_days: number }>>({});
   const [meetingsByDate, setMeetingsByDate] = useState<Record<string, MeetingOnCalendar[]>>({});
   const [openMeetingCard, setOpenMeetingCard] = useState<MeetingOnCalendar | null>(null);
+  const [jobTitlesByEvent, setJobTitlesByEvent] = useState<Record<string, string[]>>({});
+  const [tripleseatDateByEvent, setTripleseatDateByEvent] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
@@ -83,6 +87,7 @@ export default function AdminCalendar() {
       fetchProposalAssociations();
       fetchDeadlines();
       fetchMeetings();
+      fetchEventNaming();
     }
   }, [authLoading, isAdmin]);
 
@@ -191,6 +196,56 @@ export default function AdminCalendar() {
       });
       setDeadlinesByEvent(map);
     }
+  };
+
+  // What a confirmed booking is called (owner, 2026-09-14): "MM.DD.YY Client - Event" -- its job's
+  // name on the day of the event, taken from Tripleseat's event details when they have been read and
+  // from the booking's own start otherwise. Never the day Tripleseat added it to the feed.
+  const fetchEventNaming = async () => {
+    const [jobs, details] = await Promise.all([
+      loadJobsByEvent(),
+      supabase.from('calendar_event_tripleseat_cache').select('event_uid, scraped_data'),
+    ]);
+    const titles: Record<string, string[]> = {};
+    jobs.forEach((list, uid) => { titles[uid] = list.map((job) => job.title); });
+    setJobTitlesByEvent(titles);
+    const days: Record<string, string> = {};
+    (details.data ?? []).forEach((row) => {
+      const day = (row.scraped_data as unknown as { event_date?: string } | null)?.event_date;
+      if (day) days[row.event_uid] = day;
+    });
+    setTripleseatDateByEvent(days);
+  };
+
+  const datedName = (event: CalendarEvent) => eventDisplayName({
+    summary: event.summary,
+    dtstart: event.dtstart,
+    tripleseatDate: tripleseatDateByEvent[event.uid],
+    jobTitles: jobTitlesByEvent[event.uid],
+  });
+
+  // "7:30pm – 11pm": when a booking starts and ends, as the feed gives them.
+  const timeRange = (event: CalendarEvent): string => {
+    try {
+      const clock = (d: Date) => format(d, d.getMinutes() ? 'h:mma' : 'ha').toLowerCase();
+      const start = parseISO(event.dtstart);
+      const end = event.dtend ? parseISO(event.dtend) : null;
+      return end && end > start ? `${clock(start)} – ${clock(end)}` : clock(start);
+    } catch {
+      return '';
+    }
+  };
+
+  // What the grid can say about a booking besides its name: the room when it is
+  // not the main floor, and the head count Tripleseat writes into the booking
+  // ("[Guests: 650 expected / 650 guaranteed]"), guaranteed first.
+  const bookingFacts = (event: CalendarEvent): string[] => {
+    const facts: string[] = [];
+    const room = (event.location || '').replace(/^\[[^\]]*\]\s*/, '').trim();
+    if (room && room.toLowerCase() !== 'soleia') facts.push(room);
+    const guests = /\[Guests:\s*([\d,]+)\s*expected(?:\s*\/\s*([\d,]+)\s*guaranteed)?\]/i.exec(event.description || '');
+    if (guests) facts.push(`${guests[2] ?? guests[1]} guests`);
+    return facts;
   };
 
   const handleStatusChange = async (uid: string, status: EventStatus) => {
@@ -356,18 +411,20 @@ export default function AdminCalendar() {
               </div>
 
               {/* Calendar Grid */}
+              {/* The month fills the window on a desktop, so each day has room to
+                  show every booking in full rather than one and a count. */}
               <div className="bg-card border border-border rounded-lg overflow-x-auto scroll-touch-x">
-                <div className="min-w-[560px]">
+                <div className="min-w-[560px] flex flex-col lg:min-h-[calc(100vh-15rem)]">
                   <div className="grid grid-cols-7 border-b border-border">
                     {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => (
                       <div key={d} className="text-center text-xs sm:text-sm font-semibold text-foreground/80 py-2 sm:py-2.5 border-r border-border/60 last:border-r-0 bg-muted/50">{d}</div>
                     ))}
                   </div>
-                  <div className="grid grid-cols-7">
+                  <div className="grid flex-1 grid-cols-7 [grid-auto-rows:minmax(8.5rem,1fr)]">
                     {calendarDays.map((day, idx) => {
                       const dayEvents = getEventsForDate(day).filter(
-                        (e) => !searchQuery || e.summary.toLowerCase().includes(searchQuery.toLowerCase())
-                      );
+                        (e) => !searchQuery || `${e.summary} ${datedName(e)}`.toLowerCase().includes(searchQuery.toLowerCase())
+                      ).sort((a, b) => a.dtstart.localeCompare(b.dtstart));
                       const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
                       const isToday = isSameDay(day, new Date());
                       const row = Math.floor(idx / 7);
@@ -376,7 +433,7 @@ export default function AdminCalendar() {
                         return (
                          <div
                            key={day.toISOString()}
-                           className={`min-h-[80px] sm:min-h-[110px] border-r border-b border-border/60 text-left flex flex-col
+                           className={`min-h-[80px] sm:min-h-[8.5rem] border-r border-b border-border/60 text-left flex flex-col
                              ${isLastRow ? 'border-b-0' : ''} ${idx % 7 === 6 ? 'border-r-0' : ''}
                              ${!isCurrentMonth ? 'bg-muted/30' : 'bg-card'}
                              ${dayEvents.length > 0 ? 'cursor-pointer hover:bg-muted/40 transition-colors' : ''}`}
@@ -387,24 +444,27 @@ export default function AdminCalendar() {
                                {format(day, 'd')}
                              </span>
                            </div>
-                           {dayEvents.length > 0 && (() => {
-                              const event = dayEvents[0];
+                           {dayEvents.map((event) => {
                               const status = getEventStatus(event);
                               const colors = getStatusBarColor(status);
                               const proposals = proposalsByEvent[event.uid];
                               const deadline = deadlinesByEvent[event.uid];
                               const daysUntilDeadline = deadline ? differenceInCalendarDays(new Date(deadline.content_deadline), new Date()) : null;
-                              const timeStr = (() => { try { return format(parseISO(event.dtstart), 'h:mma').toLowerCase(); } catch { return ''; } })();
+                              const facts = bookingFacts(event);
                               return (
                                 <div
-                                  className={`flex-1 mx-1 mb-1 mt-0.5 rounded-md px-1.5 py-1 border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between overflow-hidden`}
+                                  key={event.uid}
+                                  className={`${dayEvents.length === 1 ? 'flex-1' : ''} mx-1 mb-1 mt-0.5 rounded-md px-1.5 py-1 border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between gap-1`}
                                   onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
                                 >
                                   <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className={`text-[10px] ${colors.text} opacity-75 font-medium`}>{timeStr}</span>
-                                     <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug line-clamp-2`}>
-                                       {stripTripleseatPrefix(event.summary)}
-                                     </span>
+                                    <span className={`text-[10px] ${colors.text} opacity-75 font-medium tabular-nums`}>{timeRange(event)}</span>
+                                    <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug break-words`}>
+                                      {status === 'definite' ? datedName(event) : stripTripleseatPrefix(event.summary)}
+                                    </span>
+                                    {facts.length > 0 && (
+                                      <span className={`text-[10px] ${colors.text} opacity-70 leading-snug`}>{facts.join(' · ')}</span>
+                                    )}
                                   </div>
                                   <div className="flex gap-1 mt-1 flex-wrap">
                                     {proposals && proposals.length > 0 && proposals.map((p, i) => (
@@ -432,26 +492,21 @@ export default function AdminCalendar() {
                                   </div>
                                 </div>
                               );
-                            })()}
+                            })}
                            {(meetingsByDate[format(day, 'yyyy-MM-dd')] ?? []).map((m) => (
                              <button
                                key={m.id}
                                title={`${m.label} — ${format(parseISO(m.meeting_at), 'h:mm a')}`}
                                onClick={(e) => { e.stopPropagation(); openMeeting(m); }}
-                               className="mx-1 mb-1 flex min-w-0 items-center gap-1 rounded-md border-l-[3px] border-blue-500 bg-blue-500/10 px-1.5 py-0.5 text-left hover:bg-blue-500/20"
+                               className="mx-1 mb-1 flex min-w-0 items-start gap-1 rounded-md border-l-[3px] border-blue-500 bg-blue-500/10 px-1.5 py-0.5 text-left hover:bg-blue-500/20"
                              >
-                               <Video className="h-2.5 w-2.5 shrink-0 text-blue-600 dark:text-blue-400" />
-                               <span className="shrink-0 text-[9px] font-semibold text-blue-600 dark:text-blue-400">
+                               <Video className="mt-0.5 h-2.5 w-2.5 shrink-0 text-blue-600 dark:text-blue-400" />
+                               <span className="shrink-0 text-[9px] font-semibold leading-snug text-blue-600 dark:text-blue-400">
                                  {format(parseISO(m.meeting_at), 'h:mma').toLowerCase()}
                                </span>
-                               <span className="truncate text-[10px] text-blue-700 dark:text-blue-300">{m.label}</span>
+                               <span className="min-w-0 break-words text-[10px] leading-snug text-blue-700 dark:text-blue-300">{m.label}</span>
                              </button>
                            ))}
-                           {dayEvents.length > 1 && (
-                             <div className="px-1.5 pb-1">
-                               <span className="text-[10px] text-muted-foreground">+{dayEvents.length - 1} more</span>
-                             </div>
-                           )}
                          </div>
                        );
                      })}
@@ -534,6 +589,7 @@ export default function AdminCalendar() {
                     proposalStatuses={proposalsByEvent[selectedEvent.uid]}
                     deadlineInfo={deadlinesByEvent[selectedEvent.uid] || null}
                     onMeetingsChanged={fetchMeetings}
+                    datedName={datedName(selectedEvent)}
                   />
                 </div>
               </div>

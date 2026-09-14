@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { EventCircleback } from './EventCircleback';
 import { labelForUrl, parseInvite } from '@/lib/meetingInvite';
+import { loadJobsByEvent } from '@/lib/eventJobs';
 import { cn } from '@/lib/utils';
 
 /**
@@ -64,7 +65,7 @@ interface EventMeetingLinksProps {
   eventStart?: string;
   /** Fired whenever the set of timed meetings changes, so the grid can redraw. */
   onChanged?: () => void;
-  /** The booking's own name, for naming a meeting when the event is not linked to one job. */
+  /** The booking's name, for naming a meeting nobody has labelled. */
   eventName?: string;
 }
 
@@ -107,48 +108,27 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
 
   useEffect(() => { fetchLinks(); }, [eventUid]);
 
-  // The job this booking belongs to, reached the way the jobs list reaches it:
-  // through what is linked to the event -- the job itself, or its proposal,
-  // packet or creative session.
+  // The job this booking belongs to, found the same way the calendar finds it.
   const [job, setJob] = useState<{ id: string; title: string } | null>(null);
   const [jobCount, setJobCount] = useState(0);
   const [jobChecked, setJobChecked] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    const resolveJob = async () => {
-      setJobChecked(false);
-      const { data: assocs } = await supabase
-        .from('calendar_event_associations')
-        .select('entity_type, entity_id')
-        .eq('event_uid', eventUid);
-      const idsOf = (type: string) => (assocs ?? []).filter((a) => a.entity_type === type).map((a) => a.entity_id);
-      const jobIds = new Set(idsOf('job'));
-      const [proposals, packets, sessions] = await Promise.all([
-        idsOf('proposal').length ? supabase.from('proposals').select('job_id').in('id', idsOf('proposal')) : null,
-        idsOf('packet').length ? supabase.from('pre_call_packets').select('job_id').in('id', idsOf('packet')) : null,
-        idsOf('creative_session').length ? supabase.from('creative_sessions').select('job_id').in('id', idsOf('creative_session')) : null,
-      ]);
-      for (const rows of [proposals?.data, packets?.data, sessions?.data]) {
-        ((rows ?? []) as { job_id: string | null }[]).forEach((row) => { if (row.job_id) jobIds.add(row.job_id); });
-      }
-      let found: { id: string; title: string }[] = [];
-      if (jobIds.size) {
-        const { data } = await supabase.from('jobs').select('id, title').in('id', [...jobIds]);
-        found = data ?? [];
-      }
+    setJobChecked(false);
+    loadJobsByEvent(eventUid).then((byEvent) => {
       if (cancelled) return;
+      const found = byEvent.get(eventUid) ?? [];
       setJobCount(found.length);
       setJob(found.length === 1 ? found[0] : null);
       setJobChecked(true);
-    };
-    resolveJob();
+    });
     return () => { cancelled = true; };
   }, [eventUid]);
 
-  // What a meeting is called when nobody names it: its job's title, which reads
-  // the owner's way ("09.15.26 CR - Travcon 2026"), or the booking's own name
-  // when the event is not linked to exactly one job -- then where it is held.
-  const eventTitle = job?.title || eventName?.trim() || '';
+  // What a meeting is called when nobody names it: the booking's name the owner's
+  // way ("09.15.26 CR - Travcon 2026", from its job and Tripleseat's day), else
+  // its job's title -- then where it is held.
+  const eventTitle = eventName?.trim() || job?.title || '';
   const nameFor = (link: string) => (eventTitle ? `${eventTitle} · ${labelForUrl(link)}` : labelForUrl(link));
 
   // Upcoming first, then anything undated, then what has already happened.

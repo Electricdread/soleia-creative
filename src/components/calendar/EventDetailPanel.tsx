@@ -43,10 +43,13 @@ interface EventDetailPanelProps {
   deadlineInfo?: { content_deadline: string; reminder_days: number } | null;
   /** Raised when a meeting is added, timed or removed, so the grid can redraw. */
   onMeetingsChanged?: () => void;
+  /** The booking's name the owner's way, "09.15.26 CR - Travcon 2026"; shown when it is definite. */
+  datedName?: string;
 }
 
-export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses, deadlineInfo, onMeetingsChanged }: EventDetailPanelProps) {
+export function EventDetailPanel({ event, statusOverride, onClose, onStatusChange, proposalStatuses, deadlineInfo, onMeetingsChanged, datedName }: EventDetailPanelProps) {
   const displayStatus = statusOverride || mapIcalStatus(event.status);
+  const plainName = event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '');
   const daysUntilDeadline = deadlineInfo ? differenceInCalendarDays(new Date(deadlineInfo.content_deadline), new Date()) : null;
 
   let startFormatted = '';
@@ -81,7 +84,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
                 <option value="closed">Closed</option>
               </select>
             </div>
-            <h2 className="text-lg font-semibold text-foreground truncate">{event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '')}</h2>
+            <h2 className="text-lg font-semibold text-foreground truncate">{displayStatus === 'definite' && datedName ? datedName : plainName}</h2>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
               <CountdownBadge eventDate={event.dtstart} prefix="Event:" />
               {deadlineInfo && (
@@ -215,7 +218,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
             <EventMeetingLinks
               eventUid={event.uid}
               eventStart={event.dtstart}
-              eventName={event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '')}
+              eventName={datedName || plainName}
               onChanged={onMeetingsChanged}
             />
           </TabsContent>
