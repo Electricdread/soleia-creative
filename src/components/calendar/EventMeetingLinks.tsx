@@ -81,6 +81,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
   const [duration, setDuration] = useState('60');
   const [attendees, setAttendees] = useState('');
   const [zoneLabel, setZoneLabel] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   // A meeting saved without a time draws nothing on the calendar, and a link
   // pasted on its own carries no time to find — so it has to be possible to
@@ -167,7 +168,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
     if (parsed.attendees.length) setAttendees(parsed.attendees.join(', '));
     setZoneLabel(parsed.timeZoneLabel);
     if (complainWhenEmpty && !parsed.url && !parsed.startsAt) {
-      toast.info('No link or time found in that paste — fill the fields below');
+      toast.info('No link or time found in that paste');
     }
   };
 
@@ -218,7 +219,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
       toast.error('Failed to save link');
       return;
     }
-    setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60'); setAttendees(''); setZoneLabel(null);
+    clearDraft();
     toast.success(
       meetingAt
         ? 'Meeting saved — it is on the calendar'
@@ -226,6 +227,11 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
     );
     fetchLinks();
     onChanged?.();
+  };
+
+  const clearDraft = () => {
+    setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60'); setAttendees(''); setZoneLabel(null);
+    setShowDetails(false);
   };
 
   const startEditing = (link: MeetingLink) => {
@@ -319,6 +325,16 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
     </div>
   );
 
+  // The one line a paste is read back as: when, how long, who.
+  const draftPeople = splitAttendees(attendees);
+  const draftSummary = [
+    date && time ? format(parseISO(`${date}T${time}`), 'EEE, MMM d · h:mm a')
+      : date ? `${format(parseISO(date), 'EEE, MMM d')} · no time yet` : 'No date or time found',
+    date && time ? `${Number(duration) || 60} min` : '',
+    draftPeople.length ? `${draftPeople.length} ${draftPeople.length === 1 ? 'attendee' : 'attendees'}` : '',
+    date && time && zoneLabel ? `read as ${zoneLabel} time` : '',
+  ].filter(Boolean).join(' · ');
+
   return (
     <div className="space-y-5">
       <div className="space-y-2.5 rounded-lg border border-border bg-muted/30 p-3">
@@ -338,17 +354,40 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
         ) : jobChecked ? (
           <p className="text-[11px] text-muted-foreground/70">Not linked to a job yet, so the meeting is named after the booking.</p>
         ) : null}
+        {/* One box (owner, 2026-09-14: "meetings are still doubled"): the invite or its link goes in
+            here and nowhere else. What was read out of it comes back as one line, and the fields
+            behind it open only when something needs correcting. */}
+        <Input
+          value={url}
+          onChange={(e) => readLinkField(e.target.value)}
+          onPaste={pasteIntoLink}
+          placeholder="Paste the invite or its link"
+          aria-label="Meeting invite or link"
+          className="h-9 text-xs"
+        />
+        {url.trim() && (
+          <div className="space-y-2 rounded-md border border-border/60 bg-background/40 p-2.5">
+            <div className="min-w-0">
+              <p className="truncate text-xs font-medium text-foreground">{label.trim() || nameFor(url.trim())}</p>
+              <p className="text-[11px] text-muted-foreground">{draftSummary}</p>
+            </div>
+            {!(date && time) && (
+              <p className="flex flex-wrap items-center gap-1.5 text-[10px] text-amber-500">
+                <AlertTriangle className="h-3 w-3 shrink-0" />
+                No time in it yet, so it will not appear on the calendar.
+                {eventDay && !date && (
+                  <button
+                    type="button"
+                    onClick={() => { setDate(eventDay); setShowDetails(true); }}
+                    className="rounded-full border border-amber-500/40 px-1.5 py-0.5 text-amber-500 hover:bg-amber-500/10"
+                  >
+                    Use the event date
+                  </button>
+                )}
+              </p>
+            )}
+            {showDetails && (
         <div className="grid gap-2 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Link</Label>
-            <Input
-              value={url}
-              onChange={(e) => readLinkField(e.target.value)}
-              onPaste={pasteIntoLink}
-              placeholder="Paste the invite or its link — the date and time are read out of it"
-              className="h-8 text-xs"
-            />
-          </div>
           <div className="sm:col-span-2">
             <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Label</Label>
             <Input
@@ -363,7 +402,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
             <Input
               value={attendees}
               onChange={(e) => setAttendees(e.target.value)}
-              placeholder="pulled from the invite, or type addresses separated by commas"
+              placeholder="name@company.com, name@company.com"
               className="h-8 text-xs"
             />
           </div>
@@ -382,31 +421,26 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between gap-2">
-          {date && time ? (
-            <p className="text-[10px] text-muted-foreground/70">
-              Shows on the calendar in blue and warns the dashboard when it is close.
-              {zoneLabel ? ` Read as ${zoneLabel} time and shown in yours.` : ''}
-            </p>
-          ) : (
-            <p className="flex flex-wrap items-center gap-1.5 text-[10px] text-amber-500">
-              <AlertTriangle className="h-3 w-3 shrink-0" />
-              A Teams or Zoom link on its own carries no time — without one this will not appear on the calendar.
-              {eventDay && (
-                <button
-                  type="button"
-                  onClick={() => setDate(eventDay)}
-                  className="rounded-full border border-amber-500/40 px-1.5 py-0.5 text-amber-500 hover:bg-amber-500/10"
-                >
-                  Use the event date
-                </button>
-              )}
-            </p>
-          )}
-          <Button size="sm" onClick={addLink} disabled={saving || !url.trim()} className="h-7 gap-1 px-2 text-[10px]">
-            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />} Add
-          </Button>
-        </div>
+            )}
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDetails((open) => !open)}
+                className="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                {showDetails ? 'Hide details' : 'Edit details'}
+              </button>
+              <div className="flex items-center gap-1.5">
+                <Button size="sm" variant="ghost" onClick={clearDraft} className="h-7 px-2 text-[10px] text-muted-foreground">
+                  Clear
+                </Button>
+                <Button size="sm" onClick={addLink} disabled={saving || !url.trim()} className="h-7 gap-1 px-2 text-[10px]">
+                  {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />} Add
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {ordered.length === 0 && <p className="text-xs italic text-muted-foreground/60">No meetings yet</p>}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AdminShell } from '@/components/admin/AdminShell';
 import { AddEventDialog } from '@/components/calendar/AddEventDialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -69,6 +69,23 @@ export default function AdminCalendar() {
   const [jobTitlesByEvent, setJobTitlesByEvent] = useState<Record<string, string[]>>({});
   const [tripleseatDateByEvent, setTripleseatDateByEvent] = useState<Record<string, string>>({});
   const [deployedPacketEvents, setDeployedPacketEvents] = useState<Record<string, true>>({});
+
+  // The whole month fits the window on a desktop (owner, 2026-09-14: "i should not have to scroll to
+  // see full month view"). The grid is measured where it starts and given the rest of the window,
+  // shared equally between the weeks; a day holding more than fits scrolls inside its own cell.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [gridHeight, setGridHeight] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const fit = () => {
+      const grid = gridRef.current;
+      if (!grid || window.innerWidth < 1024) { setGridHeight(null); return; }
+      const top = grid.getBoundingClientRect().top + window.scrollY;
+      setGridHeight(Math.max(440, Math.floor(window.innerHeight - top - 16)));
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [loading, authLoading, showSettings]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
@@ -328,6 +345,7 @@ export default function AdminCalendar() {
     <AdminShell
       title="Calendar"
       subtitle="Events synced from Triple Seat"
+      fullBleed
       actions={
         <div className="flex items-center gap-1.5">
         <Button
@@ -355,7 +373,8 @@ export default function AdminCalendar() {
         onCreated={fetchEvents}
       />
 
-      <div className="safe-area-bottom">
+      {/* Full width beside the rail: the month is the page, so it does not sit in the 1280px column. */}
+      <div className="safe-area-bottom px-4 py-4 sm:px-6">
         {showSettings && (
           <Card className="mb-6 bg-card border-border">
             <CardHeader>
@@ -423,16 +442,22 @@ export default function AdminCalendar() {
               </div>
 
               {/* Calendar Grid */}
-              {/* The month fills the window on a desktop, so each day has room to
-                  show every booking in full rather than one and a count. */}
-              <div className="bg-card border border-border rounded-lg overflow-x-auto scroll-touch-x">
-                <div className="min-w-[560px] flex flex-col lg:min-h-[calc(100vh-15rem)]">
+              {/* Sized to the window by gridHeight, so the whole month shows without scrolling the page. */}
+              <div
+                ref={gridRef}
+                className="bg-card border border-border rounded-lg overflow-x-auto scroll-touch-x"
+                style={gridHeight ? { height: gridHeight } : undefined}
+              >
+                <div className="min-w-[560px] flex h-full flex-col">
                   <div className="grid grid-cols-7 border-b border-border">
                     {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => (
                       <div key={d} className="text-center text-xs sm:text-sm font-semibold text-foreground/80 py-2 sm:py-2.5 border-r border-border/60 last:border-r-0 bg-muted/50">{d}</div>
                     ))}
                   </div>
-                  <div className="grid flex-1 grid-cols-7 [grid-auto-rows:minmax(8.5rem,1fr)]">
+                  <div
+                    className="grid min-h-0 flex-1 grid-cols-7"
+                    style={gridHeight ? { gridTemplateRows: `repeat(${calendarDays.length / 7}, minmax(0, 1fr))` } : undefined}
+                  >
                     {calendarDays.map((day, idx) => {
                       const dayEvents = getEventsForDate(day).filter(
                         (e) => !searchQuery || `${e.summary} ${datedName(e)}`.toLowerCase().includes(searchQuery.toLowerCase())
@@ -441,11 +466,14 @@ export default function AdminCalendar() {
                       const isToday = isSameDay(day, new Date());
                       const row = Math.floor(idx / 7);
                       const isLastRow = row === Math.floor((calendarDays.length - 1) / 7);
+                      // A day holding more than one thing lists each on a single line; the full read is in
+                      // its tooltip and in the panel, so a busy day still fits its cell.
+                      const compact = dayEvents.length + (meetingsByDate[format(day, 'yyyy-MM-dd')] ?? []).length > 1;
 
                         return (
                          <div
                            key={day.toISOString()}
-                           className={`min-h-[80px] sm:min-h-[8.5rem] border-r border-b border-border/60 text-left flex flex-col
+                           className={`min-h-[80px] sm:min-h-[110px] lg:min-h-0 overflow-hidden border-r border-b border-border/60 text-left flex flex-col
                              ${isLastRow ? 'border-b-0' : ''} ${idx % 7 === 6 ? 'border-r-0' : ''}
                              ${!isCurrentMonth ? 'bg-muted/30' : 'bg-card'}
                              ${dayEvents.length > 0 ? 'cursor-pointer hover:bg-muted/40 transition-colors' : ''}`}
@@ -456,6 +484,7 @@ export default function AdminCalendar() {
                                {format(day, 'd')}
                              </span>
                            </div>
+                           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-width:thin]">
                            {dayEvents.map((event) => {
                               const status = getEventStatus(event);
                               // Indiglo (owner, 2026-09-14): a job assigned or a packet deployed means the work on
@@ -468,21 +497,28 @@ export default function AdminCalendar() {
                               const deadline = deadlinesByEvent[event.uid];
                               const daysUntilDeadline = deadline ? differenceInCalendarDays(new Date(deadline.content_deadline), new Date()) : null;
                               const facts = bookingFacts(event);
+                              const name = status === 'definite' ? datedName(event) : stripTripleseatPrefix(event.summary);
                               return (
                                 <div
                                   key={event.uid}
-                                  className={`${dayEvents.length === 1 ? 'flex-1' : ''} mx-1 mb-1 mt-0.5 rounded-md px-1.5 py-1 border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between gap-1 ${colors.glow ?? ''}`}
+                                  title={[timeRange(event), name, ...facts].filter(Boolean).join(' · ')}
+                                  className={`shrink-0 mx-1 mb-1 mt-0.5 rounded-md px-1.5 ${compact ? 'py-0.5' : 'py-1'} border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between gap-1 ${colors.glow ?? ''}`}
                                   onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
                                 >
-                                  <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className={`text-[10px] ${colors.text} opacity-75 font-medium tabular-nums`}>{timeRange(event)}</span>
-                                    <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug break-words`}>
-                                      {status === 'definite' ? datedName(event) : stripTripleseatPrefix(event.summary)}
-                                    </span>
-                                    {facts.length > 0 && (
-                                      <span className={`text-[10px] ${colors.text} opacity-70 leading-snug`}>{facts.join(' · ')}</span>
-                                    )}
-                                  </div>
+                                  {compact ? (
+                                    <p className={`min-w-0 text-[11px] leading-snug ${colors.text} break-words`}>
+                                      <span className="font-medium opacity-75 tabular-nums">{timeRange(event).split(' – ')[0]}</span>{' '}
+                                      <span className="font-semibold">{name}</span>
+                                    </p>
+                                  ) : (
+                                    <div className="flex flex-col gap-0.5 min-w-0">
+                                      <span className={`text-[10px] ${colors.text} opacity-75 font-medium tabular-nums`}>{timeRange(event)}</span>
+                                      <span className={`text-[11px] sm:text-xs font-semibold ${colors.text} leading-snug break-words`}>{name}</span>
+                                      {facts.length > 0 && (
+                                        <span className={`text-[10px] ${colors.text} opacity-70 leading-snug`}>{facts.join(' · ')}</span>
+                                      )}
+                                    </div>
+                                  )}
                                   <div className="flex gap-1 mt-1 flex-wrap">
                                     {proposals && proposals.length > 0 && proposals.map((p, i) => (
                                       <span
@@ -524,6 +560,7 @@ export default function AdminCalendar() {
                                <span className="min-w-0 break-words text-[10px] leading-snug text-blue-700 dark:text-blue-300">{m.label}</span>
                              </button>
                            ))}
+                           </div>
                          </div>
                        );
                      })}

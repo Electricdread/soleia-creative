@@ -21,6 +21,9 @@ export function EventCircleback({ eventUid }: { eventUid: string }) {
   const [url, setUrl] = useState('');
   const [summary, setSummary] = useState('');
   const [saving, setSaving] = useState(false);
+  // The notes form stays folded until asked for (owner, 2026-09-14: "meetings are still doubled" -- an open
+  // Circleback box under the invite box read as a second place to paste the meeting).
+  const [adding, setAdding] = useState(false);
 
   const fetch_ = async () => {
     const { data } = await supabase
@@ -43,7 +46,7 @@ export function EventCircleback({ eventUid }: { eventUid: string }) {
       circleback_summary: summary.trim() || null,
     } as any);
     if (error) toast.error('Failed to save');
-    else { setUrl(''); setSummary(''); fetch_(); }
+    else { setUrl(''); setSummary(''); setAdding(false); fetch_(); }
     setSaving(false);
   };
 
@@ -56,25 +59,40 @@ export function EventCircleback({ eventUid }: { eventUid: string }) {
 
   return (
     <div className="space-y-3">
-      <div className="space-y-2">
-        <Input
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Circleback URL"
-          className="bg-muted/50 border-border text-foreground text-sm placeholder:text-muted-foreground/60"
-        />
-        <Textarea
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          placeholder="Paste or type meeting notes summary..."
-          className="bg-muted/50 border-border text-foreground text-sm min-h-[80px] placeholder:text-muted-foreground/60"
-        />
-        <Button size="sm" onClick={add} disabled={saving || (!url.trim() && !summary.trim())} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5">
-          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />} Add Notes
-        </Button>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/70">Call notes</span>
+        {!adding && (
+          <Button size="sm" variant="ghost" onClick={() => setAdding(true)} className="h-7 gap-1 px-2 text-[11px] text-muted-foreground">
+            <Plus className="w-3 h-3" /> Add call notes
+          </Button>
+        )}
       </div>
+      {adding && (
+        <div className="space-y-2">
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Circleback link"
+            className="bg-muted/50 border-border text-foreground text-sm placeholder:text-muted-foreground/60"
+          />
+          <Textarea
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            placeholder="Notes from the call"
+            className="bg-muted/50 border-border text-foreground text-sm min-h-[80px] placeholder:text-muted-foreground/60"
+          />
+          <div className="flex gap-1.5">
+            <Button size="sm" onClick={add} disabled={saving || (!url.trim() && !summary.trim())} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5">
+              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />} Save notes
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => { setAdding(false); setUrl(''); setSummary(''); }} className="text-xs text-muted-foreground">
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
 
-      {entries.length === 0 && <p className="text-xs text-muted-foreground/60 italic">No Circleback notes yet</p>}
+      {entries.length === 0 && !adding && <p className="text-xs text-muted-foreground/60 italic">No call notes yet</p>}
 
       <div className="space-y-2">
         {entries.map((e) => (
