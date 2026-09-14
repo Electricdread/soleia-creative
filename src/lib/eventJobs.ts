@@ -2,14 +2,21 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface EventJob { id: string; title: string }
 
+export interface EventLinks {
+  /** The jobs each booking belongs to. */
+  jobs: Map<string, EventJob[]>;
+  /** Bookings with a packet on them that is deployed (`is_active`, which Soleia's admin labels "Deployed"). */
+  deployedPacket: Set<string>;
+}
+
 const VIA_RECORD = ['proposal', 'packet', 'creative_session'] as const;
 
 /**
- * The jobs each booking belongs to, reached the way the jobs list reaches them:
+ * What each booking is linked to, reached the way the jobs list reaches it:
  * through what is linked to the event -- the job itself, or its proposal, packet
  * or creative session. Pass one event's uid to look up just that booking.
  */
-export async function loadJobsByEvent(eventUid?: string): Promise<Map<string, EventJob[]>> {
+export async function loadEventLinks(eventUid?: string): Promise<EventLinks> {
   let query = supabase.from('calendar_event_associations').select('event_uid, entity_type, entity_id');
   if (eventUid) query = query.eq('event_uid', eventUid);
   const { data: assocs } = await query;
@@ -18,7 +25,7 @@ export async function loadJobsByEvent(eventUid?: string): Promise<Map<string, Ev
 
   const [proposals, packets, sessions] = await Promise.all([
     idsOf('proposal').length ? supabase.from('proposals').select('id, job_id').in('id', idsOf('proposal')) : null,
-    idsOf('packet').length ? supabase.from('pre_call_packets').select('id, job_id').in('id', idsOf('packet')) : null,
+    idsOf('packet').length ? supabase.from('pre_call_packets').select('id, job_id, is_active').in('id', idsOf('packet')) : null,
     idsOf('creative_session').length ? supabase.from('creative_sessions').select('id, job_id').in('id', idsOf('creative_session')) : null,
   ]);
   const jobOfRecord = new Map<string, string>();
@@ -27,9 +34,14 @@ export async function loadJobsByEvent(eventUid?: string): Promise<Map<string, Ev
       if (row.job_id) jobOfRecord.set(row.id, row.job_id);
     });
   }
+  const deployedPackets = new Set(
+    ((packets?.data ?? []) as { id: string; is_active: boolean | null }[]).filter((p) => p.is_active).map((p) => p.id),
+  );
 
   const jobIdsByEvent = new Map<string, Set<string>>();
+  const deployedPacket = new Set<string>();
   for (const link of links) {
+    if (link.entity_type === 'packet' && deployedPackets.has(link.entity_id)) deployedPacket.add(link.event_uid);
     const jobId = link.entity_type === 'job' ? link.entity_id
       : (VIA_RECORD as readonly string[]).includes(link.entity_type) ? jobOfRecord.get(link.entity_id)
         : undefined;
@@ -46,9 +58,14 @@ export async function loadJobsByEvent(eventUid?: string): Promise<Map<string, Ev
     (data ?? []).forEach((job) => titles.set(job.id, job.title));
   }
 
-  const byEvent = new Map<string, EventJob[]>();
+  const jobs = new Map<string, EventJob[]>();
   jobIdsByEvent.forEach((ids, uid) => {
-    byEvent.set(uid, [...ids].filter((id) => titles.has(id)).map((id) => ({ id, title: titles.get(id)! })));
+    jobs.set(uid, [...ids].filter((id) => titles.has(id)).map((id) => ({ id, title: titles.get(id)! })));
   });
-  return byEvent;
+  return { jobs, deployedPacket };
+}
+
+/** The jobs each booking belongs to. */
+export async function loadJobsByEvent(eventUid?: string): Promise<Map<string, EventJob[]>> {
+  return (await loadEventLinks(eventUid)).jobs;
 }

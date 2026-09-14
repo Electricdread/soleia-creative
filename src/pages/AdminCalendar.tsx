@@ -13,8 +13,9 @@ import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, startOfWeek, endOfWeek, differenceInCalendarDays } from 'date-fns';
 import { EventDetailPanel } from '@/components/calendar/EventDetailPanel';
 import { EventStatusBadge, getStatusBarColor, type EventStatus } from '@/components/calendar/EventStatusBadge';
+import { getIndigloBarColor } from '@/lib/eventColors';
 import { eventDisplayName } from '@/lib/eventName';
-import { loadJobsByEvent } from '@/lib/eventJobs';
+import { loadEventLinks } from '@/lib/eventJobs';
 
 interface CalendarEvent {
   uid: string;
@@ -67,6 +68,7 @@ export default function AdminCalendar() {
   const [openMeetingCard, setOpenMeetingCard] = useState<MeetingOnCalendar | null>(null);
   const [jobTitlesByEvent, setJobTitlesByEvent] = useState<Record<string, string[]>>({});
   const [tripleseatDateByEvent, setTripleseatDateByEvent] = useState<Record<string, string>>({});
+  const [deployedPacketEvents, setDeployedPacketEvents] = useState<Record<string, true>>({});
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
@@ -201,14 +203,16 @@ export default function AdminCalendar() {
   // What a confirmed booking is called (owner, 2026-09-14): "MM.DD.YY Client - Event" -- its job's
   // name on the day of the event, taken from Tripleseat's event details when they have been read and
   // from the booking's own start otherwise. Never the day Tripleseat added it to the feed.
+  // The same links decide the indiglo colour: a job assigned or a packet deployed.
   const fetchEventNaming = async () => {
-    const [jobs, details] = await Promise.all([
-      loadJobsByEvent(),
+    const [links, details] = await Promise.all([
+      loadEventLinks(),
       supabase.from('calendar_event_tripleseat_cache').select('event_uid, scraped_data'),
     ]);
     const titles: Record<string, string[]> = {};
-    jobs.forEach((list, uid) => { titles[uid] = list.map((job) => job.title); });
+    links.jobs.forEach((list, uid) => { titles[uid] = list.map((job) => job.title); });
     setJobTitlesByEvent(titles);
+    setDeployedPacketEvents(Object.fromEntries([...links.deployedPacket].map((uid) => [uid, true as const])));
     const days: Record<string, string> = {};
     (details.data ?? []).forEach((row) => {
       const day = (row.scraped_data as unknown as { event_date?: string } | null)?.event_date;
@@ -404,6 +408,14 @@ export default function AdminCalendar() {
                   </div>
                 ))}
                 <div className="flex items-center gap-1.5">
+                  <span
+                    title="Indiglo: a job is assigned or a packet is deployed"
+                    className="inline-flex items-center rounded bg-[#5aa9ff] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#06213d] shadow-[0_0_10px_rgba(90,169,255,0.35)]"
+                  >
+                    Job assigned · packet deployed
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
                   <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/40 bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
                     <Video className="h-2.5 w-2.5" /> Meeting
                   </span>
@@ -446,7 +458,12 @@ export default function AdminCalendar() {
                            </div>
                            {dayEvents.map((event) => {
                               const status = getEventStatus(event);
-                              const colors = getStatusBarColor(status);
+                              // Indiglo (owner, 2026-09-14): a job assigned or a packet deployed means the work on
+                              // this booking is live, and it glows in DreamlinkX OS's accent. Everything else keeps
+                              // its status colour, and a cancellation stays red so it never reads as live work.
+                              const live = status !== 'cancelled'
+                                && ((jobTitlesByEvent[event.uid]?.length ?? 0) > 0 || Boolean(deployedPacketEvents[event.uid]));
+                              const colors = live ? getIndigloBarColor() : getStatusBarColor(status);
                               const proposals = proposalsByEvent[event.uid];
                               const deadline = deadlinesByEvent[event.uid];
                               const daysUntilDeadline = deadline ? differenceInCalendarDays(new Date(deadline.content_deadline), new Date()) : null;
@@ -454,7 +471,7 @@ export default function AdminCalendar() {
                               return (
                                 <div
                                   key={event.uid}
-                                  className={`${dayEvents.length === 1 ? 'flex-1' : ''} mx-1 mb-1 mt-0.5 rounded-md px-1.5 py-1 border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between gap-1`}
+                                  className={`${dayEvents.length === 1 ? 'flex-1' : ''} mx-1 mb-1 mt-0.5 rounded-md px-1.5 py-1 border-l-[3px] ${colors.border} bg-gradient-to-r ${colors.bg} to-transparent flex flex-col justify-between gap-1 ${colors.glow ?? ''}`}
                                   onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
                                 >
                                   <div className="flex flex-col gap-0.5 min-w-0">

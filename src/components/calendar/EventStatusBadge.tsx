@@ -21,8 +21,11 @@ export function getStatusDotColor(status: EventStatus): string {
   return statusConfig[status]?.dot || statusConfig.prospect.dot;
 }
 
-export function getStatusBarColor(status: EventStatus): { bg: string; border: string; text: string } {
-  const map: Record<EventStatus, { bg: string; border: string; text: string }> = {
+/** A booking's colours on the grid; `glow` is set only for indiglo (src/lib/eventColors.ts). */
+export type BarColor = { bg: string; border: string; text: string; glow?: string };
+
+export function getStatusBarColor(status: EventStatus): BarColor {
+  const map: Record<EventStatus, BarColor> = {
     definite:  { bg: 'from-[#7b8a3e]/15', border: 'border-[#7b8a3e]/40', text: 'text-[#4a4b2e] dark:text-[#b8c470]' },
     prospect:  { bg: 'from-[#c49a3c]/15', border: 'border-[#c49a3c]/40', text: 'text-[#7a6420] dark:text-[#e0c070]' },
     tentative: { bg: 'from-[#5a8fb4]/15', border: 'border-[#5a8fb4]/40', text: 'text-[#2e5f7f] dark:text-[#8ec0e0]' },
