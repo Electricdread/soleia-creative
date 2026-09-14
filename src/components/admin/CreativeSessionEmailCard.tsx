@@ -167,7 +167,7 @@ function buildCreativeSessionEmailHtml(
             <img src="${logoUrl}" alt="Soleia" width="84" style="display:block;height:28px;width:auto;margin:0 auto 8px;border:0;opacity:0.85;outline:none;text-decoration:none;" />
             <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
             <p style="margin:0;font-size:12px;color:#888888;">
-              <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
+              <a href="mailto:luis@dreamlinkx.com" style="color:#888888;text-decoration:none;">luis@dreamlinkx.com</a>
             </p>
           </td>
         </tr>

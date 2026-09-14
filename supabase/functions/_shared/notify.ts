@@ -19,7 +19,7 @@
 const SANDBOX_FROM = 'Soleia Creative <onboarding@resend.dev>';
 
 /** Where notifications land unless ADMIN_NOTIFY_EMAILS says otherwise. */
-const DEFAULT_ADMIN = 'luisdreamslv@gmail.com';
+const DEFAULT_ADMIN = 'luis@dreamlinkx.com';
 
 export function notifyFrom(): string {
   return Deno.env.get('EMAIL_FROM')?.trim() || SANDBOX_FROM;

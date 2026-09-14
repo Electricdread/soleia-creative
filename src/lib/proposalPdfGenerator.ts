@@ -706,7 +706,7 @@ export async function generateProposalPdf(
     doc.setFontSize(7);
     doc.setTextColor(LIGHT_GRAY);
     doc.text('Soleia Creative Team', PAGE_W / 2, footerY, { align: 'center' });
-    doc.text(proposal.contact_email || 'luisdreamslv@gmail.com', PAGE_W / 2, footerY + 10, { align: 'center' });
+    doc.text(proposal.contact_email || 'luis@dreamlinkx.com', PAGE_W / 2, footerY + 10, { align: 'center' });
   }
 
   // Set metadata

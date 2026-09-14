@@ -89,7 +89,7 @@ export default function AdminProposals() {
   const [venueName, setVenueName] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [validityDays, setValidityDays] = useState('7');
-  const [contactEmail, setContactEmail] = useState('luisdreamslv@gmail.com');
+  const [contactEmail, setContactEmail] = useState('luis@dreamlinkx.com');
   const [clientEmail, setClientEmail] = useState('');
   const [assignees, setAssignees] = useState<Colleague[]>([]);
   const [adminUsers, setAdminUsers] = useState<{ user_id: string; email: string; display_name: string }[]>([]);
@@ -297,7 +297,7 @@ export default function AdminProposals() {
     setVenueName('');
     setEventDate('');
     setValidityDays('7');
-    setContactEmail('luisdreamslv@gmail.com');
+    setContactEmail('luis@dreamlinkx.com');
     setClientEmail('');
     setAssignees([]);
     setItemsList([{ title: '', description: '', price: '', quantity: '1', category: '', unit: '', is_flat_fee: false }]);
@@ -393,7 +393,7 @@ Open your proposal:
 ${proposalUrl}
 
 — Soleia Creative Team
-luisdreamslv@gmail.com`;
+luis@dreamlinkx.com`;
   };
 
   const copyEmailTemplate = async (token: string) => {

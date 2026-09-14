@@ -140,7 +140,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
     venue_name: proposal.venue_name || '',
     event_date: proposal.event_date || '',
     validity_days: String(proposal.validity_days || 7),
-    contact_email: proposal.contact_email || 'luisdreamslv@gmail.com',
+    contact_email: proposal.contact_email || 'luis@dreamlinkx.com',
     client_email: proposal.client_email || '',
     creative_call_url: proposal.creative_call_url || '',
     linked_session_id: '',
@@ -1033,8 +1033,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
             <p className="text-sm leading-relaxed" style={{ color: '#7a5c2c' }}>
               It has been archived or withdrawn and can't be accepted in its current state.
               Please reply to your Soleia contact (or email{' '}
-              <a href="mailto:luisdreamslv@gmail.com" className="underline font-medium">
-                luisdreamslv@gmail.com
+              <a href="mailto:luis@dreamlinkx.com" className="underline font-medium">
+                luis@dreamlinkx.com
               </a>
               ) and ask us to reopen it. Once reopened, refresh this page (Cmd/Ctrl + Shift + R)
               and the signature field will reappear here.
@@ -1122,8 +1122,8 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
           <SectionLabel>Contact</SectionLabel>
           <p className="text-[13px]" style={{ color: RC_INK }}>
             For any questions, please contact us at{' '}
-            <a href={`mailto:${proposal.contact_email || 'luisdreamslv@gmail.com'}`} className="underline" style={{ color: RC_GOLD_DEEP }}>
-              {proposal.contact_email || 'luisdreamslv@gmail.com'}
+            <a href={`mailto:${proposal.contact_email || 'luis@dreamlinkx.com'}`} className="underline" style={{ color: RC_GOLD_DEEP }}>
+              {proposal.contact_email || 'luis@dreamlinkx.com'}
             </a>
           </p>
         </section>

@@ -231,7 +231,7 @@ Deno.serve(async (req) => {
             <img src="${logoUrl}" alt="Soleia" width="84" style="display:block;height:28px;width:auto;margin:0 auto 8px;border:0;opacity:0.85;outline:none;text-decoration:none;" />
             <p style="margin:0 0 4px;font-size:12px;color:#DAA520;letter-spacing:1px;">Creative Team</p>
             <p style="margin:0;font-size:12px;color:#888888;">
-              <a href="mailto:luisdreamslv@gmail.com" style="color:#888888;text-decoration:none;">luisdreamslv@gmail.com</a>
+              <a href="mailto:luis@dreamlinkx.com" style="color:#888888;text-decoration:none;">luis@dreamlinkx.com</a>
             </p>
           </td>
         </tr>
@@ -273,7 +273,7 @@ ${formattedDate ? `<p style="margin:0;font-size:13px;color:#888888;">${esc(forma
 <tr><td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #e8e0d0;margin:0;" /></td></tr>
 <tr><td style="padding:24px 40px 30px;text-align:center;">
 <p style="margin:0 0 6px;font-size:12px;color:#999999;">Soleia Creative Team</p>
-<p style="margin:0;font-size:11px;color:#bbbbbb;">luisdreamslv@gmail.com</p>
+<p style="margin:0;font-size:11px;color:#bbbbbb;">luis@dreamlinkx.com</p>
 </td></tr>
 </table>
 </td></tr>
