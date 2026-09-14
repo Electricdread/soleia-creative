@@ -215,6 +215,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
             <EventMeetingLinks
               eventUid={event.uid}
               eventStart={event.dtstart}
+              eventName={event.summary.replace(/^\[(D|T|P|C)\]\s*/i, '')}
               onChanged={onMeetingsChanged}
             />
           </TabsContent>

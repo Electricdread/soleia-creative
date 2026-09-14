@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ClipboardEvent } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Plus, Trash2, Video, Copy, ClipboardPaste, CalendarClock, AlertTriangle, Check, X } from 'lucide-react';
+import { Loader2, Plus, Trash2, Video, Copy, ClipboardPaste, CalendarClock, AlertTriangle, Check, X, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
@@ -65,14 +64,15 @@ interface EventMeetingLinksProps {
   eventStart?: string;
   /** Fired whenever the set of timed meetings changes, so the grid can redraw. */
   onChanged?: () => void;
+  /** The booking's own name, for naming a meeting when the event is not linked to one job. */
+  eventName?: string;
 }
 
-export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeetingLinksProps) {
+export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }: EventMeetingLinksProps) {
   const [links, setLinks] = useState<MeetingLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [paste, setPaste] = useState('');
   const [label, setLabel] = useState('');
   const [url, setUrl] = useState('');
   const [date, setDate] = useState('');
@@ -107,6 +107,50 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
 
   useEffect(() => { fetchLinks(); }, [eventUid]);
 
+  // The job this booking belongs to, reached the way the jobs list reaches it:
+  // through what is linked to the event -- the job itself, or its proposal,
+  // packet or creative session.
+  const [job, setJob] = useState<{ id: string; title: string } | null>(null);
+  const [jobCount, setJobCount] = useState(0);
+  const [jobChecked, setJobChecked] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const resolveJob = async () => {
+      setJobChecked(false);
+      const { data: assocs } = await supabase
+        .from('calendar_event_associations')
+        .select('entity_type, entity_id')
+        .eq('event_uid', eventUid);
+      const idsOf = (type: string) => (assocs ?? []).filter((a) => a.entity_type === type).map((a) => a.entity_id);
+      const jobIds = new Set(idsOf('job'));
+      const [proposals, packets, sessions] = await Promise.all([
+        idsOf('proposal').length ? supabase.from('proposals').select('job_id').in('id', idsOf('proposal')) : null,
+        idsOf('packet').length ? supabase.from('pre_call_packets').select('job_id').in('id', idsOf('packet')) : null,
+        idsOf('creative_session').length ? supabase.from('creative_sessions').select('job_id').in('id', idsOf('creative_session')) : null,
+      ]);
+      for (const rows of [proposals?.data, packets?.data, sessions?.data]) {
+        ((rows ?? []) as { job_id: string | null }[]).forEach((row) => { if (row.job_id) jobIds.add(row.job_id); });
+      }
+      let found: { id: string; title: string }[] = [];
+      if (jobIds.size) {
+        const { data } = await supabase.from('jobs').select('id, title').in('id', [...jobIds]);
+        found = data ?? [];
+      }
+      if (cancelled) return;
+      setJobCount(found.length);
+      setJob(found.length === 1 ? found[0] : null);
+      setJobChecked(true);
+    };
+    resolveJob();
+    return () => { cancelled = true; };
+  }, [eventUid]);
+
+  // What a meeting is called when nobody names it: its job's title, which reads
+  // the owner's way ("09.15.26 CR - Travcon 2026"), or the booking's own name
+  // when the event is not linked to exactly one job -- then where it is held.
+  const eventTitle = job?.title || eventName?.trim() || '';
+  const nameFor = (link: string) => (eventTitle ? `${eventTitle} · ${labelForUrl(link)}` : labelForUrl(link));
+
   // Upcoming first, then anything undated, then what has already happened.
   const ordered = useMemo(() => {
     const rank = (l: MeetingLink) => {
@@ -131,7 +175,10 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
    */
   const absorb = (text: string, complainWhenEmpty: boolean) => {
     const parsed = parseInvite(text);
-    if (parsed.url) setUrl(parsed.url);
+    if (parsed.url) {
+      setUrl(parsed.url);
+      if (!label.trim()) setLabel(nameFor(parsed.url));
+    }
     if (parsed.startsAt) {
       setDate(format(parsed.startsAt, 'yyyy-MM-dd'));
       setTime(format(parsed.startsAt, 'HH:mm'));
@@ -144,16 +191,24 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
     }
   };
 
-  const readPaste = (text: string) => {
-    setPaste(text);
-    if (text.trim()) absorb(text, true);
+  /**
+   * The Link box is the one place to paste, a bare link or the whole invite
+   * (owner, 2026-09-14: a separate invite box beside it was the same field
+   * twice). An invite is read straight off the clipboard, line breaks and all,
+   * because a one-line field would flatten them before the invite could be read.
+   */
+  const pasteIntoLink = (event: ClipboardEvent<HTMLInputElement>) => {
+    const text = event.clipboardData.getData('text');
+    if (!/\s/.test(text.trim())) {
+      // A bare link pastes as itself; the meeting is still named for its job.
+      if (text.trim() && !label.trim()) setLabel(nameFor(text.trim()));
+      return;
+    }
+    event.preventDefault();
+    absorb(text, true);
   };
 
-  /**
-   * The link box takes a whole invite too. Pasting the Zoom block straight into
-   * the field marked "Link" is the obvious thing to do, and it used to save the
-   * paragraph as the URL and pull no date at all.
-   */
+  /** Anything typed or dropped with spaces in it is read as an invite too. */
   const readLinkField = (text: string) => {
     if (/\s/.test(text.trim())) {
       absorb(text, false);
@@ -166,12 +221,12 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
     if (!url.trim()) return;
     setSaving(true);
     const meetingAt = date && time ? new Date(`${date}T${time}`) : null;
-    // An unlabelled meeting is named after where it is held rather than being
-    // refused: the link and the time are the parts that matter.
+    // An unlabelled meeting is named after its job and where it is held rather
+    // than being refused: the link and the time are the parts that matter.
     const people = splitAttendees(attendees);
     const { error } = await supabase.from('calendar_event_meeting_links').insert({
       event_uid: eventUid,
-      label: label.trim() || labelForUrl(url.trim()),
+      label: label.trim() || nameFor(url.trim()),
       url: url.trim(),
       link_type: 'meeting',
       meeting_at: meetingAt ? meetingAt.toISOString() : null,
@@ -183,7 +238,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
       toast.error('Failed to save link');
       return;
     }
-    setPaste(''); setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60'); setAttendees(''); setZoneLabel(null);
+    setLabel(''); setUrl(''); setDate(''); setTime(''); setDuration('60'); setAttendees(''); setZoneLabel(null);
     toast.success(
       meetingAt
         ? 'Meeting saved — it is on the calendar'
@@ -291,26 +346,37 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged }: EventMeet
           <ClipboardPaste className="h-3.5 w-3.5 text-primary" />
           <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/70">Add a meeting</span>
         </div>
-        <Textarea
-          value={paste}
-          onChange={(e) => readPaste(e.target.value)}
-          rows={2}
-          placeholder="Paste the invite here — the link, date and time are read out of it"
-          className="text-xs"
-        />
+        {job ? (
+          <p className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Briefcase className="h-3 w-3 shrink-0" /> For <span className="truncate font-medium text-foreground">{job.title}</span>
+          </p>
+        ) : jobCount > 1 ? (
+          <p className="flex items-center gap-1.5 text-[11px] text-amber-500">
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            This booking is linked to {jobCount} jobs, so the meeting is named after the booking. Rename it if that is wrong.
+          </p>
+        ) : jobChecked ? (
+          <p className="text-[11px] text-muted-foreground/70">Not linked to a job yet, so the meeting is named after the booking.</p>
+        ) : null}
         <div className="grid gap-2 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Link</Label>
+            <Input
+              value={url}
+              onChange={(e) => readLinkField(e.target.value)}
+              onPaste={pasteIntoLink}
+              placeholder="Paste the invite or its link — the date and time are read out of it"
+              className="h-8 text-xs"
+            />
+          </div>
           <div className="sm:col-span-2">
             <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Label</Label>
             <Input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder={url ? labelForUrl(url) : 'Creative call #1'}
+              placeholder={url ? nameFor(url) : eventTitle ? `${eventTitle} · Creative call` : 'Creative call #1'}
               className="h-8 text-xs"
             />
-          </div>
-          <div className="sm:col-span-2">
-            <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Link</Label>
-            <Input value={url} onChange={(e) => readLinkField(e.target.value)} placeholder="https://zoom.us/j/... or paste the whole invite" className="h-8 text-xs" />
           </div>
           <div className="sm:col-span-2">
             <Label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Attendees</Label>
