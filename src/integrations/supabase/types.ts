@@ -587,6 +587,38 @@ export type Database = {
           },
         ]
       }
+      creative_session_signoffs: {
+        Row: {
+          approved_item_ids: string[]
+          created_at: string
+          id: string
+          session_id: string
+          signer_name: string
+        }
+        Insert: {
+          approved_item_ids?: string[]
+          created_at?: string
+          id?: string
+          session_id: string
+          signer_name: string
+        }
+        Update: {
+          approved_item_ids?: string[]
+          created_at?: string
+          id?: string
+          session_id?: string
+          signer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creative_session_signoffs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "creative_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creative_sessions: {
         Row: {
           brief_enabled: boolean
@@ -1280,6 +1312,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_watermarks: {
+        Row: {
+          key: string
+          last_run_at: string
+        }
+        Insert: {
+          key: string
+          last_run_at: string
+        }
+        Update: {
+          key?: string
+          last_run_at?: string
+        }
+        Relationships: []
       }
       pm_intro_confirmations: {
         Row: {
