@@ -1,7 +1,7 @@
 // Create a per-client Google Drive folder when a proposal is signed.
 // Folder layout:
 //   Soleia Clients/
-//     <Client Name> — <Event Name>/
+//     <MM.DD.YY Job title>/   (jobFolderName; "Client — Event" before 2026-09-14)
 //       01_Soleia Creative Guide/
 //       02_Pixel Map/
 //       03_Client Asset Collect/
@@ -12,6 +12,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { FINALS_FOLDER, FINAL_SLOTS, FINALS_README, isFinalsFolder } from '../_shared/finalSlots.ts';
 import { driveAuthMode, driveFetch, driveJson } from '../_shared/googleDrive.ts';
+import { jobFolderName } from '../_shared/jobFolderName.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -407,9 +408,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    const safe = (s: string) => s.replace(/[\\/:*?"<>|]/g, '-').trim();
     const rootId = await resolveRootFolder(supabase, lovableKey, driveKey);
-    const clientFolderName = `${safe(proposal.client_name)} — ${safe(proposal.event_name)}`;
+    // Named the way the booking reads everywhere else (owner, 2026-09-14): MM.DD.YY + the job's title,
+    // from the job when the record has one, else from the record itself.
+    let folderTitle = proposal.event_name;
+    let folderDate = proposal.event_date;
+    if (proposal.job_id) {
+      const { data: namedJob } = await supabase.from('jobs').select('title, event_date').eq('id', proposal.job_id).maybeSingle();
+      const named = namedJob as { title?: string | null; event_date?: string | null } | null;
+      if (named?.title) folderTitle = named.title;
+      if (named?.event_date) folderDate = named.event_date;
+    }
+    const clientFolderName = jobFolderName(folderTitle, folderDate);
     const clientFolderId = await findOrCreateFolder(clientFolderName, rootId, lovableKey, driveKey);
 
     // Subfolders depend on mode. The asset drop is matched under either

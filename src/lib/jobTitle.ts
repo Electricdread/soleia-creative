@@ -97,15 +97,17 @@ export async function syncJobIdentity(
     const title = canonicalJobTitle(titles, current);
     const clientName = cleanClientName(canonicalJobTitle(clients, currentClient));
 
-    if (title === current && clientName === currentClient) {
-      return { title, clientName };
+    if (title !== current || clientName !== currentClient) {
+      const { error } = await supabase
+        .from('jobs')
+        .update({ title, client_name: clientName })
+        .eq('id', jobId);
+      if (error) throw error;
     }
-
-    const { error } = await supabase
-      .from('jobs')
-      .update({ title, client_name: clientName })
-      .eq('id', jobId);
-    if (error) throw error;
+    // The job's Drive folder follows its name (owner, 2026-09-14): "MM.DD.YY" + the job title. Asked
+    // on every sync, not only on a title change, because the event date is part of the name. It runs on
+    // the server, never blocks a save, and does nothing when the folder already carries the name.
+    void supabase.functions.invoke('rename-client-drive-folder', { body: { job_id: jobId } }).catch(() => {});
     return { title, clientName };
   } catch (e) {
     console.error('Could not sync the job identity', e);
