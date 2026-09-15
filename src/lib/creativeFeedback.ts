@@ -95,9 +95,7 @@ export function summarizeFeedback({ items, reactions, comments, signoffs }: Sess
   };
 }
 
-// creative_session_signoffs arrived on 2026-09-15; until Lovable regenerates types.ts it is not in the typed client.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- temporary: remove once types.ts carries the table
-const signoffTable = () => (supabase as unknown as { from: (table: string) => any }).from('creative_session_signoffs');
+const signoffTable = () => supabase.from('creative_session_signoffs');
 
 export async function fetchSessionFeedback(sessionId: string): Promise<SessionFeedback> {
   const [items, reactions, comments, signoffs] = await Promise.all([
