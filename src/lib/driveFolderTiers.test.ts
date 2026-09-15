@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  colourToRestore,
   folderShowDate,
   folderTier,
   nearestColour,
@@ -77,5 +78,17 @@ describe('nearestColour', () => {
 
   it('asks for the colour itself when there is no palette', () => {
     expect(nearestColour('#5AA9FF', [])).toBe('#5AA9FF');
+  });
+});
+
+describe('colourToRestore', () => {
+  it('keeps a colour the folder already wore', () => {
+    expect(colourToRestore('#a47ae2', '#4986e7')).toBe('#a47ae2');
+  });
+
+  it('puts a folder that already wore the tier colour back to plain', () => {
+    expect(colourToRestore('#F83A22', '#f83a22')).toBe('#8f8f8f');
+    expect(colourToRestore('', '#4986e7')).toBe('#8f8f8f');
+    expect(colourToRestore(null, '#4986e7')).toBe('#8f8f8f');
   });
 });

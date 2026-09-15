@@ -21,6 +21,21 @@ export const ARCHIVE_FOLDER_NAME = 'Archive';
  */
 export const TIER_COLOUR = { hot: '#E53935', soon: '#5AA9FF' } as const;
 
+/**
+ * The colour Drive gives a folder nobody has coloured. Measured, not assumed: the dry run on 2026-09-14 read it
+ * on every untouched folder in Soleia Clients, and it is one of Drive's 24 palette colours.
+ */
+export const PLAIN_FOLDER_COLOUR = '#8f8f8f';
+
+/**
+ * What to put back when a folder leaves a coloured tier. A colour the folder already wore is kept (Interstate15
+ * was purple, EQCA yellow), unless it is the tier's own colour, which meant the tier: that goes back to plain.
+ */
+export function colourToRestore(current: string | null | undefined, tierColour: string): string {
+  const now = String(current ?? '').trim();
+  return !now || now.toLowerCase() === tierColour.toLowerCase() ? PLAIN_FOLDER_COLOUR : now;
+}
+
 export type FolderTier = 'hot' | 'soon' | 'later' | 'past' | 'archive';
 
 const DAY_MS = 24 * 60 * 60 * 1000;

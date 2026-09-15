@@ -21,7 +21,9 @@ import { driveJson } from '../_shared/googleDrive.ts';
 import { FOLDER_MIME, soleiaClientsRoot } from '../_shared/clientFolders.ts';
 import {
   ARCHIVE_FOLDER_NAME,
+  PLAIN_FOLDER_COLOUR,
   TIER_COLOUR,
+  colourToRestore,
   folderShowDate,
   folderTier,
   nearestColour,
@@ -122,6 +124,17 @@ Deno.serve(async (req) => {
       ...inArchive.map((folder) => ({ folder, archived: true })),
     ];
 
+    // A record can point at a subfolder of its job's folder (Whatnot points at its 03_Client Asset Collect).
+    // It answers for the folder above it.
+    const candidateIds = new Set(candidates.map(({ folder }) => folder.id));
+    for (const [folderId, dates] of [...datesByFolder]) {
+      if (candidateIds.has(folderId)) continue;
+      const meta = await driveJson(`/drive/v3/files/${encodeURIComponent(folderId)}?fields=parents,trashed`, { method: 'GET' })
+        .catch(() => null);
+      const parent = meta && !meta.trashed ? (meta.parents ?? []).find((id: string) => candidateIds.has(id)) : undefined;
+      if (parent) datesByFolder.set(parent, [...(datesByFolder.get(parent) ?? []), ...dates]);
+    }
+
     for (const { folder, archived } of candidates) {
       const dates = datesByFolder.get(folder.id);
       if (!dates) { unlinked.push(folder.name); continue; }
@@ -152,17 +165,19 @@ Deno.serve(async (req) => {
         if (current.toLowerCase() !== want.toLowerCase() || marked !== tier) {
           patch.folderColorRgb = want;
           // Keep the colour the folder wore before this job first coloured it, to put back later.
-          patch.appProperties = { [TIER_KEY]: tier, [WAS_KEY]: marked ? folder.appProperties?.[WAS_KEY] ?? '' : current };
+          const was = marked ? folder.appProperties?.[WAS_KEY] || PLAIN_FOLDER_COLOUR : colourToRestore(current, want);
+          patch.appProperties = { [TIER_KEY]: tier, [WAS_KEY]: was };
           change.colour = { from: current || null, to: want };
         }
       } else if (marked) {
-        const was = folder.appProperties?.[WAS_KEY] ?? '';
-        if (was) patch.folderColorRgb = was;
+        const was = folder.appProperties?.[WAS_KEY] || PLAIN_FOLDER_COLOUR;
+        patch.folderColorRgb = was;
         patch.appProperties = { [TIER_KEY]: null, [WAS_KEY]: null };
-        change.colour = { from: current || null, to: was || current || null };
+        change.colour = { from: current || null, to: was };
       }
 
-      if (!query.has('addParents') && !Object.keys(patch).length) continue;
+      // A dry run with no Archive yet cannot name the move's target, but still reports the move.
+      if (!change.move && !Object.keys(patch).length) continue;
       if (!dry) {
         try {
           const saved = await driveJson(`/drive/v3/files/${encodeURIComponent(folder.id)}?${query}`, {
