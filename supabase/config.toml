@@ -59,6 +59,8 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = true
   [functions.rename-client-drive-folder]
     verify_jwt = true
+  [functions.organize-client-drive-folders]
+    verify_jwt = true
   [functions.studio-sync]
     verify_jwt = false
   [functions.proposal-export]

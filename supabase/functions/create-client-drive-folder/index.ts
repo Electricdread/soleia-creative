@@ -420,7 +420,13 @@ Deno.serve(async (req) => {
       if (named?.event_date) folderDate = named.event_date;
     }
     const clientFolderName = jobFolderName(folderTitle, folderDate);
-    const clientFolderId = await findOrCreateFolder(clientFolderName, rootId, lovableKey, driveKey);
+    // A past show's folder lives in Soleia Clients / Archive (organize-client-drive-folders). Look there
+    // before making a second one in the root.
+    const archive = (await listChildFolders(rootId, lovableKey, driveKey)).find((f) => f.name === 'Archive');
+    const archived = archive
+      ? (await listChildFolders(archive.id, lovableKey, driveKey)).find((f) => normName(f.name) === normName(clientFolderName))
+      : undefined;
+    const clientFolderId = archived?.id ?? await findOrCreateFolder(clientFolderName, rootId, lovableKey, driveKey);
 
     // Subfolders depend on mode. The asset drop is matched under either
     // spelling so a job touched by both modes never ends up with two of them.

@@ -4,12 +4,14 @@
  *
  * Called after a job's identity is synced (src/lib/jobTitle.ts, on every packet, proposal and session
  * save). It renames each folder the job, its packets and its proposals point at to
- * `jobFolderName(job.title, job.event_date)` -- but only a folder that sits directly in "Soleia Clients",
- * never a subfolder such as 03_Client Asset Collect (a job can point at one), and only when the name
- * differs. A rename keeps the folder's id, contents and share links, so nothing that finds it breaks.
+ * `jobFolderName(job.title, job.event_date)` -- but only a folder that sits directly in "Soleia Clients"
+ * or in its Archive (where organize-client-drive-folders puts a past show), never a subfolder such as
+ * 03_Client Asset Collect (a job can point at one), and only when the name differs. A rename keeps the
+ * folder's id, contents and share links, so nothing that finds it breaks.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { driveJson } from '../_shared/googleDrive.ts';
+import { archiveFolderId, soleiaClientsRoot } from '../_shared/clientFolders.ts';
 import { jobFolderName } from '../_shared/jobFolderName.ts';
 
 const corsHeaders = {
@@ -20,16 +22,6 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
 const FOLDER = 'application/vnd.google-apps.folder';
-
-/** The "Soleia Clients" root, found the way create-client-drive-folder finds it. Never created here. */
-async function soleiaClientsRoot(supabase: ReturnType<typeof createClient>): Promise<string | null> {
-  const { data } = await supabase.from('site_settings').select('value').eq('key', 'drive_root_folder_id').maybeSingle();
-  const pinned = (data as { value?: string } | null)?.value?.trim();
-  if (pinned) return pinned;
-  const q = encodeURIComponent(`mimeType='${FOLDER}' and name='Soleia Clients' and trashed=false and 'root' in parents`);
-  const list = await driveJson(`/drive/v3/files?q=${q}&fields=files(id)&pageSize=2`, { method: 'GET' });
-  return list?.files?.[0]?.id ?? null;
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -56,6 +48,9 @@ Deno.serve(async (req) => {
 
     const name = jobFolderName(job.title, job.event_date);
     const root = await soleiaClientsRoot(supabase);
+    // A past show's folder sits in Soleia Clients / Archive and is still the job's, so it is named the same.
+    const archive = root ? await archiveFolderId(root) : null;
+    const homes = [root, archive].filter((home): home is string => Boolean(home));
     const renamed: { id: string; from: string; to: string }[] = [];
     const kept: string[] = [];
     const skipped: { id: string; reason: string }[] = [];
@@ -63,7 +58,10 @@ Deno.serve(async (req) => {
       const meta = await driveJson(`/drive/v3/files/${encodeURIComponent(id)}?fields=id,name,parents,trashed,mimeType`, { method: 'GET' }).catch(() => null);
       if (!meta) { skipped.push({ id, reason: 'not readable' }); continue; }
       if (meta.trashed || meta.mimeType !== FOLDER) { skipped.push({ id, reason: 'not a live folder' }); continue; }
-      if (!root || !(meta.parents ?? []).includes(root)) { skipped.push({ id, reason: 'not directly in Soleia Clients' }); continue; }
+      if (!(meta.parents ?? []).some((parent: string) => homes.includes(parent))) {
+        skipped.push({ id, reason: 'not directly in Soleia Clients or its Archive' });
+        continue;
+      }
       if (meta.name === name) { kept.push(id); continue; }
       await driveJson(`/drive/v3/files/${encodeURIComponent(id)}?fields=id,name`, {
         method: 'PATCH',
