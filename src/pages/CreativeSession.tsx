@@ -302,6 +302,7 @@ export default function CreativeSession() {
   if (showSummary && session) {
     return (
       <ApprovalSummary
+        sessionId={session.id}
         items={approvedItems}
         comments={comments}
         clientName={userName || 'Guest'}

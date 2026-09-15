@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Link2, Mail, MonitorPlay, ClipboardList } from 'lucide-react';
+import { Copy, Trash2, ExternalLink, Users, Globe, Lock, Upload, ImageIcon, X, Pencil, Loader2, FileImage, Settings2, Link2, Mail, MonitorPlay, ClipboardList, CheckCircle2, XCircle, MessageCircle, PenLine } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SessionContentManager } from './SessionContentManager';
 import { SessionPrevizClipsManager } from './SessionPrevizClipsManager';
@@ -19,6 +19,8 @@ import { cn } from '@/lib/utils';
 import type { Json } from '@/integrations/supabase/types';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { CreativeBriefViewer } from './CreativeBriefViewer';
+import { CreativeFeedbackViewer } from './CreativeFeedbackViewer';
+import { fetchSessionFeedback, summarizeFeedback, type FeedbackSummary } from '@/lib/creativeFeedback';
 import { answeredCount, fetchBriefForSession, type CreativeBriefRow } from '@/lib/creativeBrief';
 import { syncJobIdentity } from '@/lib/jobTitle';
 import { cleanClientName } from '@/lib/clientName';
@@ -72,6 +74,16 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
   const [briefEnabled, setBriefEnabled] = useState(session.brief_enabled ?? false);
   const [brief, setBrief] = useState<CreativeBriefRow | null>(null);
   const [briefOpen, setBriefOpen] = useState(false);
+  // What the client approved, declined, said and confirmed. Loaded with the card, like the brief, so the counts
+  // show without a click; refreshed when the viewer closes.
+  const [feedback, setFeedback] = useState<FeedbackSummary | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    fetchSessionFeedback(session.id).then((rows) => { if (live) setFeedback(summarizeFeedback(rows)); });
+    return () => { live = false; };
+  }, [session.id, feedbackOpen]);
 
   // Submitted, and nobody has opened it. The one state on this card that means
   // somebody is waiting on us rather than the other way round.
@@ -421,6 +433,27 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                     : brief.submitted_at ? 'Brief read' : `Brief ${answeredCount(brief)}/7`}
                 </button>
               )}
+              {feedback && feedback.total > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setFeedbackOpen(true)}
+                  title="What the client approved, declined, said and confirmed"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary transition-colors hover:bg-primary/20"
+                >
+                  {feedback.approved > 0 && (
+                    <span className="inline-flex items-center gap-0.5"><CheckCircle2 className="w-2.5 h-2.5" /> {feedback.approved} approved</span>
+                  )}
+                  {feedback.declined > 0 && (
+                    <span className="inline-flex items-center gap-0.5 text-destructive"><XCircle className="w-2.5 h-2.5" /> {feedback.declined} declined</span>
+                  )}
+                  {feedback.comments > 0 && (
+                    <span className="inline-flex items-center gap-0.5 text-foreground/80"><MessageCircle className="w-2.5 h-2.5" /> {feedback.comments}</span>
+                  )}
+                  {feedback.signoffs > 0 && (
+                    <span className="inline-flex items-center gap-0.5 font-semibold"><PenLine className="w-2.5 h-2.5" /> Confirmed</span>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* What the session includes, and what you can do with it. Delete is
@@ -658,6 +691,14 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
         projectName={session.project_name}
         open={briefOpen}
         onOpenChange={setBriefOpen}
+      />
+
+      <CreativeFeedbackViewer
+        sessionId={session.id}
+        clientName={session.client_name}
+        projectName={session.project_name}
+        open={feedbackOpen}
+        onOpenChange={setFeedbackOpen}
       />
     </>
   );

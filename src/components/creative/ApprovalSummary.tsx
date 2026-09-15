@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import jsPDF from 'jspdf';
+import { recordSignoff } from '@/lib/creativeFeedback';
 
 interface ApprovedItem {
   id: string;
@@ -29,6 +30,8 @@ interface CommentData {
 }
 
 interface ApprovalSummaryProps {
+  /** Where the confirmation is recorded. */
+  sessionId: string;
   items: ApprovedItem[];
   comments: CommentData[];
   clientName: string;
@@ -127,6 +130,7 @@ function fitImageInBox(imgW: number, imgH: number, boxW: number, boxH: number) {
 }
 
 export function ApprovalSummary({
+  sessionId,
   items,
   comments,
   clientName,
@@ -137,6 +141,21 @@ export function ApprovalSummary({
   const [generating, setGenerating] = useState(false);
   const [signOffName, setSignOffName] = useState('');
   const [signedOff, setSignedOff] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+
+  // The typed-name confirmation used to set this page's state and nothing else, so no sign-off was ever stored or
+  // seen (2026-09-15). It is recorded now, and the studio's feedback email carries it.
+  const confirmApproval = async () => {
+    setConfirming(true);
+    const problem = await recordSignoff(sessionId, clientName, items.map((item) => item.id));
+    setConfirming(false);
+    if (problem) {
+      toast.error('Your approval was not recorded. Please try again.');
+      return;
+    }
+    setSignedOff(true);
+    toast.success('Approval confirmed and sent to Soleia.');
+  };
 
   const isSignOffValid = signOffName.trim().toLowerCase() === clientName.trim().toLowerCase();
 
@@ -571,15 +590,12 @@ export function ApprovalSummary({
                 />
               </div>
               <Button
-                onClick={() => {
-                  setSignedOff(true);
-                  toast.success('Approval confirmed!');
-                }}
-                disabled={!isSignOffValid}
+                onClick={() => void confirmApproval()}
+                disabled={!isSignOffValid || confirming}
                 className="w-full h-11 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <CheckCircle2 className="h-4 w-4" />
-                Confirm Approval
+                {confirming ? 'Confirming…' : 'Confirm Approval'}
               </Button>
             </div>
           )}

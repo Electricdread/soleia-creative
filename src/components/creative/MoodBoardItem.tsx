@@ -60,6 +60,7 @@ export function MoodBoardItem({
 }: MoodBoardItemProps) {
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [choosing, setChoosing] = useState(false);
 
   const handleDownload = async (url: string, title: string) => {
     try {
@@ -100,60 +101,6 @@ export function MoodBoardItem({
   const declineCount = reactions.filter((r) => r.reaction_type === 'decline').length;
   const hasDeclined = reactions.some((r) => r.reaction_type === 'decline' && r.reactor_name === userName);
 
-  const toggleLike = async () => {
-    if (!userName) {
-      toast.error('Please enter your name first');
-      return;
-    }
-    // Remove existing decline if any (mutual exclusivity)
-    const existingDecline = reactions.find(
-      (r) => r.reaction_type === 'decline' && r.reactor_name === userName
-    );
-    if (existingDecline) {
-      await supabase.from('mood_board_reactions').delete().eq('id', existingDecline.id);
-    }
-    const existing = reactions.find(
-      (r) => r.reaction_type === 'love' && r.reactor_name === userName
-    );
-    if (existing) {
-      await supabase.from('mood_board_reactions').delete().eq('id', existing.id);
-    } else {
-      await supabase.from('mood_board_reactions').insert({
-        item_id: item.id,
-        reaction_type: 'love',
-        reactor_name: userName,
-      });
-    }
-    onReactionChange();
-  };
-
-  const toggleDecline = async () => {
-    if (!userName) {
-      toast.error('Please enter your name first');
-      return;
-    }
-    // Remove existing approval if any (mutual exclusivity)
-    const existingLove = reactions.find(
-      (r) => r.reaction_type === 'love' && r.reactor_name === userName
-    );
-    if (existingLove) {
-      await supabase.from('mood_board_reactions').delete().eq('id', existingLove.id);
-    }
-    const existing = reactions.find(
-      (r) => r.reaction_type === 'decline' && r.reactor_name === userName
-    );
-    if (existing) {
-      await supabase.from('mood_board_reactions').delete().eq('id', existing.id);
-    } else {
-      await supabase.from('mood_board_reactions').insert({
-        item_id: item.id,
-        reaction_type: 'decline',
-        reactor_name: userName,
-      });
-    }
-    onReactionChange();
-  };
-
   const addComment = async () => {
     if (!newComment.trim() || !userName) {
       toast.error(!userName ? 'Please enter your name first' : 'Comment cannot be empty');
@@ -166,12 +113,53 @@ export function MoodBoardItem({
       content: newComment.trim(),
     });
     if (error) {
-      toast.error('Failed to add comment');
+      toast.error('Your comment was not saved. Please try again.');
     } else {
       setNewComment('');
       onCommentChange();
     }
     setSubmitting(false);
+  };
+
+  // Approve and Decline are one choice per person: saving one clears the other. The new choice is written first and
+  // the old one removed only once it has landed, so a refused write can never leave the client with neither. Until
+  // 2026-09-15 the old choice went first and no write was checked; the table refused 'decline' outright, so every
+  // Decline since 2026-04-07 was lost and took the client's Approve with it.
+  const choose = async (choice: 'love' | 'decline') => {
+    if (!userName) {
+      toast.error('Please enter your name first');
+      return;
+    }
+    if (choosing) return;
+    setChoosing(true);
+    const mine = (type: string) => reactions.find((r) => r.reaction_type === type && r.reactor_name === userName);
+    const current = mine(choice);
+    const other = mine(choice === 'love' ? 'decline' : 'love');
+    try {
+      if (current) {
+        const { error } = await supabase.from('mood_board_reactions').delete().eq('id', current.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('mood_board_reactions').insert({
+          item_id: item.id,
+          reaction_type: choice,
+          reactor_name: userName,
+        });
+        // 23505: this exact choice is already saved (another tab, a double tap), which is what was asked for.
+        if (error && error.code !== '23505') throw error;
+        if (other) {
+          const { error: clearError } = await supabase.from('mood_board_reactions').delete().eq('id', other.id);
+          if (clearError) throw clearError;
+        }
+        // A note typed but not sent goes with the choice instead of staying behind in the box.
+        if (newComment.trim()) await addComment();
+      }
+    } catch {
+      toast.error(choice === 'love' ? 'Your approval was not saved. Please try again.' : 'Your decline was not saved. Please try again.');
+    } finally {
+      setChoosing(false);
+      onReactionChange();
+    }
   };
 
   const deleteComment = async (commentId: string) => {
@@ -322,7 +310,8 @@ export function MoodBoardItem({
             variant="ghost"
             size="sm"
             className={`h-8 px-3 gap-1.5 ${hasLiked ? 'text-primary' : 'text-muted-foreground'}`}
-            onClick={toggleLike}
+            onClick={() => void choose('love')}
+            disabled={choosing}
           >
             <CheckCircle2 className={`h-4 w-4 ${hasLiked ? 'fill-primary text-primary-foreground' : ''}`} />
             <span className="text-xs">{hasLiked ? 'Approved' : 'Approve'}</span>
@@ -331,7 +320,8 @@ export function MoodBoardItem({
             variant="ghost"
             size="sm"
             className={`h-8 px-3 gap-1.5 ${hasDeclined ? 'text-destructive' : 'text-muted-foreground'}`}
-            onClick={toggleDecline}
+            onClick={() => void choose('decline')}
+            disabled={choosing}
           >
             <XCircle className={`h-4 w-4 ${hasDeclined ? 'fill-destructive text-destructive-foreground' : ''}`} />
             <span className="text-xs">{hasDeclined ? 'Declined' : 'Decline'}</span>
