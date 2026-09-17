@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_login_events: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cached_clips: {
         Row: {
           category: string
