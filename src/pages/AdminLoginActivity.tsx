@@ -67,10 +67,7 @@ function AdminLoginActivityContent() {
   const load = async () => {
     setIsLoading(true);
     try {
-      // admin_login_events isn't in the generated Supabase types yet — drop
-      // this cast once Lovable regenerates src/integrations/supabase/types.ts.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('admin_login_events')
         .select('id, email, ip_address, user_agent, created_at')
         .order('created_at', { ascending: false })
