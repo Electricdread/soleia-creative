@@ -88,6 +88,7 @@ a `304` means keep what you have.
 | `stage` | `{ value, reason, done[] }` from `jobStage.ts`. `value` is one of `booked`, `packet_sent`, `call_held`, `proposal_out`, `awaiting_assets`, `in_production`. Not every job has a creative call (owner, 2026-09-01): `call_held` appears only for a job with a meeting scheduled on its calendar events or a `call_held_on` actually logged; other jobs go straight from `packet_sent` towards `proposal_out` and are never chased for a call. |
 | `next_action` | `{ kind, label, verb }` or `null`. `kind` is one of `call`, `quote`, `sign`, `session`, `assets`, `date`. `call` is only ever returned when a meeting is scheduled. |
 | `proposal` | `null` when the job has none. See below. |
+| `selected_services` | Additive v1 field. On a signed/accepted proposal only, an array of `{ category, title }` for client-selected line items. It carries operational scope for Mission routing; it never includes prices, client links, signatures, quantities, or mutable proposal state. |
 | `packet` | `{ id, title, kind, deployed, created_at }` or `null`. |
 | `creative_session` | `{ id, project_name, live }` or `null`. |
 | `assets` | `{ count, folders_scanned, latest }`. |

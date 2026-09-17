@@ -360,6 +360,15 @@ async function buildPayload(client: SupabaseClient) {
           }
         : null,
 
+      // Additive v1 field: the accepted proposal's selected service labels are
+      // operational scope for Studio OS / Mission Control, never client links,
+      // signatures, prices, or mutable proposal data.
+      selected_services: proposal?.signed_at
+        ? ((packageItems.data ?? []) as unknown as PackageItemRow[])
+          .filter((item) => item.proposal_id === proposal.id)
+          .map((item) => ({ category: String(item.category ?? '').slice(0, 120), title: String(item.title ?? '').slice(0, 240) }))
+        : [],
+
       packet: packet
         ? {
             id: packet.id,
