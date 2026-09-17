@@ -5,6 +5,7 @@ import {
   Calendar, FileText, BookOpen, Palette, Map,
   HardDrive, Users, Mail, LayoutDashboard, Command, LogOut, Menu, X,
   Sun, Moon, PanelLeftClose, PanelLeft, ExternalLink, Search, Briefcase,
+  ShieldAlert,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,6 +79,7 @@ const NAV: NavGroup[] = [
       { label: 'Storage', href: '/admin/storage', icon: HardDrive },
       { label: 'People', href: '/admin/users', icon: Users, badge: 'pendingUsers' },
       { label: 'Email previews', href: '/admin/email-previews', icon: Mail },
+      { label: 'Login Activity', href: '/admin/login-activity', icon: ShieldAlert, operatorOnly: true },
       { label: 'Operator Console', href: '/office', icon: Command, operatorOnly: true },
     ],
   },

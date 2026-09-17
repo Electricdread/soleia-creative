@@ -37,6 +37,7 @@ import AdminPackets from "./pages/AdminPackets";
 import ClientPacket from "./pages/ClientPacket";
 import ClientProposal from "./pages/ClientProposal";
 import OfficePortal from "./pages/OfficePortal";
+import AdminLoginActivity from "./pages/AdminLoginActivity";
 import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
 import ShowBloxPreview from "./pages/ShowBloxPreview";
@@ -122,6 +123,9 @@ const App = () => (
               
               {/* Operator Office Portal - Admin role required + email-locked to operator */}
               <Route path="/office" element={<ProtectedRoute requireAdmin><OfficePortal /></ProtectedRoute>} />
+
+              {/* Admin Login Activity - Admin role required + email-locked to operator (page also enforces via OperatorGuard, table via RLS) */}
+              <Route path="/admin/login-activity" element={<ProtectedRoute requireAdmin><AdminLoginActivity /></ProtectedRoute>} />
               
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />

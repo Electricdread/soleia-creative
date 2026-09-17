@@ -48,6 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
+        if (event === 'SIGNED_IN') {
+          // Fire-and-forget: records this sign-in for the admin login
+          // activity report if the account turns out to be an admin.
+          // 'SIGNED_IN' only fires on a genuine new sign-in, not on the
+          // session restore that runs on every page load.
+          void supabase.functions.invoke('log-admin-login').catch((err) => {
+            console.error('log-admin-login failed', err);
+          });
+        }
+
         if (currentSession?.user) {
           // Use setTimeout to avoid Supabase deadlock
           setTimeout(async () => {

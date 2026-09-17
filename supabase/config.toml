@@ -67,3 +67,5 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = false
   [functions.proposal-export]
     verify_jwt = false
+  [functions.log-admin-login]
+    verify_jwt = true
