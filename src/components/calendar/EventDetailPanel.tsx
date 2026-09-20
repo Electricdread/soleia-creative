@@ -212,7 +212,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
             />
           </TabsContent>
           <TabsContent value="packet" className="p-4 mt-0">
-            <EventPacket eventUid={event.uid} summary={event.summary} dtstart={event.dtstart} />
+            <EventPacket eventUid={event.uid} summary={event.summary} dtstart={event.dtstart} eventLabel={datedName || plainName} />
           </TabsContent>
           <TabsContent value="meetings" className="p-4 mt-0">
             <EventMeetingLinks

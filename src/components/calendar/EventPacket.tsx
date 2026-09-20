@@ -47,9 +47,11 @@ interface EventPacketProps {
   eventUid: string;
   summary: string;
   dtstart: string;
+  /** The booking's name the owner's way, "09.22.26 CR - NW Regional Office LIUNA". A packet's title becomes its job's title. */
+  eventLabel: string;
 }
 
-export function EventPacket({ eventUid, summary, dtstart }: EventPacketProps) {
+export function EventPacket({ eventUid, summary, dtstart, eventLabel }: EventPacketProps) {
   const [packets, setPackets] = useState<PacketRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -58,6 +60,9 @@ export function EventPacket({ eventUid, summary, dtstart }: EventPacketProps) {
   const [clientName, setClientName] = useState('');
 
   const eventTitle = cleanTitle(summary);
+  // The packet is named for the day it is for, like the job and the Drive folder that follow it. Seeded from
+  // the bare summary, a job took the packet's undated name and lost its own.
+  const packetTitle = eventLabel || eventTitle;
   const eventDate = (() => {
     try { return format(parseISO(dtstart), 'yyyy-MM-dd'); } catch { return ''; }
   })();
@@ -98,7 +103,7 @@ export function EventPacket({ eventUid, summary, dtstart }: EventPacketProps) {
     setEditorKind(kind);
     setEditorInitial({
       ...defaultFor(kind),
-      title: eventTitle,
+      title: packetTitle,
       client_name: clientName || eventTitle,
       event_date: eventDate,
     });
@@ -194,7 +199,7 @@ export function EventPacket({ eventUid, summary, dtstart }: EventPacketProps) {
           <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/70">Raise a packet</span>
         </div>
         <p className="mt-1 text-[11px] text-muted-foreground">
-          Opens prefilled as <span className="text-foreground">{eventTitle || 'this event'}</span>
+          Opens prefilled as <span className="text-foreground">{packetTitle || 'this event'}</span>
           {eventDate ? ` for ${format(parseISO(`${eventDate}T00:00:00`), 'MMM d, yyyy')}` : ''}.
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
