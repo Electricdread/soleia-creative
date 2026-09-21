@@ -101,6 +101,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
   },
   {
     name: 'DJ Booth',
+    logoIncluded: true,
     res: '1260 × 168',
     role: 'The booth face — carries the energy of the set out to the floor.',
     area: 'main',
@@ -113,7 +114,7 @@ export const VENUE_SURFACES: VenueSurface[] = [
     role: 'Six ceiling rays radiating from the sunburst — motion that fills the room overhead.',
     area: 'main',
     region: [0, 1368, 1920, 128],
-    countNote: '6 rays',
+    countNote: '6 rays — each ray prints on both blades of its pair, the second one upside down, because one atlas row feeds both.',
   },
 
   // ── Beachclub · exterior ────────────────────────────────────────────────
