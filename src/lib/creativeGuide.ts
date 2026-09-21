@@ -124,7 +124,7 @@ export const DISPLAY_TYPES: DisplayType[] = [
       { width: 2304, height: 272, label: 'SR Curves' },
       { width: 2304, height: 272, label: 'SL Curves' },
       { width: 640, height: 272, label: 'Center' },
-      { width: 1092, height: 168, label: 'DJ Booth' },
+      { width: 1260, height: 168, label: 'DJ Booth' },
       { width: 1216, height: 592, label: 'IMAG SR' },
       { width: 1216, height: 592, label: 'IMAG SL' },
     ],
@@ -270,7 +270,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
     name: 'DJ Booth',
     category: 'indoor',
     subcategory: 'booth',
-    resolution: '1092x168',
+    resolution: '1260x168',
     description: 'Behind DJ booth screen supporting performance visuals and branded backdrops.',
     useCases: [
       'Full-screen branded environments',
@@ -279,7 +279,7 @@ export const INDOOR_LED_ZONES: LEDZone[] = [
       'Sponsor integrations and transitions',
     ],
     specs: {
-      resolution: '1092x168',
+      resolution: '1260x168',
     },
   },
   {
