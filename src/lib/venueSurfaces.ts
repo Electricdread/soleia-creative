@@ -284,6 +284,13 @@ export const surfacesIn = (area: AreaId) => VENUE_SURFACES.filter((s) => s.area 
 export interface PixelMapRegion {
   /** Screen name as the pixel map itself labels it. */
   label: string;
+  /**
+   * The mesh's name in the Unreal export, which is also the key `RoomScene`
+   * looks this rectangle up by and the name the playback rig uses. Carried here
+   * so anything generating a frame outside this app — a ComfyUI graph, an After
+   * Effects template — can name a screen the same way the room does.
+   */
+  node: string;
   /** [x, y, w, h] in map pixels. */
   rect: [number, number, number, number];
   /** Grouping used for the map legend and its colour. */
@@ -297,21 +304,21 @@ export interface PixelMapRegion {
 }
 
 export const PIXEL_MAP_REGIONS: PixelMapRegion[] = [
-  { label: 'IMAG SR', rect: [0, 0, 1216, 592], band: 'walls', logo: true },
-  { label: 'Center', rect: [1216, 0, 640, 272], band: 'walls', logo: true },
-  { label: 'IMAG SL', rect: [1856, 0, 1216, 592], band: 'walls', logo: true },
-  { label: 'DJ Booth', rect: [906, 594, 1260, 168], band: 'walls' },
-  { label: 'SR Curves', rect: [0, 794, 2304, 272], band: 'curves' },
-  { label: 'SL Curves', rect: [0, 1066, 2304, 272], band: 'curves' },
-  { label: 'Sunray 1', rect: [0, 1368, 1920, 128], band: 'rays', logo: true },
-  { label: 'Sunray 2', rect: [0, 1496, 1536, 128], band: 'rays', logo: true },
-  { label: 'Sunray 3', rect: [0, 1624, 1792, 128], band: 'rays', logo: true },
-  { label: 'Sunray 4', rect: [0, 1752, 1792, 128], band: 'rays', logo: true },
-  { label: 'Sunray 5', rect: [0, 1880, 1792, 128], band: 'rays', logo: true },
-  { label: 'Sunray 6', rect: [0, 2008, 1536, 128], band: 'rays', logo: true },
-  { label: 'Outdoor SR', rect: [2322, 793, 588, 840], band: 'outdoor', logo: true },
-  { label: 'Outdoor SL', rect: [2916, 793, 588, 840], band: 'outdoor', logo: true },
-  { label: 'Outdoor Arch', rect: [2322, 1639, 1512, 504], band: 'outdoor', logo: true },
+  { label: 'IMAG SR', node: 'LED_SR_IMAG', rect: [0, 0, 1216, 592], band: 'walls', logo: true },
+  { label: 'Center', node: 'LED_Center', rect: [1216, 0, 640, 272], band: 'walls', logo: true },
+  { label: 'IMAG SL', node: 'LED_SL_IMAG', rect: [1856, 0, 1216, 592], band: 'walls', logo: true },
+  { label: 'DJ Booth', node: 'LED_DJ_Booth', rect: [906, 594, 1260, 168], band: 'walls' },
+  { label: 'SR Curves', node: 'LED_SR_Curves', rect: [0, 794, 2304, 272], band: 'curves' },
+  { label: 'SL Curves', node: 'LED_SL_Curves', rect: [0, 1066, 2304, 272], band: 'curves' },
+  { label: 'Sunray 1', node: 'LED_Sol_Rays_Sunray_1', rect: [0, 1368, 1920, 128], band: 'rays', logo: true },
+  { label: 'Sunray 2', node: 'LED_Sol_Rays_Sunray_2', rect: [0, 1496, 1536, 128], band: 'rays', logo: true },
+  { label: 'Sunray 3', node: 'LED_Sol_Rays_Sunray_3', rect: [0, 1624, 1792, 128], band: 'rays', logo: true },
+  { label: 'Sunray 4', node: 'LED_Sol_Rays_Sunray_4', rect: [0, 1752, 1792, 128], band: 'rays', logo: true },
+  { label: 'Sunray 5', node: 'LED_Sol_Rays_Sunray_5', rect: [0, 1880, 1792, 128], band: 'rays', logo: true },
+  { label: 'Sunray 6', node: 'LED_Sol_Rays_Sunray_6', rect: [0, 2008, 1536, 128], band: 'rays', logo: true },
+  { label: 'Outdoor SR', node: 'outdoor_SR', rect: [2322, 793, 588, 840], band: 'outdoor', logo: true },
+  { label: 'Outdoor SL', node: 'outdoor_SL', rect: [2916, 793, 588, 840], band: 'outdoor', logo: true },
+  { label: 'Outdoor Arch', node: 'LED_Outdoor_Arch', rect: [2322, 1639, 1512, 504], band: 'outdoor', logo: true },
 ];
 
 export const PIXEL_MAP_BANDS: { id: PixelMapRegion['band']; label: string }[] = [
