@@ -114,15 +114,39 @@ Deno.serve(async (req) => {
       );
     }
 
-    const jobs = (jobRows || []).map((j: any) => ({
-      id: j.id,
-      title: j.title,
-      client_name: j.client_name,
-      event_date: j.event_date,
-      track: j.track,
-      is_active: j.is_active,
-      has_proposal: jobsWithProposal.has(j.id),
-    }));
+    // Pre-call packet info per job — additive; DSXBooks can see whether an
+    // active pre-call packet exists for a job, when it was deployed, and its
+    // title/scope. Latest packet wins if a job has several active ones.
+    const packetsByJob = new Map<string, any>();
+    if (jobIds.length > 0) {
+      const { data: packetRows, error: packetError } = await supabase
+        .from("pre_call_packets")
+        .select("id, job_id, title, scope, deploy_notified_at, created_at")
+        .in("job_id", jobIds)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      if (packetError) throw packetError;
+      for (const p of packetRows || []) {
+        if (p.job_id && !packetsByJob.has(p.job_id)) packetsByJob.set(p.job_id, p);
+      }
+    }
+
+    const jobs = (jobRows || []).map((j: any) => {
+      const packet = packetsByJob.get(j.id) || null;
+      return {
+        id: j.id,
+        title: j.title,
+        client_name: j.client_name,
+        event_date: j.event_date,
+        track: j.track,
+        is_active: j.is_active,
+        has_proposal: jobsWithProposal.has(j.id),
+        packet_id: packet ? packet.id : null,
+        packet_deployed_at: packet ? packet.deploy_notified_at : null,
+        packet_title: packet ? packet.title : null,
+        packet_scope: packet ? packet.scope : null,
+      };
+    });
 
     if (!proposals || proposals.length === 0) {
       return new Response(
