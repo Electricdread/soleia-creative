@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "export:room-map": "vite-node scripts/export-room-map.ts",
     "test:watch": "vitest"
   },
   "dependencies": {
