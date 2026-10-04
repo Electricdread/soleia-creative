@@ -21,8 +21,9 @@ const PREVIEW_H = 720;
  * Storage serves .html as plain text, so the file is fetched and handed to the
  * frame as `srcdoc`. The sandbox allows scripts and nothing else: with no
  * `allow-same-origin` the page runs in an origin of its own and cannot reach
- * this app's storage, session or DOM, and it cannot open windows, submit forms
- * or navigate the tab. That also means the file must be self-contained; files
+ * this app's storage, session or DOM, and it cannot submit forms or navigate
+ * the tab. Links may open a new tab (a deck's footer link), and that tab is an
+ * ordinary page, not a sandboxed one. That also means the file must be self-contained; files
  * referenced beside it do not exist here, while absolute URLs (fonts, a CDN
  * script) load normally.
  */
@@ -57,7 +58,7 @@ export function HtmlEmbed({ url, title, mode, className = '' }: HtmlEmbedProps) 
     <iframe
       title={title}
       srcDoc={html}
-      sandbox="allow-scripts"
+      sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
       referrerPolicy="no-referrer"
       loading={mode === 'preview' ? 'lazy' : undefined}
       tabIndex={mode === 'preview' ? -1 : undefined}
