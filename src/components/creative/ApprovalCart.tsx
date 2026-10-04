@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { previewImageUrl } from '@/lib/sessionMedia';
 
 interface ApprovedItem {
   id: string;
@@ -37,7 +38,7 @@ export function ApprovalCart({ items, clientName, onViewSummary }: ApprovalCartP
 
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
           {items.map((item) => {
-            const thumb = item.thumbnail_url || item.file_url;
+            const thumb = item.item_type === 'video' ? item.thumbnail_url || item.file_url : previewImageUrl(item);
             return (
               <div
                 key={item.id}

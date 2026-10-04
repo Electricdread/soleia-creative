@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Trash2, Upload, Loader2, GripVertical, Image, Film, FileText, Pencil, Check, X, Plus, Layers } from 'lucide-react';
+import { Trash2, Upload, Loader2, GripVertical, Image, Film, FileText, Pencil, Check, X, Plus, Layers, Code2 } from 'lucide-react';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -27,6 +27,12 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
+import { mediaKind, storedItemType, uploadKind } from '@/lib/sessionMedia';
+import { pdfCoverFromFile } from '@/lib/pdfDocument';
+
+// Set explicitly: Windows often reports no type at all for .html, and the browser's guess is not the record.
+const CONTENT_TYPE: Record<string, string> = { pdf: 'application/pdf', html: 'text/html' };
 
 interface ContentItem {
   id: string;
@@ -66,7 +72,9 @@ function SortableContentRow({ item, onDelete, deleting, onEdit, scenes }: {
     transition,
   };
 
-  const typeIcon = item.item_type === 'video' ? <Film className="w-4 h-4 text-muted-foreground" /> :
+  const kind = mediaKind(item);
+  const typeIcon = kind === 'html' ? <Code2 className="w-4 h-4 text-muted-foreground" /> :
+    item.item_type === 'video' ? <Film className="w-4 h-4 text-muted-foreground" /> :
     item.item_type === 'pdf' ? <FileText className="w-4 h-4 text-muted-foreground" /> :
     <Image className="w-4 h-4 text-muted-foreground" />;
 
@@ -98,7 +106,7 @@ function SortableContentRow({ item, onDelete, deleting, onEdit, scenes }: {
       <div className="flex-1 min-w-0 overflow-hidden">
         <p className="text-sm font-medium truncate">{item.title || 'Untitled'}</p>
         <div className="flex items-center gap-2">
-          <p className="text-xs text-muted-foreground capitalize">{item.item_type}</p>
+          <p className="text-xs text-muted-foreground capitalize">{kind === 'pdf' ? 'PDF slideshow' : kind === 'html' ? 'HTML' : kind}</p>
           {scene && (
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
               {scene.title}
@@ -296,9 +304,12 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
         continue;
       }
 
-      let itemType: 'image' | 'video' | 'pdf' = 'image';
-      if (file.type.startsWith('video/')) itemType = 'video';
-      else if (file.type === 'application/pdf') itemType = 'pdf';
+      const itemType = uploadKind(file);
+      if (!itemType) {
+        toast.error(`${file.name} is not an image, video, PDF or HTML file.`);
+        failed++;
+        continue;
+      }
 
       // Pre-flight: confirm the browser can decode the video before we upload.
       if (itemType === 'video') {
@@ -324,7 +335,7 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
 
       const { error: uploadError } = await supabase.storage
         .from('creative-uploads')
-        .upload(fileName, file, { contentType: file.type, upsert: false });
+        .upload(fileName, file, { contentType: CONTENT_TYPE[itemType] ?? file.type, upsert: false });
 
       if (uploadError) {
         console.error('storage upload failed', label, uploadError);
@@ -337,11 +348,28 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
         .from('creative-uploads')
         .getPublicUrl(fileName);
 
+      // A deck's first page is stored as its cover, so the client's card, the approval summary and this list
+      // all have a picture without opening the PDF.
+      let thumbnailUrl: string | null = null;
+      if (itemType === 'pdf') {
+        const cover = await pdfCoverFromFile(file);
+        if (cover) {
+          const coverPath = `${baseName}-thumb.jpg`;
+          const { error: coverError } = await supabase.storage
+            .from('creative-uploads')
+            .upload(coverPath, cover, { contentType: 'image/jpeg', upsert: false });
+          if (!coverError) {
+            thumbnailUrl = supabase.storage.from('creative-uploads').getPublicUrl(coverPath).data.publicUrl;
+          }
+        }
+      }
+
       const { error: insertError } = await supabase.from('mood_board_items').insert({
         session_id: sessionId,
-        item_type: itemType,
+        item_type: storedItemType(itemType),
         file_url: urlData.publicUrl,
-        title: file.name,
+        thumbnail_url: thumbnailUrl,
+        title: file.name.replace(/\.(pdf|html?)$/i, ''),
         added_by: 'Admin',
         sort_order: sortOrder,
       });
@@ -350,7 +378,7 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
         console.error('insert failed', label, insertError);
         toast.error(`Saved file but couldn't record ${file.name}: ${insertError.message}`);
         // clean up orphaned upload
-        await supabase.storage.from('creative-uploads').remove([fileName]);
+        await supabase.storage.from('creative-uploads').remove(thumbnailUrl ? [fileName, `${baseName}-thumb.jpg`] : [fileName]);
         failed++;
         continue;
       }
@@ -476,7 +504,7 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
                   value={editDescription}
                   onChange={e => setEditDescription(e.target.value)}
                   className="mt-1 text-sm min-h-[100px] resize-none"
-                  placeholder="Add a description..."
+                  placeholder={editingItem.item_type === 'pdf' || mediaKind(editingItem) === 'html' ? 'Creative notes the client reads with this deck...' : 'Add a description...'}
                   rows={4}
                 />
               </div>
@@ -523,11 +551,14 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
           {uploading ? 'Uploading...' : 'Add Files'}
         </Button>
         <span className="text-xs text-muted-foreground">{items.length} item{items.length !== 1 ? 's' : ''}</span>
+        <span className="ml-auto text-[10px] text-muted-foreground text-right leading-tight">
+          Images, video, PDF (shown as a slideshow), HTML (self-contained)
+        </span>
         <input
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/*,video/*,.pdf"
+          accept="image/*,video/*,.pdf,.html,.htm"
           className="hidden"
           onChange={handleFileUpload}
         />

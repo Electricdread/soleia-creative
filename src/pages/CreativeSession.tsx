@@ -9,6 +9,7 @@ import { Loader2, User, ArrowRight, FileText, AlertCircle, Maximize2, Minimize2 
 import { CreativeSessionCover } from '@/components/creative/CreativeSessionCover';
 import { MoodBoardItem } from '@/components/creative/MoodBoardItem';
 import { FullscreenMediaViewer } from '@/components/creative/FullscreenMediaViewer';
+import { isViewable } from '@/lib/sessionMedia';
 import { ApprovalCart } from '@/components/creative/ApprovalCart';
 import { ApprovalSummary } from '@/components/creative/ApprovalSummary';
 import soleiaLogo from '@/assets/soleia-logo-new.png';
@@ -493,7 +494,7 @@ export default function CreativeSession() {
       {/* Fullscreen Viewer */}
       {fullscreenItemId && (
         <FullscreenMediaViewer
-          items={items.filter((i) => i.item_type === 'image' || i.item_type === 'video')}
+          items={items.filter(isViewable)}
           currentId={fullscreenItemId}
           onClose={() => setFullscreenItemId(null)}
           onNavigate={setFullscreenItemId}

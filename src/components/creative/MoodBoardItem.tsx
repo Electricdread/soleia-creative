@@ -5,11 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2, XCircle, Download } from 'lucide-react';
+import { Trash2, ExternalLink, Send, MessageCircle, GripVertical, CheckCircle2, XCircle, Download, Presentation, Maximize2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { HtmlEmbed } from '@/components/creative/HtmlEmbed';
+import { usePdfCover } from '@/components/creative/PdfSlideshow';
+import { mediaKind, mediaKindLabel } from '@/lib/sessionMedia';
 
 interface Reaction {
   id: string;
@@ -61,6 +64,9 @@ export function MoodBoardItem({
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [choosing, setChoosing] = useState(false);
+  const kind = mediaKind(item);
+  // A deck uploaded before covers were stored has no thumbnail: draw its first page here.
+  const drawnCover = usePdfCover(item.file_url, kind === 'pdf' && !item.thumbnail_url);
 
   const handleDownload = async (url: string, title: string) => {
     try {
@@ -227,6 +233,45 @@ export function MoodBoardItem({
       );
     }
 
+    if (kind === 'pdf' && mediaUrl) {
+      const cover = thumbnailUrl || drawnCover;
+      return (
+        <button
+          type="button"
+          className="group/deck relative block w-full cursor-pointer overflow-hidden rounded-t-lg bg-secondary/30 text-left"
+          onClick={() => onMediaClick(item.id)}
+          aria-label={`Open ${item.title || 'the deck'} as a slideshow`}
+        >
+          {cover ? (
+            <img src={cover} alt={item.title || 'Deck cover'} className="w-full object-contain max-h-[500px]" />
+          ) : (
+            <div className="aspect-video flex items-center justify-center">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 rounded-full bg-background/80 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-foreground backdrop-blur-sm transition-luxury group-hover/deck:bg-primary group-hover/deck:text-primary-foreground">
+            <Presentation className="h-3.5 w-3.5" /> View slideshow
+          </span>
+        </button>
+      );
+    }
+
+    if (kind === 'html' && mediaUrl) {
+      return (
+        <button
+          type="button"
+          className="group/deck relative block w-full cursor-pointer overflow-hidden rounded-t-lg bg-secondary/30 text-left"
+          onClick={() => onMediaClick(item.id)}
+          aria-label={`Open ${item.title || 'the preview'} full screen`}
+        >
+          <HtmlEmbed url={mediaUrl} title={item.title || 'Interactive preview'} mode="preview" />
+          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 rounded-full bg-background/80 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-foreground backdrop-blur-sm transition-luxury group-hover/deck:bg-primary group-hover/deck:text-primary-foreground">
+            <Maximize2 className="h-3.5 w-3.5" /> Open full screen
+          </span>
+        </button>
+      );
+    }
+
     if (item.item_type === 'link') {
       return (
         <div className="aspect-video bg-secondary/30 rounded-t-lg flex items-center justify-center p-4">
@@ -291,7 +336,7 @@ export function MoodBoardItem({
         )}
         {item.item_type && (
           <Badge variant="secondary" className={`absolute ${readOnly ? 'top-2' : 'top-10'} left-2 text-[8px] uppercase tracking-wider`}>
-            {item.item_type}
+            {mediaKindLabel(item)}
           </Badge>
         )}
       </div>
@@ -301,7 +346,7 @@ export function MoodBoardItem({
           <p className="text-base font-bold font-display text-foreground line-clamp-2">{item.title}</p>
         )}
         {item.description && (
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{item.description}</p>
+          <p className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line ${kind === 'pdf' || kind === 'html' ? '' : 'line-clamp-3'}`}>{item.description}</p>
         )}
 
         {/* Approve & Decline Buttons */}

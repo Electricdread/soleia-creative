@@ -28,6 +28,8 @@ export default defineConfig(({ mode }) => ({
         // Images now load on demand; the app icons stay precached through
         // includeAssets above.
         globPatterns: ["**/*.{js,css,html,ico,woff2}"],
+        // pdf.js loads only when a client opens a deck; it is not part of the shell.
+        globIgnores: ["**/pdf-*.js", "**/pdf.worker*"],
       },
       manifest: {
         name: "Soleia Creative",

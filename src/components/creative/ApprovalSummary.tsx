@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 import jsPDF from 'jspdf';
+import { mediaKind, mediaKindLabel, previewImageUrl } from '@/lib/sessionMedia';
 import { recordSignoff } from '@/lib/creativeFeedback';
 
 interface ApprovedItem {
@@ -57,6 +58,13 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+// A deck or an HTML file is not a picture: only its stored cover can stand in for it.
+function sessionThumb(item: { item_type: string; thumbnail_url: string | null; file_url: string | null; url: string | null }): string | null {
+  const kind = mediaKind(item);
+  if (kind === 'pdf' || kind === 'html') return previewImageUrl(item);
+  return item.thumbnail_url || item.file_url || item.url;
 }
 
 function isVideoUrl(url: string): boolean {
@@ -226,7 +234,7 @@ export function ApprovalSummary({
         pdf.roundedRect(margin, y, contentWidth, Math.max(55, estimatedHeight), 3, 3, 'F');
 
         // Thumbnail — preserve aspect ratio
-        const thumbUrl = item.thumbnail_url || item.file_url || item.url;
+        const thumbUrl = sessionThumb(item);
         const thumbBoxW = 45;
         const thumbBoxH = 35;
         const thumbBoxX = margin + 3;
@@ -265,7 +273,7 @@ export function ApprovalSummary({
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(150, 150, 150);
 
-        const typeBadge = item.item_type.toUpperCase();
+        const typeBadge = mediaKindLabel(item).toUpperCase();
         pdf.text(typeBadge, textX, y + 17);
 
         if (item.description) {
@@ -454,7 +462,7 @@ export function ApprovalSummary({
         <div className="space-y-4">
           {items.map((item, index) => {
             const itemComments = comments.filter((c) => c.item_id === item.id);
-            const thumbUrl = item.thumbnail_url || item.file_url || item.url;
+            const thumbUrl = sessionThumb(item);
 
             return (
               <Card
