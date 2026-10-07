@@ -14,10 +14,18 @@ interface CreativeSessionCoverProps {
   session: {
     project_name: string;
     client_name: string;
+    event_date?: string | null;
     created_at: string;
     cover_images?: CoverImage[] | null;
     creative_notes?: string | null;
   };
+}
+
+// The client sees the event's date. event_date is a plain date ("2026-10-14"), read as local midnight
+// (as the admin card does) so it never slips a day; sessions without one fall back to the day they were made.
+function sessionDateLabel(session: CreativeSessionCoverProps['session']) {
+  const d = session.event_date ? new Date(session.event_date + 'T00:00:00') : new Date(session.created_at);
+  return format(d, 'MMM d, yyyy');
 }
 
 export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
@@ -53,7 +61,7 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
               </Badge>
               <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                {format(new Date(session.created_at), 'MMM d, yyyy')}
+                {sessionDateLabel(session)}
               </span>
             </div>
           </div>

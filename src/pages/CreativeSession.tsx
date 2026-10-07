@@ -133,6 +133,9 @@ export default function CreativeSession() {
       token: data.token,
       project_name: data.project_name,
       client_name: data.client_name,
+      // event_date was declared on the session but never carried across, so the
+      // cover showed the day the session was made and the brief had no event date.
+      event_date: data.event_date,
       created_at: data.created_at,
       cover_images: data.cover_images as unknown as CoverImage[] | null,
       creative_notes: data.creative_notes,
