@@ -1,7 +1,7 @@
 import { Card, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Sparkles } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import soleiaLogo from '@/assets/soleia-wide-logo.png';
 
 interface CoverImage {
@@ -14,7 +14,7 @@ interface CreativeSessionCoverProps {
   session: {
     project_name: string;
     client_name: string;
-    created_at: string;
+    event_date?: string | null;
     cover_images?: CoverImage[] | null;
     creative_notes?: string | null;
   };
@@ -22,6 +22,11 @@ interface CreativeSessionCoverProps {
 
 export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
   const coverImage = (session.cover_images as CoverImage[] | null)?.[0] || null;
+  // The header date is the show day. It used to be created_at, which clients
+  // read as the event date. event_date is a plain 'YYYY-MM-DD': parseISO keeps
+  // it a local calendar day, where new Date() would read UTC midnight and slip
+  // a day west of UTC. No event date, no date shown.
+  const eventDay = session.event_date ? parseISO(session.event_date) : null;
 
   return (
     <Card className="border border-border/50 bg-card overflow-hidden">
@@ -51,10 +56,12 @@ export function CreativeSessionCover({ session }: CreativeSessionCoverProps) {
               <Badge variant="secondary" className="text-[10px] sm:text-xs">
                 {session.client_name}
               </Badge>
-              <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {format(new Date(session.created_at), 'MMM d, yyyy')}
-              </span>
+              {eventDay && isValid(eventDay) && (
+                <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {format(eventDay, 'MMM d, yyyy')}
+                </span>
+              )}
             </div>
           </div>
         </div>
