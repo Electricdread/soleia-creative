@@ -21,7 +21,9 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["soleia-icon.png", "soleia-icon-192.png", "soleia-icon-512.png", "soleia-icon-maskable-512.png", "favicon.ico"],
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        navigateFallbackDenylist: [/^\/~oauth/],
+        // /screens-guide is a static page in public/, not an app route: the
+        // worker must let the browser fetch it instead of serving the shell.
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/screens-guide/],
         // Shell only. This used to include png and svg, which pulled every
         // image in public/ into the precache -- 29 MB of the 33 MB a first
         // visit downloaded, most of it mapping diagrams nobody had opened.
@@ -29,7 +31,8 @@ export default defineConfig(({ mode }) => ({
         // includeAssets above.
         globPatterns: ["**/*.{js,css,html,ico,woff2}"],
         // pdf.js loads only when a client opens a deck; it is not part of the shell.
-        globIgnores: ["**/pdf-*.js", "**/pdf.worker*"],
+        // The screens guide is one 9 MB self-contained page; it loads on demand.
+        globIgnores: ["**/pdf-*.js", "**/pdf.worker*", "**/screens-guide/**"],
       },
       manifest: {
         name: "Soleia Creative",
