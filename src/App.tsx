@@ -40,6 +40,7 @@ import OfficePortal from "./pages/OfficePortal";
 import AdminLoginActivity from "./pages/AdminLoginActivity";
 import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
+import StaticPageHandoff from "./pages/StaticPageHandoff";
 import ShowBloxPreview from "./pages/ShowBloxPreview";
 import SharedLookBook from "./pages/SharedLookBook";
 import RateCard from "./pages/RateCard";
@@ -127,6 +128,9 @@ const App = () => (
               {/* Admin Login Activity - Admin role required + email-locked to operator (page also enforces via OperatorGuard, table via RLS) */}
               <Route path="/admin/login-activity" element={<ProtectedRoute requireAdmin><AdminLoginActivity /></ProtectedRoute>} />
               
+              {/* Static pages in public/ that an old service worker may hand to the app */}
+              <Route path="/screens-guide/*" element={<StaticPageHandoff />} />
+
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
