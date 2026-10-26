@@ -1682,6 +1682,9 @@ export type Database = {
           notes: string | null
           proposal_scenario: string
           quote_date: string
+          reminder_due_sent_at: string | null
+          reminder_lapsed_sent_at: string | null
+          sent_at: string | null
           signed_at: string | null
           signoff_due_on: string | null
           status: string
@@ -1715,6 +1718,9 @@ export type Database = {
           notes?: string | null
           proposal_scenario?: string
           quote_date?: string
+          reminder_due_sent_at?: string | null
+          reminder_lapsed_sent_at?: string | null
+          sent_at?: string | null
           signed_at?: string | null
           signoff_due_on?: string | null
           status?: string
@@ -1748,6 +1754,9 @@ export type Database = {
           notes?: string | null
           proposal_scenario?: string
           quote_date?: string
+          reminder_due_sent_at?: string | null
+          reminder_lapsed_sent_at?: string | null
+          sent_at?: string | null
           signed_at?: string | null
           signoff_due_on?: string | null
           status?: string
@@ -2212,6 +2221,9 @@ export type Database = {
           notes: string | null
           proposal_scenario: string
           quote_date: string
+          reminder_due_sent_at: string | null
+          reminder_lapsed_sent_at: string | null
+          sent_at: string | null
           signed_at: string | null
           signoff_due_on: string | null
           status: string
