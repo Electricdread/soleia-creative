@@ -63,6 +63,9 @@ project_id = "rszawchsbpsmtrtvljta"
     verify_jwt = true
   [functions.creative-feedback-digest]
     verify_jwt = true
+
+  [functions.proposal-reminders]
+    verify_jwt = true
   [functions.studio-sync]
     verify_jwt = false
   [functions.proposal-export]

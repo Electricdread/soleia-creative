@@ -173,7 +173,9 @@ export interface DigestRow {
   contentDays: number | null;
   clientFiles: number;
   action: NextAction;
-  /** A sent proposal's sign-by date, once it has passed. */
+  /** A sent, unsigned proposal's sign-by date (72 hours after it was sent). */
+  signBy: string | null;
+  /** The same date, once it has passed. */
   signByPassed: string | null;
   bucket: Bucket;
 }
@@ -200,9 +202,11 @@ export function digestAction(j: JobWithMembers): NextAction | null {
  * proposal is past its sign-by date. This week: the deadline is within seven business days or the show within a
  * fortnight. Everything else with something waiting is coming up.
  */
-export function bucketFor(row: Omit<DigestRow, 'bucket'>): Bucket {
+export function bucketFor(row: Omit<DigestRow, 'bucket'> & { tomorrow: string }): Bucket {
   if (row.daysToShow === null) return 'undated';
   if (row.daysToShow <= 7 || row.signByPassed) return 'now';
+  // Due today or tomorrow: the window is closing, whatever the show date.
+  if (row.signBy && row.signBy <= row.tomorrow) return 'now';
   if (row.contentDays !== null && row.contentDays <= 3) return 'now';
   if (row.daysToShow <= 14 || (row.contentDays !== null && row.contentDays <= 7)) return 'week';
   return 'later';
@@ -225,6 +229,7 @@ export interface DigestPlan {
 
 export function planDigest({ today, jobs }: DigestInput): DigestPlan {
   const now = parseDay(today);
+  const tomorrow = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
   const rows: DigestRow[] = [];
   let onTrack = 0;
   let played = 0;
@@ -236,7 +241,8 @@ export function planDigest({ today, jobs }: DigestInput): DigestPlan {
     if (daysToShow !== null && daysToShow < 0) { played++; continue; }
 
     const sent = j.proposals.find((p) => !p.signed_at && p.status === 'sent');
-    const signByPassed = sent?.signoff_due_on && sent.signoff_due_on < today ? sent.signoff_due_on : null;
+    const signBy = sent?.signoff_due_on ?? null;
+    const signByPassed = signBy && signBy < today ? signBy : null;
     // A lapsed sign-by date is chased however far off the show is.
     if (daysToShow !== null && daysToShow > HORIZON_DAYS && !signByPassed) continue;
 
@@ -255,9 +261,10 @@ export function planDigest({ today, jobs }: DigestInput): DigestPlan {
       contentDays: due ? businessDaysUntil(now, due) : null,
       clientFiles: j.assetCount,
       action,
+      signBy,
       signByPassed,
     };
-    rows.push({ ...base, bucket: bucketFor(base) });
+    rows.push({ ...base, bucket: bucketFor({ ...base, tomorrow }) });
   }
 
   // Soonest show first, then the more urgent action, then the name, so the order never depends on query order.
@@ -307,7 +314,9 @@ function showLabel(row: DigestRow): string {
 }
 
 function rowHtml(row: DigestRow): string {
-  const signBy = row.signByPassed ? chip(`Sign-by date passed · ${fmtShort(parseDay(row.signByPassed))}`, RED) : '';
+  const signBy = row.signByPassed
+    ? chip(`Sign-by date passed · ${fmtShort(parseDay(row.signByPassed))}`, RED)
+    : row.signBy ? chip(`Client signs by ${fmtShort(parseDay(row.signBy))}`, AMBER) : '';
   return `
     <tr>
       <td style="padding:14px 16px;border-bottom:1px solid #2a2a2a;">

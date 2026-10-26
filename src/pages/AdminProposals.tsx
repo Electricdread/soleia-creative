@@ -29,6 +29,10 @@ import { sendSignedProposalEmail } from '@/lib/sendSignedProposal';
 import { format } from 'date-fns';
 import { CountdownBadge } from '@/components/CountdownBadge';
 import { isProposalClosed } from '@/lib/proposalStatus';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 type ViewTab = 'proposals' | 'library';
 
@@ -59,6 +63,21 @@ interface ProposalRow {
   assigned_pm_name?: string | null;
   assigned_pm_email?: string | null;
   client_email?: string | null;
+  /** Stamped by the database when the proposal becomes sent. */
+  sent_at?: string | null;
+  signoff_due_on?: string | null;
+}
+
+/** "Sent Oct 25 · signs by Oct 28", red once the 72 hours are up. */
+function SignWindow({ p }: { p: ProposalRow }) {
+  if (p.status !== 'sent' || p.signed_at || !p.sent_at) return null;
+  const closes = new Date(new Date(p.sent_at).getTime() + 72 * 3_600_000);
+  const lapsed = closes.getTime() < Date.now();
+  return (
+    <p className={`text-xs mt-1 ${lapsed ? 'text-red-400' : 'text-amber-400'}`}>
+      Sent {format(new Date(p.sent_at), 'MMM d')} · {lapsed ? 'window lapsed' : 'signs by'} {format(closes, 'MMM d, h:mm a')}
+    </p>
+  );
 }
 
 export default function AdminProposals() {
@@ -99,6 +118,9 @@ export default function AdminProposals() {
   const [linkerProposal, setLinkerProposal] = useState<ProposalRow | null>(null);
   const [emailCopying, setEmailCopying] = useState<string | null>(null);
   const [packetSendProposal, setPacketSendProposal] = useState<ProposalRow | null>(null);
+  // A draft's link opens for the client but cannot be signed (sign_proposal_by_token wants status 'sent'), so
+  // every way of sharing one stops here first.
+  const [draftGate, setDraftGate] = useState<{ proposal: ProposalRow; go: () => void } | null>(null);
   const [receivedReplyProposal, setReceivedReplyProposal] = useState<ProposalRow | null>(null);
   const [sendingPdf, setSendingPdf] = useState<string | null>(null);
   const [folderGenerating, setFolderGenerating] = useState<string | null>(null);
@@ -316,10 +338,21 @@ export default function AdminProposals() {
     toast({ title: 'Link copied!' });
   };
 
+  // The database stamps sent_at and a sign-by date 72 hours out (trigger proposals_stamp_sent).
   const markSent = async (id: string) => {
-    await supabase.from('proposals').update({ status: 'sent' }).eq('id', id);
+    const { error } = await supabase.from('proposals').update({ status: 'sent' }).eq('id', id);
+    if (error) {
+      toast({ title: 'Could not mark it sent', description: error.message, variant: 'destructive' });
+      return false;
+    }
     fetchProposals();
-    toast({ title: 'Proposal marked as sent' });
+    toast({ title: 'Proposal marked as sent', description: 'The client has 72 hours to sign. You will be reminded before and after.' });
+    return true;
+  };
+
+  const shareGate = (p: ProposalRow, go: () => void) => {
+    if (p.status === 'draft') setDraftGate({ proposal: p, go });
+    else go();
   };
 
   // Re-send the signed PDF. The signing flow mails it once; a PM assigned after
@@ -736,6 +769,7 @@ luis@dreamlinkx.com`;
                     {p.venue_name && ` · ${p.venue_name}`}
                     {p.event_date && ` · ${format(new Date(p.event_date + 'T00:00:00'), 'MMM d, yyyy')}`}
                   </p>
+                  <SignWindow p={p} />
                   {p.signed_at && (
                     <p className="text-green-400 text-xs mt-1">
                       Signed by {p.client_signature} on {format(new Date(p.signed_at), 'MMM d, yyyy')}
@@ -836,16 +870,16 @@ luis@dreamlinkx.com`;
                   <Button variant="ghost" size="icon" onClick={() => setLinkerProposal(p)} title="Link creative session" className="text-muted-foreground hover:text-foreground">
                     <Link2 className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => copyEmailTemplate(p.token)} title="Copy email template (rich HTML)" className="text-muted-foreground hover:text-foreground" disabled={emailCopying === p.token}>
+                  <Button variant="ghost" size="icon" onClick={() => shareGate(p, () => copyEmailTemplate(p.token))} title="Copy email template (rich HTML)" className="text-muted-foreground hover:text-foreground" disabled={emailCopying === p.token}>
                     {emailCopying === p.token ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => openInMailApp(p)} title="Open in Mail app (recommended on mobile)" className="text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="icon" onClick={() => shareGate(p, () => openInMailApp(p))} title="Open in Mail app (recommended on mobile)" className="text-muted-foreground hover:text-foreground">
                     <ExternalLink className="w-4 h-4 rotate-45" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setPacketSendProposal(p)} title="Send with a creative packet (one email)" className="text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="icon" onClick={() => shareGate(p, () => setPacketSendProposal(p))} title="Send with a creative packet (one email)" className="text-muted-foreground hover:text-foreground">
                     <PackageOpen className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" title="Copy link" onClick={() => copyLink(p.token)} className="text-muted-foreground hover:text-foreground gap-1 h-9 px-2 text-xs">
+                  <Button variant="ghost" size="sm" title="Copy link" onClick={() => shareGate(p, () => copyLink(p.token))} className="text-muted-foreground hover:text-foreground gap-1 h-9 px-2 text-xs">
                     <Link2 className="w-4 h-4" /> Copy Link
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => window.open(`/proposal/${p.token}`, '_blank')} className="text-muted-foreground hover:text-foreground">
@@ -871,6 +905,39 @@ luis@dreamlinkx.com`;
         </>
         )}
       </div>
+
+      <AlertDialog open={!!draftGate} onOpenChange={(o) => { if (!o) setDraftGate(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>“{draftGate?.proposal.event_name}” is still a draft</AlertDialogTitle>
+            <AlertDialogDescription>
+              The client can open a draft's link but cannot sign it. Mark it sent first and their 72 hours to sign
+              start now; you will be reminded a day before the window closes and again if it lapses unsigned.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={() => { const gate = draftGate; setDraftGate(null); gate?.go(); }}
+            >
+              Continue as draft
+            </Button>
+            <AlertDialogAction
+              onClick={() => {
+                const gate = draftGate;
+                setDraftGate(null);
+                if (!gate) return;
+                // Share first, inside the click: a clipboard write after an await can lose the gesture.
+                gate.go();
+                void markSent(gate.proposal.id);
+              }}
+            >
+              Mark sent and continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <PacketProposalSendDialog
         open={!!packetSendProposal}

@@ -11,7 +11,7 @@ import { buildDeadlineDigest, planDigest, rollupJobs, type RollupInput, type See
 import type { JobRecord, JobWithMembers } from "../_shared/jobStage.ts";
 
 // The deploy proof, as in studio-sync: a stale build cannot report a stamp it never had. Bump it on every change.
-const BUILD = 'send-deadline-digest-2026-10-25a';
+const BUILD = 'send-deadline-digest-2026-10-25b';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

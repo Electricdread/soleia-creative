@@ -132,6 +132,23 @@ describe('planDigest', () => {
   });
 });
 
+describe('sign-by dates', () => {
+  const sentJob = (signoff: string) => job(
+    { id: 'x', title: 'X', event_date: '2026-12-15' },
+    { packets: [packet], proposals: [proposal({ status: 'sent', signoff_due_on: signoff })] },
+  );
+
+  it('moves a proposal due today or tomorrow to Act now, however far off the show', () => {
+    expect(planDigest({ today: TODAY, jobs: [sentJob('2026-10-26')] }).rows[0].bucket).toBe('now');
+    expect(planDigest({ today: TODAY, jobs: [sentJob('2026-10-28')] }).rows[0].bucket).toBe('later');
+  });
+
+  it('shows the date on the row', () => {
+    const plan = planDigest({ today: TODAY, jobs: [sentJob('2026-10-28')] });
+    expect(buildDeadlineDigest(TODAY, plan)!.html).toContain('Client signs by Wed, Oct 28');
+  });
+});
+
 describe('buildDeadlineDigest', () => {
   it('sends nothing when nothing is waiting', () => {
     expect(buildDeadlineDigest(TODAY, { rows: [], onTrack: 3, played: 9 })).toBeNull();
