@@ -49,7 +49,22 @@ export interface JobRecord {
   drive_folder_url: string | null;
   notes: string | null;
   is_active: boolean;
+  /**
+   * Why a switched-off job is off. Postponed and cancelled jobs carry is_active = false, so every reader that
+   * skips inactive jobs skips them too; this tells them apart from finished ones. Optional for rows read before
+   * the column existed.
+   */
+  status?: JobStatus;
+  status_changed_at?: string | null;
 }
+
+export type JobStatus = 'active' | 'postponed' | 'cancelled';
+
+export const JOB_STATUS_LABEL: Record<JobStatus, string> = {
+  active: 'Active',
+  postponed: 'Postponed',
+  cancelled: 'Cancelled',
+};
 
 export interface AttachedProposal {
   id: string; token: string | null; event_name: string; status: string | null;

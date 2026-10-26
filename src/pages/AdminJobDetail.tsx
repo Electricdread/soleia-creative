@@ -9,17 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Loader2, FileText, BookOpen, Palette, AlertTriangle, ArrowLeft, ExternalLink,
-  FolderOpen, Check, Trash2, Plus,
+  FolderOpen, Check, Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useJobs } from '@/hooks/useJobs';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
 import { FinalsRow } from '@/components/admin/FinalsRow';
-import { DeleteJobDialog } from '@/components/admin/DeleteJobDialog';
+import { JobActionsMenu } from '@/components/admin/JobActionsMenu';
 import { ClientAssetsRow } from '@/components/admin/ClientAssetsRow';
 import {
-  stageFor, stagesFor, flagsFor, daysUntil, STAGE_LABEL,
+  stageFor, stagesFor, flagsFor, daysUntil, STAGE_LABEL, JOB_STATUS_LABEL,
   type Stage, type JobTrack,
 } from '@/lib/jobStage';
 
@@ -126,6 +126,7 @@ export default function AdminJobDetail() {
     ?? (folderIds[0] ? `https://drive.google.com/drive/folders/${folderIds[0]}` : null);
 
   const subtitle = [
+    job.status && job.status !== 'active' ? JOB_STATUS_LABEL[job.status] : null,
     job.client_name !== job.title ? job.client_name : null,
     job.event_date ?? 'no event date',
     days === null ? null : days < 0 ? `${Math.abs(days)} days ago` : `${days} days out`,
@@ -142,14 +143,11 @@ export default function AdminJobDetail() {
               <FolderOpen className="mr-2 h-4 w-4" /> Drive
             </Button>
           )}
-          <DeleteJobDialog
+          <JobActionsMenu
             entry={entry}
+            variant="button"
+            onChanged={() => void reload()}
             onDeleted={() => navigate('/admin/jobs')}
-            trigger={
-              <Button variant="outline" size="sm" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive" asChild>
-                <span><Trash2 className="mr-2 h-4 w-4" /> Delete</span>
-              </Button>
-            }
           />
           <Button variant="ghost" size="sm" onClick={() => navigate('/admin/jobs')}>
             <ArrowLeft className="mr-2 h-4 w-4" /> All jobs

@@ -29,10 +29,16 @@ interface DeleteJobDialogProps {
   onDeleted: () => void;
   /** Rendered as the opener; defaults to a quiet icon button. */
   trigger?: React.ReactNode;
+  /** Controlled from outside (the job actions menu): no opener is rendered. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function DeleteJobDialog({ entry, onDeleted, trigger }: DeleteJobDialogProps) {
-  const [open, setOpen] = useState(false);
+export function DeleteJobDialog({ entry, onDeleted, trigger, open: openProp, onOpenChange }: DeleteJobDialogProps) {
+  const [openState, setOpenState] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openState;
+  const setOpen = (o: boolean) => { if (controlled) onOpenChange?.(o); else setOpenState(o); };
   const [understood, setUnderstood] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -64,7 +70,7 @@ export function DeleteJobDialog({ entry, onDeleted, trigger }: DeleteJobDialogPr
 
   return (
     <>
-      <span
+      {!controlled && <span
         onClick={(e) => { e.stopPropagation(); setOpen(true); }}
         role="button"
         tabIndex={0}
@@ -81,7 +87,7 @@ export function DeleteJobDialog({ entry, onDeleted, trigger }: DeleteJobDialogPr
             <span><Trash2 className="h-3.5 w-3.5" /></span>
           </Button>
         )}
-      </span>
+      </span>}
 
       <AlertDialog open={open} onOpenChange={(o) => { if (!deleting) { setOpen(o); if (!o) setUnderstood(false); } }}>
         <AlertDialogContent onClick={(e) => e.stopPropagation()}>

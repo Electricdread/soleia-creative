@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, FileText, BookOpen, Palette, AlertTriangle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useJobs } from '@/hooks/useJobs';
-import { DeleteJobDialog } from '@/components/admin/DeleteJobDialog';
+import { JobActionsMenu } from '@/components/admin/JobActionsMenu';
 import {
-  stageFor, flagsFor, daysUntil, STAGE_LABEL, type Stage,
+  stageFor, flagsFor, daysUntil, STAGE_LABEL, JOB_STATUS_LABEL, type Stage,
 } from '@/lib/jobStage';
 
 const STAGE_TONE: Record<Stage, string> = {
@@ -72,7 +72,7 @@ export default function AdminJobs() {
       subtitle={loading ? 'Loading…' : `${live.length} live · ${past.length} past${flagged ? ` · ${flagged} need a decision` : ''}`}
       actions={
         <Button variant="outline" size="sm" onClick={() => setShowPast((v) => !v)}>
-          {showPast ? 'Show live' : `Show past (${past.length})`}
+          {showPast ? 'Show live' : `Past & on hold (${past.length})`}
         </Button>
       }
     >
@@ -88,12 +88,12 @@ export default function AdminJobs() {
         </div>
       ) : shown.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">
-          {showPast ? 'No past jobs.' : 'No live jobs.'}
+          {showPast ? 'Nothing past or on hold.' : 'No live jobs.'}
         </p>
       ) : (
         <div className="space-y-2">
-          {/* The row was one button, which cannot hold another; the delete
-              control is a sibling of the opener now. */}
+          {/* The row was one button, which cannot hold another; the actions
+              menu is a sibling of the opener. */}
           {ordered.map((r, i) => (
                     <div
                       key={r.job.id}
@@ -106,6 +106,11 @@ export default function AdminJobs() {
                       >
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="truncate font-medium text-foreground">{r.job.title}</span>
+                          {r.job.status && r.job.status !== 'active' && (
+                            <Badge variant="outline" className="border-amber-500/50 text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                              {JOB_STATUS_LABEL[r.job.status]}
+                            </Badge>
+                          )}
                           {r.job.track === 'in_house' && (
                             <Badge variant="outline" className="text-[10px] uppercase tracking-wider">In-house</Badge>
                           )}
@@ -144,8 +149,9 @@ export default function AdminJobs() {
 
                       <Countdown eventDate={r.job.event_date} />
 
-                      <div className="flex-shrink-0 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
-                        <DeleteJobDialog entry={r} onDeleted={reload} />
+                      {/* Always visible: hidden on hover, Delete went unfound. */}
+                      <div className="flex-shrink-0">
+                        <JobActionsMenu entry={r} onChanged={reload} onDeleted={reload} />
                       </div>
 
                       <button
