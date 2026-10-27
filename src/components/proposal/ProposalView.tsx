@@ -570,7 +570,10 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
   const additionalServicesLabel = 'Services';
 
   return (
-    <div className="min-h-screen w-full py-6 sm:py-10 px-3 sm:px-6" style={{ backgroundColor: RC_IVORY }}>
+    // pt-[4.5rem] on a phone: the page's floating Back and refresh buttons are
+    // 44px at 16px from the top, and at py-6 they sat on the logo and the
+    // Download PDF button.
+    <div className="min-h-screen w-full pt-[4.5rem] pb-6 sm:py-10 px-3 sm:px-6" style={{ backgroundColor: RC_IVORY }}>
       <div
         className="max-w-3xl mx-auto relative p-5 sm:p-10"
         style={{ backgroundColor: RC_IVORY, border: `1px solid ${RC_GOLD}` }}

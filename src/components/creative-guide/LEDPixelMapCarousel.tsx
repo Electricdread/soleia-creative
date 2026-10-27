@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, X, ZoomIn, RotateCcw } from 'lucide-react';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { usePinchZoom } from '@/hooks/usePinchZoom';
 import { Button } from '@/components/ui/button';
+import { useScrollLock } from '@/lib/scrollLock';
 
 const LED_MAPPING_IMAGES = [
   { 
@@ -94,6 +95,8 @@ export function LEDPixelMapCarousel() {
     resetZoom();
   }, [modalIndex, resetZoom]);
 
+  useScrollLock(isModalOpen);
+
   const currentImage = LED_MAPPING_IMAGES[currentIndex];
   const modalImage = LED_MAPPING_IMAGES[modalIndex];
 
@@ -127,14 +130,14 @@ export function LEDPixelMapCarousel() {
         {/* Navigation Arrows */}
         <button
           onClick={(e) => { e.stopPropagation(); goToPrev(); }}
-          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all z-10"
+          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 touch:p-3.5 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all z-10"
           aria-label="Previous image"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); goToNext(); }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all z-10"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 touch:p-3.5 rounded-full bg-black/50 text-white/80 hover:bg-black/70 hover:text-white transition-all z-10"
           aria-label="Next image"
         >
           <ChevronRight className="w-5 h-5" />
@@ -175,7 +178,7 @@ export function LEDPixelMapCarousel() {
             onClick={isZoomed ? undefined : closeModal}
           >
             {/* Top Controls */}
-            <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+            <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-[calc(1rem+env(safe-area-inset-right))] z-50 flex items-center gap-2">
               {/* Zoom Controls */}
               <div className="flex items-center gap-1 bg-black/50 rounded-full px-2 py-1">
                 <span className="text-white/60 text-xs font-mono min-w-[3rem] text-center">
@@ -209,7 +212,7 @@ export function LEDPixelMapCarousel() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-sm"
+                  className="absolute top-[calc(4rem+env(safe-area-inset-top))] left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-sm"
                 >
                   <ZoomIn className="w-4 h-4" />
                   <span>Pinch to zoom • Tap to close</span>
@@ -240,7 +243,7 @@ export function LEDPixelMapCarousel() {
                   <img
                     src={modalImage.path}
                     alt={modalImage.name}
-                    className="max-w-full max-h-[80vh] object-contain rounded-lg select-none"
+                    className="max-w-full max-h-[80dvh] object-contain rounded-lg select-none"
                     draggable={false}
                   />
                 </motion.div>
@@ -252,14 +255,14 @@ export function LEDPixelMapCarousel() {
               <>
                 <button
                   onClick={(e) => { e.stopPropagation(); modalGoToPrev(); }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
+                  className="absolute left-[calc(1rem+env(safe-area-inset-left))] top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); modalGoToNext(); }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
+                  className="absolute right-[calc(1rem+env(safe-area-inset-right))] top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-all"
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-6 h-6" />
@@ -269,7 +272,7 @@ export function LEDPixelMapCarousel() {
 
             {/* Modal Caption & Dots - Hidden when zoomed */}
             {!isZoomed && (
-              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+              <div className="absolute bottom-0 left-0 right-0 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black/80 to-transparent">
                 <div className="text-center mb-4">
                   <p className="text-white text-lg font-medium">{modalImage.name}</p>
                   <p className="text-white/60 text-sm">{modalImage.description}</p>

@@ -110,7 +110,7 @@ export function EventCircleback({ eventUid }: { eventUid: string }) {
               </div>
               <DeleteConfirmDialog
                 trigger={
-                  <button className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity shrink-0">
+                  <button className="hit-44 relative opacity-0 touch:opacity-100 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity shrink-0">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 }

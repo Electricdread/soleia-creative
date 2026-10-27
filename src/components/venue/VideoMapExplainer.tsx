@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, RotateCcw } from 'lucide-react';
+import { enterFullscreen, exitFullscreen, fullscreenElement, onFullscreenChange } from '@/lib/fullscreen';
+import { useScrollLock } from '@/lib/scrollLock';
 
 /**
  * Soleia — LED Video Map Explainer.
@@ -622,6 +624,10 @@ export default function VideoMapExplainer({ mode = 'auto', onStepChange }: Video
   const [M, setM] = useState(0);
   const [visible, setVisible] = useState(false);
   const [isFull, setIsFull] = useState(false);
+  // iPhone has no element fullscreen, so there the frame fills the window
+  // instead: same stage, same controls, out from under the notch.
+  const [pseudoFull, setPseudoFull] = useState(false);
+  const full = isFull || pseudoFull;
   const [stepIdx, setStepIdx] = useState(0);
   const [settled, setSettled] = useState(true);
 
@@ -656,19 +662,26 @@ export default function VideoMapExplainer({ mode = 'auto', onStepChange }: Video
     ro.observe(el);
     measure();
     return () => ro.disconnect();
-  }, [isFull]);
+  }, [full]);
 
+  useEffect(() => onFullscreenChange(() => setIsFull(fullscreenElement() === hostRef.current)), []);
+
+  // While the window-filling fallback is up, the page behind must not scroll
+  // under a finger, and Escape leaves it.
+  useScrollLock(pseudoFull);
   useEffect(() => {
-    const onFs = () => setIsFull(document.fullscreenElement === hostRef.current);
-    document.addEventListener('fullscreenchange', onFs);
-    return () => document.removeEventListener('fullscreenchange', onFs);
-  }, []);
+    if (!pseudoFull) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPseudoFull(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [pseudoFull]);
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     const el = hostRef.current;
     if (!el) return;
-    if (document.fullscreenElement) document.exitFullscreen?.();
-    else el.requestFullscreen?.();
+    if (pseudoFull) setPseudoFull(false);
+    else if (fullscreenElement()) exitFullscreen();
+    else if (!(await enterFullscreen(el))) setPseudoFull(true);
   };
 
   useEffect(() => {
@@ -737,7 +750,7 @@ export default function VideoMapExplainer({ mode = 'auto', onStepChange }: Video
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [stepped, isFull]);
+  }, [stepped, full]);
 
   const captionLift = stepped
     ? Math.min(420, Math.round((controlsH + 20) / Math.max(scale, 0.08)))
@@ -749,7 +762,7 @@ export default function VideoMapExplainer({ mode = 'auto', onStepChange }: Video
 
   const btn: React.CSSProperties = {
     display: 'inline-flex', alignItems: 'center', gap: 7,
-    borderRadius: 999, padding: '9px 15px', minHeight: 40,
+    borderRadius: 999, padding: '9px 15px', minHeight: 44,
     font: `600 10.5px ${HEAD}`, letterSpacing: '0.16em', textTransform: 'uppercase',
     border: `1px solid ${P.BORDER}`, background: P.LABEL_BG, color: P.INK,
     cursor: 'pointer', whiteSpace: 'nowrap',
@@ -762,7 +775,9 @@ export default function VideoMapExplainer({ mode = 'auto', onStepChange }: Video
       className="relative w-full overflow-hidden rounded-3xl edge-gold surface-elevated"
       style={isFull
         ? { width: '100vw', height: '100vh', borderRadius: 0, background: P.GROUND }
-        : { aspectRatio: '16 / 9', background: P.GROUND }}
+        : pseudoFull
+          ? { position: 'fixed', inset: 0, width: '100%', height: '100dvh', zIndex: 2147483001, borderRadius: 0, background: P.GROUND }
+          : { aspectRatio: '16 / 9', background: P.GROUND }}
     >
       {visible && (
         <div
@@ -778,11 +793,14 @@ export default function VideoMapExplainer({ mode = 'auto', onStepChange }: Video
       <button
         type="button"
         onClick={toggleFullscreen}
-        aria-label={isFull ? 'Exit fullscreen' : 'View fullscreen'}
-        className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border transition-opacity hover:opacity-100 opacity-70"
-        style={{ background: P.LABEL_BG, borderColor: P.BORDER, color: P.INK }}
+        aria-label={full ? 'Exit fullscreen' : 'View fullscreen'}
+        className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border transition-opacity hover:opacity-100 opacity-70 touch:opacity-100"
+        style={{
+          background: P.LABEL_BG, borderColor: P.BORDER, color: P.INK,
+          ...(pseudoFull ? { top: 'calc(0.75rem + env(safe-area-inset-top))', right: 'calc(0.75rem + env(safe-area-inset-right))' } : null),
+        }}
       >
-        {isFull ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        {full ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
       </button>
 
       {/* Presenter controls. They sit outside the scaled stage so they stay the
@@ -790,7 +808,14 @@ export default function VideoMapExplainer({ mode = 'auto', onStepChange }: Video
       {stepped && (
         <div
           className="absolute inset-x-0 bottom-0 z-20 px-3 pb-3 pt-8 sm:px-4 sm:pb-4"
-          style={{ background: 'linear-gradient(to top, rgba(9,7,5,0.92) 34%, rgba(9,7,5,0))' }}
+          style={{
+            background: 'linear-gradient(to top, rgba(9,7,5,0.92) 34%, rgba(9,7,5,0))',
+            ...(pseudoFull ? {
+              paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))',
+              paddingLeft: 'calc(0.75rem + env(safe-area-inset-left))',
+              paddingRight: 'calc(0.75rem + env(safe-area-inset-right))',
+            } : null),
+          }}
         >
           <div ref={controlsRef} className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5" role="tablist" aria-label="Explainer chapters">
@@ -801,7 +826,7 @@ export default function VideoMapExplainer({ mode = 'auto', onStepChange }: Video
                 aria-selected={i === stepIdx}
                 aria-label={st.label}
                 onClick={() => setStepIdx(i)}
-                className="h-4 min-w-0 flex-1"
+                className="h-4 min-w-0 flex-1 touch:h-11"
                 style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer' }}
               >
                 <span

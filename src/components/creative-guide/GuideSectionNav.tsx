@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { HIGHLIGHT_SPRING } from '@/components/motion/motion';
+import { useSafeAreaTop } from '@/lib/safeArea';
 
 /**
  * The Services page's section spine.
@@ -14,8 +15,13 @@ import { HIGHLIGHT_SPRING } from '@/components/motion/motion';
  * stylesheet sets `overflow-x: hidden` on `html, body` under 640px as a
  * horizontal-overflow safety net. That turns `body` into a scroll container,
  * and a sticky descendant then measures against a box that never scrolls — so
- * the bar simply scrolled away on phones while working on desktop. A measured
- * spacer holds the row height while the bar is pinned, so nothing jumps.
+ * the bar simply scrolled away on phones while working on desktop. (Browsers
+ * with `overflow: clip` now get that instead, which keeps sticky working, but
+ * iOS 15 and older still take `hidden`.) A measured spacer holds the row height
+ * while the bar is pinned, so nothing jumps.
+ *
+ * In the installed app the guide header sits below the status bar, so the bar
+ * parks the top safe-area inset lower than `offset` says.
  *
  * It is a scroll listener rather than an IntersectionObserver on purpose — the
  * sections here differ wildly in height (a tabbed venue viewer next to a
@@ -40,7 +46,8 @@ export interface GuideSectionNavProps {
   offset?: number;
 }
 
-export function GuideSectionNav({ sections, offset = 66 }: GuideSectionNavProps) {
+export function GuideSectionNav({ sections, offset: headerOffset = 66 }: GuideSectionNavProps) {
+  const offset = headerOffset + useSafeAreaTop();
   const [active, setActive] = useState<string>(sections[0]?.id ?? '');
   const [stuck, setStuck] = useState(false);
   const [barH, setBarH] = useState(0);
@@ -123,7 +130,7 @@ export function GuideSectionNav({ sections, offset = 66 }: GuideSectionNavProps)
         ref={barRef}
         className={
           stuck
-            ? 'fixed inset-x-0 z-40 glass border-y border-primary/15'
+            ? 'fixed left-[env(safe-area-inset-left)] right-[env(safe-area-inset-right)] z-40 glass border-y border-primary/15'
             : 'relative border-y border-transparent'
         }
         style={stuck ? { top: offset } : undefined}
@@ -140,7 +147,7 @@ export function GuideSectionNav({ sections, offset = 66 }: GuideSectionNavProps)
                 data-chip={s.id}
                 onClick={() => go(s.id)}
                 aria-current={on ? 'true' : undefined}
-                className={`relative flex-shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-[10.5px] uppercase tracking-[0.16em] transition-colors duration-500 ${
+                className={`relative flex-shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 touch:min-h-11 text-[10.5px] uppercase tracking-[0.16em] transition-colors duration-500 ${
                   on ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >

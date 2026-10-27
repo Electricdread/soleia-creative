@@ -16,6 +16,7 @@ import soleiaLogo from '@/assets/soleia-logo-new.png';
 import { HomeButton } from '@/components/HomeButton';
 import PrevizMovie from '@/components/venue/PrevizMovie';
 import CreativeBrief from '@/components/creative/CreativeBrief';
+import { enterFullscreen, enterVideoFullscreen, exitFullscreen, fullscreenElement, onFullscreenChange } from '@/lib/fullscreen';
 
 type PrevizClipOption = { id: string; title: string; url: string };
 
@@ -320,7 +321,7 @@ export default function CreativeSession() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-20">
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-[env(safe-area-inset-top)] z-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <HomeButton />
@@ -512,6 +513,7 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
   const [hasError, setHasError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     if (clips.length > 0 && !clips.find((c) => c.id === activeId)) {
@@ -520,21 +522,14 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
     }
   }, [clips, activeId]);
 
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(document.fullscreenElement === containerRef.current);
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
+  useEffect(() => onFullscreenChange(() => setIsFullscreen(fullscreenElement() === containerRef.current)), []);
 
   const toggleFullscreen = async () => {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else if (containerRef.current) {
-        await containerRef.current.requestFullscreen();
-      }
-    } catch {
-      /* ignore */
+    if (fullscreenElement()) {
+      exitFullscreen();
+    } else if (containerRef.current && !(await enterFullscreen(containerRef.current))) {
+      // iPhone: no element fullscreen, but its own video player goes full screen.
+      enterVideoFullscreen(videoRef.current);
     }
   };
 
@@ -553,6 +548,7 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
       >
         {!hasError && (
           <video
+            ref={videoRef}
             key={active.url}
             src={active.url}
             autoPlay
@@ -589,7 +585,7 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
           type="button"
           onClick={toggleFullscreen}
           aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          className="absolute right-3 bottom-3 z-10 rounded-full border border-primary/30 bg-black/55 p-2 text-primary/90 backdrop-blur-md transition-colors hover:bg-black/75 hover:text-primary"
+          className="absolute right-3 bottom-3 z-10 rounded-full border border-primary/30 bg-black/55 p-2 touch:p-3.5 text-primary/90 backdrop-blur-md transition-colors hover:bg-black/75 hover:text-primary"
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </button>
@@ -608,7 +604,7 @@ function PrevizSection({ clips }: { clips: PrevizClipOption[] }) {
                   setActiveId(c.id);
                   setHasError(false);
                 }}
-                className={`rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                className={`rounded-full border px-3 py-1.5 touch:min-h-11 text-[11px] uppercase tracking-[0.14em] transition-colors ${
                   isActive
                     ? 'border-primary/60 bg-primary/15 text-primary'
                     : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground hover:border-border'

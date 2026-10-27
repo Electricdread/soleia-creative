@@ -110,7 +110,7 @@ export function EditorialBriefingModal({ open, onOpenChange, session }: Editoria
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-zinc-950 border-zinc-800 overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[90dvh] p-0 bg-zinc-950 border-zinc-800 overflow-hidden">
         {/* Hero Image Section */}
         {featuredImages.length > 0 && (
           <div className="relative">
@@ -163,7 +163,7 @@ export function EditorialBriefingModal({ open, onOpenChange, session }: Editoria
           </div>
         )}
 
-        <ScrollArea className="max-h-[50vh]">
+        <ScrollArea className="max-h-[50dvh]">
           <div className="p-6 space-y-6">
             {/* Strategic Brief Content */}
             {strategicBrief && (

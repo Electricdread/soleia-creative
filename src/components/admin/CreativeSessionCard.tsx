@@ -549,16 +549,16 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
                     <TooltipContent><p className="text-xs">Copy branded email template to clipboard</p></TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <Button size="sm" variant="outline" onClick={openEditDialog} className="h-7 gap-1 px-2 text-xs">
+                <Button size="sm" variant="outline" onClick={openEditDialog} className="hit-44 relative h-7 gap-1 px-2 text-xs">
                   <Pencil className="w-3 h-3" /> Edit
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => onCopyLink(session.token)} className="h-7 gap-1 px-2 text-xs">
+                <Button size="sm" variant="outline" onClick={() => onCopyLink(session.token)} className="hit-44 relative h-7 gap-1 px-2 text-xs">
                   <Link2 className="w-3 h-3" /> Copy Link
                 </Button>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size="sm" variant="outline" onClick={() => onOpen(session.token)} className="h-7 w-7 p-0">
+                      <Button size="sm" variant="outline" onClick={() => onOpen(session.token)} className="h-7 w-7 p-0 hit-44 relative">
                         <ExternalLink className="w-3 h-3" />
                       </Button>
                     </TooltipTrigger>
@@ -570,7 +570,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
               <div className="ml-auto flex items-center gap-2 border-l border-border/40 pl-4 sm:pl-8">
                 <DeleteConfirmDialog
                   trigger={
-                    <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                    <Button size="sm" variant="ghost" className="hit-44 relative h-7 gap-1 px-2 text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
                       <Trash2 className="w-3 h-3" /> Delete
                     </Button>
                   }
@@ -594,7 +594,7 @@ export function CreativeSessionCard({ session, index, onCopyLink, onDelete, onOp
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-2xl lg:max-w-4xl w-[95vw] max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogContent className="sm:max-w-2xl lg:max-w-4xl w-[95vw] max-h-[90dvh] overflow-hidden flex flex-col p-0">
           <DialogHeader className="px-6 pt-6">
             <DialogTitle>Edit Session</DialogTitle>
           </DialogHeader>

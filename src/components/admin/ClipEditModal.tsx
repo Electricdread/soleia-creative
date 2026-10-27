@@ -66,7 +66,7 @@ export function ClipEditModal({
 }: ClipEditModalProps) {
   return (
     <Dialog open={!!clip} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Edit Clip</DialogTitle>
           <DialogDescription>

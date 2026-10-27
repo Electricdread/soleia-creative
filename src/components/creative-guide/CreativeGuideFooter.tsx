@@ -31,13 +31,13 @@ export function CreativeGuideFooter() {
               <h4 className="mb-3.5 text-[10.5px] uppercase tracking-[0.2em] text-primary">Guide</h4>
               <button
                 onClick={() => navigate('/creative-guide/services')}
-                className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
+                className="mb-2 block text-left text-[13px] touch:mb-0 touch:py-3 text-muted-foreground transition-colors hover:text-primary"
               >
                 Services
               </button>
               <button
                 onClick={() => navigate('/creative-guide/content-delivery')}
-                className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
+                className="mb-2 block text-left text-[13px] touch:mb-0 touch:py-3 text-muted-foreground transition-colors hover:text-primary"
               >
                 Content Delivery
               </button>
@@ -54,7 +54,7 @@ export function CreativeGuideFooter() {
                 <button
                   key={to}
                   onClick={() => navigate(to)}
-                  className="mb-2 block text-left text-[13px] text-muted-foreground transition-colors hover:text-primary"
+                  className="mb-2 block text-left text-[13px] touch:mb-0 touch:py-3 text-muted-foreground transition-colors hover:text-primary"
                 >
                   {label}
                 </button>

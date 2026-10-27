@@ -85,7 +85,7 @@ export default function ClientProposal() {
         variant="ghost"
         size="sm"
         onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
-        className="fixed top-4 left-4 z-50 gap-2 bg-background/80 backdrop-blur-md border border-border text-foreground hover:bg-muted print:hidden min-h-[44px]"
+        className="fixed top-[calc(1rem+env(safe-area-inset-top))] left-[calc(1rem+env(safe-area-inset-left))] z-50 gap-2 bg-background/80 backdrop-blur-md border border-border text-foreground hover:bg-muted print:hidden min-h-[44px]"
         aria-label="Back"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -94,7 +94,7 @@ export default function ClientProposal() {
       <ClearCacheButton
         variant="ghost"
         size="icon"
-        className="fixed top-4 right-4 z-50 bg-background/80 backdrop-blur-md border border-border text-muted-foreground hover:text-foreground hover:bg-muted print:hidden min-h-[44px] min-w-[44px]"
+        className="fixed top-[calc(1rem+env(safe-area-inset-top))] right-[calc(1rem+env(safe-area-inset-right))] z-50 bg-background/80 backdrop-blur-md border border-border text-muted-foreground hover:text-foreground hover:bg-muted print:hidden min-h-[44px] min-w-[44px]"
       />
       <ProposalView
         proposal={proposal}

@@ -215,7 +215,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
   const railWidth = collapsed ? 'lg:w-[64px]' : 'lg:w-[212px]';
 
   const rail = (
-    <div className="flex h-full flex-col bg-card">
+    <div className="flex h-full flex-col bg-card pb-[env(safe-area-inset-bottom)]">
       <div className={cn('flex items-center gap-2 border-b border-border px-3 py-3', collapsed && 'lg:justify-center lg:px-0')}>
         <button
           onClick={() => navigate('/admin')}
@@ -231,14 +231,14 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
           variant="ghost"
           size="icon"
           onClick={() => setDrawerOpen(false)}
-          className="ml-auto h-9 w-9 text-muted-foreground lg:hidden"
+          className="ml-auto h-9 w-9 text-muted-foreground touch:h-11 touch:w-11 lg:hidden"
           aria-label="Close menu"
         >
           <X className="h-4 w-4" />
         </Button>
       </div>
 
-      <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-3" aria-label="Admin sections">
+      <nav className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-2 py-3" aria-label="Admin sections">
         {NAV.map((group) => {
           const items = group.items.filter((i) => !i.operatorOnly || isOperator);
           if (items.length === 0) return null;
@@ -264,7 +264,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
                         title={collapsed ? item.label : undefined}
                         className={cn(
                           'group flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm transition-colors',
-                          'min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          'min-h-[40px] touch:min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           current
                             ? 'bg-primary/10 font-semibold text-primary'
                             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -300,7 +300,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
             variant="ghost"
             size="icon"
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:text-foreground"
+            className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:text-foreground touch:h-11 touch:w-11"
             aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
           >
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -309,7 +309,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
             variant="ghost"
             size="icon"
             onClick={handleSignOut}
-            className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:text-foreground"
+            className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:text-foreground touch:h-11 touch:w-11"
             aria-label="Sign out"
           >
             <LogOut className="h-4 w-4" />
@@ -334,30 +334,34 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
   return (
     <div className="min-h-screen bg-background">
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
-      {/* Rail — fixed on desktop, drawer on small screens */}
-      <aside className={cn('fixed inset-y-0 left-0 z-40 hidden border-r border-border lg:block', railWidth)}>
+      {/* Rail — fixed on desktop, drawer on small screens. Both start below the
+          status bar of an installed iPad/iPhone app and end above its home
+          indicator. */}
+      <aside className={cn('fixed bottom-0 left-0 top-[env(safe-area-inset-top)] z-40 hidden border-r border-border lg:block', railWidth)}>
         {rail}
       </aside>
 
       {drawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            className="absolute inset-0 touch-none bg-background/70 backdrop-blur-sm"
             onClick={() => setDrawerOpen(false)}
             aria-hidden="true"
           />
-          <div className="absolute inset-y-0 left-0 w-[248px] border-r border-border shadow-xl">{rail}</div>
+          {/* In iPhone landscape the notch is on the left: the panel widens by
+              the inset so its contents keep their 248px clear of it. */}
+          <div className="absolute bottom-0 left-0 top-[env(safe-area-inset-top)] w-[calc(248px+env(safe-area-inset-left))] border-r border-border bg-card pl-[env(safe-area-inset-left)] shadow-xl">{rail}</div>
         </div>
       )}
 
       <div className={cn('flex min-h-screen flex-col', collapsed ? 'lg:pl-[64px]' : 'lg:pl-[212px]')}>
-        <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+        <header className="sticky top-[env(safe-area-inset-top)] z-30 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
           <div className="flex min-h-[56px] items-center gap-3 px-3 py-2 sm:px-6">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setDrawerOpen(true)}
-              className="h-10 w-10 flex-shrink-0 text-muted-foreground lg:hidden"
+              className="h-10 w-10 flex-shrink-0 text-muted-foreground touch:h-11 touch:w-11 lg:hidden"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
@@ -379,7 +383,7 @@ export function AdminShell({ title, subtitle, actions, fullBleed, children }: Ad
               variant="ghost"
               size="icon"
               onClick={() => setPaletteOpen(true)}
-              className="h-10 w-10 flex-shrink-0 text-muted-foreground md:hidden"
+              className="h-10 w-10 flex-shrink-0 text-muted-foreground touch:h-11 touch:w-11 md:hidden"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />

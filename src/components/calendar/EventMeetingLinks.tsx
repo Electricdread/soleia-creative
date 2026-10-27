@@ -508,7 +508,7 @@ export function EventMeetingLinks({ eventUid, eventStart, onChanged, eventName }
               </button>
               <DeleteConfirmDialog
                 trigger={
-                  <button className="text-muted-foreground/50 opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100">
+                  <button className="hit-44 relative text-muted-foreground/50 opacity-0 touch:opacity-100 transition-opacity hover:text-destructive group-hover:opacity-100">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 }

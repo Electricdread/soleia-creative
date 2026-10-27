@@ -241,7 +241,7 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
           Add Item
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg lg:max-w-2xl bg-zinc-900 border-zinc-700 font-tech max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg lg:max-w-2xl bg-zinc-900 border-zinc-700 font-tech max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-cyan-400 uppercase tracking-widest text-sm">Add_To_Board</DialogTitle>
         </DialogHeader>
@@ -354,7 +354,7 @@ export function AddMoodBoardItem({ sessionId, userName, onItemAdded }: AddMoodBo
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); removeFile(i); }}
-                        className="absolute top-0.5 right-0.5 bg-black/70 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation"
+                        className="hit-44 absolute top-0.5 right-0.5 bg-black/70 rounded-full p-0.5 opacity-0 touch:opacity-100 group-hover:opacity-100 transition-opacity touch-manipulation"
                       >
                         <X className="h-3 w-3 text-white" />
                       </button>

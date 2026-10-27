@@ -55,7 +55,7 @@ export default function ElevatorDisplayGuide() {
 
       {/* The delivery layout below stays deliberately familiar; this hero simply
           brings the display-spec page into the new Guide's visual system. */}
-      <section className="relative flex min-h-[66vh] items-end overflow-hidden">
+      <section className="relative flex min-h-[66svh] items-end overflow-hidden">
         <motion.img
           src={INTERIOR_IMG}
           alt="Soleia elevator interior — branded portrait display beside the doors"
@@ -67,12 +67,12 @@ export default function ElevatorDisplayGuide() {
         <div className="media-veil absolute inset-0" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-background" aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/70 to-transparent" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-36 sm:px-8 sm:pb-20">
+        <div className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-36 sm:px-8 sm:pb-20 short:pb-10 short:pt-24">
           <Reveal>
             <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Arrival · Elevator Displays</span>
           </Reveal>
           <Reveal delay={0.05}>
-            <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.06] text-foreground sm:text-6xl">
+            <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.06] text-foreground sm:text-6xl short:text-4xl">
               The first surface <span className="text-gradient-gold">guests see.</span>
             </h1>
           </Reveal>

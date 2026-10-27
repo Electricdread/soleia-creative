@@ -65,7 +65,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
   } catch { /* fallback */ }
 
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col max-h-[85dvh]">
       {/* Header */}
       <div className="bg-muted/50 border-b border-border p-4 shrink-0">
         <div className="flex items-start justify-between gap-3">
@@ -129,7 +129,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
               </div>
             )}
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0 h-7 w-7">
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground hover:text-foreground shrink-0 h-7 w-7 touch:h-11 touch:w-11">
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -148,7 +148,7 @@ export function EventDetailPanel({ event, statusOverride, onClose, onStatusChang
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[340px] p-3 bg-card border-border" align="end" side="bottom">
-              <ScrollArea className="max-h-[50vh]">
+              <ScrollArea className="max-h-[50dvh]">
                 <EventClientInfo eventUid={event.uid} />
               </ScrollArea>
             </PopoverContent>

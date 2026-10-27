@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["soleia-icon.png", "soleia-icon-192.png", "soleia-icon-512.png", "soleia-icon-maskable-512.png", "favicon.ico"],
+      includeAssets: ["soleia-icon.png", "apple-touch-icon.png", "soleia-icon-192.png", "soleia-icon-512.png", "soleia-icon-maskable-512.png", "favicon.ico"],
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // /screens-guide is a static page in public/, not an app route: the
@@ -38,12 +38,16 @@ export default defineConfig(({ mode }) => ({
         name: "Soleia Creative",
         short_name: "Soleia",
         description: "Soleia Creative — jobs, packets, proposals and creative sessions",
+        id: "/",
         start_url: "/",
+        scope: "/",
         display: "standalone",
         background_color: "#14161A",
         // Charcoal: the band the OS paints around an installed window.
         theme_color: "#1D2027",
-        orientation: "portrait-primary",
+        // Any: iPad landscape and iPhone landscape are supported layouts, and
+        // portrait-primary locked an installed copy upright where it is honoured.
+        orientation: "any",
         // Square, at the sizes they claim to be. The old entries pointed both
         // at one 450x469 file and called it "any maskable", so a launcher
         // cropping to a circle cut into the sun.

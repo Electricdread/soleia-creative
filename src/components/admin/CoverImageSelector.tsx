@@ -127,7 +127,7 @@ export function CoverImagePreview({ image, onClick }: { image: CoverImage; onCli
         <span className="text-[10px] font-tech uppercase tracking-wider text-amber-400 bg-black/60 px-2 py-0.5 rounded">
           {image.theme}
         </span>
-        <span className="text-[10px] font-tech text-zinc-400 bg-black/60 px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-[10px] font-tech text-zinc-400 bg-black/60 px-2 py-0.5 rounded opacity-0 touch:opacity-100 group-hover:opacity-100 transition-opacity">
           Click to change
         </span>
       </div>

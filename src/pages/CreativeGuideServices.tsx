@@ -774,7 +774,7 @@ export default function CreativeGuideServices() {
       <CreativeGuideHeader />
 
       {/* HERO — full-bleed venue photograph */}
-      <section className="relative flex min-h-[82vh] items-end overflow-hidden">
+      <section className="relative flex min-h-[82svh] items-end overflow-hidden">
         <motion.img
           src={HERO_IMG}
           alt="Soleia from above — the nightclub's sunburst, the beachclub pools and the cabana rows in one render"
@@ -795,12 +795,12 @@ export default function CreativeGuideServices() {
             near-solid theme color — legible in light and dark alike. */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-background" />
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="relative mx-auto w-full max-w-5xl px-6 pb-20 pt-40">
+        <div className="relative mx-auto w-full max-w-5xl px-6 pb-20 pt-40 short:pb-10 short:pt-24">
           <Reveal>
             <span className="font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Soleia Creative Guide</span>
           </Reveal>
           <Reveal delay={0.05}>
-            <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] text-foreground sm:text-6xl lg:text-7xl">
+            <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] text-foreground sm:text-6xl lg:text-7xl short:mt-3 short:text-4xl">
               Your brand, <span className="text-gradient-gold">on every surface.</span>
             </h1>
           </Reveal>
@@ -1143,7 +1143,7 @@ export default function CreativeGuideServices() {
                         </Reveal>
 
                         {cards.length > 0 && (
-                          <div className="grid items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
+                          <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
                         )}
                       </div>
                     ) : isPrivate ? (
@@ -1176,11 +1176,11 @@ export default function CreativeGuideServices() {
                           </article>
                         </Reveal>
                         {cards.length > 0 && (
-                          <div className="grid items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
+                          <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
                         )}
                       </div>
                     ) : (
-                      <div className="grid items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
+                      <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
                     )}
                   </div>
                 );
@@ -1304,12 +1304,12 @@ export default function CreativeGuideServices() {
       {/* Fullscreen video */}
       <Overlay open={!!fullscreenVideo} onClose={closeVideo} label="Video">
         {fullscreenVideo && (
-          <video src={fullscreenVideo} className="max-h-[85vh] max-w-full" autoPlay loop muted controls playsInline />
+          <video src={fullscreenVideo} className="max-h-[85dvh] max-w-full" autoPlay loop muted controls playsInline />
         )}
         <button
           onClick={closeVideo}
           aria-label="Close"
-          className="btn-glow tap-44 fixed right-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
+          className="btn-glow tap-44 fixed right-[calc(1.25rem+env(safe-area-inset-right))] top-[calc(1.25rem+env(safe-area-inset-top))] inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
         >
           Close
         </button>

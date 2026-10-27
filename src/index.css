@@ -226,15 +226,39 @@ button, a, [role="button"] {
     scroll-behavior: smooth;
     /* Safe area padding for notched iPhones */
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* Fixed headers sit that much lower in the installed app, so an anchor
+       jump (scrollIntoView, #hash links) lands that much lower too; each
+       target's own scroll-mt-* adds on top. */
+    scroll-padding-top: env(safe-area-inset-top);
   }
 
   body {
     @apply bg-background text-foreground antialiased font-sans;
     background: var(--gradient-luxury);
+    /* The visible area inside the html padding above. svh is the viewport with
+       Safari's toolbars showing, so the page never grows or jumps as they
+       collapse; 100vh on iOS is the larger, toolbars-hidden height, which left
+       every short page scrolling by a toolbar's worth. */
     min-height: 100vh;
-    min-height: -webkit-fill-available;
+    min-height: calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     overscroll-behavior-y: none;
     touch-action: manipulation;
+  }
+
+  /* The status-bar scrim. The installed app draws under a translucent status
+     bar (black-translucent in index.html), and the html padding keeps the page
+     itself clear of it -- but anything scrolled up past that line would show
+     behind the clock. This band covers it in the window colour, so the clock
+     is white on charcoal in light and dark alike. It is 0px tall in the
+     browser and in landscape, where there is no top inset. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: env(safe-area-inset-top, 0px);
+    background: #1D2027;
+    z-index: 2147483000;
+    pointer-events: none;
   }
 
   /* Prevent iOS zoom on input focus */
@@ -1254,10 +1278,20 @@ button, a, [role="button"] {
    Applies globally without touching individual components.
    ============================================================ */
 @media (max-width: 640px) {
-  /* Prevent accidental horizontal scroll from any wide child */
+  /* Prevent accidental horizontal scroll from any wide child. */
   html, body {
     overflow-x: hidden;
     max-width: 100vw;
+  }
+
+  /* clip, where it exists (iOS 16+), does the same job without making body a
+     scroll container. hidden did, and every position: sticky bar under 640px
+     then measured against a box that never scrolls and scrolled away with the
+     page (admin header, creative session header, delivery guide header). */
+  @supports (overflow: clip) {
+    html, body {
+      overflow-x: clip;
+    }
   }
 
   /* Never let media blow out the viewport */
@@ -1294,6 +1328,35 @@ button, a, [role="button"] {
 /* Respect the iPhone notch / dynamic island on fixed overlays */
 .safe-top    { padding-top: env(safe-area-inset-top); }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* A full-screen overlay (lightbox, menu, video) covers the whole glass, but its
+   controls stay out from under the Dynamic Island, the home indicator and, in
+   landscape, the notch. Only for overlays that carry no padding of their own. */
+.safe-inset {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* 44px tap targets on any touch screen, iPad included -- the block above only
+   covers phones under 640px, and an iPad finger is the same size. */
+@media (hover: none) and (pointer: coarse) {
+  .tap-44:not([data-compact]),
+  [data-tap-44]:not([data-compact]) {
+    min-height: 44px;
+  }
+
+  /* An invisible 44px hit area centred on a small control (a 28px stepper, a
+     20px delete icon) that the design wants to stay small. The element must
+     already be positioned: add `relative` to a static one. */
+  .hit-44::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
 
 /* ── Admin motion ───────────────────────────────────────────────────────────
    Ported 2026-09-01 from the DSX motion library (Brain\motion-library), whose

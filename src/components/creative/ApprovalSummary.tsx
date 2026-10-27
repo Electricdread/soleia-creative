@@ -405,7 +405,7 @@ export function ApprovalSummary({
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-20">
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-[env(safe-area-inset-top)] z-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <Button
             variant="ghost"

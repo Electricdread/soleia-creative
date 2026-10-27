@@ -74,6 +74,7 @@ export default function AdminCalendar() {
   // see full month view"). The grid is measured where it starts and given the rest of the window,
   // shared equally between the weeks; a day holding more than fits scrolls inside its own cell.
   const gridRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const [gridHeight, setGridHeight] = useState<number | null>(null);
   useLayoutEffect(() => {
     const fit = () => {
@@ -86,6 +87,14 @@ export default function AdminCalendar() {
     window.addEventListener('resize', fit);
     return () => window.removeEventListener('resize', fit);
   }, [loading, authLoading, showSettings]);
+
+  // Below lg the panel stacks under the month, so on an iPad in portrait or a
+  // phone a tapped booking opened off-screen, below the grid. Bring it to view.
+  const selectedUid = selectedEvent?.uid;
+  useEffect(() => {
+    if (!selectedUid || window.innerWidth >= 1024) return;
+    panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [selectedUid]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin/login');
@@ -632,8 +641,9 @@ export default function AdminCalendar() {
 
             {/* Detail Panel */}
             {selectedEvent && (
-              <div className="lg:w-[420px] shrink-0">
-                <div className="lg:sticky lg:top-6">
+              <div ref={panelRef} className="lg:w-[420px] shrink-0 scroll-mt-[calc(4.5rem+env(safe-area-inset-top))]">
+                {/* Clear of the sticky admin header (56px+), not tucked under it. */}
+                <div className="lg:sticky lg:top-[calc(4.5rem+env(safe-area-inset-top))]">
                   <EventDetailPanel
                     key={selectedEvent.uid}
                     event={selectedEvent}

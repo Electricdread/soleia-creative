@@ -16,7 +16,31 @@ export default function ProposalTimeline({ timeline }: ProposalTimelineProps) {
         <span className="flex-1" style={{ height: 1, backgroundColor: `${RC_GOLD}55` }} />
       </div>
       <div className="rounded-sm overflow-hidden" style={{ border: `1px solid ${RC_GOLD}55`, backgroundColor: '#fff' }}>
-        <table className="w-full text-sm">
+        {/* On a phone three columns leave Duration a word wide, and the
+            stylesheet's long-word safety net then split "Days" and "Revision"
+            letter by letter. Each phase stacks instead: name and duration on
+            one line, the detail under them. */}
+        <ol className="sm:hidden">
+          {timeline.map((phase, i) => (
+            <li
+              key={phase.id}
+              className="p-4"
+              style={{ borderTop: i === 0 ? 'none' : `1px solid ${RC_SOFT_INK}22` }}
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm font-medium" style={{ color: RC_INK }}>{phase.phase}</span>
+                <span
+                  className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.2em]"
+                  style={{ color: RC_GOLD_DEEP }}
+                >
+                  {phase.duration}
+                </span>
+              </div>
+              <p className="mt-1.5 text-sm" style={{ color: RC_SOFT_INK }}>{phase.details}</p>
+            </li>
+          ))}
+        </ol>
+        <table className="hidden w-full text-sm sm:table">
           <thead>
             <tr style={{ backgroundColor: `${RC_GOLD_TINT}66` }}>
               <th className="text-left p-3 text-[10px] tracking-[0.2em] uppercase font-semibold" style={{ color: RC_GOLD_DEEP }}>Phase</th>

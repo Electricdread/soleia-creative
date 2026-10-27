@@ -43,7 +43,7 @@ export function ContentDeliveryView() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 glass border-b border-primary/15">
+      <header className="sticky top-[env(safe-area-inset-top)] z-40 glass border-b border-primary/15">
         <div className="container mx-auto max-w-5xl px-6 py-3 flex items-center justify-between">
           <button onClick={() => navigate('/creative-guide')} className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary transition-colors">
             <ArrowLeft className="w-4 h-4" /> Creative Guide

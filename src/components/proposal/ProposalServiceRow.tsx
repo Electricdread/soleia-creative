@@ -112,7 +112,7 @@ export default function ProposalServiceRow({
             {!isFlatFee && (
               <>
                 {clientEditable ? (
-                  <div className="inline-flex items-center gap-2">
+                  <div className="inline-flex items-center gap-2 touch:gap-3">
                     <span className="uppercase tracking-[0.18em] text-[10px]" style={{ color: RC_GOLD_DEEP }}>
                       Qty
                     </span>
@@ -121,7 +121,7 @@ export default function ProposalServiceRow({
                       onClick={() => onAdjustQty(item.id, -1)}
                       disabled={qty <= 1}
                       aria-label="Decrease quantity"
-                      className="w-7 h-7 inline-flex items-center justify-center rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="hit-44 relative w-7 h-7 inline-flex items-center justify-center rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{ border: `1px solid ${RC_GOLD}`, color: RC_INK, backgroundColor: '#fff' }}
                     >
                       <Minus className="w-3 h-3" />
@@ -136,7 +136,7 @@ export default function ProposalServiceRow({
                       type="button"
                       onClick={() => onAdjustQty(item.id, 1)}
                       aria-label="Increase quantity"
-                      className="w-7 h-7 inline-flex items-center justify-center rounded-full transition-colors"
+                      className="hit-44 relative w-7 h-7 inline-flex items-center justify-center rounded-full transition-colors"
                       style={{ border: `1px solid ${RC_GOLD}`, color: RC_INK, backgroundColor: '#fff' }}
                     >
                       <Plus className="w-3 h-3" />

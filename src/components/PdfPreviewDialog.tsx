@@ -76,7 +76,7 @@ const PdfPreviewDialog: React.FC<PdfPreviewDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-4xl h-[90dvh] flex flex-col p-0 gap-0">
         <DialogHeader className="px-6 py-4 border-b border-border/50">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-light tracking-wide">

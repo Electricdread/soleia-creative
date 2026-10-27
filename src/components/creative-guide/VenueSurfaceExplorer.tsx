@@ -171,7 +171,7 @@ export function VenueSurfaceExplorer() {
           <video
             src={lightbox.src}
             poster={lightbox.poster}
-            className="max-h-[92vh] max-w-full"
+            className="max-h-[92dvh] max-w-full"
             autoPlay
             loop
             muted
@@ -179,12 +179,12 @@ export function VenueSurfaceExplorer() {
             playsInline
           />
         ) : lightbox ? (
-          <img src={lightbox.src} alt={lightbox.alt} className="max-h-[92vh] max-w-full object-contain" />
+          <img src={lightbox.src} alt={lightbox.alt} className="max-h-[92dvh] max-w-full object-contain" />
         ) : null}
         <button
           onClick={closeLightbox}
           aria-label="Close"
-          className="btn-glow tap-44 fixed right-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
+          className="btn-glow tap-44 fixed right-[calc(1.25rem+env(safe-area-inset-right))] top-[calc(1.25rem+env(safe-area-inset-top))] inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
         >
           <X className="h-4 w-4" /> Close
         </button>

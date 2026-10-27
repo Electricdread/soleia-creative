@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { PdfSlideshow } from '@/components/creative/PdfSlideshow';
 import { HtmlEmbed } from '@/components/creative/HtmlEmbed';
 import { downloadName, mediaKind } from '@/lib/sessionMedia';
+import { useScrollLock } from '@/lib/scrollLock';
 
 interface MediaItem {
   id: string;
@@ -36,6 +37,7 @@ export function FullscreenMediaViewer({
   // A deck is stepped through slide by slide before the arrows move on to the next item.
   const [slide, setSlide] = useState(1);
   const [slideCount, setSlideCount] = useState(0);
+  useScrollLock(true);
 
   useEffect(() => {
     setSlide(1);
@@ -86,11 +88,7 @@ export function FullscreenMediaViewer({
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || (inDeck && e.key === ' ')) goNext();
     };
     document.addEventListener('keydown', handler);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handler);
-      document.body.style.overflow = '';
-    };
+    return () => document.removeEventListener('keydown', handler);
   }, [onClose, goPrev, goNext, inDeck]);
 
   if (!current) return null;
@@ -100,7 +98,7 @@ export function FullscreenMediaViewer({
   return (
     <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
       {/* Top controls */}
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+      <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-[calc(1rem+env(safe-area-inset-right))] z-10 flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
@@ -127,7 +125,7 @@ export function FullscreenMediaViewer({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute left-2 sm:left-4 z-10 text-white/50 hover:text-white hover:bg-white/10 h-12 w-12"
+          className="absolute left-[calc(0.5rem+env(safe-area-inset-left))] sm:left-[calc(1rem+env(safe-area-inset-left))] z-10 text-white/50 hover:text-white hover:bg-white/10 h-12 w-12"
           onClick={goPrev}
           aria-label="Previous"
         >
@@ -138,7 +136,7 @@ export function FullscreenMediaViewer({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-2 sm:right-4 z-10 text-white/50 hover:text-white hover:bg-white/10 h-12 w-12"
+          className="absolute right-[calc(0.5rem+env(safe-area-inset-right))] sm:right-[calc(1rem+env(safe-area-inset-right))] z-10 text-white/50 hover:text-white hover:bg-white/10 h-12 w-12"
           onClick={goNext}
           aria-label="Next"
         >
@@ -147,12 +145,12 @@ export function FullscreenMediaViewer({
       )}
 
       {/* Media */}
-      <div className="max-w-[90vw] max-h-[85vh] flex items-center justify-center">
+      <div className="max-w-[90vw] max-h-[85dvh] flex items-center justify-center">
         {kind === 'video' && mediaUrl ? (
           <video
             key={current.id}
             src={mediaUrl}
-            className="max-w-full max-h-[85vh] rounded-lg"
+            className="max-w-full max-h-[85dvh] rounded-lg"
             autoPlay
             loop
             muted
@@ -163,7 +161,7 @@ export function FullscreenMediaViewer({
           <img
             src={mediaUrl}
             alt={current.title || 'Image'}
-            className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            className="max-w-full max-h-[85dvh] object-contain rounded-lg"
           />
         ) : kind === 'pdf' && mediaUrl ? (
           <PdfSlideshow
@@ -172,7 +170,7 @@ export function FullscreenMediaViewer({
             page={slide}
             onPageCount={setSlideCount}
             alt={current.title || undefined}
-            className="w-[84vw] sm:w-[80vw] h-[72vh]"
+            className="w-[84vw] sm:w-[80vw] h-[72dvh]"
           />
         ) : kind === 'html' && mediaUrl ? (
           <HtmlEmbed
@@ -180,7 +178,7 @@ export function FullscreenMediaViewer({
             url={mediaUrl}
             title={current.title || 'Interactive preview'}
             mode="full"
-            className="w-[84vw] sm:w-[80vw] h-[72vh] rounded-lg bg-white"
+            className="w-[84vw] sm:w-[80vw] h-[72dvh] rounded-lg bg-white"
           />
         ) : (
           <div className="text-white/50 text-sm">No preview available</div>
@@ -188,7 +186,7 @@ export function FullscreenMediaViewer({
       </div>
 
       {/* Title + counter + download hint */}
-      <div className="absolute bottom-4 left-0 right-0 px-4 text-center space-y-1">
+      <div className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-0 right-0 px-4 text-center space-y-1">
         {current.title && (
           <p className="text-white/80 text-sm">{current.title}</p>
         )}

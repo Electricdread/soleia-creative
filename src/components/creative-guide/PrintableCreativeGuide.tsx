@@ -44,7 +44,7 @@ export function PrintableCreativeGuide({ onClose }: PrintableCreativeGuideProps)
   return (
     <div className="min-h-screen bg-white text-gray-900 [color-scheme:light]" data-theme="light">
       {/* Sticky Header - Hidden in print */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 p-4 print:hidden">
+      <div className="sticky top-[env(safe-area-inset-top)] z-50 bg-white border-b border-gray-200 p-4 print:hidden">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <h1 className="text-lg font-semibold text-gray-900">Creative Guide - Print Version</h1>
           <div className="flex items-center gap-3">

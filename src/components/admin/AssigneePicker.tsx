@@ -87,7 +87,7 @@ export function AssigneePicker({
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 gap-1 px-2 text-xs"
+              className="hit-44 relative h-7 gap-1 px-2 text-xs"
               disabled={loading}
             >
               {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}

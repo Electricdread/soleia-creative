@@ -29,7 +29,7 @@ export function AdminPanel({ onClipsUpdated }: { onClipsUpdated?: () => void }) 
           <span className="hidden sm:inline">Admin</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-3xl h-[90vh] max-h-[90vh] p-0 gap-0 flex flex-col">
+      <DialogContent className="w-[95vw] max-w-3xl h-[90dvh] max-h-[90dvh] p-0 gap-0 flex flex-col">
         <DialogHeader className="px-4 sm:px-6 py-4 border-b border-border/50 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>

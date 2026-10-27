@@ -4,6 +4,7 @@ import { ArrowLeft, Download, Maximize2, Minimize2, ZoomIn, ZoomOut, RotateCcw }
 import solIcon from '@/assets/sol-icon.png';
 import servicesPage1 from '@/assets/docs/services-page-1.jpg';
 import presentationPage1 from '@/assets/docs/presentation-page-1.jpg';
+import { canFullscreenElement, enterFullscreen, exitFullscreen, fullscreenElement, onFullscreenChange } from '@/lib/fullscreen';
 
 const DOCS: Record<
   string,
@@ -40,22 +41,18 @@ export default function DocumentViewer() {
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
 
+  // iPhone has no element fullscreen, so the button is not offered there; the
+  // page itself pinches to zoom.
+  const [canFullscreen] = useState(canFullscreenElement);
+
   const toggleFullscreen = useCallback(async () => {
     const el = containerRef.current;
     if (!el) return;
-    try {
-      if (!document.fullscreenElement) await el.requestFullscreen();
-      else await document.exitFullscreen();
-    } catch {
-      /* fullscreen unavailable */
-    }
+    if (!fullscreenElement()) await enterFullscreen(el);
+    else exitFullscreen();
   }, []);
 
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
+  useEffect(() => onFullscreenChange(() => setIsFullscreen(!!fullscreenElement())), []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -93,7 +90,7 @@ export default function DocumentViewer() {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-background text-foreground overflow-auto">
-      <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between gap-2 px-3 sm:px-8 py-3 glass border-b border-primary/15">
+      <header className="fixed top-[env(safe-area-inset-top)] left-[env(safe-area-inset-left)] right-[env(safe-area-inset-right)] z-50 flex items-center justify-between gap-2 px-3 sm:px-8 py-3 glass border-b border-primary/15">
         {!isFullscreen ? (
           <button
             onClick={() => navigate('/creative-guide/services')}
@@ -145,13 +142,15 @@ export default function DocumentViewer() {
             </button>
           </div>
 
-          <button
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen ? 'Exit reading mode' : 'Enter fullscreen reading mode'}
-            className="tap-44 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full border border-primary/40 text-primary hover:bg-primary/10 transition-colors"
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
+          {canFullscreen && (
+            <button
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen ? 'Exit reading mode' : 'Enter fullscreen reading mode'}
+              className="tap-44 min-h-11 min-w-11 inline-flex items-center justify-center rounded-full border border-primary/40 text-primary hover:bg-primary/10 transition-colors"
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
+          )}
 
           <a
             href={doc.pdf}
@@ -183,8 +182,11 @@ export default function DocumentViewer() {
             />
           ))}
         </div>
-        <p className="mt-8 text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="mt-8 text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground touch:hidden">
           + / − to zoom · 0 to reset · F for fullscreen
+        </p>
+        <p className="mt-8 hidden text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground touch:block">
+          Pinch or use + / − to zoom
         </p>
       </main>
     </div>

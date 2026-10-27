@@ -55,7 +55,7 @@ export function MobileMenu({
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider px-2">
               Categories
             </p>
-            <div className="space-y-1 max-h-[55vh] overflow-y-auto">
+            <div className="space-y-1 max-h-[55dvh] overflow-y-auto">
               {artlistCategories.map((cat) => (
                 <button
                   key={cat.key}

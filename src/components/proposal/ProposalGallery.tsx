@@ -114,7 +114,7 @@ export default function ProposalGallery({ gallery, isAdmin, proposalId, onRefres
                 loading="lazy"
               />
               {isAdmin && (
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <div className="absolute top-2 right-2 opacity-0 touch:opacity-100 group-hover:opacity-100 transition-opacity flex gap-1">
                   <DeleteConfirmDialog
                     trigger={
                       <Button

@@ -203,13 +203,13 @@ export function VenueRoom({ roomRef, clips, fallbackUrl }: VenueRoomProps) {
 
       {/* Active clip title chip */}
       {previz && active && (
-        <div className="absolute right-3 top-3 z-10 rounded-full border border-primary/30 bg-black/55 px-3 py-1.5 backdrop-blur-md">
+        <div className={`absolute ${pseudoFull ? 'right-[calc(0.75rem+env(safe-area-inset-right))] top-[calc(0.75rem+env(safe-area-inset-top))]' : 'right-3 top-3'} z-10 rounded-full border border-primary/30 bg-black/55 px-3 py-1.5 backdrop-blur-md`}>
           <span className="text-[10px] uppercase tracking-[0.18em] text-primary/90">Now playing</span>
           <span className="ml-2 text-[11px] font-medium text-white">{active.title}</span>
         </div>
       )}
 
-      <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/30 bg-black/55 px-2 py-1.5 backdrop-blur-md">
+      <div className={`absolute ${pseudoFull ? 'bottom-[calc(1rem+env(safe-area-inset-bottom))]' : 'bottom-4'} left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-primary/30 bg-black/55 px-2 py-1.5 backdrop-blur-md`}>
         <button
           onClick={() => setPreviz((v) => !v)}
           className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors ${
@@ -339,7 +339,7 @@ export default function VenueVideoMappingView({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header
-        className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 sm:px-8 transition-all duration-400 ${
+        className={`fixed top-[env(safe-area-inset-top)] left-[env(safe-area-inset-left)] right-[env(safe-area-inset-right)] z-50 flex items-center justify-between px-5 sm:px-8 transition-all duration-400 ${
           scrolled ? 'py-3 glass border-b border-primary/15' : 'py-5 border-b border-transparent'
         }`}
       >
@@ -354,7 +354,7 @@ export default function VenueVideoMappingView({
         </button>
       </header>
 
-      <section className="flex min-h-[68vh] flex-col items-center justify-center px-6 pt-32 pb-16 text-center">
+      <section className="flex min-h-[68svh] flex-col items-center justify-center px-6 pt-32 pb-16 text-center">
         <Reveal>
           <span className="mb-4 block text-[11px] uppercase tracking-[0.34em] text-primary">Creative Content Design</span>
           <h1 className="mb-5 font-display text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">

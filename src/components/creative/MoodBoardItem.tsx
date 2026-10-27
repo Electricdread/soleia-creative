@@ -221,7 +221,7 @@ export function MoodBoardItem({
           <Button
             variant="secondary"
             size="icon"
-            className="absolute bottom-2 right-2 h-8 w-8 opacity-0 group-hover/video:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm hover:bg-background"
+            className="hit-44 absolute bottom-2 right-2 h-8 w-8 opacity-0 touch:opacity-100 group-hover/video:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm hover:bg-background"
             onClick={(e) => {
               e.stopPropagation();
               handleDownload(mediaUrl, item.title || 'video');
@@ -322,7 +322,7 @@ export function MoodBoardItem({
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+                    className="hit-44 absolute top-2 right-2 opacity-0 touch:opacity-100 group-hover:opacity-100 transition-opacity h-7 w-7"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -397,7 +397,7 @@ export function MoodBoardItem({
                 {comment.commenter_name === userName && (
                   <DeleteConfirmDialog
                     trigger={
-                      <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover/comment:opacity-100">
+                      <Button variant="ghost" size="icon" className="hit-44 relative h-5 w-5 opacity-0 touch:opacity-100 group-hover/comment:opacity-100">
                         <Trash2 className="h-2.5 w-2.5" />
                       </Button>
                     }

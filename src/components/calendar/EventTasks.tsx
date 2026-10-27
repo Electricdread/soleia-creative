@@ -91,7 +91,7 @@ export function EventTasks({ eventUid }: { eventUid: string }) {
             <span className={`text-sm flex-1 ${t.is_completed ? 'line-through text-muted-foreground/60' : 'text-foreground'}`}>{t.title}</span>
             <DeleteConfirmDialog
               trigger={
-                <button className="opacity-0 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
+                <button className="hit-44 relative opacity-0 touch:opacity-100 group-hover:opacity-100 text-muted-foreground/60 hover:text-destructive transition-opacity">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               }

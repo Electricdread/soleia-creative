@@ -531,7 +531,7 @@ export function ClientLinkManager() {
       {/* Uploads Viewer Modal */}
       {viewingUploadsFor && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-3xl max-h-[80vh] overflow-auto">
+          <div className="w-full max-w-3xl max-h-[80dvh] overflow-auto">
             <SessionUploadsViewer
               linkId={viewingUploadsFor.id}
               clientName={viewingUploadsFor.name}
@@ -544,7 +544,7 @@ export function ClientLinkManager() {
       {/* Previz Manager Modal */}
       {viewingPrevizFor && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl max-h-[80vh] overflow-auto">
+          <div className="w-full max-w-2xl max-h-[80dvh] overflow-auto">
             <ContentPrevizManager
               linkId={viewingPrevizFor.id}
               linkToken={viewingPrevizFor.token}

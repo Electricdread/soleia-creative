@@ -450,7 +450,7 @@ export default function AdminPackets() {
       <PacketEditor open={editorOpen} onOpenChange={setEditorOpen} initial={editing} kind={newKind} onSaved={load} />
 
       <Dialog open={!!emailPacket} onOpenChange={(o) => { if (!o) { setEmailPacket(null); setIncludePriceSheet(false); } }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Send Packet Email</DialogTitle>
           </DialogHeader>

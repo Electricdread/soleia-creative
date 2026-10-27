@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useScrollLock } from '@/lib/scrollLock';
 
 interface VideoModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface VideoModalProps {
 }
 
 export function VideoModal({ isOpen, onClose, videoSrc, posterSrc, title, startMuted = false }: VideoModalProps) {
+  useScrollLock(isOpen);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(startMuted);
   const [showControls, setShowControls] = useState(true);
@@ -96,7 +98,7 @@ export function VideoModal({ isOpen, onClose, videoSrc, posterSrc, title, startM
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: showControls ? 1 : 0, y: showControls ? 0 : -20 }}
-          className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none"
+          className="absolute top-0 left-0 right-0 z-20 p-4 pt-[calc(1rem+env(safe-area-inset-top))] bg-gradient-to-b from-black/60 to-transparent pointer-events-none"
         >
           <div className="flex items-center justify-between max-w-5xl mx-auto">
             <h3 className="text-white/90 font-medium text-sm sm:text-base">{title || 'Fullscreen Video'}</h3>
@@ -120,7 +122,7 @@ export function VideoModal({ isOpen, onClose, videoSrc, posterSrc, title, startM
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: showControls ? 1 : 0, y: showControls ? 0 : 20 }}
-          className="absolute bottom-6 right-6 z-20"
+          className="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-[calc(1.5rem+env(safe-area-inset-right))] z-20"
         >
           <Button
             variant="ghost"

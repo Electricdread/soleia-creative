@@ -543,7 +543,7 @@ const SharedGalleryView: React.FC<SharedGalleryViewProps> = ({
 
       {/* Clip Detail Modal */}
       <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Play className="w-5 h-5 text-primary" />

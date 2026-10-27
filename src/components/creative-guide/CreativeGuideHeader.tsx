@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import solIcon from '@/assets/sol-icon.png';
+import { useScrollLock } from '@/lib/scrollLock';
 
 /**
  * The Creative Guide's navigation, shared by every page in the guide.
@@ -32,6 +33,7 @@ export function CreativeGuideHeader({ transparentAtTop = false }: CreativeGuideH
   const { pathname, hash } = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  useScrollLock(menuOpen);
 
   useEffect(() => {
     if (!transparentAtTop) return;
@@ -60,7 +62,7 @@ export function CreativeGuideHeader({ transparentAtTop = false }: CreativeGuideH
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 flex items-center justify-between px-5 transition-all duration-300 sm:px-8 ${
+        className={`fixed left-[env(safe-area-inset-left)] right-[env(safe-area-inset-right)] top-[env(safe-area-inset-top)] z-50 flex items-center justify-between px-5 transition-all duration-300 sm:px-8 ${
           solid ? 'glass border-b border-primary/15 py-3' : 'border-b border-transparent py-5'
         }`}
       >
@@ -74,7 +76,7 @@ export function CreativeGuideHeader({ transparentAtTop = false }: CreativeGuideH
               key={link.label}
               onClick={() => go(link.to)}
               aria-current={isCurrent(link.to) ? 'page' : undefined}
-              className={`text-[11px] uppercase tracking-[0.16em] transition-colors hover:text-primary ${
+              className={`-my-0.5 min-h-11 text-[11px] uppercase tracking-[0.16em] transition-colors hover:text-primary ${
                 isCurrent(link.to) ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
@@ -86,7 +88,7 @@ export function CreativeGuideHeader({ transparentAtTop = false }: CreativeGuideH
         <Button
           variant="ghost"
           size="icon"
-          className="lg:hidden"
+          className="-my-0.5 h-11 w-11 lg:hidden"
           onClick={() => setMenuOpen(true)}
           aria-label="Open menu"
         >
@@ -95,11 +97,11 @@ export function CreativeGuideHeader({ transparentAtTop = false }: CreativeGuideH
       </header>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 bg-background/97 backdrop-blur-sm lg:hidden">
+        <div className="safe-inset fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 bg-background/97 backdrop-blur-sm lg:hidden">
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-5 top-5"
+            className="absolute right-[calc(1.25rem+env(safe-area-inset-right))] top-[calc(1.25rem+env(safe-area-inset-top))] h-11 w-11"
             onClick={() => setMenuOpen(false)}
             aria-label="Close menu"
           >
@@ -109,7 +111,7 @@ export function CreativeGuideHeader({ transparentAtTop = false }: CreativeGuideH
             <button
               key={link.label}
               onClick={() => go(link.to)}
-              className={`font-display text-2xl ${isCurrent(link.to) ? 'text-primary' : 'text-foreground'}`}
+              className={`min-h-11 font-display text-2xl ${isCurrent(link.to) ? 'text-primary' : 'text-foreground'}`}
             >
               {link.label}
             </button>

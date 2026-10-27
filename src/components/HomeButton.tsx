@@ -27,13 +27,13 @@ export function HomeButton({
   const navigate = useNavigate();
 
   const base =
-    'gap-2 touch-manipulation min-h-[44px] sm:min-h-0';
+    'gap-2 touch-manipulation min-h-[44px] sm:min-h-0 touch:min-h-[44px]';
 
   const palette =
     variant === 'dark'
       ? 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
       : variant === 'floating'
-        ? 'fixed top-4 left-4 z-50 backdrop-blur-md bg-black/30 hover:bg-black/50 text-white/80 hover:text-white border border-white/10'
+        ? 'fixed top-[calc(1rem+env(safe-area-inset-top))] left-[calc(1rem+env(safe-area-inset-left))] z-50 backdrop-blur-md bg-black/30 hover:bg-black/50 text-white/80 hover:text-white border border-white/10'
         : 'text-muted-foreground hover:text-foreground';
 
   return (

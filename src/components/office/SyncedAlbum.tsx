@@ -276,7 +276,7 @@ function LightboxModal({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="max-w-[90vw] max-h-[85vh] relative"
+        className="max-w-[90vw] max-h-[85dvh] relative"
         onClick={(e) => e.stopPropagation()}
       >
         {isVideo ? (
@@ -285,13 +285,13 @@ function LightboxModal({
             controls
             autoPlay
             loop
-            className="max-w-full max-h-[85vh] rounded-xl shadow-2xl"
+            className="max-w-full max-h-[85dvh] rounded-xl shadow-2xl"
           />
         ) : (
           <img
             src={item.url}
             alt={item.title}
-            className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
+            className="max-w-full max-h-[85dvh] object-contain rounded-xl shadow-2xl"
           />
         )}
 

@@ -109,7 +109,7 @@ const PlacementEditDialog: React.FC<PlacementEditDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-hidden p-0 gap-0 flex flex-col">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90dvh] overflow-hidden p-0 gap-0 flex flex-col">
         <DialogHeader className="p-4 pb-2 shrink-0">
           <DialogTitle className="text-base font-light tracking-wide flex items-center gap-2">
             {clipThumbnail && (

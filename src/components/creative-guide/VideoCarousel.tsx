@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
+import { useScrollLock } from '@/lib/scrollLock';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -41,6 +42,7 @@ export function VideoCarousel({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
+  useScrollLock(isModalOpen);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const modalVideoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
@@ -210,7 +212,7 @@ export function VideoCarousel({
               variant="ghost"
               size="icon"
               onClick={(e) => { e.stopPropagation(); goToPrev(); }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg h-8 w-8"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg h-8 w-8 touch:h-11 touch:w-11"
             >
               <ChevronLeft className="w-4 h-4 text-primary" />
             </Button>
@@ -218,7 +220,7 @@ export function VideoCarousel({
               variant="ghost"
               size="icon"
               onClick={(e) => { e.stopPropagation(); goToNext(); }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg h-8 w-8"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-background/70 backdrop-blur-sm hover:bg-background/90 border border-primary/30 shadow-lg h-8 w-8 touch:h-11 touch:w-11"
             >
               <ChevronRight className="w-4 h-4 text-primary" />
             </Button>
@@ -271,7 +273,7 @@ export function VideoCarousel({
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: showControls ? 1 : 0, y: showControls ? 0 : -20 }}
-              className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none"
+              className="absolute top-0 left-0 right-0 z-20 p-4 pt-[calc(1rem+env(safe-area-inset-top))] bg-gradient-to-b from-black/60 to-transparent pointer-events-none"
             >
               <div className="flex items-center justify-between max-w-5xl mx-auto">
                 <div>
@@ -329,7 +331,7 @@ export function VideoCarousel({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: showControls ? 1 : 0, y: showControls ? 0 : 20 }}
-              className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-4 pointer-events-none"
+              className="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-20 flex items-center justify-center gap-4 pointer-events-none"
             >
               <Button
                 variant="ghost"

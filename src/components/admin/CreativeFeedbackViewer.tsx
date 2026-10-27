@@ -53,7 +53,7 @@ export function CreativeFeedbackViewer({ sessionId, clientName, projectName, ope
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Client feedback</DialogTitle>
           <DialogDescription>

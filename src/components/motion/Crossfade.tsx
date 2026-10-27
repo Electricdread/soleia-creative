@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { CROSSFADE, MOTION_EASE } from '@/components/motion/motion';
+import { useScrollLock } from '@/lib/scrollLock';
 
 /**
  * The guide's motion standard, in one place.
@@ -101,6 +102,7 @@ export interface OverlayProps {
  */
 export function Overlay({ open, onClose, children, label, className = '' }: OverlayProps) {
   const reduceMotion = useReducedMotion();
+  useScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
@@ -120,7 +122,7 @@ export function Overlay({ open, onClose, children, label, className = '' }: Over
         <motion.div
           {...fade}
           transition={{ duration: 0.32, ease: MOTION_EASE }}
-          className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 ${className}`}
+          className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-[max(1rem,env(safe-area-inset-top))_max(1rem,env(safe-area-inset-right))_max(1rem,env(safe-area-inset-bottom))_max(1rem,env(safe-area-inset-left))] ${className}`}
           onClick={onClose}
           role="dialog"
           aria-modal="true"

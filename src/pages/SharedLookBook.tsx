@@ -164,7 +164,7 @@ export default function SharedLookBook() {
                 controls
                 autoPlay
                 playsInline
-                className="w-full max-h-[80vh] bg-background"
+                className="w-full max-h-[80dvh] bg-background"
               />
               <div className="p-4 text-foreground">
                 <h3 className="text-lg" style={{ fontFamily: 'DM Serif Display, serif' }}>{previewing.title}</h3>

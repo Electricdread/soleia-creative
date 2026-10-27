@@ -70,7 +70,7 @@ export function EventNotes({ eventUid }: { eventUid: string }) {
               <p className="text-sm text-[#3d3629] whitespace-pre-line flex-1">{n.content}</p>
               <DeleteConfirmDialog
                 trigger={
-                  <button className="opacity-0 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
+                  <button className="hit-44 relative opacity-0 touch:opacity-100 group-hover:opacity-100 text-[#b5ab9a] hover:text-[#b05a5a] transition-opacity">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 }

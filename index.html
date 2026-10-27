@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Soleia</title>
     
     <!-- Google Fonts -->
@@ -13,9 +13,15 @@
     <meta name="author" content="Soleia" />
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" type="image/x-icon" />
     <link rel="icon" href="/soleia-icon-192.png" type="image/png" sizes="192x192" />
-    <link rel="apple-touch-icon" href="/soleia-icon-192.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/soleia-icon-192.png" />
+    <!-- iOS takes the home-screen icon from here, not the manifest: 180x180,
+         opaque (iOS paints a transparent corner black and rounds it itself). -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <!-- Both spellings: iOS reads the apple- one, and Chrome warns that it is
+         deprecated in favour of the plain one. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- The page draws under the status bar; the safe-area scrim in index.css
+         paints that band charcoal, so the white clock always reads. -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Soleia" />
     <!-- One manifest only. A second link here pointed at public/manifest.json,

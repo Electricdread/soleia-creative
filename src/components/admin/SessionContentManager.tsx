@@ -451,7 +451,7 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
                 {scene.title}
                 <DeleteConfirmDialog
                   trigger={
-                    <button className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity touch-manipulation">
+                    <button className="hit-44 relative opacity-0 touch:opacity-100 group-hover:opacity-100 hover:text-destructive transition-opacity touch-manipulation">
                       <X className="w-3 h-3" />
                     </button>
                   }
@@ -572,7 +572,7 @@ export function SessionContentManager({ sessionId, sessionToken }: SessionConten
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-1.5 max-h-[55vh] overflow-y-auto pr-1">
+            <div className="space-y-1.5 max-h-[55dvh] overflow-y-auto pr-1">
               {items.map(item => (
                 <SortableContentRow
                   key={item.id}

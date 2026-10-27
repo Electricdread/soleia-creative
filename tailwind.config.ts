@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 export default {
   darkMode: ["class"],
@@ -72,6 +73,20 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      // iOS reads 100vh as the viewport with Safari's toolbars hidden, so an
+      // h-screen box ran under the toolbar and every min-h-screen page scrolled
+      // by a toolbar's worth. A page's floor is the small viewport (svh: stable
+      // while the toolbars move) inside the safe-area padding on <html>; a
+      // full-screen box is the dynamic one. 100vh first, for browsers without.
+      minHeight: {
+        screen: ["100vh", "calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom))"] as unknown as string,
+      },
+      height: {
+        screen: ["100vh", "100dvh"] as unknown as string,
+      },
+      maxHeight: {
+        screen: ["100vh", "100dvh"] as unknown as string,
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -127,5 +142,18 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // touch: -- a finger, not a mouse (phones and iPads). For the tap
+    // equivalent of a hover-only control: opacity-0 group-hover:opacity-100
+    // touch:opacity-100. Scoped under :root so it outranks the responsive
+    // variants, which Tailwind emits after it: `sm:min-h-0 touch:min-h-11`
+    // must keep an iPad's 44px.
+    plugin(({ addVariant }) => {
+      addVariant("touch", "@media (hover: none) and (pointer: coarse) { :root & }");
+      // short: a phone on its side (iPhone 16 Pro landscape is 874 x 402), where
+      // a hero sized for the width would fill the whole screen with headline.
+      addVariant("short", "@media (orientation: landscape) and (max-height: 500px) { :root & }");
+    }),
+  ],
 } satisfies Config;

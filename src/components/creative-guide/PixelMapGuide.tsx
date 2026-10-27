@@ -392,11 +392,11 @@ export function PixelMapGuide() {
       </Reveal>
 
       <Overlay open={showMap} onClose={closeMap} label="Soleia venue pixel map, full size">
-        <img src={PLAYBACK_MAP} alt="The Soleia venue pixel map at full size" className="max-h-[92vh] max-w-full object-contain" />
+        <img src={PLAYBACK_MAP} alt="The Soleia venue pixel map at full size" className="max-h-[92dvh] max-w-full object-contain" />
         <button
           onClick={closeMap}
           aria-label="Close"
-          className="btn-glow tap-44 fixed right-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
+          className="btn-glow tap-44 fixed right-[calc(1.25rem+env(safe-area-inset-right))] top-[calc(1.25rem+env(safe-area-inset-top))] inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
         >
           <X className="h-4 w-4" /> Close
         </button>
