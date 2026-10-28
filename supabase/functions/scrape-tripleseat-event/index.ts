@@ -83,8 +83,8 @@ function parseEventPage(markdown: string): ScrapedEventData {
   const managerRegex = /#### ([A-Z][a-z]+ [A-Z][a-z]+)\s*\n\s*\n\s*\[([^\]]+@[^\]]+)\]/g;
   let mMatch: RegExpExecArray | null;
   while ((mMatch = managerRegex.exec(markdown)) !== null) {
-    if (!data.managers.find(m => m.name === mMatch[1])) {
-      data.managers.push({ name: mMatch[1], email: mMatch[2] });
+    if (!data.managers.find(m => m.name === mMatch![1])) {
+      data.managers.push({ name: mMatch![1], email: mMatch![2] });
     }
   }
 
