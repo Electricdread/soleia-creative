@@ -11,6 +11,11 @@
 //
 // pg_cron fires it on Monday morning. POST {"dry_run": true} renders without
 // sending; {"only": ["someone@..."]} narrows a real send to named people.
+//
+// Only two callers are let in (owner, 2026-10-27): the scheduler, which sends
+// the x-soleia-cron secret from Vault, and a signed-in admin. The anon key the
+// cron job also carries is public, so it admits nobody — see
+// 20261028120000_weekly_report_cron_secret.sql.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { adminRecipients, firstNameOf, mutedFor, sendEach } from '../_shared/notify.ts';
@@ -23,7 +28,7 @@ import {
 
 // A stale build cannot emit a stamp that did not exist in it, which is how
 // "did the deploy take?" gets answered without asking Lovable. Bump on change.
-const BUILD = 'weekly-report-2026-10-27a';
+const BUILD = 'weekly-report-2026-10-28a';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -145,6 +150,27 @@ Deno.serve(async (req) => {
     const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!url || !key) throw new Error('Supabase env not configured');
     const client = createClient(url, key);
+
+    // The scheduler first: its header is checked inside the database, which is
+    // the only place the secret lives.
+    let caller: 'scheduler' | 'admin' | null = null;
+    const cronSecret = req.headers.get('x-soleia-cron');
+    if (cronSecret) {
+      const { data } = await client.rpc('check_cron_secret', { p_secret: cronSecret });
+      if (data === true) caller = 'scheduler';
+    }
+    if (!caller) {
+      const auth = req.headers.get('Authorization') ?? '';
+      const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : '';
+      const { data: userData } = token ? await client.auth.getUser(token) : { data: null };
+      const userId = userData?.user?.id;
+      if (userId) {
+        const { data: roleRow } = await client.from('user_roles')
+          .select('id').eq('user_id', userId).eq('role', 'admin').maybeSingle();
+        if (roleRow) caller = 'admin';
+      }
+    }
+    if (!caller) return json(401, { build: BUILD, error: 'Only the scheduler or a signed-in admin can run this report' });
 
     const body = await req.json().catch(() => ({}));
     const dryRun = body?.dry_run === true;
@@ -408,6 +434,7 @@ Deno.serve(async (req) => {
 
     return json(200, {
       build: BUILD,
+      caller,
       success: failed.length === 0 && delivered.length > 0,
       live_jobs: built.length,
       executives: execs.length,
