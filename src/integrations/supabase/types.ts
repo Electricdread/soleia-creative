@@ -1346,6 +1346,24 @@ export type Database = {
           },
         ]
       }
+      notification_mutes: {
+        Row: {
+          created_at: string
+          email: string
+          template: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          template: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          template?: string
+        }
+        Relationships: []
+      }
       notification_watermarks: {
         Row: {
           key: string
