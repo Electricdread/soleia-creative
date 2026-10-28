@@ -22,6 +22,13 @@
       "when": 1792982215090,
       "tag": "0002_proposal_reminders_schedule",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793163204181,
+      "tag": "0003_notification_mutes",
+      "breakpoints": true
     }
   ]
 }
