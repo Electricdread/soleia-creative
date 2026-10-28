@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
       const job = jobById.get(a.job_id);
       if (!email || !job) continue;
       const key = email.toLowerCase();
-      const entry = byEmail.get(key) ?? { email, name: (a.display_name ?? '').trim() || null, jobs: [] };
+      const entry = byEmail.get(key) ?? ({ email, name: (a.display_name ?? '').trim() || null, jobs: [] } as PmEntry);
       entry.jobs.push({ title: job.title, client: job.client_name, date: job.event_date ?? null });
       byEmail.set(key, entry);
     }

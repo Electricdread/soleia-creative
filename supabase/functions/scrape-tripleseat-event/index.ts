@@ -16,6 +16,7 @@ interface ScrapedEventData {
   venue_phone: string;
   managers: { name: string; email: string }[];
   recent_activity: { description: string; time_ago: string; by: string }[];
+  signed_documents: { title: string; signed_on: string }[];
 }
 
 function parseEventPage(markdown: string): ScrapedEventData {
@@ -80,10 +81,10 @@ function parseEventPage(markdown: string): ScrapedEventData {
 
   // Managers - look for "#### Name" followed by email
   const managerRegex = /#### ([A-Z][a-z]+ [A-Z][a-z]+)\s*\n\s*\n\s*\[([^\]]+@[^\]]+)\]/g;
-  let mMatch;
+  let mMatch: RegExpExecArray | null;
   while ((mMatch = managerRegex.exec(markdown)) !== null) {
-    if (!data.managers.find(m => m.name === mMatch[1])) {
-      data.managers.push({ name: mMatch[1], email: mMatch[2] });
+    if (!data.managers.find(m => m.name === mMatch![1])) {
+      data.managers.push({ name: mMatch![1], email: mMatch![2] });
     }
   }
 

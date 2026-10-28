@@ -9,7 +9,7 @@
 //         Elevator/  TV Screens/  Main LEDs/  Ticker Marquee/
 // Permissions: parent folder set to anyone-with-link → writer.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { FINALS_FOLDER, FINAL_SLOTS, FINALS_README, isFinalsFolder } from '../_shared/finalSlots.ts';
 import { driveAuthMode, driveFetch, driveJson } from '../_shared/googleDrive.ts';
 import { jobFolderName } from '../_shared/jobFolderName.ts';
@@ -193,7 +193,8 @@ async function putTextFile(
  * living in a shared drive.
  */
 async function resolveRootFolder(
-  supabase: ReturnType<typeof createClient>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReturnType<typeof createClient> resolves to the last overload, which does not match a real call's client.
+  supabase: SupabaseClient<any, any, any>,
   lovableKey: string,
   driveKey: string,
 ): Promise<string> {

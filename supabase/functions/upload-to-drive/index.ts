@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     const filename = String(form.get('filename') || (file instanceof File ? file.name : 'upload.bin'));
     const mimeType = String(form.get('mimeType') || (file instanceof File ? file.type : 'application/octet-stream'));
 
-    if (!(file instanceof File) && !(file instanceof Blob)) {
+    if (!(file instanceof Blob)) {
       return new Response(
         JSON.stringify({ error: 'Missing "file" form field' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },

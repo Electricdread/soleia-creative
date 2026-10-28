@@ -12,7 +12,7 @@
 //
 // POST { packet_id, action: 'check' | 'trash' }, admin session required.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { driveAuthMode, driveJson } from '../_shared/googleDrive.ts';
 
 const corsHeaders = {
@@ -34,7 +34,8 @@ interface Blocker { type: 'proposal' | 'packet' | 'job'; id: string; label: stri
 
 /** Everything other than this packet that still points at the folder. */
 async function findBlockers(
-  supabase: ReturnType<typeof createClient>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReturnType<typeof createClient> resolves to the last overload, which does not match a real call's client.
+  supabase: SupabaseClient<any, any, any>,
   folderId: string,
   packetId: string,
 ): Promise<{ blockers: Blocker[]; releaseJobIds: string[] }> {
