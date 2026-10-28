@@ -21,7 +21,7 @@
 //
 // The contract itself is documented in docs/studio-sync-contract.md.
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient, type SupabaseClient as SupabaseClientBase } from 'npm:@supabase/supabase-js@2';
 import { matchesAnySecret } from '../_shared/constantTimeEqual.ts';
 import { calcProposalTotal, type ProposalLineItem } from '../_shared/proposalTotals.ts';
 import {
@@ -80,7 +80,8 @@ const json = (status: number, body: unknown, headers: Record<string, string> = {
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...headers },
   });
 
-type SupabaseClient = ReturnType<typeof createClient>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReturnType<typeof createClient> resolves to the last overload, which does not match a real call's client.
+type SupabaseClient = SupabaseClientBase<any, any, any>;
 
 /** A row set larger than one PostgREST page, read to the end or to the ceiling. */
 async function readAll<T>(
@@ -127,7 +128,7 @@ const isBackfilled = (signedAt: string | null, createdAt: string | null) => {
  * figure. Publishing a number for it would be inventing one.
  */
 function proposalTotal(
-  proposal: { id: string; signed_at: string | null },
+  proposal: { id: string; signed_at: string | null; discount_type: string | null; discount_value: number | null; discount_label: string | null },
   itemsByProposal: Map<string, ItemRow[]> | null,
   historyByProposal: Map<string, HistoryRow>,
 ) {
