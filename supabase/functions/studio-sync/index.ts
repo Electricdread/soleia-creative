@@ -128,7 +128,7 @@ const isBackfilled = (signedAt: string | null, createdAt: string | null) => {
  * figure. Publishing a number for it would be inventing one.
  */
 function proposalTotal(
-  proposal: { id: string; signed_at: string | null; discount_type?: string | null; discount_value?: number | null; discount_label?: string | null },
+  proposal: { id: string; signed_at: string | null; discount_type?: string | null; discount_value?: string | number | null; discount_label?: string | null },
   itemsByProposal: Map<string, ItemRow[]> | null,
   historyByProposal: Map<string, HistoryRow>,
 ) {
