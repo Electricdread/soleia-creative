@@ -94,6 +94,32 @@ export async function jobAssigneesFor(jobIds: (string | null | undefined)[]): Pr
   }
 }
 
+/**
+ * Addresses, lowercased, that have asked not to receive this template (notification_mutes). Filter a recipient list
+ * with it before sending. Returns an empty set on any failure: a broken lookup sends as before rather than going
+ * quiet.
+ */
+export async function mutedFor(template: string): Promise<Set<string>> {
+  try {
+    const url = Deno.env.get('SUPABASE_URL');
+    const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!url || !key) return new Set();
+    const res = await fetch(
+      `${url}/rest/v1/notification_mutes?template=eq.${encodeURIComponent(template)}&select=email`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+    );
+    if (!res.ok) {
+      console.error('notification_mutes lookup failed', { status: res.status, body: (await res.text()).slice(0, 200) });
+      return new Set();
+    }
+    const rows = (await res.json()) as { email: string | null }[];
+    return new Set(rows.map((r) => (r.email ?? '').trim().toLowerCase()).filter(Boolean));
+  } catch (e) {
+    console.error('notification_mutes lookup threw', e);
+    return new Set();
+  }
+}
+
 export interface NotificationMessage {
   to: string[];
   subject: string;

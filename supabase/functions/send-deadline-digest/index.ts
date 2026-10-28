@@ -5,13 +5,13 @@
 // is declared verify_jwt = false, and the email names clients.
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { adminRecipients, jobAssigneesFor, sendEach } from "../_shared/notify.ts";
+import { adminRecipients, jobAssigneesFor, mutedFor, sendEach } from "../_shared/notify.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 import { buildDeadlineDigest, planDigest, rollupJobs, type RollupInput, type SeenFile } from "../_shared/deadlineDigest.ts";
 import type { JobRecord, JobWithMembers } from "../_shared/jobStage.ts";
 
 // The deploy proof, as in studio-sync: a stale build cannot report a stamp it never had. Bump it on every change.
-const BUILD = 'send-deadline-digest-2026-10-25b';
+const BUILD = 'send-deadline-digest-2026-10-27a';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -100,18 +100,19 @@ serve(async (req) => {
     const full = buildDeadlineDigest(today, plan);
 
     // Each assigned PM gets the same email holding only their own jobs' rows; a PM with nothing waiting gets none.
+    // Nor anyone who asked not to get it (notification_mutes); the studio inbox itself is never muted.
     const adminSet = new Set(adminRecipients().map((a) => a.toLowerCase()));
-    const team = await jobAssigneesFor(plan.rows.map((r) => r.jobId));
+    const [team, muted] = await Promise.all([jobAssigneesFor(plan.rows.map((r) => r.jobId)), mutedFor('deadline-digest')]);
     const jobsByAssignee = new Map<string, Set<string>>();
     for (const member of team) {
-      if (adminSet.has(member.email.toLowerCase())) continue;
+      if (adminSet.has(member.email.toLowerCase()) || muted.has(member.email.toLowerCase())) continue;
       jobsByAssignee.set(member.email, (jobsByAssignee.get(member.email) ?? new Set()).add(member.job_id));
     }
 
     if (dry) {
       return json({
         build: BUILD, dry: true, today, subject: full?.subject ?? null, counts: full?.counts ?? null,
-        admin_recipients: adminRecipients().length, pm_copies: jobsByAssignee.size,
+        admin_recipients: adminRecipients().length, pm_copies: jobsByAssignee.size, muted: muted.size,
       });
     }
     if (!full) return json({ build: BUILD, success: true, today, skipped: 'nothing waiting' });

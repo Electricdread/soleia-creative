@@ -5,7 +5,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { slotForFolderName, FINAL_SLOTS } from '../_shared/finalSlots.ts';
 import { driveAuthMode, driveFetch } from '../_shared/googleDrive.ts';
-import { sendEach, adminRecipients, jobAssigneesFor } from '../_shared/notify.ts';
+import { sendEach, adminRecipients, jobAssigneesFor, mutedFor } from '../_shared/notify.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -423,6 +423,8 @@ Deno.serve(async (req) => {
       teamByJob.set(member.job_id, list);
     }
     const adminSet = new Set(adminRecipients().map((a) => a.toLowerCase()));
+    // People who asked not to get these copies (notification_mutes). The studio inbox itself is never muted.
+    const [uploadsMuted, finalsMuted] = await Promise.all([mutedFor('client-files-received'), mutedFor('finals-received')]);
 
     // Retry every recent row whose notification has not been delivered. This
     // includes files recorded during the Aug 28 outage: the database row is a
@@ -488,7 +490,7 @@ Deno.serve(async (req) => {
         for (const r of rendered) {
           if (!r.jobId) continue;
           for (const member of teamByJob.get(r.jobId) ?? []) {
-            if (adminSet.has(member.email.toLowerCase())) continue;
+            if (adminSet.has(member.email.toLowerCase()) || uploadsMuted.has(member.email.toLowerCase())) continue;
             const entry = uploadsByAssignee.get(member.email) ?? { fileNames: [], rows: [] };
             entry.fileNames.push(r.fileName);
             entry.rows.push(r.html);
@@ -577,7 +579,7 @@ Deno.serve(async (req) => {
         for (const r of renderedFinals) {
           if (!r.final.jobId) continue;
           for (const member of teamByJob.get(r.final.jobId) ?? []) {
-            if (adminSet.has(member.email.toLowerCase())) continue;
+            if (adminSet.has(member.email.toLowerCase()) || finalsMuted.has(member.email.toLowerCase())) continue;
             const entry = finalsByAssignee.get(member.email) ?? { items: [], rows: [] };
             entry.items.push(r.final);
             entry.rows.push(r.html);

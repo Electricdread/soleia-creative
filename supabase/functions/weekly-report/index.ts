@@ -13,7 +13,7 @@
 // sending; {"only": ["someone@..."]} narrows a real send to named people.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { adminRecipients, firstNameOf, sendEach } from '../_shared/notify.ts';
+import { adminRecipients, firstNameOf, mutedFor, sendEach } from '../_shared/notify.ts';
 import { calcProposalTotal, type ProposalLineItem } from '../_shared/proposalTotals.ts';
 import {
   nextAction, stageFor, STAGE_LABEL,
@@ -23,7 +23,7 @@ import {
 
 // A stale build cannot emit a stamp that did not exist in it, which is how
 // "did the deploy take?" gets answered without asking Lovable. Bump on change.
-const BUILD = 'weekly-report-2026-09-01a';
+const BUILD = 'weekly-report-2026-10-27a';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -379,7 +379,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const chosen = only.length ? sends.filter((s) => only.includes(s.to.toLowerCase())) : sends;
+    // Anyone who asked not to get their copy (notification_mutes) is left out, whichever scope they fall in.
+    const muted = {
+      executive: await mutedFor('weekly-report-executive'),
+      pm: await mutedFor('weekly-report-pm'),
+    } as Record<string, Set<string>>;
+    const wanted = sends.filter((s) => !muted[s.scope]?.has(s.to.toLowerCase()));
+
+    const chosen = only.length ? wanted.filter((s) => only.includes(s.to.toLowerCase())) : wanted;
 
     if (dryRun) {
       const divider = '<hr style="margin:44px 0;border:0;border-top:1px solid #ecf0f1;">';
