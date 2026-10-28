@@ -8,7 +8,7 @@
 //
 // Body (optional): { batchSize?: number, mode?: 'cached' | 'orphans' | 'count' }
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { driveAuthMode, driveFetch, driveJson } from '../_shared/googleDrive.ts';
 
 const corsHeaders = {
@@ -118,7 +118,8 @@ async function uploadStreamToDrive(
  * Returns the response body stream + the resolved size + content-type.
  */
 async function openStorageStream(
-  admin: ReturnType<typeof createClient>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ReturnType<typeof createClient> resolves to the last overload, which does not match a real call's client.
+  admin: SupabaseClient<any, any, any>,
   bucket: string,
   path: string,
   fallbackSize: number,
