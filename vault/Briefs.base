@@ -1,0 +1,27 @@
+filters:
+  and:
+    - file.inFolder("01 Briefs")
+views:
+  - type: table
+    name: Open
+    filters:
+      and:
+        - 'status != "done"'
+    order:
+      - file.name
+      - status
+      - priority
+      - project
+      - updated
+    sort:
+      - property: priority
+        direction: ASC
+  - type: table
+    name: Done
+    filters:
+      and:
+        - 'status == "done"'
+    order:
+      - file.name
+      - project
+      - updated
