@@ -1,10 +1,6 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  # Skip the build when a push only touches the Obsidian vault (notes synced
-  # from the iPad). Exit 0 = skip. A deploy with no changes at all (retry,
-  # clear-cache) or a missing cached ref falls through to a normal build.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF && exit 1; git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)vault'"
 
 [build.environment]
   NODE_VERSION = "20"
