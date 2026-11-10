@@ -1379,6 +1379,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pixel_access: {
+        Row: {
+          created_at: string | null
+          id: string
+          key_sha256: string
+          label: string
+          last_used_at: string | null
+          revoked_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key_sha256: string
+          label: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key_sha256?: string
+          label?: string
+          last_used_at?: string | null
+          revoked_at?: string | null
+        }
+        Relationships: []
+      }
       pm_intro_confirmations: {
         Row: {
           confirmed_at: string | null
@@ -2097,6 +2124,7 @@ export type Database = {
         Args: { p_proposal_id: string }
         Returns: undefined
       }
+      check_cron_secret: { Args: { p_secret: string }; Returns: boolean }
       claim_admin_role: { Args: { target_user_id: string }; Returns: boolean }
       delete_email: {
         Args: { message_id: number; queue_name: string }
