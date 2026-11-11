@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { saveJobAssignees } from '@/lib/jobAssignees';
-import { findOrCreateJob } from '@/lib/jobMatch';
+import { findOrCreateJob, shouldSyncJobIdentity } from '@/lib/jobMatch';
 import { syncJobIdentity } from '@/lib/jobTitle';
 import { cleanClientName } from '@/lib/clientName';
 import { supabase } from '@/integrations/supabase/client';
@@ -76,12 +76,14 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
     }
 
     // Attach to the booking's job — finding the packet's job where one exists,
-    // creating it where this session is the first record.
-    const jobId = await findOrCreateJob({
+    // creating it where this session is the first record. A session has no
+    // date field; the matcher reads the "MM.DD.YY" prefix of the project name.
+    const attached = await findOrCreateJob({
       clientName: cleanClientName(clientName),
       eventName: projectName.trim(),
       eventDate: null,
     });
+    const jobId = attached?.jobId ?? null;
 
     if (jobId && assignees.length > 0) {
       await saveJobAssignees(jobId, assignees);
@@ -99,7 +101,8 @@ export function NewSessionForm({ onSessionCreated, onCancel }: NewSessionFormPro
       toast.error('Failed to create session');
       console.error(error);
     } else {
-      await syncJobIdentity(jobId);
+      // A job matched only on shared words is not renamed after this session.
+      if (shouldSyncJobIdentity(attached)) await syncJobIdentity(attached.jobId);
       toast.success('Session created!');
       onSessionCreated();
     }

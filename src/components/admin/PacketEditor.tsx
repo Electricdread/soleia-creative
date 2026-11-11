@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AssigneePicker, type Colleague } from '@/components/admin/AssigneePicker';
 import { fetchJobAssignees, saveJobAssignees } from '@/lib/jobAssignees';
-import { findOrCreateJob } from '@/lib/jobMatch';
+import { findOrCreateJob, shouldSyncJobIdentity } from '@/lib/jobMatch';
 import { syncJobIdentity } from '@/lib/jobTitle';
 import { cleanClientNameOrNull } from '@/lib/clientName';
 import { Button } from '@/components/ui/button';
@@ -240,13 +240,14 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
     // A packet is usually the first thing raised for a booking, so this is
     // most often where the job gets created. Existing packets keep whatever
     // they are already attached to.
-    const jobId = initial?.id
-      ? undefined
+    const attached = initial?.id
+      ? null
       : await findOrCreateJob({
           clientName: payload.client_name ?? '',
           eventName: payload.title ?? '',
           eventDate: payload.event_date ?? null,
         });
+    const jobId = attached?.jobId;
 
     const dbPayload: any = { ...payload, inclusions: payload.inclusions as any };
     if (jobId) dbPayload.job_id = jobId;
@@ -265,8 +266,10 @@ export function PacketEditor({ open, onOpenChange, initial, kind = 'pre_call', o
       ? (await supabase.from('pre_call_packets').select('job_id').eq('id', initial.id).maybeSingle()).data?.job_id
       : null);
     if (packetJobId) await saveJobAssignees(packetJobId, assignees, user?.id);
-    // The packet names the job, so a rename here is a rename everywhere.
-    if (packetJobId) await syncJobIdentity(packetJobId);
+    // The packet names the job, so a rename here is a rename everywhere —
+    // except a new packet matched to its job only on shared words, which is
+    // attached but not trusted to rename it.
+    if (packetJobId && (initial?.id || shouldSyncJobIdentity(attached))) await syncJobIdentity(packetJobId);
 
     if (saved?.id && saved?.client_name && !saved?.drive_folder_url) {
       try {
