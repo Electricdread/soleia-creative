@@ -11,7 +11,7 @@ import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asse
 
 const GUIDE_PATH = '/creative-guide';
 const GUIDE_URL = GUIDE_PATH + '/services';
-const SERVICES_PDF_URL = '/Soleia-Creative-Services-No-Pricing.pdf?v=2026-08-14c';
+const SERVICES_PDF_URL = '/Soleia-Creative-Services-No-Pricing.pdf?v=2026-11-11';
 const PREVIEW_VIDEO = '/creative-guide/services/previz-soleia.mp4';
 
 const SECTIONS = [
