@@ -118,10 +118,10 @@ export function GuideSectionNav({ sections, offset: headerOffset = 66 }: GuideSe
     (id: string) => {
       const el = document.getElementById(id);
       if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY - (offset + 26);
-      window.scrollTo({ top, behavior: 'smooth' });
+      const top = el.getBoundingClientRect().top + window.scrollY - offset - barH - 12;
+      window.scrollTo({ top, behavior: reduceMotion ? 'auto' : 'smooth' });
     },
-    [offset],
+    [offset, barH, reduceMotion],
   );
 
   return (
@@ -149,7 +149,7 @@ export function GuideSectionNav({ sections, offset: headerOffset = 66 }: GuideSe
                 type="button"
                 onClick={() => go(s.id)}
                 aria-current={on ? 'true' : undefined}
-                className={`relative flex-shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 touch:min-h-11 text-[10.5px] uppercase tracking-[0.16em] transition-colors duration-500 ${
+                className={`relative flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-2 text-xs font-medium transition-colors touch:min-h-11 sm:px-3.5 duration-500 ${
                   on ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
