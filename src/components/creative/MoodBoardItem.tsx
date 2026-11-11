@@ -13,6 +13,7 @@ import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { HtmlEmbed } from '@/components/creative/HtmlEmbed';
 import { usePdfCover } from '@/components/creative/PdfSlideshow';
 import { mediaKind, mediaKindLabel } from '@/lib/sessionMedia';
+import { canFullscreenElement, enterFullscreen } from '@/lib/fullscreen';
 
 interface Reaction {
   id: string;
@@ -261,7 +262,13 @@ export function MoodBoardItem({
         <button
           type="button"
           className="group/deck relative block w-full cursor-pointer overflow-hidden rounded-t-lg bg-secondary/30 text-left"
-          onClick={() => onMediaClick(item.id)}
+          onClick={() => {
+            // "Open full screen" means the whole monitor: ask now, inside the click (browsers only grant full
+            // screen to a user gesture), then open the viewer, which fills the full-screen page. Where the browser
+            // can't (iPhone), the viewer simply opens as before.
+            if (canFullscreenElement()) void enterFullscreen(document.documentElement);
+            onMediaClick(item.id);
+          }}
           aria-label={`Open ${item.title || 'the preview'} full screen`}
         >
           <HtmlEmbed url={mediaUrl} title={item.title || 'Interactive preview'} mode="preview" />

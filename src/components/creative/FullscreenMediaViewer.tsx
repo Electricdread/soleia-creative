@@ -1,11 +1,12 @@
-import { useEffect, useCallback, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { useEffect, useCallback, useRef, useState } from 'react';
+import { X, ChevronLeft, ChevronRight, Download, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { PdfSlideshow } from '@/components/creative/PdfSlideshow';
 import { HtmlEmbed } from '@/components/creative/HtmlEmbed';
 import { downloadName, mediaKind } from '@/lib/sessionMedia';
 import { useScrollLock } from '@/lib/scrollLock';
+import { canFullscreenElement, enterFullscreen, exitFullscreen, fullscreenElement, onFullscreenChange } from '@/lib/fullscreen';
 
 interface MediaItem {
   id: string;
@@ -38,6 +39,31 @@ export function FullscreenMediaViewer({
   const [slide, setSlide] = useState(1);
   const [slideCount, setSlideCount] = useState(0);
   useScrollLock(true);
+
+  // True full screen, so a client deck fills the monitor. The request comes from this page (an HTML item's frame is
+  // sandboxed and cannot ask for it). Either this viewer goes full screen (its own button), or the page already is
+  // (a deck card's "Open full screen" asks during the click, then opens the viewer): both count. The button only
+  // shows where the browser can full-screen an element (not iPhone Safari).
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(() => fullscreenElement() !== null);
+  const canFullscreen = canFullscreenElement();
+
+  useEffect(() => {
+    const unsubscribe = onFullscreenChange(() => setIsFullscreen(fullscreenElement() !== null));
+    return () => {
+      unsubscribe();
+      // Closing the viewer while full screen must not leave the browser stuck in it.
+      if (fullscreenElement()) exitFullscreen();
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    if (fullscreenElement()) {
+      exitFullscreen();
+    } else if (rootRef.current && !(await enterFullscreen(rootRef.current))) {
+      toast.error('Full screen is not available in this browser');
+    }
+  }, []);
 
   useEffect(() => {
     setSlide(1);
@@ -83,7 +109,8 @@ export function FullscreenMediaViewer({
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      // In full screen the browser uses Esc to leave it; the viewer closes on the next Esc.
+      if (e.key === 'Escape' && !fullscreenElement()) onClose();
       if (e.key === 'ArrowLeft' || e.key === 'PageUp') goPrev();
       if (e.key === 'ArrowRight' || e.key === 'PageDown' || (inDeck && e.key === ' ')) goNext();
     };
@@ -96,7 +123,7 @@ export function FullscreenMediaViewer({
   const mediaUrl = current.file_url || current.url;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
+    <div ref={rootRef} className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
       {/* Top controls */}
       <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-[calc(1rem+env(safe-area-inset-right))] z-10 flex items-center gap-2">
         <Button
@@ -109,6 +136,18 @@ export function FullscreenMediaViewer({
         >
           <Download className="h-5 w-5" />
         </Button>
+        {canFullscreen && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white/70 hover:text-white hover:bg-white/10 h-10 w-10"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? 'Exit full screen' : 'Full screen'}
+            title={isFullscreen ? 'Exit full screen (Esc)' : 'Full screen'}
+          >
+            {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -145,12 +184,12 @@ export function FullscreenMediaViewer({
       )}
 
       {/* Media */}
-      <div className="max-w-[90vw] max-h-[85dvh] flex items-center justify-center">
+      <div className={isFullscreen ? 'w-screen h-[100dvh] flex items-center justify-center' : 'max-w-[90vw] max-h-[85dvh] flex items-center justify-center'}>
         {kind === 'video' && mediaUrl ? (
           <video
             key={current.id}
             src={mediaUrl}
-            className="max-w-full max-h-[85dvh] rounded-lg"
+            className={isFullscreen ? 'max-w-full max-h-[100dvh]' : 'max-w-full max-h-[85dvh] rounded-lg'}
             autoPlay
             loop
             muted
@@ -161,7 +200,7 @@ export function FullscreenMediaViewer({
           <img
             src={mediaUrl}
             alt={current.title || 'Image'}
-            className="max-w-full max-h-[85dvh] object-contain rounded-lg"
+            className={isFullscreen ? 'max-w-full max-h-[100dvh] object-contain' : 'max-w-full max-h-[85dvh] object-contain rounded-lg'}
           />
         ) : kind === 'pdf' && mediaUrl ? (
           <PdfSlideshow
@@ -170,7 +209,7 @@ export function FullscreenMediaViewer({
             page={slide}
             onPageCount={setSlideCount}
             alt={current.title || undefined}
-            className="w-[84vw] sm:w-[80vw] h-[72dvh]"
+            className={isFullscreen ? 'w-screen h-[100dvh]' : 'w-[84vw] sm:w-[80vw] h-[72dvh]'}
           />
         ) : kind === 'html' && mediaUrl ? (
           <HtmlEmbed
@@ -178,7 +217,7 @@ export function FullscreenMediaViewer({
             url={mediaUrl}
             title={current.title || 'Interactive preview'}
             mode="full"
-            className="w-[84vw] sm:w-[80vw] h-[72dvh] rounded-lg bg-white"
+            className={isFullscreen ? 'w-screen h-[100dvh] bg-black' : 'w-[84vw] sm:w-[80vw] h-[72dvh] rounded-lg bg-white'}
           />
         ) : (
           <div className="text-white/50 text-sm">No preview available</div>
@@ -186,7 +225,7 @@ export function FullscreenMediaViewer({
       </div>
 
       {/* Title + counter + download hint */}
-      <div className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-0 right-0 px-4 text-center space-y-1">
+      <div className={`absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-0 right-0 px-4 text-center space-y-1${isFullscreen ? ' hidden' : ''}`}>
         {current.title && (
           <p className="text-white/80 text-sm">{current.title}</p>
         )}
