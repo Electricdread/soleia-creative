@@ -1,1317 +1,324 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Maximize2, Eye, Download, Play } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { Reveal } from '@/components/motion/Reveal';
-import { Overlay } from '@/components/motion/Crossfade';
-import { motion, useReducedMotion } from 'framer-motion';
-import { MOTION_EASE } from '@/components/motion/motion';
+import { useCallback, useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowRight, ChevronDown, Download, Play } from 'lucide-react';
 import { CreativeGuideHeader } from '@/components/creative-guide/CreativeGuideHeader';
 import { CreativeGuideFooter } from '@/components/creative-guide/CreativeGuideFooter';
-import { GuideSectionHead } from '@/components/creative-guide/GuideSectionHead';
-import { GuideSectionNav, type GuideSection } from '@/components/creative-guide/GuideSectionNav';
+import { GuideSectionNav } from '@/components/creative-guide/GuideSectionNav';
 import { SpecificZoneSelector } from '@/components/creative-guide/SpecificZoneSelector';
-import { PixelMapGuide } from '@/components/creative-guide/PixelMapGuide';
-import { TransparentLogoDemo } from '@/components/creative-guide/TransparentLogoDemo';
-import { StaticLogoDemo } from '@/components/creative-guide/StaticLogoDemo';
-import { CardSlides, LogoExplainerSlide } from '@/components/creative-guide/CardSlides';
-import { CreativeTimeline } from '@/components/creative/CreativeTimeline';
-import { PIXELMAP_RENDERS as R, VENUE_PHOTOS } from '@/lib/venueSurfaces';
+import { Overlay } from '@/components/motion/Crossfade';
+import { supabase } from '@/integrations/supabase/client';
 import transparentLogoVideo from '@/assets/transparent_logo_explainer_1.mp4.asset.json';
 
-// Same-origin document links: works in preview and on the published domain
-// without depending on a deploy having already shipped the file.
-const DOCUMENT_VERSION = '2026-08-14c';
-const SERVICES_PDF_URL = `/Soleia-Creative-Services-No-Pricing.pdf?v=${DOCUMENT_VERSION}`;
-const PRESENTATION_GUIDE_PDF_URL = `/Soleia-Presentation-Guide.pdf?v=${DOCUMENT_VERSION}`;
+const GUIDE_PATH = '/creative-guide';
+const GUIDE_URL = GUIDE_PATH + '/services';
+const SERVICES_PDF_URL = '/Soleia-Creative-Services-No-Pricing.pdf?v=2026-08-14c';
+const PREVIEW_VIDEO = '/creative-guide/services/previz-soleia.mp4';
 
-// Imagery lives in public/ so the printable guide and PDFs can reference the
-// same files. Crops in services/ are pre-cut to their display aspect.
-// The page opens on the venue from above — nightclub, beachclub and the
-// cabana rows in one render — and the same view sits in Meet the Venue. The
-// main-room photograph that used to lead now covers the Creative Package.
-const HERO_IMG = '/creative-guide/venue-layout-sunburst.jpg';
-const MAIN_ROOM_IMG = '/creative-guide/services/hero-main-room.jpg';
-const IMG = {
-  packageMain: '/creative-guide/services/package-full-look.jpg',
-  presentationKeynote: '/creative-guide/services/presentation-keynote.jpg',
-  creativeDirection: '/creative-guide/services/creative-direction.jpg',
-  onsitePlaybackConsole: '/creative-guide/services/onsite-playback-console.jpg',
-  packageEvent: '/creative-guide/services/static-logo-event.jpg',
-  packageTakeover: '/creative-guide/services/presentation-takeover.jpg',
-  previz: '/creative-guide/services/previz-render.jpg',
-  mapping: '/creative-guide/services/mapping-client-content.jpg',
-  artist: '/creative-guide/services/artist-show.jpg',
-  zones: '/creative-guide/services/zones-outdoor.jpg',
-  staticLogo: '/creative-guide/services/static-logo-event.jpg',
-  marquee: '/creative-guide/services/marquee-exterior.jpg',
-  elevatorInterior: '/creative-guide/elevator/interior.jpg',
-  elevatorDisplay: '/creative-guide/elevator/display-600x800.jpg',
-  bungalow: '/creative-guide/venue-photos/soleia-bungalow-spa.jpg',
-} as const;
-const ELEVATOR_LOOP_URL = '/creative-guide/elevator/loop.mp4';
+const SECTIONS = [
+  { id: 'included', label: 'What’s Included' },
+  { id: 'enhance', label: 'Upgrades' },
+  { id: 'production', label: 'Deadlines' },
+  { id: 'own-content', label: 'File Specs' },
+];
 
-// TV / narrowcasting. The card shows the surface; the pixel map, the loop and
-// the delivery spec live on /creative-guide/tv, the way the elevator's do.
-const TV_HERO_IMG = '/creative-guide/tv/hero.jpg';
-// The transparent-logo card is drawn in code (TransparentLogoDemo); tapping
-// "See it on the wall" opens the full explainer clip.
+const ADD_ON_GROUPS = ['LED branding', 'Arrival and VIP displays', 'Presentations and previews', 'Other services'] as const;
+type AddOnGroup = (typeof ADD_ON_GROUPS)[number];
 
-// The static-logo example: a pass through the venue model with a client's mark
-// held on the screens. It reads as a card of its own, not a still of one, so it
-// runs the same way the transparent-logo card beside it does.
-const STATIC_LOGO_LOOP_URL = '/creative-guide/services/static-logo-loop.mp4';
-
-// A real previz render: a minute through the venue model with a client's show
-// on every screen. It stays behind a poster and `preload="none"` — 12 MB has
-// no business downloading itself on the page a packet link opens.
-const PREVIZ_MOVIE_URL = '/creative-guide/services/previz-soleia.mp4';
-const PREVIZ_POSTER = '/creative-guide/services/previz-soleia-poster.jpg';
-
-// The mapping previz — the map itself running on the venue model — is the
-// last step of PixelMapGuide, and the Package's mapping tile opens it.
-const PIXELMAP_PREVIZ_MOVIE_URL = '/creative-guide/services/pixelmap-previz.mp4';
-
-/** How a rate-card line is titled on the page when the sheet's own name undersells it. */
-const DISPLAY_TITLE: Record<string, string> = {
-  'Static Logo': 'Additional Static Logo',
-};
-
-/** The rate-card title of the zone-mapping service; its card is the selector. */
-const ZONE_MAPPING_TITLE = 'LED Screens Specific Zone Mapping';
-
-type Item = {
-  id: string;
+type AddOn = {
   title: string;
-  price: number;
-  category: string | null;
-  ideal_for: string | null;
-  long_description: string | null;
-  deliverables: string[] | null;
-  sort_order: number | null;
+  description: string;
+  group: AddOnGroup;
+  video?: string;
+  link?: { label: string; to: string };
 };
 
-/**
- * The page's spine — the owner's seven sections (2026-08-26), in their order:
- *
- *   01 Welcome        what the guide helps the client decide
- *   02 Meet the Venue condensed layout, the two worlds, explore the room
- *   03 Included       establish the buyout's value before any upgrade
- *   04 Enhance        the package, then every additional service
- *   05 Production     assets, deadlines, production, QC, load-in
- *   06 Own Content    route technical teams to specs and downloads
- *
- * A client reading alone from the pre-call packet gets the same walk the
- * creative team drives live on the call.
- */
-const SECTIONS: GuideSection[] = [
-  { id: 'welcome', label: 'Welcome' },
-  { id: 'venue', label: 'Venue' },
-  { id: 'included', label: 'Included' },
-  { id: 'enhance', label: 'Package' },
-  { id: 'production', label: 'Production' },
-  { id: 'own-content', label: 'Own Content' },
-];
-
-/** What the walk is for, step by step — the Welcome section's map of the page. */
-const WALK_TITLES: Record<string, string> = {
-  venue: 'The venue',
-  included: 'Included with your buyout',
-  enhance: 'Soleia Creative Upgrade Package',
-  production: 'How creative production works',
-  'own-content': 'Providing your own content?',
-};
-const WALK_PURPOSE: Record<string, string> = {
-  venue: 'The layout, the two worlds, and every surface your content can land on.',
-  included: 'The branding every activation already carries — your starting point.',
-  enhance: 'Full creative support, handled — and every additional service.',
-  production: 'Assets, deadlines, production, QC and load-in — what to expect.',
-  'own-content': 'Specifications and downloads for your technical team.',
-};
-
-/** The two worlds, and the private one between them. */
-const VENUE_WORLDS = [
-  {
-    k: 'Indoor',
-    title: 'The Nightclub',
-    body: 'Club stage, Bar 1 & Bar 2, Mezzanine Levels 1 & 2, the Rotunda and the 800s — tiered tables from the 100s to the 700s around the dance floor, under the sunburst ceiling.',
+const ADD_ON_COPY: Record<string, AddOn> = {
+  'Static Logo': {
+    title: 'Additional static logo',
+    description: 'Add a sponsor or partner logo to the LED screens. Send a transparent PNG.',
+    group: 'LED branding',
+    video: '/creative-guide/services/static-logo-loop.mp4',
   },
-  {
-    k: 'Open-air',
-    title: 'Beachclub & Pool',
-    body: 'Pool stage, day beds, the LV Strip Bar and Cabana Bar, with the vertical outdoor screens and the arch overlooking the Strip.',
+  'Transparent Logo Animation': {
+    title: 'Animated logo',
+    description: 'We animate your logo so it can play over the venue visuals with a transparent background.',
+    group: 'LED branding',
+    video: transparentLogoVideo.url,
   },
-  {
-    k: 'Private',
-    title: 'Cabanas & Bungalows',
-    body: '9 Bungalows and 15 Cabanas with private TV displays — ideal for VIP hosting, breakouts and branded suites.',
-  },
-];
-
-/** Production, in the five words a client asks about. */
-const PRODUCTION_STEPS: { title: string; body: string }[] = [
-  {
-    title: 'Assets',
-    body: 'Logos in vector, fonts, palette, key artwork, brand guidelines — and any content you want on the screens. Production starts when these and a signed proposal are with us.',
-  },
-  {
-    title: 'Deadlines',
-    body: 'Fourteen days from kickoff to your first review cut; three days for one consolidated set of notes; one included revision round; final cut-off seven business days before the show.',
-  },
-  {
-    title: 'Production',
-    body: 'We study the brand, set the creative direction, then build the looks on the real venue geometry — every surface at its native resolution, in one 3840 × 2160 frame.',
-  },
-  {
-    title: 'QC',
-    body: 'Every file is checked on the actual pixel map, and with the package previewed in 3D on the venue model before load-in — pacing, brightness, coverage, placement.',
-  },
-  {
-    title: 'Load-in',
-    body: 'Content is loaded into the playback system, checked against the run of show, and operated by our team throughout the night.',
-  },
-];
-
-/** Where a technical team goes next. */
-const SPEC_LINKS: { kind: string; title: string; body: string; to: string; download?: string }[] = [
-  {
-    kind: 'Guide',
-    title: 'Video Mapping',
-    body: 'See how one 3840 × 2160 pixel map carries a continuous visual move across the room.',
-    to: '/creative-guide/video-mapping',
-  },
-  {
-    kind: 'Guide',
-    title: 'Content Delivery Guide',
-    body: "Every screen's pixel resolution, the DXV3 workflow, the Pixelmap and the After Effects project.",
-    to: '/creative-guide/content-delivery',
-  },
-  {
-    kind: 'Specs',
-    title: 'TV Network',
-    body: 'One 1920 × 1080 feed across the twenty-eight televisions — the pixel map, the loop and the delivery spec.',
-    to: '/creative-guide/tv',
-  },
-  {
-    kind: 'Specs',
-    title: 'Elevator Display',
-    body: 'The 600 × 800 portrait panel beside the doors — mapping, loop and delivery spec.',
-    to: '/creative-guide/elevator',
-  },
-  {
-    kind: 'Specs',
-    title: 'LED Marquee',
-    body: 'The street-facing sign — its resolution and how a static or animated graphic is scheduled into playback.',
-    to: '/creative-guide/ticker',
-  },
-  {
-    kind: 'PDF',
-    title: 'Presentation Guide',
-    body: 'Running your own decks, keynotes and reels on the room: signal, routing, playback coordination, testing.',
-    to: PRESENTATION_GUIDE_PDF_URL,
-    download: 'Soleia-Presentation-Guide.pdf',
-  },
-  {
-    kind: 'PDF',
-    title: 'Services',
-    body: 'This guide as a document, for forwarding to whoever needs it.',
-    to: SERVICES_PDF_URL,
-    download: 'Soleia-Creative-Services.pdf',
-  },
-];
-
-// Editorial blurbs keyed by exact template title. Each one is written to help
-// a client actually understand what they're buying — what it lives on, what
-// we deliver, and how they'll experience it in the room.
-const BLURBS: Record<string, string> = {
-  'Static Logo':
-    "Your buyout already includes ten static logos across the five main LED screens. Need more — a sponsor's mark, a second brand, a partner, a hashtag? Each additional static logo is one line item: we size it to the screen, color-check it and hold it there all night, over the club library's visuals, with nothing for you to produce or approve. Slide two shows the one thing your designer has to get right: send the mark as a PNG with a transparent background, not a JPG.",
-  'Transparent Logo Animation':
-    "Have us animate your logo. We build a refined motion piece from your mark and deliver it with a true alpha channel, so it sits cleanly over the room's live visuals instead of blocking them — your brand moving with the night, not interrupting it. Slide one shows the idea on the wall; slide two shows why the alpha channel is the whole difference.",
-  'Mapped by Soleia Creative Team':
-    "Mapping of client animations, max 50 GB. Revisions to content after delivery (new files, edits, or re-export) will incur additional fees.",
-  'Mapped to Spec by Client':
-    "Client maps content to spec and provides to Soleia (no edits needed by Soleia Creative Team), max 50 GB. Revisions after delivery will incur additional fees.",
-  'Elevator Dynamic Animation':
-    "A custom portrait-oriented animation for the elevator LED — the first branded surface guests see when they arrive. We design a short loop (typically 15–30 seconds) that plays continuously between rides, plus optional variants for arrival/departure states. Delivered mapped, tested, and running on show day. Available standalone, or alongside the Creative Package, whose inclusion is the elevator static logo.",
-  'LED Screens Specific Zone Mapping':
-    "Custom mapping to specific LED zones outside the main sunburst architecture — designed for moments that need to live on one focused surface instead of the whole room. Typically applied to the SR IMAG wall, SL IMAG wall, and the outdoor arch. Includes creative treatment, exact-resolution build-out, and onsite playback for the zones you select.",
-  'Performing Artist — Mapped by Soleia Creative Team':
-    "Show-facing visuals designed around a headlining performer or DJ — set graphics, transitions, drops, artist branding, and stage-cued moments — mapped across the IMAG walls, center panel, DJ booth strip, and stage curves. Built in coordination with the artist's team so the visuals belong to the performance, not just play behind it.",
-  'Elevator Created by Client':
-    "You deliver the finished elevator content built to our portrait spec, and we handle the rest: intake, QC on the actual elevator LED, mapping into the playback system, and onsite testing so it plays back correctly the day of the event.",
-  'Elevator Static Logo':
-    "A single static portrait logo built for the elevator LED's idle state — always-on brand presence between rides. Color-graded and sized for the exact panel, tested onsite before doors. Included with the Creative Package; also available standalone.",
-  'Individual Cabana / Bungalow Logo':
-    "Branded content assigned to a specific cabana or bungalow TV — each selected screen runs its own dedicated player feed instead of the shared network. Supported formats: still image PNG or video .MOV.",
-  '3D Previz':
-    "A full 3D preview of your content running on Soleia's real screens, rendered from our venue model. You review the actual visuals in the actual room before load-in — pacing, brightness, brand placement, coverage — and approve or request revisions. Included with the Creative Package; also available standalone.",
-  'Presentation':
-    "Onsite technical support for client-provided laptops or devices running PowerPoint decks, keynote videos, award reels, or live presentation content. Covers signal connection, screen routing to the correct LED zones, playback coordination with the show operator, and pre-event testing so your presentation lands correctly the moment you cue it.",
-  'LED Marquee':
-    "Soleia's exterior LED marquee — the street-facing sign guests see on approach — can carry your event's branding for the night. We build a marquee-formatted graphic (static or short animated loop) sized to the sign's exact resolution and schedule it into the venue's marquee playback so it runs during your event window. Great for arrivals, step-and-repeat moments, and social capture outside the venue. Available on request through the Soleia creative team — not billed on the rate card, coordinated directly per event.",
-};
-
-/**
- * What a buyout already includes. Shown before the package so a client reads
- * what they have first, and sees the package as the upgrade on top of it.
- */
-const BUYOUT_INCLUSIONS = [
-  {
-    sub: 'Included',
-    title: 'LED Screens',
-    intro: 'Every activation includes 10 static logos displayed across the 5 main LED screens:',
-    items: [
-      '2 Large Horizontal — Nightclub',
-      '2 Large Vertical — Beachclub / Outside',
-      '1 Beachclub Arch — Beachclub / Stage',
-    ],
-    /** The zones the ten included logos land in — the zone card's own numbering. */
-    zones: [
-      { id: 1, label: 'Main Stage' },
-      { id: 2, label: 'Outdoor' },
-      { id: 3, label: 'Arch' },
-    ],
-    fine: 'All other LED screens are activated and display in-house visual animations and motion graphics from the club library, mixed in real time by the visual operator.',
-  },
-  {
-    sub: 'Included',
-    title: 'TV Screens / Narrowcasting',
-    intro: '1 static logo displayed across the TV / narrowcasting network:',
-    items: [
-      '4 Front Door Entry — Casino Level',
-      '9 Bungalows — Beachclub / Outside',
-      '15 Cabanas — Beachclub / Outside',
-    ],
-    fine: 'All TVs are connected and display the same content feed. A dedicated logo per cabana or bungalow is available as a line item below.',
-  },
-];
-
-/** Counted straight off the inclusions above, so the two cannot drift apart. */
-const BUYOUT_AT_A_GLANCE: [string, string][] = [
-  ['10', 'Static logos included'],
-  ['5', 'Main LED screens'],
-  ['28', 'TVs on the network'],
-  ['1', 'Shared TV feed'],
-];
-
-/**
- * What the Creative Package covers, each with the thing it actually looks like.
- *
- * These are the package's own inclusion bullets — they used to sit as text
- * inside the card, where "pixel-perfect mapping across all LED surfaces" asked
- * a client to imagine something they have never seen. Every one now carries the
- * image or loop it refers to.
- */
-const PACKAGE_INCLUDES: {
-  title: string;
-  body: string;
-  /** Always a still. A tile shows its thumbnail even when it has a movie. */
-  src: string;
-  alt: string;
-  /** Present means the tile plays: click the thumbnail, it opens full screen. */
-  movie?: string;
-}[] = [
-  {
-    title: 'Creative direction',
-    body: 'We set the visual approach — how the room should feel on arrival, through the programme and late in the night — so nobody on your side has to art-direct fifteen screens.',
-    src: IMG.packageMain,
-    alt: 'Full-venue custom look — sunburst, curves and booth running one design',
-  },
-  {
-    title: 'Custom animation',
-    body: 'Original visuals designed and animated for every surface at once, from concept through final delivery. You approve; we build.',
-    src: IMG.artist,
-    alt: 'A custom look running live across the room during a performance',
-  },
-  {
-    title: 'Pixel-perfect mapping',
-    body: 'Every surface built at its own native resolution and placed in the frame. Nothing for your team to cut, resize or export.',
-    src: R.curvesInterior,
-    movie: PIXELMAP_PREVIZ_MOVIE_URL,
-    alt: 'SR Curve at 2304 × 272 running alongside IMAG SR, each carrying its own slice of the frame',
-  },
-  {
-    title: 'Elevator static logo',
-    body: 'Your mark on the elevator display for arrival — the first branded surface a guest meets — sized to the panel, tested onsite and running before doors.',
-    // The same interior the elevator's specs page leads with, so the surface
-    // reads as one thing across the guide.
-    src: IMG.elevatorInterior,
-    alt: 'Soleia elevator interior — gold trim with the branded display beside the doors',
-  },
-  {
-    title: '3D preview before the night',
-    body: 'Your content on a model of the actual venue screens. Review and approve everything before load-in — pacing, brightness, coverage — from wherever you are.',
-    src: PREVIZ_POSTER,
-    movie: PREVIZ_MOVIE_URL,
-    alt: 'A frame from a 3D previz — a client show running on the venue model',
-  },
-  {
-    title: 'Onsite playback',
-    body: 'Loaded, checked against the run of show and operated by our team throughout the night. You watch the room.',
-    src: IMG.onsitePlaybackConsole,
-    alt: 'The playback desk during a show — clip columns and slice list on the console, the artist look running on the screens above',
-  },
-];
-
-const ELEVATOR_TITLES = [
-  'Elevator Dynamic Animation',
-  'Elevator Static Logo',
-  'Elevator Created by Client',
-];
-
-/** The card's brief. The numbers it quotes are the buyout inclusions above. */
-const TV_BLURB =
-  "Twenty-eight televisions run as one narrowcasting network — four at the front door on the casino level, nine bungalows and fifteen cabanas outside. They share a single feed, so one file built at 1920 × 1080 plays on every screen. A dedicated logo on a chosen cabana or bungalow is a line item below.";
-
-/**
- * Add-ons are grouped by the surface they land on, not by the rate card's
- * category.
- *
- * This page used to place cards by looking a title up inside a category — and
- * two of them, Zone Mapping and Performing Artist, sit under "Video Mapping &
- * Load Fees" in the database, so their designed cards never rendered at all and
- * both items instead fell through to the load-fee table, stamped with a
- * "Max 50 GB" limit that applies to neither. Placement is explicit here, and
- * anything this map does not know about lands in `more` rather than vanishing.
- */
-type GroupId = 'room' | 'arrival' | 'private' | 'production' | 'more';
-
-const GROUP_OF: Record<string, GroupId> = {
-  'LED Screens Specific Zone Mapping': 'room',
-  'Static Logo': 'room',
-  'Transparent Logo Animation': 'room',
-  'Performing Artist — Mapped by Soleia Creative Team': 'room',
-  'Individual Cabana / Bungalow Logo': 'private',
-  '3D Previz': 'production',
-  'Presentation': 'production',
-};
-
-/** Titles the load-fee table owns. Everything else is an add-on. */
-const LOAD_FEE_TITLES = ['Mapped by Soleia Creative Team', 'Mapped to Spec by Client'];
-
-const GROUPS: { id: GroupId; eyebrow: string; title: string; note: string }[] = [
-  {
-    id: 'room',
-    eyebrow: 'In the main room',
-    title: 'On the walls, the curves and the ceiling',
-    note: 'Everything that plays across the nightclub surfaces the whole room can see.',
-  },
-  {
-    id: 'arrival',
-    eyebrow: 'On arrival',
-    title: 'Before they reach the room',
-    note: 'The elevator display and the street-facing marquee — the first branded surfaces of the night.',
-  },
-  {
-    id: 'private',
-    eyebrow: 'TV displays · cabanas and bungalows',
-    title: 'One shared feed, or a screen of its own.',
-    note: 'The venue-wide narrowcasting feed, plus dedicated content for an individual cabana or bungalow.',
-  },
-  {
-    id: 'production',
-    eyebrow: 'Before and on the night',
-    title: 'Review it early, run it right',
-    note: 'Approving the work before load-in, and technical support on your own devices during the event.',
-  },
-  {
-    id: 'more',
-    eyebrow: 'Also available',
-    title: 'Further options',
-    note: 'Additional services on the current rate card.',
-  },
-];
-
-// Per-service media: the image that ties a service to the real venue.
-const MEDIA: Record<string, { src: string; alt: string }> = {
   'LED Screens Specific Zone Mapping': {
-    src: R.outdoorArch,
-    alt: 'The Outdoor Arch alone, labelled at its native 1512 × 504',
+    title: 'Brand a specific LED zone',
+    description: 'Run custom content on the main stage, outdoor screens, or beachclub arch.',
+    group: 'LED branding',
+    link: { label: 'Preview LED zones', to: GUIDE_URL + '#zones' },
   },
   'Performing Artist — Mapped by Soleia Creative Team': {
-    src: IMG.onsitePlaybackConsole,
-    alt: 'The playback desk during a show — clip columns and slice list on the console, the artist look running on the screens above',
+    title: 'Artist and DJ visuals',
+    description: 'Coordinate stage graphics, transitions, and cues with the artist’s team.',
+    group: 'LED branding',
   },
-  '3D Previz': {
-    src: IMG.previz,
-    alt: '3D preview of content rendered from the Soleia venue model',
+  'Elevator Dynamic Animation': {
+    title: 'Animated elevator display',
+    description: 'We design a custom portrait animation for guest arrival.',
+    group: 'Arrival and VIP displays',
   },
-  'Static Logo': {
-    src: R.mainInterior2,
-    alt: 'The main-room screens from the floor, each carrying its own slice of the frame',
+  'Elevator Static Logo': {
+    title: 'Static elevator logo',
+    description: 'We size and test your logo for the elevator display. Included with the Creative Upgrade Package.',
+    group: 'Arrival and VIP displays',
+  },
+  'Elevator Created by Client': {
+    title: 'Client-supplied elevator content',
+    description: 'You supply the finished portrait file. We test and load it.',
+    group: 'Arrival and VIP displays',
   },
   'Individual Cabana / Bungalow Logo': {
-    src: VENUE_PHOTOS.cabanaInterior,
-    alt: 'A Soleia cabana with its own television on the wall, curtains drawn back to the pool',
+    title: 'Dedicated cabana or bungalow TV',
+    description: 'Give a selected TV its own logo or video feed.',
+    group: 'Arrival and VIP displays',
   },
-  'Presentation': {
-    src: IMG.presentationKeynote,
-    alt: 'A keynote running live at Soleia — the decks on both IMAG walls, the mark across the ceiling rays, a full room',
+  '3D Previz': {
+    title: '3D venue preview',
+    description: 'Review your visuals on a model of the venue before event day. Included with the Creative Upgrade Package.',
+    group: 'Presentations and previews',
+    video: PREVIEW_VIDEO,
+  },
+  Presentation: {
+    title: 'Presentation support',
+    description: 'Onsite setup, screen routing, and playback support for decks, keynotes, and reels.',
+    group: 'Presentations and previews',
+    link: { label: 'View presentation guide', to: GUIDE_PATH + '/doc/presentation' },
   },
 };
 
-function Chip({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/75 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-primary backdrop-blur-sm whitespace-nowrap ${className}`}
-    >
-      <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
-      {children}
-    </span>
-  );
-}
+const MARQUEE: AddOn = {
+  title: 'Exterior LED marquee',
+  description: 'Request a static graphic or short animation for the street-facing sign during your event.',
+  group: 'Arrival and VIP displays',
+  link: { label: 'View marquee specs', to: GUIDE_PATH + '/ticker' },
+};
 
-function MediaHeader({
-  src,
-  alt,
-  aspect = 'aspect-[16/9.4]',
-}: {
-  src: string;
-  alt: string;
-  aspect?: string;
-}) {
-  return (
-    <div className={`relative overflow-hidden bg-black ${aspect}`}>
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        className="media-grade h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-      />
-      <div className="media-veil absolute inset-0" aria-hidden="true" />
-    </div>
-  );
-}
+const MAPPING_SERVICES = ['Mapped by Soleia Creative Team', 'Mapped to Spec by Client'];
 
-/**
- * A block inside a section — the explorer, the mapping walk — set with the
- * same weight as a section head, minus the number, so it never reads as a
- * footnote to the card above it. Generous top margin on purpose.
- */
-function SubHead({ eyebrow, title, lede }: { eyebrow: string; title: string; lede?: string }) {
-  return (
-    <Reveal className="mb-8 mt-20">
-      <span className="block font-mono text-[11px] uppercase tracking-[0.34em] text-primary">{eyebrow}</span>
-      <h3 className="mt-3 font-display text-2xl leading-tight text-foreground sm:text-3xl lg:text-4xl">{title}</h3>
-      <div className="mt-4 h-px w-16 bg-gradient-to-r from-primary to-transparent" />
-      {lede && <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{lede}</p>}
-    </Reveal>
-  );
-}
+const SPEC_LINKS = [
+  { label: 'Video mapping preview', to: GUIDE_PATH + '/video-mapping' },
+  { label: 'TV network specs', to: GUIDE_PATH + '/tv' },
+  { label: 'Elevator display specs', to: GUIDE_PATH + '/elevator' },
+  { label: 'LED marquee specs', to: GUIDE_PATH + '/ticker' },
+  { label: 'Presentation guide', to: GUIDE_PATH + '/doc/presentation' },
+];
 
-/** Heading for one surface group inside Additional Options. */
-function GroupHead({ eyebrow, title, note }: { eyebrow: string; title: string; note: string }) {
-  return (
-    <Reveal className="mb-8 mt-20 first:mt-0">
-      <div className="border-b border-primary/15 pb-5">
-        <span className="block font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{eyebrow}</span>
-        <h3 className="mt-2 font-display text-2xl leading-tight text-foreground">{title}</h3>
-        <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">{note}</p>
-      </div>
-    </Reveal>
-  );
-}
-
-/** The Presentation card's two document actions, shared by both card layouts. */
-function PresentationActions({ onView }: { onView: () => void }) {
-  return (
-    <div className="mt-6 flex flex-wrap items-center gap-3">
-      <button
-        onClick={onView}
-        className="tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary transition-colors hover:bg-primary/10"
-      >
-        <Eye className="h-3.5 w-3.5" />
-        View Presentation Guide
-      </button>
-      <a
-        href={PRESENTATION_GUIDE_PDF_URL}
-        download="Soleia-Presentation-Guide.pdf"
-        className="tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-      >
-        <Download className="h-3.5 w-3.5" />
-        Download
-      </a>
-    </div>
-  );
-}
+const sectionClass = 'scroll-mt-36 border-t border-primary/20 pt-8 sm:pt-10';
+const headingClass = 'mb-5 font-display text-3xl leading-tight sm:text-4xl';
+const cardClass = 'rounded-2xl border border-primary/20 bg-card/60 p-5 sm:p-7';
+const bodyClass = 'text-sm leading-relaxed text-muted-foreground sm:text-base';
+const actionClass = 'tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+const textLinkClass = 'tap-44 inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline';
+const disclosureClass = 'group scroll-mt-36 rounded-2xl border border-primary/20 bg-card/50';
+const summaryClass = 'flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-5 py-3 text-sm font-medium text-foreground hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden';
 
 export default function CreativeGuideServices() {
-  const navigate = useNavigate();
-  const [items, setItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [fullscreenVideo, setFullscreenVideo] = useState<string | null>(null);
-  /** A zone the buyout pills asked the zone card to show; nonce makes repeats count. */
-  const [zoneRequest, setZoneRequest] = useState<{ id: number; nonce: number } | null>(null);
-  const closeVideo = useCallback(() => setFullscreenVideo(null), []);
-  const reduceMotion = useReducedMotion();
+  const { hash } = useLocation();
+  const [catalog, setCatalog] = useState<{ addOns: AddOn[]; unavailable: boolean } | null>(null);
+  const [zonesOpen, setZonesOpen] = useState(hash === '#zones');
+  const [video, setVideo] = useState<string | null>(null);
+  const closeVideo = useCallback(() => setVideo(null), []);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.rpc('get_rate_card_addons');
-      setItems((data as Item[]) || []);
-      setLoading(false);
-    })();
+    let cancelled = false;
+
+    const loadAddOns = async () => {
+      const { data, error } = await supabase.rpc('get_rate_card_addons');
+      if (cancelled) return;
+
+      const addOns = (data ?? [])
+        .filter((item) => !MAPPING_SERVICES.includes(item.title) && item.title !== 'LED Marquee')
+        .map((item): AddOn => ADD_ON_COPY[item.title] ?? {
+          title: item.title,
+          description: item.long_description ?? 'Ask Soleia Creative for details.',
+          group: 'Other services',
+        });
+
+      setCatalog({ addOns: [...addOns, MARQUEE], unavailable: Boolean(error) });
+    };
+
+    void loadAddOns();
+    return () => { cancelled = true; };
   }, []);
 
-  const loadFeeItems = useMemo(
-    () => LOAD_FEE_TITLES.map((t) => items.find((i) => i.title === t)).filter(Boolean) as Item[],
-    [items],
-  );
-  const elevatorItems = useMemo(
-    () => ELEVATOR_TITLES.map((t) => items.find((i) => i.title === t)).filter(Boolean) as Item[],
-    [items],
-  );
-
-  /**
-   * Cards per surface group. Anything the map does not recognise lands in
-   * `more`, so a new rate-card line shows up on the page instead of silently
-   * disappearing the way Zone Mapping did.
-   */
-  const grouped = useMemo(() => {
-    const out: Record<GroupId, Item[]> = { room: [], arrival: [], private: [], production: [], more: [] };
-    for (const item of items) {
-      if (LOAD_FEE_TITLES.includes(item.title)) continue;
-      if (ELEVATOR_TITLES.includes(item.title)) continue; // shown inside the elevator panel
-      out[GROUP_OF[item.title] ?? 'more'].push(item);
-    }
-    // Inside the main room, read up from what a buyout already covers: another
-    // static logo, then the same mark with an alpha channel, then mapping to a
-    // chosen zone, then a whole show built around a performer.
-    const roomOrder = [
-      'Static Logo',
-      'Transparent Logo Animation',
-      'LED Screens Specific Zone Mapping',
-      'Performing Artist — Mapped by Soleia Creative Team',
-    ];
-    out.room.sort((a, b) => {
-      const ia = roomOrder.indexOf(a.title);
-      const ib = roomOrder.indexOf(b.title);
-      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-    });
-    return out;
-  }, [items]);
-
-  const blurbFor = (item: Item) =>
-    BLURBS[item.title] || item.long_description || 'Details available on request.';
-
-  const goTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - 92;
-    window.scrollTo({ top, behavior: 'smooth' });
-  };
-
-  /** Scroll to the zone card and put it on this zone. */
-  const showZone = (id: number) => {
-    setZoneRequest((r) => ({ id, nonce: (r?.nonce ?? 0) + 1 }));
-    goTo('zones');
-  };
-
-  const cardShell =
-    'group card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-card/40 surface-elevated transition-colors hover:border-primary/30';
-
-  /** A card that fills its grid cell. `wide` spans both columns, image beside text. */
-  const renderServiceCard = (item: Item, wide = false) => {
-    const media = MEDIA[item.title];
-
-    // The zone-mapping service is its own interactive card: five zones, one
-    // photograph each, the screens labelled — the client picks a zone by
-    // looking at the room. It always spans the row.
-    if (item.title === ZONE_MAPPING_TITLE) {
-      return (
-        <Reveal key={item.id} className="md:col-span-2">
-          <div id="zones" className="scroll-mt-32">
-            <SpecificZoneSelector description={blurbFor(item)} onFullscreen={(src) => setFullscreenVideo(src)} selectZone={zoneRequest} />
-          </div>
-        </Reveal>
-      );
-    }
-
-    if (item.title === '3D Previz') {
-      return (
-        <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
-          <article className={`${cardShell} flex h-full flex-col`}>
-            <div className="relative aspect-[16/9] overflow-hidden bg-black">
-              <video
-                src={PREVIZ_MOVIE_URL}
-                poster={PREVIZ_POSTER}
-                className="h-full w-full object-cover"
-                controls
-                playsInline
-                preload="none"
-                aria-label="3D previz — a run through the Soleia venue model with a client's show on every screen"
-              />
-            </div>
-            <div className="flex-1 p-7 sm:p-8">
-              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
-              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-              <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-                A real previz · one minute through the room
-              </p>
-            </div>
-          </article>
-        </Reveal>
-      );
-    }
-
-    if (item.title === 'Transparent Logo Animation') {
-      return (
-        <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
-          <article className={`${cardShell} flex h-full flex-col`}>
-            <CardSlides
-              layoutId="transparent-logo-slides"
-              frameClassName="box-content aspect-[16/9.4] pb-[58px]"
-              slides={[
-                {
-                  id: 'wall',
-                  label: 'On the wall',
-                  node: <TransparentLogoDemo onFullscreen={() => setFullscreenVideo(transparentLogoVideo.url)} />,
-                },
-                {
-                  id: 'explainer',
-                  label: 'Why alpha matters',
-                  node: <LogoExplainerSlide caption="Opaque (JPG, no alpha) blocks the room behind it. Transparent (PNG with alpha) blends — the animation we build keeps that channel." />,
-                },
-              ]}
-            />
-            <div className="flex-1 p-7 sm:p-8">
-              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{DISPLAY_TITLE[item.title] ?? item.title}</h4>
-              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-            </div>
-          </article>
-        </Reveal>
-      );
-    }
-
-    if (item.title === 'Static Logo') {
-      return (
-        <Reveal key={item.id} className={wide ? 'md:col-span-2' : ''}>
-          <article className={`${cardShell} flex h-full flex-col`}>
-            <CardSlides
-              layoutId="static-logo-slides"
-              frameClassName="box-content aspect-video pb-[58px]"
-              slides={[
-                {
-                  id: 'screens',
-                  label: 'On the screens',
-                  node: <StaticLogoDemo onFullscreen={() => setFullscreenVideo(STATIC_LOGO_LOOP_URL)} />,
-                },
-                {
-                  id: 'explainer',
-                  label: 'Opaque vs transparent',
-                  node: <LogoExplainerSlide caption="Send your mark as a PNG with a transparent background. A JPG carries a plate that blocks the screen behind it." />,
-                },
-              ]}
-            />
-            <div className="flex-1 p-7 sm:p-8">
-              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{DISPLAY_TITLE[item.title] ?? item.title}</h4>
-              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-            </div>
-          </article>
-        </Reveal>
-      );
-    }
-
-    if (wide) {
-      return (
-        <Reveal key={item.id} className="md:col-span-2">
-          <article className={`${cardShell} grid h-full lg:grid-cols-[1.25fr_1fr]`}>
-            {media && <MediaHeader src={media.src} alt={media.alt} aspect="min-h-[260px] lg:min-h-[300px]" />}
-            <div className="self-center p-8 sm:p-9">
-              <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
-              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-              {item.title === 'Presentation' && (
-                <PresentationActions onView={() => navigate('/creative-guide/doc/presentation')} />
-              )}
-            </div>
-          </article>
-        </Reveal>
-      );
-    }
-
-    return (
-      <Reveal key={item.id}>
-        <article className={`${cardShell} flex h-full flex-col`}>
-          {media && <MediaHeader src={media.src} alt={media.alt} />}
-          <div className="flex-1 p-7 sm:p-8">
-            <h4 className="mb-3 font-display text-2xl leading-tight text-foreground">{item.title}</h4>
-            <p className="text-[14.5px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-            {item.title === 'Presentation' && (
-              <PresentationActions onView={() => navigate('/creative-guide/doc/presentation')} />
-            )}
-            {item.deliverables && item.deliverables.length > 0 && (
-              <ul className="mt-5 space-y-1.5">
-                {item.deliverables.map((d, i) => (
-                  <li key={i} className="flex gap-2 text-xs text-muted-foreground">
-                    <span className="text-primary">—</span>
-                    <span>{d}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </article>
-      </Reveal>
-    );
-  };
-
-  /**
-   * The zone card always spans the row. Of the rest, an odd last card spans
-   * too, so a row never half-empties.
-   */
-  const renderGroupCards = (group: Item[]) => {
-    const narrow = group.filter((i) => i.title !== ZONE_MAPPING_TITLE);
-    const lastNarrow = narrow.length % 2 === 1 ? narrow[narrow.length - 1] : undefined;
-    return group.map((item) => renderServiceCard(item, item === lastNarrow));
-  };
+  useEffect(() => {
+    if (hash === '#zones') setZonesOpen(true);
+  }, [hash]);
 
   return (
-    // Services is always presented dark. Scoping the `dark` class to this page
-    // rather than flipping the global theme means the palette tokens resolve
-    // dark here without changing the visitor's preference for other pages.
     <div className="dark min-h-screen bg-background text-foreground">
       <CreativeGuideHeader />
 
-      {/* HERO — full-bleed venue photograph */}
-      <section className="relative flex min-h-[82svh] items-end overflow-hidden">
-        <motion.img
-          src={HERO_IMG}
-          alt="Soleia from above — the nightclub's sunburst, the beachclub pools and the cabana rows in one render"
-          initial={reduceMotion ? false : { opacity: 0, scale: 1.06 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.8, ease: MOTION_EASE }}
+      <section id="welcome" aria-labelledby="guide-title" className="relative flex min-h-[390px] items-end overflow-hidden sm:min-h-[440px]">
+        <img
+          src="/creative-guide/venue-layout-sunburst.jpg"
+          alt=""
+          fetchPriority="high"
           className="media-grade absolute inset-0 h-full w-full object-cover object-[62%_50%]"
         />
-        {/* The schema's colour over the photograph: a gold veil in soft light,
-            then a warm multiply from the top so the LED whites read amber. */}
-        <div className="media-veil absolute inset-0" aria-hidden="true" />
-        <div
-          className="absolute inset-0 mix-blend-multiply"
-          style={{ background: 'linear-gradient(180deg, hsl(var(--primary) / 0.55) 0%, hsl(var(--primary) / 0.18) 45%, transparent 75%)' }}
-          aria-hidden="true"
-        />
-        {/* Scrim resolves to the page background so the headline always sits on
-            near-solid theme color — legible in light and dark alike. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-background" />
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="relative mx-auto w-full max-w-5xl px-6 pb-20 pt-40 short:pb-10 short:pt-24">
-          <Reveal>
-            <span className="font-mono text-[11px] uppercase tracking-[0.34em] text-primary">Soleia Creative Guide</span>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <h1 className="mt-5 max-w-3xl font-display text-4xl leading-[1.05] text-foreground sm:text-6xl lg:text-7xl short:mt-3 short:text-4xl">
-              Your brand, <span className="text-gradient-gold">on every surface.</span>
-            </h1>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-              How the room works, what your buyout already puts on its screens, and every way the
-              Soleia creative team can take it further — in the order you'll decide it.
-            </p>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => goTo('welcome')}
-                className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-primary backdrop-blur-sm hover:bg-primary/10"
-              >
-                <ArrowRight className="h-3.5 w-3.5" />
-                Start the guide
-              </button>
-              <a
-                href={SERVICES_PDF_URL}
-                download="Soleia-Creative-Services.pdf"
-                className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/40 px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-sm hover:border-primary/40 hover:text-foreground"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Download PDF
-              </a>
-            </div>
-          </Reveal>
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-background via-background/65 to-black/25" />
+        <div className="relative mx-auto w-full max-w-5xl px-5 pb-9 pt-28 sm:px-8 sm:pb-11">
+          <h1 id="guide-title" className="font-display text-4xl leading-tight sm:text-6xl">Soleia Creative Guide</h1>
+          <p className="mt-3 max-w-xl text-base leading-relaxed text-foreground/85 sm:text-lg">
+            Plan the branding and visuals for your event at Soleia Las Vegas.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <a href="#included" className={actionClass}>See what’s included <ArrowRight aria-hidden="true" className="h-4 w-4" /></a>
+            <a href={SERVICES_PDF_URL} download="Soleia-Creative-Services.pdf" className={textLinkClass}>
+              <Download aria-hidden="true" className="h-4 w-4" /> Services PDF
+            </a>
+          </div>
         </div>
       </section>
 
       <GuideSectionNav sections={SECTIONS} />
 
-      <main className="mx-auto max-w-5xl px-5 pb-24 sm:px-8">
-        {/* ══ 01 · WELCOME ══ */}
-        <section id="welcome" className="scroll-mt-32 pt-20">
-          <GuideSectionHead
-            eyebrow="01 — Welcome"
-            title="What this guide helps you decide."
-            lede="Soleia is one immersive LED environment, and your event already has a place on it. This guide walks what the room already does for your brand, what you can add, and how the work gets made — and hands your technical team what they need if they are building content themselves."
-          />
-
-          {/* The walk, as a list a client can hold in their head. */}
-          <Reveal>
-            <article className={`${cardShell} grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3`}>
-              {SECTIONS.slice(1).map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => goTo(s.id)}
-                  className="group/step flex items-start gap-4 bg-card p-7 text-left transition-colors duration-500 hover:bg-primary/5 sm:p-8"
-                >
-                  <span className="shrink-0 font-display text-2xl leading-8 text-primary">{String(i + 2).padStart(2, '0')}</span>
-                  <span>
-                    <span className="block font-display text-xl leading-tight text-foreground transition-colors duration-500 group-hover/step:text-primary sm:text-[1.35rem]">
-                      {WALK_TITLES[s.id] ?? s.label}
-                    </span>
-                    <span className="mt-2 block text-[14px] leading-relaxed text-muted-foreground">{WALK_PURPOSE[s.id]}</span>
-                  </span>
-                </button>
-              ))}
-            </article>
-          </Reveal>
-        </section>
-
-        {/* ══ 02 · THE VENUE ══ */}
-        <section id="venue" className="scroll-mt-32 pt-24">
-          <GuideSectionHead
-            eyebrow="02 — The Venue"
-            title="One venue, two worlds."
-            lede="Indoors and out, here is every surface your content can land on — and what each one is actually for."
-          />
-
-          <div className="mb-8 grid gap-4 md:grid-cols-3">
-            {VENUE_WORLDS.map((w, i) => (
-              <Reveal key={w.title} delay={i * 0.05}>
-                <div className={`${cardShell} h-full p-7`}>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{w.k}</div>
-                  <h3 className="mb-3 mt-2 font-display text-2xl text-foreground">{w.title}</h3>
-                  <p className="text-[13.5px] leading-relaxed text-muted-foreground">{w.body}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-
-          <Reveal className="mb-8">
-            <article className="group card-elevated overflow-hidden rounded-3xl border border-primary/15 bg-black surface-elevated">
-              <div className="relative aspect-[1737/905] bg-black">
-                <img
-                  src={HERO_IMG}
-                  alt="Soleia from above — the nightclub's sunburst, the beachclub pools and the cabana rows"
-                  loading="lazy"
-                  className="media-grade absolute inset-0 h-full w-full object-contain"
-                />
-                <div className="media-veil absolute inset-0" aria-hidden="true" />
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary/15 px-6 py-4 sm:px-8">
-                <div>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">The venue from above</span>
-                  <p className="mt-1 text-[13.5px] leading-relaxed text-muted-foreground">
-                    The nightclub under its sunburst on the right, the beachclub pools and cabana rows on the left, the marquee wrapping the corner between.
-                  </p>
-                </div>
-              </div>
-            </article>
-          </Reveal>
-
-        </section>
-
-        {/* ══ 03 · INCLUDED WITH YOUR BUYOUT ══ */}
-        <section id="included" className="scroll-mt-32 pt-24">
-          <GuideSectionHead
-            eyebrow="03 — Included With Your Buyout"
-            title="What you already have."
-            lede="Every activation carries branding across the venue before any creative work is added. This is the baseline your event starts from — read it first, and the upgrades below make sense."
-          />
-
-          <Reveal className="mb-6">
-            <div className="grid grid-cols-2 border border-primary/15 md:grid-cols-4">
-              {BUYOUT_AT_A_GLANCE.map(([v, l], i) => (
-                <div
-                  key={l}
-                  className={`p-5 text-center ${i % 2 === 0 ? 'border-r border-primary/15' : ''} ${
-                    i < 2 ? 'border-b border-primary/15 md:border-b-0' : ''
-                  } ${i === 1 ? 'md:border-r' : ''} ${i === 2 ? 'md:border-r' : ''}`}
-                >
-                  <div className="font-display text-2xl leading-none text-gradient-gold sm:text-3xl">{v}</div>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">{l}</div>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            {BUYOUT_INCLUSIONS.map((inc, i) => (
-              <Reveal key={inc.title} delay={i * 0.05}>
-                <article className={`${cardShell} h-full p-8`}>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">{inc.sub}</span>
-                  <h3 className="mb-3 mt-2.5 font-display text-2xl leading-tight text-foreground">{inc.title}</h3>
-                  <p className="text-[14.5px] leading-relaxed text-muted-foreground">{inc.intro}</p>
-                  <ul className="mt-4 space-y-2.5">
-                    {inc.items.map((item) => (
-                      <li key={item} className="relative pl-5 text-[14px] text-foreground">
-                        <span className="absolute left-0 top-2 h-1.5 w-1.5 bg-primary" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  {'zones' in inc && Array.isArray((inc as { zones?: unknown[] }).zones) && (
-                    <div className="mt-5 border-t border-primary/15 pt-4">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-                        Your logos appear in
-                      </span>
-                      <div className="mt-2.5 flex flex-wrap gap-1.5">
-                        {(inc as { zones: { id: number; label: string }[] }).zones.map((z) => (
-                          <button
-                            key={z.id}
-                            type="button"
-                            onClick={() => showZone(z.id)}
-                            aria-label={`Zone ${z.id} ${z.label} — open it in LED Screens: Specific Zone Mapping`}
-                            className="btn-glow inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[11.5px] text-foreground hover:border-primary/60 hover:text-primary"
-                          >
-                            <span className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-primary">Zone {z.id}</span>
-                            {z.label}
-                            <ArrowRight className="h-3 w-3 text-primary" />
-                          </button>
-                        ))}
-                      </div>
-                      <p className="mt-2.5 text-[12px] text-muted-foreground/80">Tap a zone to see it mapped.</p>
-                    </div>
-                  )}
-                  <p className="mt-5 text-[12.5px] italic leading-relaxed text-muted-foreground/80">{inc.fine}</p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        {/* ══ 04 · SOLEIA CREATIVE UPGRADE PACKAGE ══ */}
-        <section id="enhance" className="scroll-mt-32 pt-24">
-          <GuideSectionHead
-            eyebrow="04 — Soleia Creative Upgrade Package"
-            title="Full creative support, handled."
-            lede="Below the package, every additional service, grouped by where in the venue it plays."
-          />
-
-          {/* The package: what it is, in a line; then what it includes, each
-              with the thing it looks like. One card, so it reads as one offer. */}
-          <Reveal>
-            <article className="edge-gold group relative rounded-3xl surface-elevated">
-              <div className="overflow-hidden rounded-3xl bg-card/60">
-                <div className="relative aspect-[21/9] overflow-hidden bg-black sm:aspect-[21/7.5]">
-                  <img
-                    src={MAIN_ROOM_IMG}
-                    alt="Soleia main room — sunburst LED ceiling over the dance floor"
-                    loading="lazy"
-                    className="media-grade absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-[1.03]"
-                  />
-                  <div className="media-veil absolute inset-0" aria-hidden="true" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/55 to-transparent" aria-hidden="true" />
-                  <div className="absolute inset-x-0 bottom-0 p-7 sm:p-10">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">Full Package Upgrade</span>
-                    <h3 className="mt-2.5 font-display text-2xl leading-tight text-foreground sm:text-3xl lg:text-4xl">
-                      The Soleia Creative Package Upgrade
-                    </h3>
-                    <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-muted-foreground sm:text-[15px]">
-                      Full creative direction and animation — we guide the visual approach from concept through
-                      final delivery, so your team doesn't have to. It includes an elevator static logo for arrival
-                      and a 3D preview of your content on a model of the actual venue screens, so you review and
-                      approve everything before load-in.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3">
-                  {PACKAGE_INCLUDES.map((inc, i) => (
-                    <div key={inc.title} className="flex flex-col bg-card p-7 sm:p-8">
-                      <span className="font-mono text-[11px] text-primary">{String(i + 1).padStart(2, '0')}</span>
-                      <h4 className="mb-2.5 mt-3 font-display text-xl leading-tight text-foreground sm:text-[1.35rem]">{inc.title}</h4>
-                      <p className="text-[14px] leading-relaxed text-muted-foreground">{inc.body}</p>
-                      {inc.movie && (
-                        <button
-                          type="button"
-                          onClick={() => setFullscreenVideo(inc.movie!)}
-                          className="btn-glow tap-44 mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-primary/40 px-4 py-2 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
-                        >
-                          <Play className="h-3 w-3" />
-                          Watch
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </article>
-          </Reveal>
-
-          {/* Every additional service, by surface. */}
-          <div id="add-ons" className="mt-10 scroll-mt-32">
-
-            {loading ? (
-              <div className="py-16 text-center text-sm text-muted-foreground">Loading services…</div>
-            ) : (
-              GROUPS.map((g) => {
-                const cards = grouped[g.id];
-                const isArrival = g.id === 'arrival';
-                const isPrivate = g.id === 'private';
-                if (!cards.length && !(isArrival && elevatorItems.length) && !isPrivate) return null;
-
-                return (
-                  <div key={g.id} className={g.id === 'room' ? 'mt-6' : ''}>
-                    {g.id !== 'room' && <GroupHead eyebrow={g.eyebrow} title={g.title} note={g.note} />}
-
-                    {isArrival ? (
-                      <div className="space-y-6">
-                        {/* Elevator Displays — the interior render with the display
-                            close-up at its native 600 × 800 mapping */}
-                        {elevatorItems.length > 0 && (
-                          <Reveal>
-                            <article className={`${cardShell} grid lg:grid-cols-[400px_1fr]`}>
-                              <div className="relative min-h-[420px] overflow-hidden border-b border-primary/15 lg:min-h-[520px] lg:border-b-0 lg:border-r">
-                                <img
-                                  src={IMG.elevatorInterior}
-                                  alt="Soleia elevator interior — gold trim with the branded display beside the doors"
-                                  loading="lazy"
-                                  className="absolute inset-0 h-full w-full object-cover"
-                                />
-                                <div className="absolute bottom-6 left-6 z-[2] aspect-[3/4] w-[168px] overflow-hidden rounded-[10px] border border-primary/50 bg-black shadow-[0_0_34px_-6px_hsl(var(--primary)/0.5),0_14px_30px_-10px_rgba(0,0,0,0.8)]">
-                                  <video
-                                    src={ELEVATOR_LOOP_URL}
-                                    poster={IMG.elevatorDisplay}
-                                    className="absolute inset-0 h-full w-full object-cover"
-                                    autoPlay
-                                    loop
-                                    muted
-                                    playsInline
-                                    preload="metadata"
-                                  />
-                                </div>
-                              </div>
-                              <div className="flex flex-col justify-center">
-                                <div className="border-b border-primary/15 px-7 pb-5 pt-7 sm:px-9">
-                                  <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-                                    600 × 800 · Portrait
-                                  </span>
-                                  <div className="mt-2.5 flex flex-wrap items-center justify-between gap-4">
-                                    <h4 className="font-display text-2xl leading-tight text-foreground sm:text-[1.7rem]">
-                                      Elevator Displays
-                                    </h4>
-                                    <button
-                                      onClick={() => navigate('/creative-guide/elevator')}
-                                      className="btn-glow tap-44 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
-                                    >
-                                      <Eye className="h-3.5 w-3.5" />
-                                      Specs &amp; Mapping
-                                    </button>
-                                  </div>
-                                </div>
-                                {elevatorItems.map((item, i) => (
-                                  <div
-                                    key={item.id}
-                                    className={`px-7 py-6 sm:px-9 ${i > 0 ? 'border-t border-primary/15' : ''}`}
-                                  >
-                                    <h5 className="mb-2 font-display text-xl text-foreground">{item.title}</h5>
-                                    <p className="text-[13.5px] leading-relaxed text-muted-foreground">
-                                      {blurbFor(item)}
-                                    </p>
-                                  </div>
-                                ))}
-                              </div>
-                            </article>
-                          </Reveal>
-                        )}
-
-                        {/* LED Marquee — exterior closer. Not a rate-card line item;
-                            coordinated per event, so it isn't loaded from the DB. */}
-                        <Reveal>
-                          <article className={cardShell}>
-                            <MediaHeader
-                              src={IMG.marquee}
-                              alt="Exterior LED marquee carrying event branding at street level"
-                              aspect="aspect-[21/9]"
-                            />
-                            <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
-                              <div>
-                                <h4 className="font-display text-2xl leading-tight text-foreground">LED Marquee</h4>
-                                <button
-                                  onClick={() => navigate('/creative-guide/ticker')}
-                                  className="btn-glow tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                  Specs &amp; Mapping
-                                </button>
-                              </div>
-                              <p className="text-[14.5px] leading-relaxed text-muted-foreground">
-                                {BLURBS['LED Marquee']}
-                              </p>
-                            </div>
-                          </article>
-                        </Reveal>
-
-                        {cards.length > 0 && (
-                          <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
-                        )}
-                      </div>
-                    ) : isPrivate ? (
-                      <div className="space-y-6">
-                        <Reveal>
-                          <article className={cardShell}>
-                            <MediaHeader
-                              src={TV_HERO_IMG}
-                              alt="A cabana television running the Soleia TV Guide card, the beachclub beyond the opening"
-                              aspect="aspect-[21/9]"
-                            />
-                            <div className="grid gap-3 p-7 sm:grid-cols-[minmax(180px,0.7fr)_2fr] sm:gap-11 sm:p-8">
-                              <div>
-                                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
-                                  1920 × 1080 · Landscape
-                                </span>
-                                <h4 className="mt-2 font-display text-2xl leading-tight text-foreground">
-                                  TV Displays / Narrowcasting
-                                </h4>
-                                <button
-                                  onClick={() => navigate('/creative-guide/tv')}
-                                  className="btn-glow tap-44 mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2.5 text-[10.5px] uppercase tracking-[0.2em] text-primary hover:bg-primary/10"
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                  Specs &amp; Mapping
-                                </button>
-                              </div>
-                              <p className="text-[14.5px] leading-relaxed text-muted-foreground">{TV_BLURB}</p>
-                            </div>
-                          </article>
-                        </Reveal>
-                        {cards.length > 0 && (
-                          <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2">{renderGroupCards(cards)}</div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </section>
-
-        {/* ══ 05 · HOW CREATIVE PRODUCTION WORKS ══ */}
-        <section id="production" className="scroll-mt-32 pt-24">
-          <GuideSectionHead
-            eyebrow="05 — How Creative Production Works"
-            title="From your assets to show night."
-            lede="What we need from you, when we need it, and what happens to it between kickoff and doors — so nothing on the night is a surprise."
-          />
-
-          <Reveal className="mb-6">
-            <article className={`${cardShell} grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-5`}>
-              {PRODUCTION_STEPS.map((s, i) => (
-                <div key={s.title} className="flex flex-col bg-card p-6">
-                  <span className="font-mono text-[11px] text-primary">{String(i + 1).padStart(2, '0')}</span>
-                  <h4 className="mt-2 font-display text-xl leading-tight text-foreground">{s.title}</h4>
-                  <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground">{s.body}</p>
-                </div>
-              ))}
-            </article>
-          </Reveal>
-
-          <Reveal className="mt-14">
-            <article className={`${cardShell} p-8 sm:p-11`}>
-              <CreativeTimeline title="Kickoff to show day." />
-              <p className="mt-9 max-w-2xl border-t border-primary/15 pt-7 text-[14.5px] leading-relaxed text-muted-foreground">
-                The schedule counts forward from kickoff — a signed proposal and your brand assets both in hand —
-                not backwards from your event date. The earlier those arrive, the more of the fourteen-day window
-                goes into the work rather than the wait.
+      <main className="mx-auto max-w-5xl space-y-12 px-5 pb-16 pt-7 sm:space-y-16 sm:px-8 sm:pb-20">
+        <section id="included" className={sectionClass}>
+          <h2 className={headingClass}>What’s included with your buyout</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <article className={cardClass}>
+              <h3 className="font-display text-2xl">Main LED screens</h3>
+              <p className={'mt-2 ' + bodyClass}>
+                <strong className="font-medium text-foreground">10 static logos across 5 screens.</strong> Your logos appear on two nightclub screens, two outdoor screens, and the beachclub arch. The other LEDs play Soleia’s in-house visuals.
               </p>
             </article>
-          </Reveal>
-        </section>
-
-        {/* ══ 06 · PROVIDING YOUR OWN CONTENT? ══ */}
-        <section id="own-content" className="scroll-mt-32 pt-24">
-          <GuideSectionHead
-            eyebrow="06 — Providing Your Own Content?"
-            title="Build to spec. We load it and run it."
-            lede="For agencies and in-house teams producing their own animations: start with video mapping, then choose how your finished content reaches the screens and download every specification your technical team will need."
-          />
-
-          <div>
-            <SubHead
-              eyebrow="How mapping works"
-              title="One map. Every surface."
-              lede="Every screen is a different shape, and all of them live on one file. See how the map carries your content across the room before your team starts building."
-            />
-            <PixelMapGuide />
+            <article className={cardClass}>
+              <h3 className="font-display text-2xl">TV network</h3>
+              <p className={'mt-2 ' + bodyClass}>
+                <strong className="font-medium text-foreground">One static logo across 28 TVs.</strong> The casino-level entrance, bungalows, and cabanas share the same feed.
+              </p>
+            </article>
           </div>
 
-          <Reveal className="mt-6">
-            <article className={cardShell}>
-              <MediaHeader
-                src={IMG.mapping}
-                alt="Client brand content mapped wall-to-wall across the main-room curve LED"
-                aspect="aspect-[21/8]"
+          <div id="venue" className="mt-4 space-y-3 scroll-mt-36">
+            <details className={disclosureClass}>
+              <summary className={summaryClass}>View venue layout <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 group-open:rotate-180" /></summary>
+              <img
+                src="/creative-guide/venue-layout-sunburst.jpg"
+                alt="Aerial view of the nightclub, beachclub pools, and cabana rows"
+                loading="lazy"
+                className="aspect-[1737/905] w-full rounded-b-2xl object-cover"
               />
-              <div>
-                {loading ? (
-                  <div className="py-10 text-center text-sm text-muted-foreground">Loading services…</div>
-                ) : (
-                  loadFeeItems.map((item, i) => (
-                    <div
-                      key={item.id}
-                      className={`grid gap-3 p-7 sm:grid-cols-[minmax(200px,0.9fr)_2fr_auto] sm:items-center sm:gap-7 sm:px-8 ${
-                        i > 0 ? 'border-t border-primary/15' : ''
-                      }`}
-                    >
-                      <h4 className="font-display text-xl leading-snug text-foreground">{item.title}</h4>
-                      <p className="text-[14px] leading-relaxed text-muted-foreground">{blurbFor(item)}</p>
-                      <Chip>Max 50 GB</Chip>
-                    </div>
-                  ))
-                )}
-              </div>
-            </article>
-          </Reveal>
-
-          <Reveal className="mt-6">
-            <article className={`${cardShell} grid gap-px bg-primary/15 sm:grid-cols-2 lg:grid-cols-3`}>
-              {SPEC_LINKS.map((l) => {
-                const inner = (
-                  <>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">{l.kind}</span>
-                    <span className="mt-2 block font-display text-xl leading-tight text-foreground transition-colors duration-500 group-hover/spec:text-primary">
-                      {l.title}
-                    </span>
-                    <span className="mt-2 block flex-1 text-[13px] leading-relaxed text-muted-foreground">{l.body}</span>
-                    <span className="mt-4 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-primary">
-                      {l.download ? <Download className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />}
-                      {l.download ? 'Download' : 'Open'}
-                    </span>
-                  </>
-                );
-                const cls = 'group/spec flex h-full flex-col bg-card p-6 text-left transition-colors duration-500 hover:bg-primary/5';
-                return l.download ? (
-                  <a key={l.title} href={l.to} download={l.download} className={cls}>
-                    {inner}
-                  </a>
-                ) : (
-                  <button key={l.title} type="button" onClick={() => navigate(l.to)} className={cls}>
-                    {inner}
-                  </button>
-                );
-              })}
-            </article>
-          </Reveal>
+            </details>
+            <details id="zones" className={disclosureClass} open={zonesOpen} onToggle={(event) => setZonesOpen(event.currentTarget.open)}>
+              <summary className={summaryClass}>Preview LED zones <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 group-open:rotate-180" /></summary>
+              {zonesOpen && (
+                <div className="px-3 pb-3">
+                  <SpecificZoneSelector
+                    description="See the screens in each zone."
+                    onFullscreen={setVideo}
+                  />
+                </div>
+              )}
+            </details>
+          </div>
         </section>
 
+        <section id="enhance" className={sectionClass}>
+          <h2 className={headingClass}>Creative upgrades</h2>
+          <article className={cardClass}>
+            <h3 className="font-display text-2xl">Soleia Creative Upgrade Package</h3>
+            <p className={'mt-2 ' + bodyClass}>We design, produce, and run custom visuals for your event.</p>
+            <ul className="mt-4 grid list-disc gap-x-8 gap-y-2 pl-5 text-sm leading-relaxed marker:text-primary sm:grid-cols-2">
+              <li>Creative direction and custom animation</li>
+              <li>Content fitted to each LED screen</li>
+              <li>Static elevator logo</li>
+              <li>3D venue preview for approval</li>
+              <li>Onsite testing and playback</li>
+            </ul>
+            <button type="button" onClick={() => setVideo(PREVIEW_VIDEO)} className={'mt-4 ' + actionClass}>
+              <Play aria-hidden="true" className="h-4 w-4" /> Watch a 3D venue preview
+            </button>
+          </article>
+
+          <details id="add-ons" className={'mt-4 ' + disclosureClass} open={hash === '#add-ons' || undefined}>
+            <summary className={summaryClass}>Browse individual services <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 group-open:rotate-180" /></summary>
+            <div className="space-y-6 border-t border-primary/15 px-5 py-5 sm:px-7">
+              {!catalog && <p role="status" className={bodyClass}>Loading services…</p>}
+              {catalog?.unavailable && (
+                <p role="status" className={bodyClass}>
+                  The full list is temporarily unavailable. <a href="mailto:creative@soleialv.com" className="text-primary underline">Email Soleia Creative</a> for options.
+                </p>
+              )}
+              {catalog && ADD_ON_GROUPS.map((group) => {
+                const services = catalog.addOns.filter((item) => item.group === group);
+                if (!services.length) return null;
+
+                return (
+                  <div key={group}>
+                    <h3 className="font-display text-xl text-primary">{group}</h3>
+                    <ul className="mt-2 divide-y divide-primary/10">
+                      {services.map(({ title, description, video: example, link }) => (
+                        <li key={title} className="py-3">
+                          <h4 className="font-medium">{title}</h4>
+                          <p className={'mt-1 ' + bodyClass}>{description}</p>
+                          {example && (
+                            <button type="button" onClick={() => setVideo(example)} className={textLinkClass} aria-label={'Watch example: ' + title}>
+                              <Play aria-hidden="true" className="h-4 w-4" /> Watch example
+                            </button>
+                          )}
+                          {link && <Link to={link.to} className={textLinkClass}>{link.label}</Link>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          </details>
+        </section>
+
+        <section id="production" className={sectionClass}>
+          <h2 className={headingClass}>What to send and when</h2>
+          <ol className="divide-y divide-primary/15 rounded-2xl border border-primary/20 bg-card/60 px-5 sm:px-7">
+            <li className="grid gap-1.5 py-4 sm:grid-cols-[14rem_1fr] sm:gap-5">
+              <strong className="font-medium text-primary">21 business days before the event</strong>
+              <p className={bodyClass}>Send your signed proposal, vector logos, fonts, brand colors, guidelines, and any artwork or footage you want to use.</p>
+            </li>
+            <li className="grid gap-1.5 py-4 sm:grid-cols-[14rem_1fr] sm:gap-5">
+              <strong className="font-medium text-primary">14 days after kickoff</strong>
+              <p className={bodyClass}>Soleia sends your first preview. Kickoff starts once we have your signed proposal and brand assets.</p>
+            </li>
+            <li className="grid gap-1.5 py-4 sm:grid-cols-[14rem_1fr] sm:gap-5">
+              <strong className="font-medium text-primary">Within 3 days of your preview</strong>
+              <p className={bodyClass}>Send one set of written notes from your team. One revision round is included within the agreed scope.</p>
+            </li>
+            <li className="grid gap-1.5 py-4 sm:grid-cols-[14rem_1fr] sm:gap-5">
+              <strong className="font-medium text-primary">7 business days before the event</strong>
+              <p className={bodyClass}>Send any final revision requests by this cutoff.</p>
+            </li>
+          </ol>
+        </section>
+
+        <section id="own-content" className={sectionClass}>
+          <h2 className={headingClass}>Providing your own content?</h2>
+          <p className={'max-w-2xl ' + bodyClass}>
+            Soleia can map your finished animations to the screens, or your team can deliver files already mapped to our specs. Both options have a 50 GB limit. File changes after delivery may incur fees.
+          </p>
+          <p className={'mt-2 ' + bodyClass}>Send finished files at least 21 business days before your event for playback testing.</p>
+          <Link to={GUIDE_PATH + '/content-delivery'} className={'mt-4 ' + actionClass}>
+            Open file specs and templates <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
+          <ul className="mt-4 grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
+            {SPEC_LINKS.map(({ label, to }) => <li key={to}><Link to={to} className={textLinkClass}>{label}</Link></li>)}
+          </ul>
+          <p className={'mt-4 border-t border-primary/15 pt-4 ' + bodyClass}>
+            Questions about screens, services, or deadlines? <a href="mailto:creative@soleialv.com" className="font-medium text-primary underline underline-offset-4">Email Soleia Creative</a>.
+          </p>
+        </section>
       </main>
 
       <CreativeGuideFooter />
 
-      {/* Fullscreen video */}
-      <Overlay open={!!fullscreenVideo} onClose={closeVideo} label="Video">
-        {fullscreenVideo && (
-          <video src={fullscreenVideo} className="max-h-[85dvh] max-w-full" autoPlay loop muted controls playsInline />
-        )}
-        <button
-          onClick={closeVideo}
-          aria-label="Close"
-          className="btn-glow tap-44 fixed right-[calc(1.25rem+env(safe-area-inset-right))] top-[calc(1.25rem+env(safe-area-inset-top))] inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-white/10"
-        >
-          Close
+      <Overlay open={Boolean(video)} onClose={closeVideo} label="Video preview">
+        {video && <video src={video} className="max-h-[85dvh] max-w-full" autoPlay muted controls playsInline />}
+        <button type="button" onClick={closeVideo} className={'fixed right-[calc(1.25rem+env(safe-area-inset-right))] top-[calc(1.25rem+env(safe-area-inset-top))] bg-background ' + actionClass}>
+          Close video
         </button>
       </Overlay>
     </div>
