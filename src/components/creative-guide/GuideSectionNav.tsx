@@ -53,7 +53,7 @@ export function GuideSectionNav({ sections, offset: headerOffset = 66 }: GuideSe
   const [barH, setBarH] = useState(0);
   const slotRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
 
   // Measure the bar once so pinning it can reserve the same height and the page
@@ -135,16 +135,18 @@ export function GuideSectionNav({ sections, offset: headerOffset = 66 }: GuideSe
         }
         style={stuck ? { top: offset } : undefined}
       >
-        <div
+        <nav
+          aria-label="Creative Guide sections"
           ref={listRef}
           className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-5 py-2.5 sm:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {sections.map((s, i) => {
+          {sections.map((s) => {
             const on = s.id === active;
             return (
               <button
                 key={s.id}
                 data-chip={s.id}
+                type="button"
                 onClick={() => go(s.id)}
                 aria-current={on ? 'true' : undefined}
                 className={`relative flex-shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 touch:min-h-11 text-[10.5px] uppercase tracking-[0.16em] transition-colors duration-500 ${
@@ -161,14 +163,11 @@ export function GuideSectionNav({ sections, offset: headerOffset = 66 }: GuideSe
                     aria-hidden="true"
                   />
                 )}
-                <span className="relative">
-                  <span className="mr-1.5 font-mono opacity-60">{String(i + 1).padStart(2, '0')}</span>
-                  {s.label}
-                </span>
+                <span className="relative">{s.label}</span>
               </button>
             );
           })}
-        </div>
+        </nav>
       </div>
     </div>
   );
