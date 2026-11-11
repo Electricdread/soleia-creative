@@ -34,7 +34,7 @@ type AddOn = {
 
 const ADD_ON_COPY: Record<string, AddOn> = {
   'Static Logo': {
-    title: 'Additional static logo',
+    title: 'What’s Included Example',
     description: 'Add a sponsor or partner logo to the LED screens. Send a transparent PNG.',
     group: 'LED branding',
     video: '/creative-guide/services/static-logo-loop.mp4',
@@ -98,6 +98,13 @@ const MARQUEE: AddOn = {
 };
 
 const MAPPING_SERVICES = ['Mapped by Soleia Creative Team', 'Mapped to Spec by Client'];
+
+// Rush-fee tiers as written by Rivka (11-11). "Days" = days before the event.
+const RUSH_FEES = [
+  { window: '6 days before', fee: 'Base load fee plus 15%' },
+  { window: '5–3 days before', fee: 'Base load fee plus 20%' },
+  { window: '2–0 days before', fee: 'Base load fee plus 50%' },
+];
 
 const SPEC_LINKS = [
   { label: 'Video mapping preview', to: GUIDE_PATH + '/video-mapping' },
@@ -277,22 +284,35 @@ export default function CreativeGuideServices() {
           <h2 className={headingClass}>What to send and when</h2>
           <ol className="divide-y divide-primary/15 rounded-2xl border border-primary/20 bg-card/60 px-5 sm:px-7">
             <li className="grid gap-1.5 py-4 sm:grid-cols-[14rem_1fr] sm:gap-5">
-              <strong className="font-medium text-primary">21 business days before the event</strong>
+              <strong className="font-medium text-primary">21 business days before your event or earlier</strong>
               <p className={bodyClass}>Send your signed proposal, vector logos, fonts, brand colors, guidelines, and any artwork or footage you want to use.</p>
             </li>
             <li className="grid gap-1.5 py-4 sm:grid-cols-[14rem_1fr] sm:gap-5">
-              <strong className="font-medium text-primary">14 days after kickoff</strong>
-              <p className={bodyClass}>Soleia sends your first preview. Kickoff starts once we have your signed proposal and brand assets.</p>
+              <strong className="font-medium text-primary">14 days, if you purchase the Creative Upgrade Package</strong>
+              <p className={bodyClass}>Soleia sends your first preview within 14 days of kickoff. Kickoff starts once we have your signed proposal and brand assets.</p>
             </li>
             <li className="grid gap-1.5 py-4 sm:grid-cols-[14rem_1fr] sm:gap-5">
               <strong className="font-medium text-primary">Within 3 days of your preview</strong>
               <p className={bodyClass}>Send one set of written notes from your team. One revision round is included within the agreed scope.</p>
             </li>
             <li className="grid gap-1.5 py-4 sm:grid-cols-[14rem_1fr] sm:gap-5">
-              <strong className="font-medium text-primary">7 business days before the event</strong>
-              <p className={bodyClass}>Send any final revision requests by this cutoff.</p>
+              <strong className="font-medium text-primary">7 business days before your event</strong>
+              <p className={bodyClass}>If you are creating and providing your own assets, and your test file has been approved, this is the final day we can accept your content without a rush fee to load and test.</p>
             </li>
           </ol>
+
+          <div className="mt-4 rounded-2xl border border-primary/20 bg-card/60 px-5 py-5 sm:px-7">
+            <h3 className="font-display text-xl text-primary">Rush fees</h3>
+            <p className={'mt-1 ' + bodyClass}>Rush fees for Soleia to load and test your content are calculated as:</p>
+            <ul className="mt-2 divide-y divide-primary/15">
+              {RUSH_FEES.map(({ window, fee }) => (
+                <li key={window} className="grid gap-1 py-3 sm:grid-cols-[14rem_1fr] sm:gap-5">
+                  <strong className="font-medium text-foreground">{window}</strong>
+                  <span className={bodyClass}>{fee}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         <section id="own-content" className={sectionClass}>
