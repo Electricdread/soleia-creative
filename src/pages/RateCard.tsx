@@ -47,7 +47,7 @@ const TERMS = [
   '14 days from kickoff to first review-cut delivery.',
   'Client review window: 3 days from delivery.',
   'One included revision round.',
-  'Final revision requests due no later than 4 days before the event.',
+  'Final revision requests due no later than 7 business days before the event. After that, late load fees apply by date.',
   'Creative licensing covers the event duration only.',
 ];
 

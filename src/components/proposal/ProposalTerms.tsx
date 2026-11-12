@@ -7,7 +7,8 @@ const SECTIONS: { title: string; body?: string; items?: string[] }[] = [
       'Production does not begin until the proposal has been signed off and all client brand assets have been received. Both must be in hand before the clock starts.',
       'Once both conditions are met, our team has 14 days to create and deliver the first review cut.',
       'The client then has 3 days from delivery to submit consolidated review notes.',
-      'Final revision requests must reach us no later than 4 days before the event date so we can apply, render, and deliver in time.',
+      'Final revision requests must reach us no later than 7 business days before the event date so we can apply, render, and deliver in time.',
+      'After that date, late load fees apply by date: the base load fee plus 15% from the cutoff through 6 days before the event, plus 20% from 5 to 3 days before, and plus 50% from 2 days before through the event.',
     ],
   },
   { title: 'New Assets', body: 'New assets provided by the client will require a new estimate.' },
@@ -23,7 +24,7 @@ const SECTIONS: { title: string; body?: string; items?: string[] }[] = [
     items: [
       'Includes one revision round within the agreed scope and existing elements.',
       'Notes must be submitted in writing within the 3-day review window after delivery.',
-      'Requests received later than 4 days before the event date cannot be guaranteed.',
+      'Requests received later than 7 business days before the event date cannot be guaranteed.',
       'Changes affecting the concept, direction, or new components require a new quote.',
     ],
   },

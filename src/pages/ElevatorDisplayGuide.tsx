@@ -186,11 +186,11 @@ export default function ElevatorDisplayGuide() {
         {/* CLOSING LINE */}
         <Reveal className="mt-10">
           <p className="max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
-            Prefer we build it? Elevator Dynamic Animation and Elevator Static Logo are available on the{' '}
+            Prefer we build it? The animated elevator display comes with the Creative Upgrade Package (see the{' '}
             <button onClick={() => navigate('/creative-guide/services')} className="text-primary underline-offset-4 hover:underline">
               services page
             </button>
-            {' '}— delivered mapped, tested, and running on show day.
+            ), delivered mapped, tested, and running on show day.
           </p>
         </Reveal>
       </main>

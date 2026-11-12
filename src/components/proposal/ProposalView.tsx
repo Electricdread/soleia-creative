@@ -1115,7 +1115,7 @@ export default function ProposalView({ proposal, items, gallery, timeline, isAdm
               Production begins only once <strong>both</strong> conditions are met: the proposal is signed off and all client brand assets have been delivered.
             </p>
             <p className="text-[12.5px] mt-2" style={{ color: RC_SOFT_INK }}>
-              From kickoff: <strong style={{ color: RC_INK }}>14 days</strong> to deliver the first review &middot; <strong style={{ color: RC_INK }}>3 days</strong> for client review &middot; <strong style={{ color: RC_INK }}>1</strong> included revision &middot; final notes due <strong style={{ color: RC_INK }}>no later than 4 days before the event</strong>.
+              From kickoff: <strong style={{ color: RC_INK }}>14 days</strong> to deliver the first review &middot; <strong style={{ color: RC_INK }}>3 days</strong> for client review &middot; <strong style={{ color: RC_INK }}>1</strong> included revision &middot; final notes due <strong style={{ color: RC_INK }}>no later than 7 business days before the event</strong>; later changes incur late load fees by date.
             </p>
           </div>
         </section>

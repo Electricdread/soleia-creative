@@ -9,9 +9,9 @@
  * src/components/proposal/ProposalTerms.tsx; if those terms change, this
  * changes with them.
  *
- * The one deliberate divergence is the final cut-off: the terms set the
- * contractual floor at 4 days before the event, and this asks for 7 business
- * days. It is the earlier of the two on purpose — do not "correct" it back.
+ * The final cut-off is 7 business days before the event, the same in the
+ * terms, the rate card, the proposal PDF and this timeline (it used to be 4
+ * days in the terms). After it, late load fees apply by date.
  *
  * What it adds is the part a client cannot see from a contract: the work
  * inside those 14 days. Saying that we spend the front of that window
