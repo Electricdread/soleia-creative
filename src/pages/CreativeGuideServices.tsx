@@ -202,7 +202,7 @@ export default function CreativeGuideServices() {
             <article className={cardClass}>
               <h3 className="font-display text-2xl">TV network</h3>
               <p className={'mt-2 ' + bodyClass}>
-                <strong className="font-medium text-foreground">One static logo across 28 TVs.</strong> The casino-level entrance, bungalows, and cabanas share the same feed.
+                <strong className="font-medium text-foreground">One logo across 28 TVs, as a still or a media loop.</strong> The casino-level entrance, bungalows, and cabanas share the same feed.
               </p>
             </article>
           </div>

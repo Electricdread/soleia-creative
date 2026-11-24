@@ -37,7 +37,7 @@ const BUYOUT_INCLUSIONS = [
     sub: 'Included · Pricing on request',
     title: 'TV Screens / Narrowcasting',
     icon: Tv,
-    intro: '1 Static Logo displayed across the TV / narrowcasting network:',
+    intro: '1 logo, as a still image or a media loop, displayed across the TV / narrowcasting network:',
     items: [
       '4 Front Door Entry — Casino Level',
       '9 Bungalows — Beachclub / Outside',
