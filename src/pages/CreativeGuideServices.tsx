@@ -15,7 +15,8 @@ const GUIDE_URL = GUIDE_PATH + '/services';
 const SERVICES_PDF_URL = '/Soleia-Creative-Services-No-Pricing.pdf?v=2026-11-11';
 const PREVIEW_VIDEO = '/creative-guide/services/previz-soleia.mp4';
 const STATIC_LOGO_VIDEO = '/creative-guide/services/static-logo-loop.mp4';
-const STATIC_LOGO_POSTER = '/creative-guide/services/static-logo-loop-poster.jpg';
+const INCLUDED_FILM = '/creative-guide/services/whats-included-film.mp4';
+const INCLUDED_FILM_POSTER = '/creative-guide/services/whats-included-film-poster.jpg';
 
 const SECTIONS = [
   { id: 'included', label: 'What’s Included' },
@@ -191,7 +192,7 @@ export default function CreativeGuideServices() {
       <main className="mx-auto max-w-5xl space-y-12 px-5 pb-16 pt-7 sm:space-y-16 sm:px-8 sm:pb-20">
         <section id="included" className={sectionClass}>
           <h2 className={headingClass}>What’s included with your buyout</h2>
-          <IncludedVideoPreview video={STATIC_LOGO_VIDEO} poster={STATIC_LOGO_POSTER} onWatch={setVideo} />
+          <IncludedVideoPreview video={INCLUDED_FILM} poster={INCLUDED_FILM_POSTER} onWatch={setVideo} />
           <div className="grid gap-4 sm:grid-cols-2">
             <article className={cardClass}>
               <h3 className="font-display text-2xl">Main LED screens</h3>
