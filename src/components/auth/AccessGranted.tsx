@@ -53,8 +53,8 @@ export function AccessGranted({ onEnterPortal }: AccessGrantedProps) {
           
           <div className="p-6 sm:p-8 text-center">
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               className="mx-auto mb-6"
             >

@@ -13,11 +13,11 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ count, onCl
     <AnimatePresence>
       {count > 0 && (
         <motion.button
-          initial={{ scale: 0, opacity: 0 }}
+          initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
+          exit={{ scale: 0.9, opacity: 0 }}
           whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.96 }}
           onClick={onClick}
           className="fixed bottom-24 right-4 md:bottom-28 md:right-8 z-50 w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary via-accent to-primary shadow-2xl glow-gold flex items-center justify-center touch-manipulation border-2 border-primary-foreground/20"
           style={{
@@ -52,8 +52,8 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ count, onCl
 
           {/* Badge with count */}
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
             className="absolute -top-1 -right-1 w-7 h-7 md:w-8 md:h-8 rounded-full bg-success flex items-center justify-center shadow-lg border-2 border-background"
           >
             <Check className="w-4 h-4 md:w-5 md:h-5 text-success-foreground" />
